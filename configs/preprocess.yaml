@@ -1,0 +1,18 @@
+# Local mmCIF preprocessing defaults. Thresholds are baseline choices, not universal truths.
+source_dir: data/raw/mmcif
+samples_dir: data/processed/samples
+manifest_path: data/processed/manifest.parquet
+summary_path: data/processed/preprocess_summary.json
+backend: auto
+chain_id:
+min_length:
+max_length: 128
+strict_contiguous_ca: true
+allowed_methods:
+  - X-RAY DIFFRACTION
+  - ELECTRON MICROSCOPY
+max_xray_resolution_angstrom: 3.0
+max_cryoem_resolution_angstrom: 4.0
+residue_mappings:
+  MSE: MET
+overwrite: false

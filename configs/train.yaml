@@ -1,0 +1,30 @@
+train_manifest: data/splits/train.parquet
+validation_manifest: data/splits/validation.parquet
+normalization_file: data/processed/normalization.json
+output_dir: outputs/experiment
+seed: 42
+device: cpu
+batch_size: 2
+num_workers: 0
+epochs: 1
+learning_rate: 0.0001
+grad_clip: 1.0
+ema_decay: 0.999
+diffusion_steps: 100
+model:
+  input_channels: 3
+  output_channels: 1
+  base_channels: 32
+  channel_multipliers: [1, 2, 4, 8]
+  residual_blocks_per_level: 2
+  dropout: 0.0
+  group_norm_groups: 8
+  attention_heads: 8
+  use_bottleneck_attention: true
+  time_embedding_dim: 256
+  length_embedding_dim: 256
+  max_length: 128
+validation_sample_lengths: [48, 64, 96, 128]
+samples_per_length: 16
+checkpoint_every_steps: 1000
+

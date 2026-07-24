@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: protein-distance-diffusion
+Version: 0.1.0
+Summary: Stage 1 conditional diffusion for protein residue C-alpha distance matrices.
+Requires-Python: >=3.11
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: pyarrow
+Requires-Dist: torch
+Requires-Dist: PyYAML
+Requires-Dist: gemmi
+Requires-Dist: MDAnalysis
+Requires-Dist: matplotlib
+Requires-Dist: seaborn
+Requires-Dist: tqdm
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Dynamic: license-file

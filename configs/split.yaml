@@ -1,0 +1,13 @@
+# Sequence-cluster split configuration.
+manifest_path: data/processed/manifest_deduplicated.parquet
+cluster_assignments_path: data/processed/mmseqs_clusters.tsv
+output_dir: data/splits
+mmseqs_executable: mmseqs
+sequence_identity_threshold: 0.30
+alignment_coverage_threshold: 0.80
+split_seed: 42
+train_fraction: 0.80
+validation_fraction: 0.10
+test_fraction: 0.10
+external_group_label_file:
+
