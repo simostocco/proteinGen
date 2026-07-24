@@ -1,8 +1,8 @@
-# Local mmCIF preprocessing defaults. Thresholds are baseline choices, not universal truths.
-source_dir: data/raw/mmcif
-samples_dir: data/processed/samples
-manifest_path: data/processed/manifest.parquet
-summary_path: data/processed/preprocess_summary.json
+# Pilot mmCIF preprocessing defaults for RCSB-query-based datasets.
+source_dir: data/pilot/raw/mmcif
+samples_dir: data/pilot/processed/samples
+manifest_path: data/pilot/processed/manifest.parquet
+summary_path: data/pilot/processed/preprocess_summary.json
 backend: auto
 chain_id:
 min_length:

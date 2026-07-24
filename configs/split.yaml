@@ -1,7 +1,12 @@
 # Sequence-cluster split configuration.
-manifest_path: data/processed/manifest_deduplicated.parquet
-cluster_assignments_path: data/processed/mmseqs_clusters.tsv
-output_dir: data/splits
+manifest_path: data/pilot/processed/manifest.parquet
+deduplicated_manifest_path: data/pilot/processed/manifest_deduplicated.parquet
+deduplication_report_path: data/pilot/processed/deduplication_report.json
+fasta_path: data/pilot/processed/retained_sequences.fasta
+mmseqs_output_prefix: data/pilot/processed/mmseqs_clusters
+mmseqs_tmp_dir: data/pilot/processed/mmseqs_tmp
+cluster_assignments_path: data/pilot/processed/mmseqs_clusters.tsv
+output_dir: data/pilot/splits
 mmseqs_executable: mmseqs
 sequence_identity_threshold: 0.30
 alignment_coverage_threshold: 0.80
@@ -10,4 +15,3 @@ train_fraction: 0.80
 validation_fraction: 0.10
 test_fraction: 0.10
 external_group_label_file:
-

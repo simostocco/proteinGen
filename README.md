@@ -105,32 +105,43 @@ Distance matrices are never resized or interpolated. Batches are padded to a sid
 
 ## First Real-Data Experiment
 
-Create a pilot ID file, one PDB ID per line:
+Query a reproducible pilot ID file with the RCSB Search API v2. This queries
+experimental protein polymer entities from X-ray diffraction or electron
+microscopy entries with protein entity length `<= 500`, retrieves more
+candidates than requested, then uses a seeded deterministic sample to avoid
+bias toward the first PDB IDs:
 
 ```bash
-mkdir -p data
-printf "1ubq\n4hhb\n1crn\n" > data/pdb_ids.txt
+python scripts/query_rcsb.py \
+  --output data/pilot/pdb_ids.txt \
+  --num-entries 100 \
+  --candidate-limit 1000 \
+  --seed 42
 ```
 
-Download a bounded pilot dataset in mmCIF format:
+The query script writes one PDB ID per line and saves the exact query JSON plus
+retrieval metadata at `data/pilot/pdb_ids.txt.metadata.json`. It does not
+download structures.
+
+Download the bounded pilot dataset in mmCIF format:
 
 ```bash
 python scripts/download_pdb.py \
-  --ids-file data/pdb_ids.txt \
-  --output-dir data/raw/mmcif \
-  --manifest data/raw/download_manifest.csv \
-  --max-entries 20 \
+  --ids-file data/pilot/pdb_ids.txt \
+  --output-dir data/pilot/raw/mmcif \
+  --manifest data/pilot/raw/download_manifest.csv \
+  --max-entries 100 \
   --delay-seconds 0.2
 ```
 
 Preprocess:
 
 ```bash
-python scripts/preprocess_pdb.py --config configs/preprocess.yaml
+python scripts/preprocess_pdb.py --config configs/preprocess_pilot.yaml
 ```
 
 The default preprocessing config uses `min_length: null`, meaning no lower length
-constraint, and keeps `max_length: 128`. Set `min_length` to a positive integer to
+constraint, and keeps `max_length: 500`. Set `min_length` to a positive integer to
 enable a lower bound.
 `allowed_methods` is enforced as an exact list when non-null; set
 `allowed_methods: null` to disable method filtering. X-ray and cryo-EM resolution
@@ -141,8 +152,8 @@ Visualize processed samples:
 
 ```bash
 python scripts/visualize_samples.py \
-  --manifest data/processed/manifest.parquet \
-  --output-dir outputs/dataset_samples \
+  --manifest data/pilot/processed/manifest.parquet \
+  --output-dir outputs/pilot_dataset_samples \
   --num-samples 8 \
   --seed 42 \
   --contact-threshold 8.0
@@ -152,12 +163,12 @@ Summarize:
 
 ```bash
 python scripts/summarize_dataset.py \
-  --manifest data/processed/manifest.parquet \
-  --output-dir reports/dataset \
-  --preprocessing-summary data/processed/preprocess_summary.json
+  --manifest data/pilot/processed/manifest.parquet \
+  --output-dir reports/pilot_dataset
 ```
 
-Cluster retained sequences with MMseqs2 or provide `data/processed/mmseqs_clusters.tsv`, then split:
+Cluster retained sequences with MMseqs2 or provide a compatible cluster TSV,
+then split:
 
 ```bash
 python scripts/build_splits.py --config configs/split.yaml
@@ -194,7 +205,7 @@ Download 10-20 structures, preprocess them, generate all visualizations, and man
 Experiment B: pilot dataset.
 
 Download 100-500 entries, use configurable length filters such as `min_length: 40` and
-`max_length: 256`, record rejection causes, deduplicate exact sequences, run MMseqs2
+`max_length: 500`, record rejection causes, deduplicate exact sequences, run MMseqs2
 clustering, produce leakage-safe splits, and generate dataset statistics.
 
 Experiment C: model overfitting test.
@@ -204,6 +215,12 @@ Select 16-32 similar-length samples, train until the loss drops strongly, sample
 ## Architecture
 
 For `N=128` with channel multipliers `[1, 2, 4, 8]`, collation produces `[B, 1, 128, 128]` distance matrices plus `[B, 1, 128, 128]` sequence-separation and pair-mask channels. The model input is `[B, 3, 128, 128]`. Downsampling gives spatial sizes `128 -> 64 -> 32 -> 16`; masked multi-head attention operates on `16*16` bottleneck tokens; upsampling restores `128`. The output is `[B, 1, 128, 128]`, then it is symmetrized, has the diagonal set to zero, and is multiplied by the pair mask.
+
+The `model.max_length` value in training configs is used to scale the logarithmic
+length-conditioning embedding. It is not the preprocessing dataset filter. The
+dataset filter is `max_length` in preprocessing configs and is currently `500`.
+Practical GPU-memory limits still exist because each target distance matrix grows
+as `O(N^2)`, and padded batches are sized by the largest sample in the batch.
 
 ## Expected Outputs
 

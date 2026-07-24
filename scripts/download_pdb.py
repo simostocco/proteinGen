@@ -14,7 +14,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Download selected PDB mmCIF files without bulk acquisition.")
     parser.add_argument("--ids-file", required=True, type=Path, help="Text/CSV file containing PDB identifiers.")
     parser.add_argument("--output-dir", required=True, type=Path, help="Local mmCIF cache directory.")
-    parser.add_argument("--manifest", type=Path, default=Path("data/raw/download_manifest.csv"))
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=None,
+        help="Download manifest path. Defaults to OUTPUT_DIR/../download_manifest.csv.",
+    )
     parser.add_argument("--force", action="store_true", help="Redownload files even if cached.")
     parser.add_argument("--max-entries", type=int, default=None, help="Optional small development limit.")
     parser.add_argument("--delay-seconds", type=float, default=0.0, help="Optional polite delay between downloads.")
@@ -29,9 +34,10 @@ def main() -> None:
         dry_run=args.dry_run,
         delay_seconds=args.delay_seconds,
     )
-    args.manifest.parent.mkdir(parents=True, exist_ok=True)
-    manifest.to_csv(args.manifest, index=False)
-    print(f"Wrote {args.manifest}")
+    manifest_path = args.manifest or (args.output_dir.parent / "download_manifest.csv")
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest.to_csv(manifest_path, index=False)
+    print(f"Wrote {manifest_path}")
 
 
 if __name__ == "__main__":

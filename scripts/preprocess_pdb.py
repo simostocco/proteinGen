@@ -9,7 +9,10 @@ from pathlib import Path
 from protein_distance_diffusion.config import load_yaml
 from protein_distance_diffusion.constants import DEFAULT_RESIDUE_MAPPINGS
 from protein_distance_diffusion.data.preprocess import save_processed_sample, write_manifest
-from protein_distance_diffusion.data.structure_parser import iter_supported_structure_files, parse_structure_file
+from protein_distance_diffusion.data.structure_parser import (
+    iter_supported_structure_files,
+    parse_structure_file_with_rejections,
+)
 from protein_distance_diffusion.utils.io import write_json
 
 
@@ -28,6 +31,14 @@ def _parse_optional_float(value: object) -> float | None:
     return None if value is None else float(value)
 
 
+def _parse_max_length(value: object) -> int:
+    """Parse required positive maximum sequence length from YAML."""
+    max_length = int(value)
+    if max_length <= 0:
+        raise ValueError("max_length must be a positive integer")
+    return max_length
+
+
 def main() -> None:
     """Run preprocessing."""
     parser = argparse.ArgumentParser(description="Parse structure files and save C-alpha distance matrices.")
@@ -40,31 +51,41 @@ def main() -> None:
     rejections: list[dict[str, str]] = []
     residue_mappings = {**DEFAULT_RESIDUE_MAPPINGS, **cfg.get("residue_mappings", {})}
     min_length = _parse_optional_min_length(cfg.get("min_length", 40))
+    max_length = _parse_max_length(cfg["max_length"])
     for path in iter_supported_structure_files(source):
         try:
-            samples = parse_structure_file(
+            samples, structural_rejections = parse_structure_file_with_rejections(
                 path,
                 backend=cfg.get("backend", "auto"),
                 min_length=min_length,
-                max_length=int(cfg.get("max_length", 128)),
+                max_length=max_length,
                 chain_id=cfg.get("chain_id"),
                 residue_mappings=residue_mappings,
                 allowed_methods=cfg.get("allowed_methods"),
                 max_xray_resolution_angstrom=_parse_optional_float(cfg.get("max_xray_resolution_angstrom")),
                 max_cryoem_resolution_angstrom=_parse_optional_float(cfg.get("max_cryoem_resolution_angstrom")),
             )
+        except (IndexError, TypeError, AttributeError, AssertionError):
+            raise
         except Exception as exc:
-            rejections.append({"source_file": str(path), "reason": type(exc).__name__, "message": str(exc)})
+            rejections.append({"source_file": str(path), "reason": "parse_error", "message": str(exc)})
             continue
         if not samples:
-            rejections.append(
-                {
-                    "source_file": str(path),
-                    "reason": "NoAcceptedSamples",
-                    "message": "No chains passed structure metadata, length, or residue filters.",
-                }
-            )
+            if structural_rejections:
+                rejections.extend(rejection.to_dict() for rejection in structural_rejections)
+            else:
+                rejections.append(
+                    {
+                        "source_file": str(path),
+                        "reason": "no_accepted_samples",
+                        "message": (
+                            "No chains passed structure metadata, residue, or length filters "
+                            f"(including max_length={max_length})."
+                        ),
+                    }
+                )
             continue
+        rejections.extend(rejection.to_dict() for rejection in structural_rejections)
         for sample in samples:
             rows.append(save_processed_sample(sample, output_samples))
     write_manifest(rows, cfg["manifest_path"])
@@ -76,7 +97,8 @@ def main() -> None:
         summary_path,
         {
             "accepted_samples": len(rows),
-            "rejected_files": len(rejections),
+            "rejected_files": len({rejection["source_file"] for rejection in rejections}),
+            "rejected_records": len(rejections),
             "rejection_counts": counts,
             "rejections": rejections,
             "backend": cfg.get("backend", "auto"),

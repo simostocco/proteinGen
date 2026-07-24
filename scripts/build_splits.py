@@ -7,27 +7,43 @@ import argparse
 from pathlib import Path
 
 from protein_distance_diffusion.config import load_yaml
-from protein_distance_diffusion.data.splitting import build_splits_from_files
+from protein_distance_diffusion.data.splitting import run_split_workflow
 
 
 def main() -> None:
     """Run split construction."""
     parser = argparse.ArgumentParser(description="Assign sequence clusters to train/validation/test splits.")
     parser.add_argument("--config", required=True, type=Path, help="YAML split config.")
+    parser.add_argument("--force", action="store_true", help="Recompute cached MMseqs2 clustering outputs.")
     args = parser.parse_args()
     cfg = load_yaml(args.config)
-    build_splits_from_files(
-        cfg["manifest_path"],
-        cfg["cluster_assignments_path"],
-        cfg["output_dir"],
+    result = run_split_workflow(
+        manifest_path=cfg["manifest_path"],
+        deduplicated_manifest_path=cfg["deduplicated_manifest_path"],
+        deduplication_report_path=cfg["deduplication_report_path"],
+        fasta_path=cfg["fasta_path"],
+        mmseqs_output_prefix=cfg["mmseqs_output_prefix"],
+        mmseqs_tmp_dir=cfg["mmseqs_tmp_dir"],
+        cluster_assignments_path=cfg["cluster_assignments_path"],
+        output_dir=cfg["output_dir"],
+        mmseqs=cfg.get("mmseqs_executable", "mmseqs"),
+        sequence_identity_threshold=float(cfg.get("sequence_identity_threshold", 0.30)),
+        alignment_coverage_threshold=float(cfg.get("alignment_coverage_threshold", 0.80)),
         seed=int(cfg.get("split_seed", 42)),
         fractions=(
             float(cfg.get("train_fraction", 0.8)),
             float(cfg.get("validation_fraction", 0.1)),
             float(cfg.get("test_fraction", 0.1)),
         ),
+        external_group_file=cfg.get("external_group_label_file"),
+        force=args.force,
     )
     print(f"Wrote split files to {cfg['output_dir']}")
+    print(
+        "Retained {retained_count}/{original_count} samples; clusters={cluster_count}; splits={split_sizes}".format(
+            **result
+        )
+    )
 
 
 if __name__ == "__main__":
