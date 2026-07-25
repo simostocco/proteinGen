@@ -282,8 +282,29 @@ MMseqs2, and write leakage-safe train/validation/test manifests:
 python scripts/build_splits.py --config configs/split.yaml
 python scripts/compute_train_statistics.py \
   --train-manifest data/full/splits/train.parquet \
-  --output data/full/processed/normalization.json
+  --output data/full/processed/normalization.json \
+  --workers 2 \
+  --checkpoint-every 5000 \
+  --resume
 ```
+
+Train-only normalization reads only the training manifest. It streams one sample
+`.npz` at a time, selects finite non-negative valid upper-triangular
+off-diagonal distances, and updates a fixed histogram instead of concatenating
+all pairwise distances. This is necessary for the full dataset because hundreds
+of thousands of distance matrices contain several billion valid pairs, which is
+too large to hold as one NumPy array on an 8 GB machine. The default histogram
+uses 0.05 Angstrom bins over 0-2000 Angstrom, which is about 40,000 int64
+counters. The percentile scale is therefore approximate, with error bounded
+approximately by one histogram bin width.
+
+Normalization checkpoints are written next to the output as
+`normalization.state.npz` and `normalization.state.json`. They contain the
+histogram, completed deterministic chunks, rejection diagnostics, manifest
+SHA-256, configuration hash and algorithm version. Resume is enabled by default;
+use `--restart` to discard partial state. If Ctrl-C occurs, the command writes a
+consistent checkpoint, prints the resume command, and does not write the final
+`normalization.json`.
 
 The split assignment keeps connected groups indivisible by MMseqs2 cluster,
 exact sequence hash, PDB entry, and optional external group ID. Groups are
