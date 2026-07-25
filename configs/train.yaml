@@ -8,8 +8,11 @@ device: cuda
 
 # Conservativo per matrici che possono arrivare a circa 500x500.
 batch_size: 1
-batch_matrix_budget: 250000
 num_workers: 2
+gradient_accumulation_steps: 1
+mixed_precision: false
+amp_dtype: float16
+max_optimizer_steps:
 
 epochs: 50
 learning_rate: 0.0001

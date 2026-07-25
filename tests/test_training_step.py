@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 from pathlib import Path
 
@@ -56,6 +57,9 @@ def _tiny_training_config(tmp_path: Path, *, output_name: str = "out") -> dict:
         "device": "cpu",
         "batch_size": 1,
         "epochs": 1,
+        "gradient_accumulation_steps": 1,
+        "mixed_precision": False,
+        "amp_dtype": "float16",
         "diffusion_steps": 4,
         "learning_rate": 1e-3,
         "checkpoint_every_steps": 1,
@@ -139,6 +143,7 @@ def test_keyboard_interrupt_writes_interrupted_checkpoint(tmp_path: Path, monkey
     assert ckpt["next_epoch"] == 0
     assert "optimizer" in ckpt
     assert "rng_state" in ckpt
+    assert "grad_scaler" in ckpt
 
 
 def test_resume_restores_checkpoint_state(tmp_path: Path) -> None:
@@ -169,3 +174,128 @@ def test_tensorboard_logging_when_available(tmp_path: Path) -> None:
     }
     train_from_config(config)
     assert list((tmp_path / "tensorboard-events").glob("events.out.tfevents.*"))
+
+
+def test_training_uses_standard_shuffled_dataloader(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Training uses PyTorch DataLoader batch_size/shuffle rather than a custom batch sampler."""
+    original_loader = trainer_module.DataLoader
+    calls = []
+
+    def recording_loader(*args, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(kwargs)
+        return original_loader(*args, **kwargs)
+
+    monkeypatch.setattr(trainer_module, "DataLoader", recording_loader)
+    train_from_config(_tiny_training_config(tmp_path, output_name="loader"))
+    train_kwargs, validation_kwargs = calls[:2]
+    assert train_kwargs["batch_size"] == 1
+    assert train_kwargs["shuffle"] is True or train_kwargs["sampler"].__class__.__name__ == "_NumpyFreeRandomSampler"
+    assert "batch_sampler" not in train_kwargs
+    assert validation_kwargs["shuffle"] is False
+
+
+def test_no_batch_matrix_budget_references_remain() -> None:
+    """The obsolete matrix-budget sampler/config knob is removed from active source and docs."""
+    root = Path(__file__).resolve().parents[1]
+    checked_paths = [
+        root / "configs" / "train.yaml",
+        root / "configs" / "train_full.yaml",
+        root / "README.md",
+        root / "src" / "protein_distance_diffusion" / "training" / "trainer.py",
+    ]
+    for path in checked_paths:
+        assert "batch_matrix_budget" not in path.read_text()
+    assert not (root / "src" / "protein_distance_diffusion" / "data" / "samplers.py").exists()
+
+
+def test_amp_requested_on_cpu_is_disabled_but_checkpoint_compatible(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """AMP is disabled cleanly on CPU and checkpoints still include the scaler slot."""
+    config = _tiny_training_config(tmp_path, output_name="cpu-amp")
+    config["mixed_precision"] = True
+    ckpt_path = train_from_config(config)
+    captured = capsys.readouterr()
+    assert "Mixed precision requested but disabled" in captured.out
+    ckpt = load_checkpoint(ckpt_path)
+    assert ckpt["grad_scaler"] is None
+
+
+def test_amp_dtype_validation(tmp_path: Path) -> None:
+    """Invalid AMP dtype values fail before training starts."""
+    config = _tiny_training_config(tmp_path, output_name="bad-amp")
+    config["amp_dtype"] = "float32"
+    with pytest.raises(ValueError, match="amp_dtype"):
+        train_from_config(config)
+
+
+def test_gradient_accumulation_steps_once_per_boundary(tmp_path: Path) -> None:
+    """Two microbatches with accumulation=2 produce one optimizer/global step."""
+    config = _tiny_training_config(tmp_path, output_name="accum")
+    config["gradient_accumulation_steps"] = 2
+    ckpt = load_checkpoint(train_from_config(config))
+    assert ckpt["global_step"] == 1
+    assert ckpt["optimizer_step"] == 1
+    assert ckpt["microbatch_in_accumulation"] == 0
+
+
+def test_ema_updates_only_at_accumulation_boundary(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """EMA updates once for two accumulated microbatches."""
+    calls = {"count": 0}
+    original_update = trainer_module.EMA.update
+
+    def recording_update(self, model):  # type: ignore[no-untyped-def]
+        calls["count"] += 1
+        return original_update(self, model)
+
+    monkeypatch.setattr(trainer_module.EMA, "update", recording_update)
+    config = _tiny_training_config(tmp_path, output_name="ema-accum")
+    config["gradient_accumulation_steps"] = 2
+    train_from_config(config)
+    assert calls["count"] == 1
+
+
+def test_amp_unscales_before_gradient_clipping() -> None:
+    """The AMP path unscales gradients before clipping."""
+    source = inspect.getsource(trainer_module.train_from_config)
+    assert source.index("scaler.unscale_(opt)") < source.index("clip_grad_norm_")
+
+
+def test_max_optimizer_steps_exits_cleanly_with_checkpoint(tmp_path: Path) -> None:
+    """Preflight mode stops after the requested optimizer step count and saves last.pt."""
+    config = _tiny_training_config(tmp_path, output_name="preflight")
+    config["epochs"] = 5
+    config["max_optimizer_steps"] = 1
+    ckpt_path = train_from_config(config)
+    ckpt = load_checkpoint(ckpt_path)
+    assert ckpt_path.name == "last.pt"
+    assert ckpt["global_step"] == 1
+    assert Path(tmp_path / "preflight" / "checkpoints" / "latest.pt").exists()
+
+
+def test_nonfinite_loss_stops_without_checkpoint(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Non-finite losses raise a clear diagnostic before checkpointing."""
+    config = _tiny_training_config(tmp_path, output_name="nan")
+
+    def nan_loss(*args, **kwargs):  # type: ignore[no-untyped-def]
+        del args, kwargs
+        return torch.tensor(float("nan"), requires_grad=True)
+
+    monkeypatch.setattr(trainer_module, "masked_upper_triangular_loss", nan_loss)
+    with pytest.raises(FloatingPointError, match="Non-finite training loss"):
+        train_from_config(config)
+    assert not Path(tmp_path / "nan" / "checkpoints" / "last.pt").exists()
+
+
+def test_optional_cuda_amp_smoke(tmp_path: Path) -> None:
+    """Optional CUDA smoke test for AMP; skipped on CPU-only machines."""
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA is not available")
+    config = _tiny_training_config(tmp_path, output_name="cuda-amp")
+    config["device"] = "cuda"
+    config["mixed_precision"] = True
+    config["amp_dtype"] = "float16"
+    config["max_optimizer_steps"] = 1
+    ckpt = load_checkpoint(train_from_config(config))
+    assert ckpt["grad_scaler"] is not None
+    assert ckpt["global_step"] == 1

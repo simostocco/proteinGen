@@ -14,8 +14,15 @@ def main() -> None:
     """Run training."""
     parser = argparse.ArgumentParser(description="Train conditional U-Net DDPM on distance matrices.")
     parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument("--max-optimizer-steps", type=int, default=None)
+    parser.add_argument("--resume-from", type=Path, default=None)
     args = parser.parse_args()
-    ckpt = train_from_config(load_yaml(args.config))
+    config = load_yaml(args.config)
+    if args.max_optimizer_steps is not None:
+        config["max_optimizer_steps"] = args.max_optimizer_steps
+    if args.resume_from is not None:
+        config["resume_from"] = str(args.resume_from)
+    ckpt = train_from_config(config)
     print(f"Wrote checkpoint {ckpt}")
 
 

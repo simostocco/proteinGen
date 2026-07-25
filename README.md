@@ -356,13 +356,28 @@ Normalization is computed after splitting from valid upper-triangular training d
 Sequence clustering reduces homolog leakage, but low-sequence-identity proteins can still share folds. The split code is designed so external CATH or SCOP grouping labels can be merged into the group ID in future experiments.
 
 One variable-size diffusion model is trained jointly on all accepted lengths up
-to `model.max_length: 500`. Length-aware batching is only a padding and memory
-optimization. When `batch_matrix_budget` is set, batches are built so
-`sum_i N_i^2 <= batch_matrix_budget` when possible, every training sample is
-visited once per epoch, and no length bin changes sampling probability. The
-masked epsilon-prediction loss is normalized per protein by its own valid
-upper-triangular pair count before averaging across proteins, so longer chains
-do not dominate solely because their distance matrices contain O(N^2) pairs.
+to `model.max_length: 500`. Training uses a standard shuffled PyTorch
+`DataLoader` with the variable-size collate function, dynamic padding, and
+validity masks; it does not use length buckets, length bins, matrix-budget
+batches, or separate length-specific models. The exact length `N` remains a
+continuous conditioning input. The masked epsilon-prediction loss is normalized
+per protein by its own valid upper-triangular pair count before averaging across
+proteins, so longer chains do not dominate solely because their distance
+matrices contain O(N^2) pairs.
+
+For full-dataset GPU training, use `configs/train_full.yaml`. A short preflight
+can stop after a fixed number of optimizer steps while still using the real
+shuffled full manifest:
+
+```bash
+python scripts/train_diffusion.py --config configs/train_full.yaml --max-optimizer-steps 100
+tensorboard --logdir outputs/full_baseline/tensorboard
+python scripts/train_diffusion.py --config configs/train_full.yaml
+```
+
+Use `--resume-from outputs/full_baseline/checkpoints/last.pt` or set
+`resume_from` in the YAML to resume. Checkpoints are written only after
+optimizer steps, so exact mid-accumulation resume is not supported.
 
 ## Recommended Progression
 

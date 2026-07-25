@@ -5,18 +5,19 @@ from __future__ import annotations
 import json
 import random
 import time
+from collections.abc import Iterator
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import torch
 import yaml
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Sampler
 from tqdm.auto import tqdm
 
 from protein_distance_diffusion.data.collate import collate_distance_maps
 from protein_distance_diffusion.data.dataset import DistanceMapDataset
-from protein_distance_diffusion.data.samplers import LengthBucketBatchSampler, MatrixBudgetBatchSampler
 from protein_distance_diffusion.diffusion.gaussian import GaussianDiffusion, masked_upper_triangular_loss
 from protein_distance_diffusion.diffusion.sampling import sample_ddpm
 from protein_distance_diffusion.diffusion.schedules import cosine_beta_schedule
@@ -24,7 +25,23 @@ from protein_distance_diffusion.models.unet import DistanceUNet
 from protein_distance_diffusion.training.checkpointing import load_checkpoint, save_checkpoint
 from protein_distance_diffusion.training.ema import EMA
 from protein_distance_diffusion.training.logging import JsonlLogger
+from protein_distance_diffusion.utils.hashing import sha256_file
 from protein_distance_diffusion.utils.reproducibility import collect_runtime_versions, seed_everything
+
+
+class _NumpyFreeRandomSampler(Sampler[int]):
+    """Uniform random sampler used only when PyTorch's RandomSampler cannot call Tensor.numpy."""
+
+    def __init__(self, length: int, *, seed: int) -> None:
+        self.length = int(length)
+        self.seed = int(seed)
+
+    def __iter__(self) -> Iterator[int]:
+        generator = torch.Generator().manual_seed(self.seed)
+        yield from torch.randperm(self.length, generator=generator).tolist()
+
+    def __len__(self) -> int:
+        return self.length
 
 
 def _patch_torch_pytree_compatibility() -> None:
@@ -71,6 +88,16 @@ def build_model_from_config(config: dict[str, Any]) -> DistanceUNet:
     return DistanceUNet(**cfg)
 
 
+def _torch_random_sampler_works() -> bool:
+    try:
+        torch.empty(0).numpy()
+    except RuntimeError as exc:
+        if "Numpy is not available" in str(exc):
+            return False
+        raise
+    return True
+
+
 def _summary_writer(log_config: dict[str, Any]):
     if not bool(log_config.get("tensorboard", False)):
         return None
@@ -82,13 +109,14 @@ def _summary_writer(log_config: dict[str, Any]):
     return SummaryWriter(log_dir=str(log_config["tensorboard_dir"]))
 
 
-def _gpu_memory_gib(device: torch.device) -> tuple[float, float]:
+def _gpu_memory_gib(device: torch.device) -> tuple[float, float, float]:
     if device.type != "cuda" or not torch.cuda.is_available():
-        return 0.0, 0.0
+        return 0.0, 0.0, 0.0
     idx = device.index if device.index is not None else torch.cuda.current_device()
     allocated = torch.cuda.memory_allocated(idx) / 1024**3
     reserved = torch.cuda.memory_reserved(idx) / 1024**3
-    return allocated, reserved
+    max_allocated = torch.cuda.max_memory_allocated(idx) / 1024**3
+    return allocated, reserved, max_allocated
 
 
 def _gpu_name(device: torch.device) -> str:
@@ -126,6 +154,7 @@ def _checkpoint_payload(
     model: torch.nn.Module,
     ema: EMA,
     optimizer: torch.optim.Optimizer,
+    scaler: Any,
     epoch: int,
     next_epoch: int,
     global_step: int,
@@ -136,12 +165,19 @@ def _checkpoint_payload(
         "model": model.state_dict(),
         "ema": ema.state_dict(),
         "optimizer": optimizer.state_dict(),
+        "grad_scaler": scaler.state_dict() if scaler is not None else None,
         "epoch": epoch,
         "next_epoch": next_epoch,
         "global_step": global_step,
+        "optimizer_step": global_step,
+        "microbatch_in_accumulation": 0,
         "rng_state": _rng_state(),
         "config": config,
         "normalization": normalization,
+        "normalization_file": str(config.get("normalization_file")),
+        "normalization_file_sha256": (
+            sha256_file(config["normalization_file"]) if config.get("normalization_file") else None
+        ),
         "runtime": collect_runtime_versions().__dict__,
     }
 
@@ -201,6 +237,7 @@ def _restore_training_state(
     model: torch.nn.Module,
     ema: EMA,
     optimizer: torch.optim.Optimizer,
+    scaler: Any,
     device: torch.device,
 ) -> tuple[int, int]:
     if resume_from is None:
@@ -209,8 +246,32 @@ def _restore_training_state(
     model.load_state_dict(checkpoint["model"])
     ema.load_state_dict(checkpoint["ema"])
     optimizer.load_state_dict(checkpoint["optimizer"])
+    if scaler is not None and checkpoint.get("grad_scaler") is not None:
+        scaler.load_state_dict(checkpoint["grad_scaler"])
     _restore_rng_state(checkpoint.get("rng_state"))
     return int(checkpoint.get("next_epoch", int(checkpoint["epoch"]) + 1)), int(checkpoint["global_step"])
+
+
+def _amp_dtype(name: str) -> torch.dtype:
+    if name == "float16":
+        return torch.float16
+    if name == "bfloat16":
+        return torch.bfloat16
+    raise ValueError("amp_dtype must be 'float16' or 'bfloat16'")
+
+
+def _make_grad_scaler(*, enabled: bool) -> Any:
+    if not enabled:
+        return None
+    if hasattr(torch.amp, "GradScaler"):
+        return torch.amp.GradScaler("cuda", enabled=True)
+    return torch.cuda.amp.GradScaler(enabled=True)
+
+
+def _autocast_context(*, enabled: bool, dtype: torch.dtype):
+    if not enabled:
+        return nullcontext()
+    return torch.amp.autocast("cuda", dtype=dtype)
 
 
 def train_from_config(config: dict[str, Any]) -> Path:
@@ -229,28 +290,17 @@ def train_from_config(config: dict[str, Any]) -> Path:
     train_ds = DistanceMapDataset(config["train_manifest"], normalization)
     val_ds = DistanceMapDataset(config["validation_manifest"], normalization)
     downsample_stages = len(config["model"].get("channel_multipliers", [1, 2, 4, 8])) - 1
-    train_lengths = train_ds.frame["length"].astype(int).tolist()
-    if config.get("batch_matrix_budget") is not None:
-        train_sampler = MatrixBudgetBatchSampler(
-            train_lengths,
-            batch_matrix_budget=int(config["batch_matrix_budget"]),
-            shuffle=bool(config.get("shuffle", True)),
-            seed=seed,
-        )
+    train_loader_kwargs: dict[str, Any] = {
+        "batch_size": int(config.get("batch_size", 2)),
+        "num_workers": int(config.get("num_workers", 0)),
+        "collate_fn": lambda x: collate_distance_maps(x, downsample_stages=downsample_stages),
+    }
+    if _torch_random_sampler_works():
+        train_loader_kwargs["shuffle"] = True
     else:
-        train_sampler = LengthBucketBatchSampler(
-            train_lengths,
-            batch_size=int(config.get("batch_size", 2)),
-            boundaries=list(config.get("length_boundaries", [64, 96, 128])),
-            shuffle=bool(config.get("shuffle", True)),
-            seed=seed,
-        )
-    train_loader = DataLoader(
-        train_ds,
-        batch_sampler=train_sampler,
-        num_workers=int(config.get("num_workers", 0)),
-        collate_fn=lambda x: collate_distance_maps(x, downsample_stages=downsample_stages),
-    )
+        train_loader_kwargs["shuffle"] = False
+        train_loader_kwargs["sampler"] = _NumpyFreeRandomSampler(len(train_ds), seed=seed)
+    train_loader = DataLoader(train_ds, **train_loader_kwargs)
     val_loader = DataLoader(
         val_ds,
         batch_size=int(config.get("batch_size", 2)),
@@ -263,6 +313,12 @@ def train_from_config(config: dict[str, Any]) -> Path:
     _patch_torch_pytree_compatibility()
     opt = torch.optim.AdamW(model.parameters(), lr=float(config.get("learning_rate", 1e-4)))
     ema = EMA(model, decay=float(config.get("ema_decay", 0.999)))
+    mixed_precision_requested = bool(config.get("mixed_precision", False))
+    amp_dtype = _amp_dtype(str(config.get("amp_dtype", "float16")))
+    amp_enabled = device.type == "cuda" and mixed_precision_requested
+    if mixed_precision_requested and not amp_enabled:
+        print("Mixed precision requested but disabled because training device is not CUDA.")
+    scaler = _make_grad_scaler(enabled=amp_enabled and amp_dtype is torch.float16)
     out = Path(config.get("output_dir", "outputs/experiment"))
     logger = JsonlLogger(out / "logs" / "train.jsonl")
     log_config = dict(config.get("logging", {}))
@@ -279,6 +335,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
         model=model,
         ema=ema,
         optimizer=opt,
+        scaler=scaler,
         device=device,
     )
     checkpoint_dir = out / "checkpoints"
@@ -288,6 +345,11 @@ def train_from_config(config: dict[str, Any]) -> Path:
     epochs = int(config.get("epochs", 1))
     best_validation = float("inf")
     checkpoint_every_steps = int(config.get("checkpoint_every_steps", 0))
+    gradient_accumulation_steps = int(config.get("gradient_accumulation_steps", 1))
+    if gradient_accumulation_steps <= 0:
+        raise ValueError("gradient_accumulation_steps must be positive")
+    max_optimizer_steps = config.get("max_optimizer_steps")
+    max_optimizer_steps = int(max_optimizer_steps) if max_optimizer_steps is not None else None
     log_every_steps = max(1, int(log_config["log_every_steps"]))
     validate_every_epochs = max(1, int(log_config["validation_every_epochs"]))
     image_every_epochs = max(1, int(log_config["image_every_epochs"]))
@@ -299,6 +361,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
             epoch_loss = 0.0
             epoch_samples = 0
             running_loss = 0.0
+            microbatch_in_accumulation = 0
+            opt.zero_grad(set_to_none=True)
             epoch_bar = tqdm(
                 train_loader,
                 desc=f"epoch {epoch + 1}/{epochs}",
@@ -306,6 +370,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 dynamic_ncols=True,
                 mininterval=0.5,
             )
+            grad_norm_value = float("nan")
             for batch_index, batch in enumerate(epoch_bar, start=1):
                 start = time.time()
                 last_batch = batch
@@ -314,15 +379,21 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 lengths = batch["lengths"].to(device)
                 sep = batch["sequence_separation"].to(device)
                 t = torch.randint(0, diffusion.timesteps, (clean.shape[0],), device=device)
-                noisy, eps = diffusion.q_sample(clean, t, pair_mask)
-                eps_hat = model(noisy, t, lengths, sep, pair_mask)
-                loss = masked_upper_triangular_loss(eps, eps_hat, pair_mask)
-                opt.zero_grad(set_to_none=True)
-                loss.backward()
-                grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip", 1.0)))
-                opt.step()
-                ema.update(model)
-                global_step += 1
+                with _autocast_context(enabled=amp_enabled, dtype=amp_dtype):
+                    noisy, eps = diffusion.q_sample(clean, t, pair_mask)
+                    eps_hat = model(noisy, t, lengths, sep, pair_mask)
+                    loss = masked_upper_triangular_loss(eps.float(), eps_hat.float(), pair_mask)
+                if not torch.isfinite(loss):
+                    raise FloatingPointError(
+                        f"Non-finite training loss at epoch={epoch} microbatch={batch_index} "
+                        f"optimizer_step={global_step}: {float(loss.detach().cpu())}"
+                    )
+                microbatch_in_accumulation += 1
+                loss_for_backward = loss / gradient_accumulation_steps
+                if scaler is not None:
+                    scaler.scale(loss_for_backward).backward()
+                else:
+                    loss_for_backward.backward()
                 batch_size = int(clean.shape[0])
                 loss_value = float(loss.detach().cpu())
                 running_loss += (loss_value - running_loss) / batch_index
@@ -330,49 +401,93 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 epoch_samples += batch_size
                 elapsed = time.time() - start
                 samples_per_second = batch_size / max(elapsed, 1e-8)
-                allocated_gib, reserved_gib = _gpu_memory_gib(device)
+                allocated_gib, reserved_gib, max_allocated_gib = _gpu_memory_gib(device)
                 lr = float(opt.param_groups[0]["lr"])
                 min_length = int(lengths.min().detach().cpu())
                 max_length = int(lengths.max().detach().cpu())
+                should_step = microbatch_in_accumulation == gradient_accumulation_steps or batch_index == len(
+                    train_loader
+                )
+                if should_step:
+                    if scaler is not None:
+                        scaler.unscale_(opt)
+                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip", 1.0)))
+                    grad_norm_value = float(
+                        grad_norm.detach().cpu() if isinstance(grad_norm, torch.Tensor) else grad_norm
+                    )
+                    if not np.isfinite(grad_norm_value):
+                        raise FloatingPointError(
+                            f"Non-finite gradient norm at epoch={epoch} microbatch={batch_index} "
+                            f"optimizer_step={global_step}"
+                        )
+                    if scaler is not None:
+                        scaler.step(opt)
+                        scaler.update()
+                    else:
+                        opt.step()
+                    opt.zero_grad(set_to_none=True)
+                    ema.update(model)
+                    global_step += 1
+                    microbatch_in_accumulation = 0
                 metrics = {
                     "epoch": epoch,
+                    "microbatch": batch_index,
                     "global_step": global_step,
+                    "optimizer_step": global_step,
                     "training_loss": loss_value,
                     "running_loss": running_loss,
                     "learning_rate": lr,
-                    "gradient_norm": float(grad_norm),
+                    "gradient_norm": grad_norm_value,
                     "average_N": float(lengths.float().mean().cpu()),
                     "min_length": min_length,
                     "max_length": max_length,
                     "samples_per_second": samples_per_second,
                     "gpu_allocated_gib": allocated_gib,
                     "gpu_reserved_gib": reserved_gib,
+                    "gpu_max_allocated_gib": max_allocated_gib,
+                    "amp_enabled": amp_enabled,
+                    "amp_dtype": str(config.get("amp_dtype", "float16")),
+                    "amp_scale": float(scaler.get_scale()) if scaler is not None else 1.0,
                     "wall_clock_seconds": elapsed,
                 }
                 logger.log(metrics)
-                if writer is not None and global_step % log_every_steps == 0:
+                if writer is not None and should_step and global_step % log_every_steps == 0:
+                    writer.add_scalar("train/loss", loss_value, global_step)
                     writer.add_scalar("train/loss_step", loss_value, global_step)
                     writer.add_scalar("optimizer/learning_rate", lr, global_step)
-                    writer.add_scalar("optimizer/gradient_norm", float(grad_norm), global_step)
+                    writer.add_scalar("learning_rate", lr, global_step)
+                    writer.add_scalar("optimizer/gradient_norm", grad_norm_value, global_step)
+                    writer.add_scalar("gradient_norm", grad_norm_value, global_step)
                     writer.add_scalar("performance/samples_per_second", samples_per_second, global_step)
                     writer.add_scalar("gpu/allocated_gib", allocated_gib, global_step)
                     writer.add_scalar("gpu/reserved_gib", reserved_gib, global_step)
+                    writer.add_scalar("gpu/max_allocated_gib", max_allocated_gib, global_step)
+                    writer.add_scalar("epoch", epoch, global_step)
+                    writer.add_scalar("optimizer_step", global_step, global_step)
+                    if scaler is not None:
+                        writer.add_scalar("amp/scale", float(scaler.get_scale()), global_step)
                     writer.add_scalar("data/min_length", min_length, global_step)
                     writer.add_scalar("data/max_length", max_length, global_step)
                 epoch_bar.set_postfix(
                     {
+                        "epoch": epoch + 1,
+                        "micro": batch_index,
                         "step": global_step,
                         "loss": f"{loss_value:.3e}",
-                        "avg": f"{running_loss:.3e}",
                         "lr": f"{lr:.2e}",
-                        "gpu": f"{allocated_gib:.2f}GiB",
+                        "grad": f"{grad_norm_value:.2e}" if np.isfinite(grad_norm_value) else "n/a",
+                        "alloc": f"{allocated_gib:.2f}GiB",
+                        "res": f"{reserved_gib:.2f}GiB",
+                        "max": f"{max_allocated_gib:.2f}GiB",
+                        "samples/s": f"{samples_per_second:.2f}",
                     }
                 )
-                if checkpoint_every_steps > 0 and global_step % checkpoint_every_steps == 0:
+                if should_step and checkpoint_every_steps > 0 and global_step % checkpoint_every_steps == 0:
                     payload = _checkpoint_payload(
                         model=model,
                         ema=ema,
                         optimizer=opt,
+                        scaler=scaler,
                         epoch=epoch,
                         next_epoch=epoch,
                         global_step=global_step,
@@ -382,6 +497,26 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     save_checkpoint(checkpoint_dir / f"step_{global_step:08d}.pt", payload)
                     save_checkpoint(last, payload)
                     save_checkpoint(latest, payload)
+                    print(
+                        "Checkpoint saved. Resume with: "
+                        f"python scripts/train_diffusion.py --config <config> --resume-from {last}"
+                    )
+                if should_step and max_optimizer_steps is not None and global_step >= max_optimizer_steps:
+                    payload = _checkpoint_payload(
+                        model=model,
+                        ema=ema,
+                        optimizer=opt,
+                        scaler=scaler,
+                        epoch=epoch,
+                        next_epoch=epoch,
+                        global_step=global_step,
+                        config=config,
+                        normalization=normalization,
+                    )
+                    save_checkpoint(last, payload)
+                    save_checkpoint(latest, payload)
+                    print(f"Reached max_optimizer_steps={max_optimizer_steps}. Resume from {last}")
+                    return last
             mean_epoch_loss = epoch_loss / max(epoch_samples, 1)
             logger.log({"epoch": epoch, "global_step": global_step, "training_epoch_loss": mean_epoch_loss})
             if writer is not None:
@@ -396,6 +531,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     seed=seed,
                     progress_bar=progress_enabled,
                     epoch=epoch,
+                    amp_enabled=amp_enabled,
+                    amp_dtype=amp_dtype,
                 )
                 logger.log({"epoch": epoch, "global_step": global_step, "validation_loss": val_loss})
                 if writer is not None:
@@ -406,6 +543,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         model=model,
                         ema=ema,
                         optimizer=opt,
+                        scaler=scaler,
                         epoch=epoch,
                         next_epoch=epoch + 1,
                         global_step=global_step,
@@ -426,6 +564,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 model=model,
                 ema=ema,
                 optimizer=opt,
+                scaler=scaler,
                 epoch=epoch,
                 next_epoch=epoch + 1,
                 global_step=global_step,
@@ -440,6 +579,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
             model=model,
             ema=ema,
             optimizer=opt,
+            scaler=scaler,
             epoch=max(start_epoch, min(epochs - 1, locals().get("epoch", start_epoch))),
             next_epoch=max(start_epoch, min(epochs - 1, locals().get("epoch", start_epoch))),
             global_step=global_step,
@@ -468,6 +608,8 @@ def validate_loss(
     seed: int,
     progress_bar: bool = False,
     epoch: int | None = None,
+    amp_enabled: bool = False,
+    amp_dtype: torch.dtype = torch.float16,
 ) -> float:
     """Compute deterministic validation diffusion loss.
 
@@ -492,9 +634,12 @@ def validate_loss(
         lengths = batch["lengths"].to(device)
         sep = batch["sequence_separation"].to(device)
         t = torch.randint(0, diffusion.timesteps, (clean.shape[0],), device=device, generator=gen)
-        noisy, eps = diffusion.q_sample(clean, t, pair_mask, generator=gen)
-        eps_hat = model(noisy, t, lengths, sep, pair_mask)
-        loss = masked_upper_triangular_loss(eps, eps_hat, pair_mask).cpu()
+        with _autocast_context(enabled=amp_enabled, dtype=amp_dtype):
+            noisy, eps = diffusion.q_sample(clean, t, pair_mask, generator=gen)
+            eps_hat = model(noisy, t, lengths, sep, pair_mask)
+            loss = masked_upper_triangular_loss(eps.float(), eps_hat.float(), pair_mask).cpu()
+        if not torch.isfinite(loss):
+            raise FloatingPointError("Non-finite validation loss")
         losses.append(loss)
         iterator.set_postfix({"loss": f"{float(loss):.3e}"})
     return float(torch.stack(losses).mean()) if losses else float("nan")
