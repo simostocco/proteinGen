@@ -1,17 +1,31 @@
-# Sequence-cluster split configuration.
-manifest_path: data/pilot/processed/manifest.parquet
-deduplicated_manifest_path: data/pilot/processed/manifest_deduplicated.parquet
-deduplication_report_path: data/pilot/processed/deduplication_report.json
-fasta_path: data/pilot/processed/retained_sequences.fasta
-mmseqs_output_prefix: data/pilot/processed/mmseqs_clusters
-mmseqs_tmp_dir: data/pilot/processed/mmseqs_tmp
-cluster_assignments_path: data/pilot/processed/mmseqs_clusters.tsv
-output_dir: data/pilot/splits
+# Full sequence-cluster split configuration.
+
+manifest_path: data/full/processed/manifest.parquet
+deduplicated_manifest_path: data/full/processed/manifest_deduplicated.parquet
+deduplication_report_path: data/full/processed/deduplication_report.json
+fasta_path: data/full/processed/retained_sequences.fasta
+
+mmseqs_output_prefix: data/full/processed/mmseqs_clusters
+mmseqs_tmp_dir: data/full/processed/mmseqs_tmp
+cluster_assignments_path: data/full/processed/mmseqs_clusters.tsv
+
+output_dir: data/full/splits
+state_db_path: data/full/processed/split_workflow_state.sqlite
+
 mmseqs_executable: mmseqs
+mmseqs_threads: 2
+mmseqs_split_memory_limit: "4G"
+mmseqs_cov_mode: 0
+mmseqs_remove_tmp_files: false
+
 sequence_identity_threshold: 0.30
 alignment_coverage_threshold: 0.80
+minimum_sequence_length: 20
+
 split_seed: 42
 train_fraction: 0.80
 validation_fraction: 0.10
 test_fraction: 0.10
-external_group_label_file:
+
+checkpoint_every: 10000
+external_group_label_file: null

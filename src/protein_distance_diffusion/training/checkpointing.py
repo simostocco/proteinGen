@@ -9,7 +9,7 @@ import torch
 
 
 def save_checkpoint(path: str | Path, payload: dict[str, Any]) -> None:
-    """Save a PyTorch checkpoint.
+    """Atomically save a PyTorch checkpoint.
 
     Args:
         path: Destination `.pt` file.
@@ -20,7 +20,9 @@ def save_checkpoint(path: str | Path, payload: dict[str, Any]) -> None:
     """
     dst = Path(path)
     dst.parent.mkdir(parents=True, exist_ok=True)
-    torch.save(payload, dst)
+    tmp = dst.with_name(f".{dst.name}.tmp")
+    torch.save(payload, tmp)
+    tmp.replace(dst)
 
 
 def load_checkpoint(path: str | Path, *, map_location: str | torch.device = "cpu") -> dict[str, Any]:

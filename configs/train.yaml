@@ -1,16 +1,24 @@
-train_manifest: data/splits/train.parquet
-validation_manifest: data/splits/validation.parquet
-normalization_file: data/processed/normalization.json
-output_dir: outputs/experiment
+train_manifest: data/pilot/splits/train.parquet
+validation_manifest: data/pilot/splits/validation.parquet
+normalization_file: data/pilot/processed/normalization.json
+output_dir: outputs/pilot_baseline
+
 seed: 42
-device: cpu
-batch_size: 2
-num_workers: 0
-epochs: 1
+device: cuda
+
+# Conservativo per matrici che possono arrivare a circa 500x500.
+batch_size: 1
+batch_matrix_budget: 250000
+num_workers: 2
+
+epochs: 50
 learning_rate: 0.0001
 grad_clip: 1.0
 ema_decay: 0.999
-diffusion_steps: 100
+
+# Più significativo del precedente baseline da 100 step.
+diffusion_steps: 500
+
 model:
   input_channels: 3
   output_channels: 1
@@ -23,8 +31,17 @@ model:
   use_bottleneck_attention: true
   time_embedding_dim: 256
   length_embedding_dim: 256
-  max_length: 128
-validation_sample_lengths: [48, 64, 96, 128]
-samples_per_length: 16
-checkpoint_every_steps: 1000
+  max_length: 500
 
+validation_sample_lengths: [48, 96, 192, 320]
+samples_per_length: 2
+checkpoint_every_steps: 500
+resume_from:
+
+logging:
+  progress_bar: true
+  tensorboard: true
+  tensorboard_dir: outputs/pilot_baseline/tensorboard
+  log_every_steps: 10
+  validation_every_epochs: 1
+  image_every_epochs: 5

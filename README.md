@@ -140,6 +140,95 @@ Preprocess:
 python scripts/preprocess_pdb.py --config configs/preprocess_pilot.yaml
 ```
 
+## Full Filtered PDB Dataset
+
+The full workflow uses the same reproducible RCSB filters as the pilot:
+experimental structures, protein polymer entities, X-ray diffraction or electron
+microscopy, and `entity_poly.rcsb_sample_sequence_length <= 500`. Use an
+inclusive release-date cutoff to make later reruns independent of newly released
+PDB entries.
+
+Directory layout:
+
+```text
+data/full/
+  pdb_ids.txt
+  raw/
+    mmcif/
+    download_manifest.csv
+  processed/
+    samples/
+    manifest.parquet
+    preprocess_summary.json
+```
+
+Count matching polymer entities without retrieving IDs:
+
+```bash
+python scripts/query_rcsb.py \
+  --output data/full/rcsb_count.txt \
+  --count-only \
+  --release-date-cutoff 2026-07-24
+```
+
+Retrieve every matching polymer entity with resumable pagination, then write
+unique PDB entry IDs:
+
+```bash
+python scripts/query_rcsb.py \
+  --output data/full/pdb_ids.txt \
+  --all-matches \
+  --page-size 10000 \
+  --release-date-cutoff 2026-07-24
+```
+
+The all-match query shows a tqdm progress bar and saves resumable state after
+each successful page at `data/full/pdb_ids.txt.query_state.json`. Resume is
+enabled by default; use `--restart` to discard the saved state and begin again.
+After Ctrl-C, rerun the same command to continue, or be explicit:
+
+```bash
+python scripts/query_rcsb.py \
+  --output data/full/pdb_ids.txt \
+  --all-matches \
+  --page-size 10000 \
+  --resume \
+  --release-date-cutoff 2026-07-24
+```
+
+Download all selected entries with resumable, checksummed mmCIF downloads:
+
+```bash
+python scripts/download_pdb.py \
+  --ids-file data/full/pdb_ids.txt \
+  --output-dir data/full/raw/mmcif \
+  --manifest data/full/raw/download_manifest.csv \
+  --workers 4 \
+  --retries 3 \
+  --backoff-seconds 1.0
+```
+
+Preprocess the full filtered dataset:
+
+```bash
+python scripts/preprocess_pdb.py \
+  --config configs/preprocess_full.yaml \
+  --workers 8 \
+  --resume \
+  --checkpoint-every 1000
+```
+
+Preprocessing is resumable through a SQLite state database at
+`data/full/processed/preprocess_state.sqlite`. The main process is the only
+SQLite writer; worker processes parse structures and atomically write sample
+`.npz` files. Partial snapshots are written periodically as
+`data/full/processed/manifest.partial.parquet` and
+`data/full/processed/preprocess_summary.partial.json`. Use `--restart` to
+discard prior processing state, and `--retry-failures` to retry technical
+failures while still skipping completed files and deterministic biological
+rejections. Ctrl-C writes an incremental summary and prints the exact resume
+command.
+
 The default preprocessing config uses `min_length: null`, meaning no lower length
 constraint, and keeps `max_length: 500`. Set `min_length` to a positive integer to
 enable a lower bound.
@@ -167,34 +256,92 @@ python scripts/summarize_dataset.py \
   --output-dir reports/pilot_dataset
 ```
 
-Cluster retained sequences with MMseqs2 or provide a compatible cluster TSV,
-then split:
+For the full dataset, summarization separates manifest-only statistics from
+distance/contact statistics that require reading `.npz` sample files. The
+distance phase is resumable and stores compact per-sample aggregates in
+`reports/full/dataset_summary_state.sqlite`; it does not store full distance
+matrices or all pairwise distances. Partial summaries are written atomically as
+`reports/full/dataset_summary.partial.json`.
+
+```bash
+python scripts/summarize_dataset.py \
+  --manifest data/full/processed/manifest.parquet \
+  --output-dir reports/full \
+  --workers 2 \
+  --resume \
+  --checkpoint-every 10000
+```
+
+Use `--restart` to discard prior summary state. Ctrl-C preserves completed
+sample aggregates, writes a partial summary, and prints the exact resume command.
+
+Build exact-sequence deduplicated manifests, cluster retained sequences with
+MMseqs2, and write leakage-safe train/validation/test manifests:
 
 ```bash
 python scripts/build_splits.py --config configs/split.yaml
 python scripts/compute_train_statistics.py \
-  --train-manifest data/splits/train.parquet \
-  --output data/processed/normalization.json
+  --train-manifest data/full/splits/train.parquet \
+  --output data/full/processed/normalization.json
 ```
+
+The split assignment keeps connected groups indivisible by MMseqs2 cluster,
+exact sequence hash, PDB entry, and optional external group ID. Groups are
+assigned by minimizing deviation from the target total sample counts
+80/10/10. Length and experimental-method distributions are reported after the
+split for auditability, but they are not used as stratification variables.
+`configs/split.yaml` applies `minimum_sequence_length: 20` before exact
+deduplication and FASTA generation. Existing MMseqs2 cluster output is reused
+when valid; `--force` rebuilds it, and new runs write a cache metadata sidecar
+that records the filtered FASTA checksum and exact MMseqs2 command.
 
 Train and sample:
 
 ```bash
 python scripts/train_diffusion.py --config configs/train.yaml
+tensorboard --logdir outputs/pilot_baseline/tensorboard
 python scripts/sample_distance_maps.py \
-  --checkpoint outputs/experiment/checkpoints/latest.pt \
+  --checkpoint outputs/pilot_baseline/checkpoints/best_validation.pt \
   --length 96 \
   --num-samples 16 \
   --output-dir outputs/samples/N96
 ```
 
+Training writes JSONL logs plus TensorBoard scalars for loss, validation loss,
+optimizer state, throughput, GPU memory and batch length ranges. Progress bars
+are controlled by `logging.progress_bar`; TensorBoard is controlled by
+`logging.tensorboard` and `logging.tensorboard_dir`. If training is interrupted
+with Ctrl-C, an atomic checkpoint is written to
+`outputs/pilot_baseline/checkpoints/interrupted.pt` and can be resumed by setting:
+
+```yaml
+resume_from: outputs/pilot_baseline/checkpoints/interrupted.pt
+```
+
+The trainer maintains `last.pt`, `best_validation.pt`, compatibility
+`latest.pt`, and numbered `step_*.pt` checkpoints. Launch and resume commands:
+
+```bash
+python scripts/train_diffusion.py --config configs/train.yaml
+python scripts/train_diffusion.py --config configs/train.yaml
+```
+
 ## Preventing Data Leakage
 
-Random PDB-ID splitting is insufficient because homologous proteins, duplicate chains, and related structures can appear under different entries. This code hashes exact sequences and keeps one deterministic representative by default. Retained sequences are clustered with MMseqs2, then whole clusters are assigned to train, validation, or test. Hard assertions reject cluster, exact-sequence, sample-ID, and retained PDB-chain overlap across splits.
+Random PDB-ID splitting is insufficient because homologous proteins, duplicate chains, and related structures can appear under different entries. This code hashes exact sequences and keeps one deterministic representative by default. Retained sequences are clustered with MMseqs2, then connected components from cluster ID, exact sequence hash, PDB entry, and optional external group labels are assigned whole to train, validation, or test. Hard assertions reject cluster, exact-sequence, sample-ID, PDB-entry, and external-label overlap across splits.
 
 Normalization is computed after splitting from valid upper-triangular training distances only. Validation and test files are not read by the statistics command.
 
 Sequence clustering reduces homolog leakage, but low-sequence-identity proteins can still share folds. The split code is designed so external CATH or SCOP grouping labels can be merged into the group ID in future experiments.
+
+One variable-size diffusion model is trained jointly on all accepted lengths up
+to `model.max_length: 500`. Length-aware batching is only a padding and memory
+optimization. When `batch_matrix_budget` is set, batches are built so
+`sum_i N_i^2 <= batch_matrix_budget` when possible, every training sample is
+visited once per epoch, and no length bin changes sampling probability. The
+masked epsilon-prediction loss is normalized per protein by its own valid
+upper-triangular pair count before averaging across proteins, so longer chains
+do not dominate solely because their distance matrices contain O(N^2) pairs.
 
 ## Recommended Progression
 
@@ -232,7 +379,7 @@ as `O(N^2)`, and padded batches are sized by the largest sample in the batch.
 - `data/processed/normalization.json`: train-only normalization.
 - `reports/dataset/`: summary JSON and plots.
 - `outputs/dataset_samples/`: sample visualization PNGs.
-- `outputs/experiment/`: logs and checkpoints.
+- `outputs/pilot_baseline/`: logs, TensorBoard events and checkpoints.
 - `outputs/samples/`: generated distance matrices and heatmaps.
 
 ## Validation

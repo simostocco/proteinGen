@@ -15,6 +15,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Assign sequence clusters to train/validation/test splits.")
     parser.add_argument("--config", required=True, type=Path, help="YAML split config.")
     parser.add_argument("--force", action="store_true", help="Recompute cached MMseqs2 clustering outputs.")
+    parser.add_argument("--dry-run", action="store_true", help="Report planned full workflow without writing outputs.")
     args = parser.parse_args()
     cfg = load_yaml(args.config)
     result = run_split_workflow(
@@ -29,6 +30,16 @@ def main() -> None:
         mmseqs=cfg.get("mmseqs_executable", "mmseqs"),
         sequence_identity_threshold=float(cfg.get("sequence_identity_threshold", 0.30)),
         alignment_coverage_threshold=float(cfg.get("alignment_coverage_threshold", 0.80)),
+        mmseqs_threads=int(cfg["mmseqs_threads"]) if cfg.get("mmseqs_threads") is not None else None,
+        mmseqs_cov_mode=int(cfg.get("mmseqs_cov_mode", 0)),
+        mmseqs_split_memory_limit=cfg.get("mmseqs_split_memory_limit"),
+        mmseqs_remove_tmp_files=bool(cfg.get("mmseqs_remove_tmp_files", False)),
+        mmseqs_log_path=Path(cfg["output_dir"]) / "mmseqs.log",
+        state_db_path=cfg.get("state_db_path"),
+        checkpoint_every=int(cfg["checkpoint_every"]) if cfg.get("checkpoint_every") is not None else None,
+        minimum_sequence_length=(
+            int(cfg["minimum_sequence_length"]) if cfg.get("minimum_sequence_length") is not None else None
+        ),
         seed=int(cfg.get("split_seed", 42)),
         fractions=(
             float(cfg.get("train_fraction", 0.8)),
@@ -37,7 +48,11 @@ def main() -> None:
         ),
         external_group_file=cfg.get("external_group_label_file"),
         force=args.force,
+        dry_run=args.dry_run,
     )
+    if args.dry_run:
+        print(result)
+        return
     print(f"Wrote split files to {cfg['output_dir']}")
     print(
         "Retained {retained_count}/{original_count} samples; clusters={cluster_count}; splits={split_sizes}".format(

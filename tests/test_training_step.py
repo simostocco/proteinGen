@@ -7,8 +7,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 import torch
 
+import protein_distance_diffusion.training.trainer as trainer_module
 from protein_distance_diffusion.data.collate import make_pair_mask, make_sequence_separation
 from protein_distance_diffusion.data.preprocess import ProteinSample, save_processed_sample
 from protein_distance_diffusion.data.statistics import write_normalization
@@ -40,23 +42,30 @@ def _write_split(tmp_path: Path, name: str, sample_ids: list[str]) -> Path:
     return path
 
 
-def test_cpu_training_checkpoint_and_reproducible_sampling(tmp_path: Path) -> None:
-    """A tiny CPU run trains, validates, checkpoints, reloads, and preserves metadata."""
+def _tiny_training_config(tmp_path: Path, *, output_name: str = "out") -> dict:
     train_manifest = _write_split(tmp_path, "train", ["trn1", "trn2"])
     val_manifest = _write_split(tmp_path, "validation", ["val1"])
     norm = tmp_path / "normalization.json"
     write_normalization(train_manifest, norm)
-    config = {
+    return {
         "train_manifest": str(train_manifest),
         "validation_manifest": str(val_manifest),
         "normalization_file": str(norm),
-        "output_dir": str(tmp_path / "out"),
+        "output_dir": str(tmp_path / output_name),
         "seed": 123,
         "device": "cpu",
         "batch_size": 1,
         "epochs": 1,
         "diffusion_steps": 4,
         "learning_rate": 1e-3,
+        "checkpoint_every_steps": 1,
+        "logging": {
+            "progress_bar": False,
+            "tensorboard": False,
+            "log_every_steps": 1,
+            "validation_every_epochs": 1,
+            "image_every_epochs": 99,
+        },
         "model": {
             "base_channels": 4,
             "channel_multipliers": [1, 2],
@@ -67,12 +76,23 @@ def test_cpu_training_checkpoint_and_reproducible_sampling(tmp_path: Path) -> No
             "max_length": 16,
         },
     }
+
+
+def test_cpu_training_checkpoint_and_reproducible_sampling(tmp_path: Path) -> None:
+    """A tiny CPU run trains, validates, checkpoints, reloads, and preserves metadata."""
+    config = _tiny_training_config(tmp_path)
     ckpt_path = train_from_config(config)
     ckpt = load_checkpoint(ckpt_path)
     assert ckpt["global_step"] == 2
+    assert ckpt["next_epoch"] == 1
+    assert "rng_state" in ckpt
     assert ckpt["normalization"]["mode"] == "scale"
     assert Path(tmp_path / "out" / "logs" / "train.jsonl").exists()
-    assert json.loads(Path(norm).read_text())["scale"] > 0
+    assert Path(tmp_path / "out" / "checkpoints" / "last.pt").exists()
+    assert Path(tmp_path / "out" / "checkpoints" / "latest.pt").exists()
+    assert Path(tmp_path / "out" / "checkpoints" / "best_validation.pt").exists()
+    assert Path(tmp_path / "out" / "checkpoints" / "step_00000001.pt").exists()
+    assert json.loads(Path(config["normalization_file"]).read_text())["scale"] > 0
     assert isinstance(ckpt["model"], dict)
     model_cfg = dict(config["model"])
     model_cfg["channel_multipliers"] = tuple(model_cfg["channel_multipliers"])
@@ -101,3 +121,51 @@ def test_cpu_training_checkpoint_and_reproducible_sampling(tmp_path: Path) -> No
         generator=torch.Generator().manual_seed(9),
     )
     assert torch.allclose(sample_a, sample_b)
+
+
+def test_keyboard_interrupt_writes_interrupted_checkpoint(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A KeyboardInterrupt produces a resumable interrupted checkpoint."""
+    config = _tiny_training_config(tmp_path, output_name="interrupted")
+
+    def interrupt_loss(*args, **kwargs):  # type: ignore[no-untyped-def]
+        del args, kwargs
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(trainer_module, "masked_upper_triangular_loss", interrupt_loss)
+    ckpt_path = train_from_config(config)
+    assert ckpt_path.name == "interrupted.pt"
+    ckpt = load_checkpoint(ckpt_path)
+    assert ckpt["global_step"] == 0
+    assert ckpt["next_epoch"] == 0
+    assert "optimizer" in ckpt
+    assert "rng_state" in ckpt
+
+
+def test_resume_restores_checkpoint_state(tmp_path: Path) -> None:
+    """Resuming continues from the saved epoch and global step."""
+    config = _tiny_training_config(tmp_path, output_name="resume")
+    first_ckpt = train_from_config(config)
+    resumed = dict(config)
+    resumed["epochs"] = 2
+    resumed["resume_from"] = str(first_ckpt)
+    second_ckpt = train_from_config(resumed)
+    ckpt = load_checkpoint(second_ckpt)
+    assert ckpt["epoch"] == 1
+    assert ckpt["next_epoch"] == 2
+    assert ckpt["global_step"] == 4
+
+
+def test_tensorboard_logging_when_available(tmp_path: Path) -> None:
+    """TensorBoard event files are written when SummaryWriter is enabled."""
+    pytest.importorskip("tensorboard")
+    config = _tiny_training_config(tmp_path, output_name="tensorboard")
+    config["logging"] = {
+        "progress_bar": False,
+        "tensorboard": True,
+        "tensorboard_dir": str(tmp_path / "tensorboard-events"),
+        "log_every_steps": 1,
+        "validation_every_epochs": 1,
+        "image_every_epochs": 1,
+    }
+    train_from_config(config)
+    assert list((tmp_path / "tensorboard-events").glob("events.out.tfevents.*"))
