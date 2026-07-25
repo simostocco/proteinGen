@@ -17,6 +17,7 @@ max_optimizer_steps:
 epochs: 50
 learning_rate: 0.0001
 grad_clip: 1.0
+max_consecutive_amp_overflows: 20
 ema_decay: 0.999
 
 # Più significativo del precedente baseline da 100 step.

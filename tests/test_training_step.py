@@ -19,8 +19,47 @@ from protein_distance_diffusion.diffusion.gaussian import GaussianDiffusion
 from protein_distance_diffusion.diffusion.sampling import sample_ddpm
 from protein_distance_diffusion.diffusion.schedules import cosine_beta_schedule
 from protein_distance_diffusion.models.unet import DistanceUNet
-from protein_distance_diffusion.training.checkpointing import load_checkpoint
-from protein_distance_diffusion.training.trainer import train_from_config
+from protein_distance_diffusion.training.checkpointing import load_checkpoint, save_checkpoint
+from protein_distance_diffusion.training.trainer import _optimizer_boundary_step, train_from_config
+
+
+class _FakeScaler:
+    def __init__(self, *, scale: float = 8.0, overflow: bool = False) -> None:
+        self.scale_value = scale
+        self.overflow = overflow
+        self.unscale_called = False
+        self.step_called = False
+        self.update_called = False
+
+    def get_scale(self) -> float:
+        return self.scale_value
+
+    def unscale_(self, optimizer: torch.optim.Optimizer) -> None:
+        del optimizer
+        self.unscale_called = True
+        for parameter in self._parameters:
+            if parameter.grad is not None:
+                parameter.grad.div_(self.scale_value)
+
+    def step(self, optimizer: torch.optim.Optimizer) -> None:
+        self.step_called = True
+        if not self.overflow:
+            optimizer.step()
+
+    def update(self) -> None:
+        self.update_called = True
+        if self.overflow:
+            self.scale_value /= 2.0
+
+    def state_dict(self) -> dict[str, float]:
+        return {"scale": self.scale_value}
+
+    def load_state_dict(self, state: dict[str, float]) -> None:
+        self.scale_value = float(state["scale"])
+
+    def attach(self, model: torch.nn.Module) -> _FakeScaler:
+        self._parameters = list(model.parameters())
+        return self
 
 
 def _write_split(tmp_path: Path, name: str, sample_ids: list[str]) -> Path:
@@ -88,6 +127,8 @@ def test_cpu_training_checkpoint_and_reproducible_sampling(tmp_path: Path) -> No
     ckpt_path = train_from_config(config)
     ckpt = load_checkpoint(ckpt_path)
     assert ckpt["global_step"] == 2
+    assert ckpt["amp_overflows_total"] == 0
+    assert ckpt["amp_overflows_consecutive"] == 0
     assert ckpt["next_epoch"] == 1
     assert "rng_state" in ckpt
     assert ckpt["normalization"]["mode"] == "scale"
@@ -237,6 +278,7 @@ def test_gradient_accumulation_steps_once_per_boundary(tmp_path: Path) -> None:
     assert ckpt["global_step"] == 1
     assert ckpt["optimizer_step"] == 1
     assert ckpt["microbatch_in_accumulation"] == 0
+    assert ckpt["amp_overflows_total"] == 0
 
 
 def test_ema_updates_only_at_accumulation_boundary(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -257,8 +299,190 @@ def test_ema_updates_only_at_accumulation_boundary(tmp_path: Path, monkeypatch: 
 
 def test_amp_unscales_before_gradient_clipping() -> None:
     """The AMP path unscales gradients before clipping."""
-    source = inspect.getsource(trainer_module.train_from_config)
-    assert source.index("scaler.unscale_(opt)") < source.index("clip_grad_norm_")
+    source = inspect.getsource(trainer_module._optimizer_boundary_step)
+    assert source.index("scaler.unscale_(optimizer)") < source.index("clip_grad_norm_")
+    assert "error_if_nonfinite=False" in source
+
+
+def test_finite_gradients_are_clipped_and_logged_preclip() -> None:
+    """Full-precision gradients are clipped to threshold while reporting the pre-clipping norm."""
+    model = torch.nn.Linear(2, 1, bias=False)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    ema = trainer_module.EMA(model, decay=0.9)
+    parameter = next(model.parameters())
+    parameter.grad = torch.tensor([[3.0, 4.0]])
+    result = _optimizer_boundary_step(
+        model=model,
+        optimizer=optimizer,
+        ema=ema,
+        scaler=None,
+        grad_clip=1.0,
+        epoch=0,
+        microbatch=1,
+        global_step=0,
+        loss_value=1.0,
+        accumulation_window=[{"sample_ids": ["s"], "lengths": [2], "timesteps": [0]}],
+        amp_overflows_total=0,
+        amp_overflows_consecutive=0,
+        max_consecutive_amp_overflows=20,
+    )
+    assert result["grad_norm_preclip"] == pytest.approx(5.0)
+    assert result["global_step"] == 1
+    assert torch.linalg.vector_norm(parameter.grad if parameter.grad is not None else torch.zeros(1)) == 0
+
+
+def test_fp16_overflow_skips_update_ema_step_and_clears_gradients() -> None:
+    """A scaler overflow reduces scale and skips optimizer/EMA/global-step updates."""
+    model = torch.nn.Linear(1, 1, bias=False)
+    before = next(model.parameters()).detach().clone()
+    optimizer = torch.optim.SGD(model.parameters(), lr=1.0)
+    ema = trainer_module.EMA(model, decay=0.9)
+    ema_before = {key: value.clone() for key, value in ema.state_dict().items()}
+    next(model.parameters()).grad = torch.tensor([[float("inf")]])
+    scaler = _FakeScaler(scale=8.0, overflow=True).attach(model)
+    result = _optimizer_boundary_step(
+        model=model,
+        optimizer=optimizer,
+        ema=ema,
+        scaler=scaler,
+        grad_clip=1.0,
+        epoch=0,
+        microbatch=1,
+        global_step=0,
+        loss_value=1.0,
+        accumulation_window=[{"sample_ids": ["s"], "lengths": [2], "timesteps": [0]}],
+        amp_overflows_total=0,
+        amp_overflows_consecutive=0,
+        max_consecutive_amp_overflows=20,
+    )
+    assert result["update_skipped"] is True
+    assert result["global_step"] == 0
+    assert result["amp_overflows_total"] == 1
+    assert result["amp_overflows_consecutive"] == 1
+    assert result["amp_scale_old"] == 8.0
+    assert result["amp_scale_new"] == 4.0
+    assert torch.equal(next(model.parameters()).detach(), before)
+    assert all(torch.equal(value, ema_before[key]) for key, value in ema.state_dict().items())
+    assert next(model.parameters()).grad is None
+
+
+def test_successful_fp16_update_resets_overflow_counter() -> None:
+    """A successful scaler update advances the optimizer step and resets consecutive overflows."""
+    model = torch.nn.Linear(1, 1, bias=False)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    ema = trainer_module.EMA(model, decay=0.9)
+    next(model.parameters()).grad = torch.tensor([[8.0]])
+    scaler = _FakeScaler(scale=8.0, overflow=False).attach(model)
+    result = _optimizer_boundary_step(
+        model=model,
+        optimizer=optimizer,
+        ema=ema,
+        scaler=scaler,
+        grad_clip=1.0,
+        epoch=0,
+        microbatch=1,
+        global_step=3,
+        loss_value=1.0,
+        accumulation_window=[{"sample_ids": ["s"], "lengths": [2], "timesteps": [0]}],
+        amp_overflows_total=5,
+        amp_overflows_consecutive=2,
+        max_consecutive_amp_overflows=20,
+    )
+    assert result["update_skipped"] is False
+    assert result["global_step"] == 4
+    assert result["amp_overflows_total"] == 5
+    assert result["amp_overflows_consecutive"] == 0
+    assert result["grad_norm_preclip"] == pytest.approx(1.0)
+
+
+def test_scaler_and_overflow_counters_restore_from_checkpoint(tmp_path: Path) -> None:
+    """Resume restores GradScaler state and AMP overflow counters."""
+    model = torch.nn.Linear(1, 1, bias=False)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    ema = trainer_module.EMA(model, decay=0.9)
+    scaler = _FakeScaler(scale=16.0).attach(model)
+    norm = tmp_path / "normalization.json"
+    norm.write_text(json.dumps({"mode": "scale", "scale": 1.0}))
+    config = {"normalization_file": str(norm)}
+    payload = trainer_module._checkpoint_payload(
+        model=model,
+        ema=ema,
+        optimizer=optimizer,
+        scaler=scaler,
+        epoch=2,
+        next_epoch=3,
+        global_step=17,
+        amp_overflows_total=5,
+        amp_overflows_consecutive=2,
+        config=config,
+        normalization={"mode": "scale", "scale": 1.0},
+    )
+    path = tmp_path / "checkpoint.pt"
+    save_checkpoint(path, payload)
+
+    restored_model = torch.nn.Linear(1, 1, bias=False)
+    restored_optimizer = torch.optim.SGD(restored_model.parameters(), lr=0.1)
+    restored_ema = trainer_module.EMA(restored_model, decay=0.9)
+    restored_scaler = _FakeScaler(scale=1.0).attach(restored_model)
+    start_epoch, global_step, total, consecutive = trainer_module._restore_training_state(
+        resume_from=path,
+        model=restored_model,
+        ema=restored_ema,
+        optimizer=restored_optimizer,
+        scaler=restored_scaler,
+        device=torch.device("cpu"),
+    )
+    assert (start_epoch, global_step, total, consecutive) == (3, 17, 5, 2)
+    assert restored_scaler.get_scale() == 16.0
+
+
+def test_repeated_fp16_overflow_reaches_threshold() -> None:
+    """Repeated scaler overflows eventually fail with sample diagnostics."""
+    model = torch.nn.Linear(1, 1, bias=False)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    ema = trainer_module.EMA(model, decay=0.9)
+    next(model.parameters()).grad = torch.tensor([[float("inf")]])
+    scaler = _FakeScaler(scale=8.0, overflow=True).attach(model)
+    with pytest.raises(FloatingPointError, match="sample_ids=\\['s'\\]"):
+        _optimizer_boundary_step(
+            model=model,
+            optimizer=optimizer,
+            ema=ema,
+            scaler=scaler,
+            grad_clip=1.0,
+            epoch=0,
+            microbatch=1,
+            global_step=0,
+            loss_value=1.0,
+            accumulation_window=[{"sample_ids": ["s"], "lengths": [2], "timesteps": [0]}],
+            amp_overflows_total=1,
+            amp_overflows_consecutive=1,
+            max_consecutive_amp_overflows=2,
+        )
+
+
+def test_non_amp_nonfinite_gradient_is_fatal() -> None:
+    """BF16/full-precision paths without GradScaler fail immediately on non-finite gradients."""
+    model = torch.nn.Linear(1, 1, bias=False)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    ema = trainer_module.EMA(model, decay=0.9)
+    next(model.parameters()).grad = torch.tensor([[float("inf")]])
+    with pytest.raises(FloatingPointError, match="Non-finite gradient norm"):
+        _optimizer_boundary_step(
+            model=model,
+            optimizer=optimizer,
+            ema=ema,
+            scaler=None,
+            grad_clip=1.0,
+            epoch=0,
+            microbatch=1,
+            global_step=0,
+            loss_value=1.0,
+            accumulation_window=[{"sample_ids": ["s"], "lengths": [2], "timesteps": [0]}],
+            amp_overflows_total=0,
+            amp_overflows_consecutive=0,
+            max_consecutive_amp_overflows=20,
+        )
 
 
 def test_max_optimizer_steps_exits_cleanly_with_checkpoint(tmp_path: Path) -> None:

@@ -158,6 +158,8 @@ def _checkpoint_payload(
     epoch: int,
     next_epoch: int,
     global_step: int,
+    amp_overflows_total: int,
+    amp_overflows_consecutive: int,
     config: dict[str, Any],
     normalization: dict[str, Any],
 ) -> dict[str, Any]:
@@ -170,6 +172,8 @@ def _checkpoint_payload(
         "next_epoch": next_epoch,
         "global_step": global_step,
         "optimizer_step": global_step,
+        "amp_overflows_total": int(amp_overflows_total),
+        "amp_overflows_consecutive": int(amp_overflows_consecutive),
         "microbatch_in_accumulation": 0,
         "rng_state": _rng_state(),
         "config": config,
@@ -239,9 +243,9 @@ def _restore_training_state(
     optimizer: torch.optim.Optimizer,
     scaler: Any,
     device: torch.device,
-) -> tuple[int, int]:
+) -> tuple[int, int, int, int]:
     if resume_from is None:
-        return 0, 0
+        return 0, 0, 0, 0
     checkpoint = load_checkpoint(resume_from, map_location=device)
     model.load_state_dict(checkpoint["model"])
     ema.load_state_dict(checkpoint["ema"])
@@ -249,7 +253,12 @@ def _restore_training_state(
     if scaler is not None and checkpoint.get("grad_scaler") is not None:
         scaler.load_state_dict(checkpoint["grad_scaler"])
     _restore_rng_state(checkpoint.get("rng_state"))
-    return int(checkpoint.get("next_epoch", int(checkpoint["epoch"]) + 1)), int(checkpoint["global_step"])
+    return (
+        int(checkpoint.get("next_epoch", int(checkpoint["epoch"]) + 1)),
+        int(checkpoint["global_step"]),
+        int(checkpoint.get("amp_overflows_total", 0)),
+        int(checkpoint.get("amp_overflows_consecutive", 0)),
+    )
 
 
 def _amp_dtype(name: str) -> torch.dtype:
@@ -272,6 +281,133 @@ def _autocast_context(*, enabled: bool, dtype: torch.dtype):
     if not enabled:
         return nullcontext()
     return torch.amp.autocast("cuda", dtype=dtype)
+
+
+def _validate_grad_clip(value: Any) -> float | None:
+    if value is None:
+        return None
+    threshold = float(value)
+    if not np.isfinite(threshold) or threshold <= 0:
+        raise ValueError("grad_clip must be null or a positive finite number")
+    return threshold
+
+
+def _training_diagnostic(
+    *,
+    epoch: int,
+    microbatch: int,
+    global_step: int,
+    amp_overflows_total: int,
+    amp_overflows_consecutive: int,
+    old_scale: float | None,
+    new_scale: float | None,
+    grad_norm_preclip: float,
+    loss_value: float,
+    accumulation_window: list[dict[str, Any]],
+) -> str:
+    sample_ids = [sample_id for item in accumulation_window for sample_id in item["sample_ids"]]
+    lengths = [length for item in accumulation_window for length in item["lengths"]]
+    timesteps = [timestep for item in accumulation_window for timestep in item["timesteps"]]
+    return (
+        f"epoch={epoch} microbatch={microbatch} optimizer_step={global_step} "
+        f"amp_overflows_consecutive={amp_overflows_consecutive} amp_overflows_total={amp_overflows_total} "
+        f"old_amp_scale={old_scale} new_amp_scale={new_scale} grad_norm_preclip={grad_norm_preclip} "
+        f"loss={loss_value} sample_ids={sample_ids} lengths={lengths} timesteps={timesteps}"
+    )
+
+
+def _optimizer_boundary_step(
+    *,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    ema: EMA,
+    scaler: Any,
+    grad_clip: float | None,
+    epoch: int,
+    microbatch: int,
+    global_step: int,
+    loss_value: float,
+    accumulation_window: list[dict[str, Any]],
+    amp_overflows_total: int,
+    amp_overflows_consecutive: int,
+    max_consecutive_amp_overflows: int,
+) -> dict[str, Any]:
+    """Clip gradients and perform one safe optimizer-boundary update."""
+    max_norm = float("inf") if grad_clip is None else grad_clip
+    old_scale = float(scaler.get_scale()) if scaler is not None else None
+    if scaler is not None:
+        scaler.unscale_(optimizer)
+    grad_norm = torch.nn.utils.clip_grad_norm_(
+        model.parameters(),
+        max_norm=max_norm,
+        error_if_nonfinite=False,
+    )
+    grad_norm_preclip = float(grad_norm.detach().cpu() if isinstance(grad_norm, torch.Tensor) else grad_norm)
+
+    if scaler is None and not np.isfinite(grad_norm_preclip):
+        raise FloatingPointError(
+            "Non-finite gradient norm: "
+            + _training_diagnostic(
+                epoch=epoch,
+                microbatch=microbatch,
+                global_step=global_step,
+                amp_overflows_total=amp_overflows_total,
+                amp_overflows_consecutive=amp_overflows_consecutive,
+                old_scale=None,
+                new_scale=None,
+                grad_norm_preclip=grad_norm_preclip,
+                loss_value=loss_value,
+                accumulation_window=accumulation_window,
+            )
+        )
+
+    update_skipped = False
+    new_scale = old_scale
+    if scaler is not None:
+        scaler.step(optimizer)
+        scaler.update()
+        new_scale = float(scaler.get_scale())
+        update_skipped = new_scale < old_scale
+        if update_skipped:
+            amp_overflows_total += 1
+            amp_overflows_consecutive += 1
+            optimizer.zero_grad(set_to_none=True)
+            if amp_overflows_consecutive >= max_consecutive_amp_overflows:
+                raise FloatingPointError(
+                    "Maximum consecutive AMP overflows reached: "
+                    + _training_diagnostic(
+                        epoch=epoch,
+                        microbatch=microbatch,
+                        global_step=global_step,
+                        amp_overflows_total=amp_overflows_total,
+                        amp_overflows_consecutive=amp_overflows_consecutive,
+                        old_scale=old_scale,
+                        new_scale=new_scale,
+                        grad_norm_preclip=grad_norm_preclip,
+                        loss_value=loss_value,
+                        accumulation_window=accumulation_window,
+                    )
+                )
+        else:
+            optimizer.zero_grad(set_to_none=True)
+            ema.update(model)
+            global_step += 1
+            amp_overflows_consecutive = 0
+    else:
+        optimizer.step()
+        optimizer.zero_grad(set_to_none=True)
+        ema.update(model)
+        global_step += 1
+
+    return {
+        "global_step": global_step,
+        "grad_norm_preclip": grad_norm_preclip,
+        "amp_scale_old": old_scale,
+        "amp_scale_new": new_scale,
+        "amp_overflows_total": amp_overflows_total,
+        "amp_overflows_consecutive": amp_overflows_consecutive,
+        "update_skipped": update_skipped,
+    }
 
 
 def train_from_config(config: dict[str, Any]) -> Path:
@@ -330,7 +466,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
     log_config.setdefault("image_every_epochs", 5)
     writer = _summary_writer(log_config)
     _log_run_metadata(writer, config=config, model=model, device=device)
-    start_epoch, global_step = _restore_training_state(
+    start_epoch, global_step, amp_overflows_total, amp_overflows_consecutive = _restore_training_state(
         resume_from=config.get("resume_from"),
         model=model,
         ema=ema,
@@ -348,6 +484,10 @@ def train_from_config(config: dict[str, Any]) -> Path:
     gradient_accumulation_steps = int(config.get("gradient_accumulation_steps", 1))
     if gradient_accumulation_steps <= 0:
         raise ValueError("gradient_accumulation_steps must be positive")
+    grad_clip = _validate_grad_clip(config.get("grad_clip", 1.0))
+    max_consecutive_amp_overflows = int(config.get("max_consecutive_amp_overflows", 20))
+    if max_consecutive_amp_overflows <= 0:
+        raise ValueError("max_consecutive_amp_overflows must be a positive integer")
     max_optimizer_steps = config.get("max_optimizer_steps")
     max_optimizer_steps = int(max_optimizer_steps) if max_optimizer_steps is not None else None
     log_every_steps = max(1, int(log_config["log_every_steps"]))
@@ -362,6 +502,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
             epoch_samples = 0
             running_loss = 0.0
             microbatch_in_accumulation = 0
+            accumulation_window: list[dict[str, Any]] = []
             opt.zero_grad(set_to_none=True)
             epoch_bar = tqdm(
                 train_loader,
@@ -370,7 +511,10 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 dynamic_ncols=True,
                 mininterval=0.5,
             )
-            grad_norm_value = float("nan")
+            grad_norm_preclip = float("nan")
+            update_skipped = False
+            amp_scale_old = float(scaler.get_scale()) if scaler is not None else 1.0
+            amp_scale_new = amp_scale_old
             for batch_index, batch in enumerate(epoch_bar, start=1):
                 start = time.time()
                 last_batch = batch
@@ -385,10 +529,34 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     loss = masked_upper_triangular_loss(eps.float(), eps_hat.float(), pair_mask)
                 if not torch.isfinite(loss):
                     raise FloatingPointError(
-                        f"Non-finite training loss at epoch={epoch} microbatch={batch_index} "
-                        f"optimizer_step={global_step}: {float(loss.detach().cpu())}"
+                        "Non-finite training loss: "
+                        + _training_diagnostic(
+                            epoch=epoch,
+                            microbatch=batch_index,
+                            global_step=global_step,
+                            amp_overflows_total=amp_overflows_total,
+                            amp_overflows_consecutive=amp_overflows_consecutive,
+                            old_scale=float(scaler.get_scale()) if scaler is not None else None,
+                            new_scale=float(scaler.get_scale()) if scaler is not None else None,
+                            grad_norm_preclip=float("nan"),
+                            loss_value=float(loss.detach().cpu()),
+                            accumulation_window=[
+                                {
+                                    "sample_ids": list(batch["sample_ids"]),
+                                    "lengths": [int(x) for x in lengths.detach().cpu().tolist()],
+                                    "timesteps": [int(x) for x in t.detach().cpu().tolist()],
+                                }
+                            ],
+                        )
                     )
                 microbatch_in_accumulation += 1
+                accumulation_window.append(
+                    {
+                        "sample_ids": list(batch["sample_ids"]),
+                        "lengths": [int(x) for x in lengths.detach().cpu().tolist()],
+                        "timesteps": [int(x) for x in t.detach().cpu().tolist()],
+                    }
+                )
                 loss_for_backward = loss / gradient_accumulation_steps
                 if scaler is not None:
                     scaler.scale(loss_for_backward).backward()
@@ -409,26 +577,35 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     train_loader
                 )
                 if should_step:
-                    if scaler is not None:
-                        scaler.unscale_(opt)
-                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), float(config.get("grad_clip", 1.0)))
-                    grad_norm_value = float(
-                        grad_norm.detach().cpu() if isinstance(grad_norm, torch.Tensor) else grad_norm
+                    step_result = _optimizer_boundary_step(
+                        model=model,
+                        optimizer=opt,
+                        ema=ema,
+                        scaler=scaler,
+                        grad_clip=grad_clip,
+                        epoch=epoch,
+                        microbatch=batch_index,
+                        global_step=global_step,
+                        loss_value=loss_value,
+                        accumulation_window=accumulation_window,
+                        amp_overflows_total=amp_overflows_total,
+                        amp_overflows_consecutive=amp_overflows_consecutive,
+                        max_consecutive_amp_overflows=max_consecutive_amp_overflows,
                     )
-                    if not np.isfinite(grad_norm_value):
-                        raise FloatingPointError(
-                            f"Non-finite gradient norm at epoch={epoch} microbatch={batch_index} "
-                            f"optimizer_step={global_step}"
+                    global_step = int(step_result["global_step"])
+                    grad_norm_preclip = float(step_result["grad_norm_preclip"])
+                    amp_scale_old = float(step_result["amp_scale_old"] or 1.0)
+                    amp_scale_new = float(step_result["amp_scale_new"] or 1.0)
+                    amp_overflows_total = int(step_result["amp_overflows_total"])
+                    amp_overflows_consecutive = int(step_result["amp_overflows_consecutive"])
+                    update_skipped = bool(step_result["update_skipped"])
+                    if update_skipped:
+                        epoch_bar.write(
+                            "AMP overflow skipped optimizer update "
+                            f"(scale {amp_scale_old:g}->{amp_scale_new:g}, total={amp_overflows_total})"
                         )
-                    if scaler is not None:
-                        scaler.step(opt)
-                        scaler.update()
-                    else:
-                        opt.step()
-                    opt.zero_grad(set_to_none=True)
-                    ema.update(model)
-                    global_step += 1
                     microbatch_in_accumulation = 0
+                    accumulation_window = []
                 metrics = {
                     "epoch": epoch,
                     "microbatch": batch_index,
@@ -437,7 +614,9 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     "training_loss": loss_value,
                     "running_loss": running_loss,
                     "learning_rate": lr,
-                    "gradient_norm": grad_norm_value,
+                    "gradient_norm": grad_norm_preclip,
+                    "gradient_norm_preclip": grad_norm_preclip,
+                    "grad_clip": grad_clip,
                     "average_N": float(lengths.float().mean().cpu()),
                     "min_length": min_length,
                     "max_length": max_length,
@@ -448,6 +627,12 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     "amp_enabled": amp_enabled,
                     "amp_dtype": str(config.get("amp_dtype", "float16")),
                     "amp_scale": float(scaler.get_scale()) if scaler is not None else 1.0,
+                    "amp_scale_old": amp_scale_old,
+                    "amp_scale_new": amp_scale_new,
+                    "amp_overflow": bool(update_skipped),
+                    "amp_overflows_total": amp_overflows_total,
+                    "amp_overflows_consecutive": amp_overflows_consecutive,
+                    "update_skipped": bool(update_skipped),
                     "wall_clock_seconds": elapsed,
                 }
                 logger.log(metrics)
@@ -456,8 +641,11 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     writer.add_scalar("train/loss_step", loss_value, global_step)
                     writer.add_scalar("optimizer/learning_rate", lr, global_step)
                     writer.add_scalar("learning_rate", lr, global_step)
-                    writer.add_scalar("optimizer/gradient_norm", grad_norm_value, global_step)
-                    writer.add_scalar("gradient_norm", grad_norm_value, global_step)
+                    writer.add_scalar("optimizer/gradient_norm", grad_norm_preclip, global_step)
+                    writer.add_scalar("gradient_norm", grad_norm_preclip, global_step)
+                    writer.add_scalar("train/gradient_norm_preclip", grad_norm_preclip, global_step)
+                    if grad_clip is not None:
+                        writer.add_scalar("train/gradient_clip_threshold", grad_clip, global_step)
                     writer.add_scalar("performance/samples_per_second", samples_per_second, global_step)
                     writer.add_scalar("gpu/allocated_gib", allocated_gib, global_step)
                     writer.add_scalar("gpu/reserved_gib", reserved_gib, global_step)
@@ -466,6 +654,9 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     writer.add_scalar("optimizer_step", global_step, global_step)
                     if scaler is not None:
                         writer.add_scalar("amp/scale", float(scaler.get_scale()), global_step)
+                        writer.add_scalar("train/amp_scale", float(scaler.get_scale()), global_step)
+                    writer.add_scalar("train/amp_overflow", float(update_skipped), global_step)
+                    writer.add_scalar("train/amp_overflows_total", amp_overflows_total, global_step)
                     writer.add_scalar("data/min_length", min_length, global_step)
                     writer.add_scalar("data/max_length", max_length, global_step)
                 epoch_bar.set_postfix(
@@ -475,14 +666,25 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         "step": global_step,
                         "loss": f"{loss_value:.3e}",
                         "lr": f"{lr:.2e}",
-                        "grad": f"{grad_norm_value:.2e}" if np.isfinite(grad_norm_value) else "n/a",
+                        "grad_norm_preclip": f"{grad_norm_preclip:.2e}" if np.isfinite(grad_norm_preclip) else "n/a",
+                        "grad_clip": "off" if grad_clip is None else f"{grad_clip:.2g}",
+                        "amp_scale": f"{float(scaler.get_scale()):.1f}" if scaler is not None else "n/a",
+                        "amp_ovf": amp_overflows_total,
+                        "amp_ovf_seq": amp_overflows_consecutive,
+                        "skipped": update_skipped,
                         "alloc": f"{allocated_gib:.2f}GiB",
                         "res": f"{reserved_gib:.2f}GiB",
                         "max": f"{max_allocated_gib:.2f}GiB",
                         "samples/s": f"{samples_per_second:.2f}",
                     }
                 )
-                if should_step and checkpoint_every_steps > 0 and global_step % checkpoint_every_steps == 0:
+                if (
+                    should_step
+                    and not update_skipped
+                    and global_step > 0
+                    and checkpoint_every_steps > 0
+                    and global_step % checkpoint_every_steps == 0
+                ):
                     payload = _checkpoint_payload(
                         model=model,
                         ema=ema,
@@ -491,6 +693,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         epoch=epoch,
                         next_epoch=epoch,
                         global_step=global_step,
+                        amp_overflows_total=amp_overflows_total,
+                        amp_overflows_consecutive=amp_overflows_consecutive,
                         config=config,
                         normalization=normalization,
                     )
@@ -501,7 +705,12 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         "Checkpoint saved. Resume with: "
                         f"python scripts/train_diffusion.py --config <config> --resume-from {last}"
                     )
-                if should_step and max_optimizer_steps is not None and global_step >= max_optimizer_steps:
+                if (
+                    should_step
+                    and not update_skipped
+                    and max_optimizer_steps is not None
+                    and global_step >= max_optimizer_steps
+                ):
                     payload = _checkpoint_payload(
                         model=model,
                         ema=ema,
@@ -510,6 +719,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         epoch=epoch,
                         next_epoch=epoch,
                         global_step=global_step,
+                        amp_overflows_total=amp_overflows_total,
+                        amp_overflows_consecutive=amp_overflows_consecutive,
                         config=config,
                         normalization=normalization,
                     )
@@ -547,6 +758,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         epoch=epoch,
                         next_epoch=epoch + 1,
                         global_step=global_step,
+                        amp_overflows_total=amp_overflows_total,
+                        amp_overflows_consecutive=amp_overflows_consecutive,
                         config=config,
                         normalization=normalization,
                     )
@@ -568,6 +781,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 epoch=epoch,
                 next_epoch=epoch + 1,
                 global_step=global_step,
+                amp_overflows_total=amp_overflows_total,
+                amp_overflows_consecutive=amp_overflows_consecutive,
                 config=config,
                 normalization=normalization,
             )
@@ -583,6 +798,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
             epoch=max(start_epoch, min(epochs - 1, locals().get("epoch", start_epoch))),
             next_epoch=max(start_epoch, min(epochs - 1, locals().get("epoch", start_epoch))),
             global_step=global_step,
+            amp_overflows_total=amp_overflows_total,
+            amp_overflows_consecutive=amp_overflows_consecutive,
             config=config,
             normalization=normalization,
         )
