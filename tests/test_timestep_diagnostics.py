@@ -127,6 +127,32 @@ def test_masked_upper_triangular_metrics_ignore_diagonal_and_lower_triangle() ->
     assert metrics["epsilon_mse"] == pytest.approx(4.0 / 3.0)
 
 
+def test_v_diagnostic_metrics_include_target_and_reconstructed_epsilon() -> None:
+    """v diagnostics report v target metrics plus reconstructed epsilon metrics."""
+    valid = diag.upper_mask(3, 3, device=torch.device("cpu"))
+    v_true = torch.zeros(1, 1, 3, 3)
+    v_hat = torch.ones_like(v_true)
+    eps_true = torch.zeros_like(v_true)
+    eps_hat = torch.ones_like(v_true) * 2.0
+    x0 = torch.zeros_like(v_true)
+    x0_hat = torch.zeros_like(v_true)
+    metrics = diag._metrics_for_prediction(
+        name="model",
+        target_name="v",
+        target_true=v_true,
+        target_hat=v_hat,
+        eps_true=eps_true,
+        eps_hat=eps_hat,
+        x0=x0,
+        x0_hat=x0_hat,
+        valid=valid,
+        scale=1.0,
+    )
+    assert metrics["v_mse"] == pytest.approx(1.0)
+    assert metrics["epsilon_mse"] == pytest.approx(4.0)
+    assert metrics["epsilon_reconstruction_mse"] == pytest.approx(4.0)
+
+
 def _factor_eight_model() -> DistanceUNet:
     return DistanceUNet(
         input_channels=3,

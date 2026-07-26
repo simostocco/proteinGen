@@ -1,7 +1,7 @@
 train_manifest: data/full/splits/train.parquet
 validation_manifest: data/full/splits/validation.parquet
 normalization_file: data/full/processed/normalization.json
-output_dir: outputs/full_baseline_b2_fp16_fixed
+output_dir: outputs/full_v_prediction
 
 seed: 42
 device: cuda
@@ -19,7 +19,7 @@ grad_clip: 1.0
 max_consecutive_amp_overflows: 20
 ema_decay: 0.999
 diffusion_steps: 500
-prediction_parameterization: epsilon
+prediction_parameterization: v
 
 model:
   input_channels: 3
@@ -45,7 +45,7 @@ resume_from:
 logging:
   progress_bar: true
   tensorboard: true
-  tensorboard_dir: outputs/full_baseline_b2_fp16_fixed/tensorboard
+  tensorboard_dir: outputs/full_v_prediction/tensorboard
   log_every_steps: 50
   validation_every_epochs: 1
   image_every_epochs: 1

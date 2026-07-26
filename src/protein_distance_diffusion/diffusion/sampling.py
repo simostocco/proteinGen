@@ -61,15 +61,13 @@ def sample_ddpm(
         sequence_separation: Sequence separation channel [B, 1, L, L].
         device: Target device.
         generator: Optional random generator.
-        prediction_type: Model output parameterization. Currently only epsilon.
+        prediction_type: Model output parameterization: epsilon or v.
         trace_every: Optional reverse-step interval for compact diagnostics.
 
     Returns:
         Normalized generated matrices, or `(matrices, trace)` when tracing is enabled.
     """
     parameterization = validate_prediction_type(prediction_type)
-    if parameterization is not PredictionType.EPSILON:
-        raise ValueError("Only epsilon prediction is supported")
 
     mask = pair_mask.to(device)
     lengths = lengths.to(device)
@@ -81,9 +79,16 @@ def sample_ddpm(
 
     for step in reversed(range(diffusion.timesteps)):
         t = torch.full((x.shape[0],), step, dtype=torch.long, device=device)
-        eps = model(x.float(), t, lengths, sequence_separation.float(), mask).float()
+        model_output = model(x.float(), t, lengths, sequence_separation.float(), mask).float()
+        model_output = project_symmetric_zero_diagonal(model_output, mask)
+        x0_hat, eps = diffusion.predict_x0_epsilon_from_model_output(
+            x_t=x,
+            t=t,
+            model_output=model_output,
+            prediction_type=parameterization,
+        )
         eps = project_symmetric_zero_diagonal(eps, mask)
-        x0_hat = project_symmetric_zero_diagonal(diffusion.predict_x0_from_epsilon(x, t, eps), mask)
+        x0_hat = project_symmetric_zero_diagonal(x0_hat, mask)
         posterior_mean = project_symmetric_zero_diagonal(
             diffusion.posterior_mean_from_x0_epsilon(x_t=x, t=t, x0_hat=x0_hat),
             mask,

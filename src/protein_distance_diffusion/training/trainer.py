@@ -20,7 +20,10 @@ from protein_distance_diffusion.data.collate import collate_distance_maps
 from protein_distance_diffusion.data.dataset import DistanceMapDataset
 from protein_distance_diffusion.diffusion.gaussian import (
     GaussianDiffusion,
+    PredictionType,
+    ensure_config_matches_checkpoint_parameterization,
     masked_upper_triangular_loss,
+    prediction_parameterization_from_config,
     validate_prediction_type,
 )
 from protein_distance_diffusion.diffusion.sampling import sample_ddpm
@@ -214,6 +217,7 @@ def _log_tensorboard_images(
     batch: dict[str, torch.Tensor] | None,
     device: torch.device,
     epoch: int,
+    prediction_type: PredictionType = PredictionType.EPSILON,
 ) -> None:
     if writer is None or batch is None:
         return
@@ -230,6 +234,7 @@ def _log_tensorboard_images(
         sequence_separation=sep,
         device=device,
         generator=torch.Generator(device=device).manual_seed(epoch),
+        prediction_type=prediction_type,
     )[0]
     image = generated.detach().cpu()
     image = image - image.min()
@@ -247,10 +252,15 @@ def _restore_training_state(
     optimizer: torch.optim.Optimizer,
     scaler: Any,
     device: torch.device,
+    expected_prediction_type: PredictionType = PredictionType.EPSILON,
 ) -> tuple[int, int, int, int]:
     if resume_from is None:
         return 0, 0, 0, 0
     checkpoint = load_checkpoint(resume_from, map_location=device)
+    ensure_config_matches_checkpoint_parameterization(
+        config={"prediction_parameterization": expected_prediction_type.value},
+        checkpoint_config=checkpoint.get("config", {}),
+    )
     model.load_state_dict(checkpoint["model"])
     ema.load_state_dict(checkpoint["ema"])
     optimizer.load_state_dict(checkpoint["optimizer"])
@@ -450,8 +460,9 @@ def train_from_config(config: dict[str, Any]) -> Path:
     )
     model = build_model_from_config(config["model"]).to(device)
     diffusion = GaussianDiffusion(cosine_beta_schedule(int(config.get("diffusion_steps", 100)))).to(device)
-    prediction_type = validate_prediction_type(config.get("prediction_type", "epsilon"))
-    config["prediction_type"] = str(prediction_type.value)
+    prediction_type = prediction_parameterization_from_config(config)
+    config["prediction_parameterization"] = prediction_type.value
+    config["prediction_type"] = prediction_type.value
     _patch_torch_pytree_compatibility()
     opt = torch.optim.AdamW(model.parameters(), lr=float(config.get("learning_rate", 1e-4)))
     ema = EMA(model, decay=float(config.get("ema_decay", 0.999)))
@@ -479,6 +490,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
         optimizer=opt,
         scaler=scaler,
         device=device,
+        expected_prediction_type=prediction_type,
     )
     checkpoint_dir = out / "checkpoints"
     last = checkpoint_dir / "last.pt"
@@ -531,8 +543,14 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 t = torch.randint(0, diffusion.timesteps, (clean.shape[0],), device=device)
                 with _autocast_context(enabled=amp_enabled, dtype=amp_dtype):
                     noisy, eps = diffusion.q_sample(clean, t, pair_mask)
-                    eps_hat = model(noisy, t, lengths, sep, pair_mask)
-                    loss = masked_upper_triangular_loss(eps.float(), eps_hat.float(), pair_mask)
+                    target = diffusion.training_target(
+                        x_start=clean,
+                        t=t,
+                        epsilon=eps,
+                        prediction_type=prediction_type,
+                    )
+                    prediction = model(noisy, t, lengths, sep, pair_mask)
+                    loss = masked_upper_triangular_loss(target.float(), prediction.float(), pair_mask)
                 if not torch.isfinite(loss):
                     raise FloatingPointError(
                         "Non-finite training loss: "
@@ -750,6 +768,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     epoch=epoch,
                     amp_enabled=amp_enabled,
                     amp_dtype=amp_dtype,
+                    prediction_type=prediction_type,
                 )
                 logger.log({"epoch": epoch, "global_step": global_step, "validation_loss": val_loss})
                 if writer is not None:
@@ -778,6 +797,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     batch=last_batch,
                     device=device,
                     epoch=epoch,
+                    prediction_type=prediction_type,
                 )
             payload = _checkpoint_payload(
                 model=model,
@@ -833,6 +853,7 @@ def validate_loss(
     epoch: int | None = None,
     amp_enabled: bool = False,
     amp_dtype: torch.dtype = torch.float16,
+    prediction_type: str | PredictionType = PredictionType.EPSILON,
 ) -> float:
     """Compute deterministic validation diffusion loss.
 
@@ -847,6 +868,7 @@ def validate_loss(
         Mean validation loss.
     """
     model.eval()
+    parameterization = validate_prediction_type(prediction_type)
     gen = torch.Generator(device=device).manual_seed(seed)
     losses = []
     desc = "validation" if epoch is None else f"validation {epoch + 1}"
@@ -859,8 +881,14 @@ def validate_loss(
         t = torch.randint(0, diffusion.timesteps, (clean.shape[0],), device=device, generator=gen)
         with _autocast_context(enabled=amp_enabled, dtype=amp_dtype):
             noisy, eps = diffusion.q_sample(clean, t, pair_mask, generator=gen)
-            eps_hat = model(noisy, t, lengths, sep, pair_mask)
-            loss = masked_upper_triangular_loss(eps.float(), eps_hat.float(), pair_mask).cpu()
+            target = diffusion.training_target(
+                x_start=clean,
+                t=t,
+                epsilon=eps,
+                prediction_type=parameterization,
+            )
+            prediction = model(noisy, t, lengths, sep, pair_mask)
+            loss = masked_upper_triangular_loss(target.float(), prediction.float(), pair_mask).cpu()
         if not torch.isfinite(loss):
             raise FloatingPointError("Non-finite validation loss")
         losses.append(loss)

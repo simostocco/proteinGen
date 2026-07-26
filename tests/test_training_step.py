@@ -201,6 +201,27 @@ def test_resume_restores_checkpoint_state(tmp_path: Path) -> None:
     assert ckpt["global_step"] == 4
 
 
+def test_v_training_checkpoint_records_parameterization(tmp_path: Path) -> None:
+    """A v-prediction training run stores the canonical parameterization in checkpoints."""
+    config = _tiny_training_config(tmp_path, output_name="v-run")
+    config["prediction_parameterization"] = "v"
+    ckpt_path = train_from_config(config)
+    ckpt = load_checkpoint(ckpt_path)
+    assert ckpt["config"]["prediction_parameterization"] == "v"
+    assert ckpt["config"]["prediction_type"] == "v"
+
+
+def test_resume_rejects_prediction_parameterization_mismatch(tmp_path: Path) -> None:
+    """Resume fails clearly when a v config points at an epsilon checkpoint."""
+    config = _tiny_training_config(tmp_path, output_name="epsilon-run")
+    ckpt_path = train_from_config(config)
+    resumed = _tiny_training_config(tmp_path, output_name="v-mismatch")
+    resumed["prediction_parameterization"] = "v"
+    resumed["resume_from"] = str(ckpt_path)
+    with pytest.raises(ValueError, match="mismatch"):
+        train_from_config(resumed)
+
+
 def test_tensorboard_logging_when_available(tmp_path: Path) -> None:
     """TensorBoard event files are written when SummaryWriter is enabled."""
     pytest.importorskip("tensorboard")

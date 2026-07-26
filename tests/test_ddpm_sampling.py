@@ -3,10 +3,17 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 import torch
 
 from protein_distance_diffusion.data.collate import make_pair_mask, make_sequence_separation
-from protein_distance_diffusion.diffusion.gaussian import GaussianDiffusion, project_symmetric_zero_diagonal
+from protein_distance_diffusion.diffusion.gaussian import (
+    GaussianDiffusion,
+    PredictionType,
+    ensure_config_matches_checkpoint_parameterization,
+    prediction_parameterization_from_config,
+    project_symmetric_zero_diagonal,
+)
 from protein_distance_diffusion.diffusion.sampling import sample_ddpm
 from protein_distance_diffusion.evaluation.metrics import generated_matrix_report
 
@@ -41,6 +48,89 @@ def test_x0_reconstruction_from_exact_epsilon_recovers_clean_matrix() -> None:
     noisy, _ = diffusion.q_sample(x0, t, mask, noise=eps)
     reconstructed = project_symmetric_zero_diagonal(diffusion.predict_x0_from_epsilon(noisy, t, eps), mask)
     assert torch.allclose(reconstructed, x0, atol=1e-5)
+
+
+def test_v_target_matches_manual_equation() -> None:
+    """v target is sqrt(alpha_bar) * epsilon - sqrt(1-alpha_bar) * x0."""
+    diffusion = _linear_diffusion()
+    x0 = torch.tensor([[[[0.0, 1.0], [1.0, 0.0]]]])
+    epsilon = torch.tensor([[[[0.0, 0.5], [0.5, 0.0]]]])
+    t = torch.tensor([1])
+    alpha_bar = diffusion.alphas_cumprod[1]
+    expected = alpha_bar.sqrt() * epsilon - (1.0 - alpha_bar).sqrt() * x0
+    assert torch.allclose(diffusion.v_target(x0, t, epsilon), expected)
+    assert torch.allclose(diffusion.training_target(x_start=x0, t=t, epsilon=epsilon, prediction_type="v"), expected)
+
+
+def test_v_inverse_transform_recovers_x0_and_epsilon() -> None:
+    """The v-to-x0/epsilon conversion is an exact inverse of q_sample."""
+    diffusion = _linear_diffusion()
+    mask = make_pair_mask(torch.tensor([3]), 3)
+    generator = torch.Generator().manual_seed(12)
+    x0 = project_symmetric_zero_diagonal(torch.randn(1, 1, 3, 3, generator=generator), mask)
+    epsilon = project_symmetric_zero_diagonal(torch.randn(x0.shape, generator=generator), mask)
+    t = torch.tensor([2])
+    x_t, epsilon = diffusion.q_sample(x0, t, mask, noise=epsilon)
+    v = diffusion.v_target(x0, t, epsilon)
+    x0_hat, epsilon_hat = diffusion.predict_x0_epsilon_from_model_output(
+        x_t=x_t,
+        t=t,
+        model_output=v,
+        prediction_type=PredictionType.V,
+    )
+    assert torch.allclose(project_symmetric_zero_diagonal(x0_hat, mask), x0, atol=1e-5)
+    assert torch.allclose(project_symmetric_zero_diagonal(epsilon_hat, mask), epsilon, atol=1e-5)
+
+
+def test_v_boundary_behavior_at_first_and_terminal_timesteps() -> None:
+    """v conversions stay finite at t=0 and t=T-1."""
+    diffusion = GaussianDiffusion(torch.tensor([1e-4, 0.2, 0.999], dtype=torch.float32))
+    mask = make_pair_mask(torch.tensor([2]), 2)
+    x0 = torch.tensor([[[[0.0, 2.0], [2.0, 0.0]]]])
+    epsilon = torch.tensor([[[[0.0, -1.0], [-1.0, 0.0]]]])
+    for step in (0, diffusion.timesteps - 1):
+        t = torch.tensor([step])
+        x_t, epsilon_out = diffusion.q_sample(x0, t, mask, noise=epsilon)
+        v = diffusion.v_target(x0, t, epsilon_out)
+        x0_hat, epsilon_hat = diffusion.predict_x0_epsilon_from_model_output(
+            x_t=x_t,
+            t=t,
+            model_output=v,
+            prediction_type="v",
+        )
+        assert torch.isfinite(v).all()
+        assert torch.isfinite(x0_hat).all()
+        assert torch.isfinite(epsilon_hat).all()
+        assert torch.allclose(project_symmetric_zero_diagonal(x0_hat, mask), x0, atol=1e-5)
+        assert torch.allclose(project_symmetric_zero_diagonal(epsilon_hat, mask), epsilon_out, atol=1e-5)
+
+
+def test_v_conversion_does_not_divide_by_sqrt_alpha_bar() -> None:
+    """The v conversion remains finite for tiny alpha_bar because it uses no reciprocal sqrt(alpha_bar)."""
+    diffusion = GaussianDiffusion(torch.tensor([0.999999], dtype=torch.float32))
+    x_t = torch.ones(1, 1, 2, 2)
+    v = torch.ones_like(x_t) * 2.0
+    x0_hat, epsilon_hat = diffusion.predict_x0_epsilon_from_model_output(
+        x_t=x_t,
+        t=torch.tensor([0]),
+        model_output=v,
+        prediction_type="v",
+    )
+    assert torch.isfinite(x0_hat).all()
+    assert torch.isfinite(epsilon_hat).all()
+    assert x0_hat.abs().max() < 3.0
+
+
+def test_epsilon_checkpoint_backward_compatibility_and_mismatch_failure() -> None:
+    """Missing legacy fields are epsilon, and conflicting config/checkpoint values fail."""
+    assert prediction_parameterization_from_config({}) is PredictionType.EPSILON
+    assert prediction_parameterization_from_config({"prediction_type": "epsilon"}) is PredictionType.EPSILON
+    assert prediction_parameterization_from_config({"prediction_parameterization": "v"}) is PredictionType.V
+    with pytest.raises(ValueError, match="mismatch"):
+        ensure_config_matches_checkpoint_parameterization(
+            config={"prediction_parameterization": "v"},
+            checkpoint_config={"prediction_type": "epsilon"},
+        )
 
 
 def test_posterior_mean_coefficients_match_manual_reference() -> None:
@@ -121,6 +211,22 @@ class OracleEpsilonModel(torch.nn.Module):
         return project_symmetric_zero_diagonal(eps, pair_mask)
 
 
+class OracleVModel(torch.nn.Module):
+    """Oracle v model for a fixed clean matrix."""
+
+    def __init__(self, diffusion: GaussianDiffusion, x0: torch.Tensor) -> None:
+        super().__init__()
+        self.diffusion = diffusion
+        self.x0 = x0
+
+    def forward(self, x, t, lengths, sequence_separation, pair_mask):  # type: ignore[no-untyped-def]
+        del lengths, sequence_separation
+        alpha_bar = self.diffusion.alphas_cumprod[t].view(-1, 1, 1, 1).to(x.device)
+        epsilon = (x - alpha_bar.sqrt() * self.x0.to(x.device)) / (1.0 - alpha_bar).sqrt()
+        v = alpha_bar.sqrt() * epsilon - (1.0 - alpha_bar).sqrt() * self.x0.to(x.device)
+        return project_symmetric_zero_diagonal(v, pair_mask)
+
+
 def test_oracle_epsilon_reverse_process_does_not_explode() -> None:
     """A mathematically consistent epsilon oracle keeps reverse samples bounded."""
     diffusion = _linear_diffusion()
@@ -137,6 +243,30 @@ def test_oracle_epsilon_reverse_process_does_not_explode() -> None:
         sequence_separation=sep,
         device=torch.device("cpu"),
         generator=torch.Generator().manual_seed(3),
+        trace_every=1,
+    )
+    assert torch.isfinite(out).all()
+    assert out.abs().max() < 5.0
+    assert len(trace) == diffusion.timesteps
+
+
+def test_oracle_v_reverse_process_does_not_explode() -> None:
+    """A mathematically consistent v oracle keeps reverse samples bounded."""
+    diffusion = _linear_diffusion()
+    lengths = torch.tensor([3])
+    mask = make_pair_mask(lengths, 3)
+    sep = make_sequence_separation(lengths, 3)
+    x0 = project_symmetric_zero_diagonal(torch.ones(1, 1, 3, 3), mask)
+    model = OracleVModel(diffusion, x0)
+    out, trace = sample_ddpm(
+        model,
+        diffusion,
+        lengths=lengths,
+        pair_mask=mask,
+        sequence_separation=sep,
+        device=torch.device("cpu"),
+        generator=torch.Generator().manual_seed(3),
+        prediction_type="v",
         trace_every=1,
     )
     assert torch.isfinite(out).all()

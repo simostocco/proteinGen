@@ -15,7 +15,10 @@ from torch.utils.data import DataLoader
 from protein_distance_diffusion.config import load_yaml
 from protein_distance_diffusion.data.collate import collate_distance_maps
 from protein_distance_diffusion.data.dataset import DistanceMapDataset
-from protein_distance_diffusion.diffusion.gaussian import GaussianDiffusion
+from protein_distance_diffusion.diffusion.gaussian import (
+    GaussianDiffusion,
+    ensure_config_matches_checkpoint_parameterization,
+)
 from protein_distance_diffusion.diffusion.schedules import cosine_beta_schedule
 from protein_distance_diffusion.evaluation.metrics import (
     generated_matrix_report,
@@ -38,6 +41,10 @@ def main() -> None:
     ckpt = load_checkpoint(args.checkpoint)
     config = load_yaml(args.config)
     checkpoint_config = ckpt["config"]
+    prediction_type = ensure_config_matches_checkpoint_parameterization(
+        config=config,
+        checkpoint_config=checkpoint_config,
+    )
     normalization = ckpt.get("normalization") or json.loads(Path(config["normalization_file"]).read_text())
     model_cfg = dict(checkpoint_config["model"])
     if "channel_multipliers" in model_cfg:
@@ -62,13 +69,21 @@ def main() -> None:
         num_workers=0,
         collate_fn=lambda items: collate_distance_maps(items, downsample_stages=downsample_stages),
     )
-    validation = validate_loss(model, diffusion, loader, device=device, seed=int(config.get("seed", 42)))
+    validation = validate_loss(
+        model,
+        diffusion,
+        loader,
+        device=device,
+        seed=int(config.get("seed", 42)),
+        prediction_type=prediction_type,
+    )
     valid_pair_count = int(sum(int(length) * (int(length) - 1) // 2 for length in dataset.frame["length"]))
     report: dict[str, object] = {
         "checkpoint": str(args.checkpoint),
         "config": str(args.config),
         "weights": args.weights,
-        "prediction_type": checkpoint_config.get("prediction_type", "epsilon"),
+        "prediction_parameterization": prediction_type.value,
+        "prediction_type": prediction_type.value,
         "validation_loss": validation,
         "validation_sample_count": int(len(dataset)),
         "validation_valid_pair_count": valid_pair_count,

@@ -11,6 +11,7 @@ class PredictionType(str, Enum):  # noqa: UP042
     """Supported diffusion model output parameterizations."""
 
     EPSILON = "epsilon"
+    V = "v"
 
 
 def validate_prediction_type(value: str | PredictionType) -> PredictionType:
@@ -20,7 +21,39 @@ def validate_prediction_type(value: str | PredictionType) -> PredictionType:
     try:
         return PredictionType(str(value))
     except ValueError as exc:
-        raise ValueError("prediction_type must be 'epsilon'") from exc
+        raise ValueError("prediction_parameterization must be 'epsilon' or 'v'") from exc
+
+
+def prediction_parameterization_from_config(config: dict) -> PredictionType:
+    """Return canonical prediction parameterization from config/checkpoint metadata.
+
+    Existing checkpoints used `prediction_type`; checkpoints without either field are
+    interpreted as epsilon for backward compatibility.
+    """
+    canonical = config.get("prediction_parameterization")
+    legacy = config.get("prediction_type")
+    if canonical is not None and legacy is not None and str(canonical) != str(legacy):
+        raise ValueError(
+            "Conflicting prediction parameterization fields: "
+            f"prediction_parameterization={canonical!r}, prediction_type={legacy!r}"
+        )
+    return validate_prediction_type(canonical if canonical is not None else legacy if legacy is not None else "epsilon")
+
+
+def ensure_config_matches_checkpoint_parameterization(
+    *,
+    config: dict,
+    checkpoint_config: dict,
+) -> PredictionType:
+    """Validate that runtime config agrees with checkpoint parameterization."""
+    config_value = prediction_parameterization_from_config(config)
+    checkpoint_value = prediction_parameterization_from_config(checkpoint_config)
+    if config_value is not checkpoint_value:
+        raise ValueError(
+            "Config/checkpoint prediction parameterization mismatch: "
+            f"config={config_value.value}, checkpoint={checkpoint_value.value}"
+        )
+    return checkpoint_value
 
 
 def project_symmetric_zero_diagonal(x: torch.Tensor, pair_mask: torch.Tensor) -> torch.Tensor:
@@ -133,6 +166,46 @@ class GaussianDiffusion:
         """Reconstruct x_0 from x_t and exact/model-predicted epsilon."""
         alpha_bar = self.alphas_cumprod.to(x_t.device, dtype=torch.float32)[t].view(-1, 1, 1, 1)
         return (x_t.float() - (1.0 - alpha_bar).sqrt() * epsilon.float()) / alpha_bar.sqrt()
+
+    def v_target(self, x_start: torch.Tensor, t: torch.Tensor, epsilon: torch.Tensor) -> torch.Tensor:
+        """Compute v = sqrt(alpha_bar) * epsilon - sqrt(1-alpha_bar) * x0."""
+        alpha_bar = self.alphas_cumprod.to(x_start.device, dtype=torch.float32)[t].view(-1, 1, 1, 1)
+        return alpha_bar.sqrt() * epsilon.float() - (1.0 - alpha_bar).sqrt() * x_start.float()
+
+    def training_target(
+        self,
+        *,
+        x_start: torch.Tensor,
+        t: torch.Tensor,
+        epsilon: torch.Tensor,
+        prediction_type: str | PredictionType,
+    ) -> torch.Tensor:
+        """Return the training target for the requested output parameterization."""
+        parameterization = validate_prediction_type(prediction_type)
+        if parameterization is PredictionType.EPSILON:
+            return epsilon.float()
+        return self.v_target(x_start, t, epsilon)
+
+    def predict_x0_epsilon_from_model_output(
+        self,
+        *,
+        x_t: torch.Tensor,
+        t: torch.Tensor,
+        model_output: torch.Tensor,
+        prediction_type: str | PredictionType,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Convert model output to `(x0_hat, epsilon_hat)` in float32."""
+        parameterization = validate_prediction_type(prediction_type)
+        alpha_bar = self.alphas_cumprod.to(x_t.device, dtype=torch.float32)[t].view(-1, 1, 1, 1)
+        x_t = x_t.float()
+        model_output = model_output.float()
+        if parameterization is PredictionType.EPSILON:
+            epsilon_hat = model_output
+            x0_hat = self.predict_x0_from_epsilon(x_t, t, epsilon_hat)
+            return x0_hat, epsilon_hat
+        x0_hat = alpha_bar.sqrt() * x_t - (1.0 - alpha_bar).sqrt() * model_output
+        epsilon_hat = (1.0 - alpha_bar).sqrt() * x_t + alpha_bar.sqrt() * model_output
+        return x0_hat, epsilon_hat
 
     def posterior_mean_from_x0_epsilon(
         self,

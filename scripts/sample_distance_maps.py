@@ -11,7 +11,7 @@ import numpy as np
 import torch
 
 from protein_distance_diffusion.data.collate import make_pair_mask, make_sequence_separation
-from protein_distance_diffusion.diffusion.gaussian import GaussianDiffusion
+from protein_distance_diffusion.diffusion.gaussian import GaussianDiffusion, prediction_parameterization_from_config
 from protein_distance_diffusion.diffusion.sampling import sample_ddpm
 from protein_distance_diffusion.diffusion.schedules import cosine_beta_schedule
 from protein_distance_diffusion.evaluation.plots import save_heatmap
@@ -33,9 +33,7 @@ def main() -> None:
     args = parser.parse_args()
     ckpt = load_checkpoint(args.checkpoint)
     config = ckpt["config"]
-    prediction_type = str(config.get("prediction_type", "epsilon"))
-    if prediction_type != "epsilon":
-        raise ValueError(f"Unsupported checkpoint prediction_type: {prediction_type}")
+    prediction_type = prediction_parameterization_from_config(config)
     model_cfg = dict(config["model"])
     if "channel_multipliers" in model_cfg:
         model_cfg["channel_multipliers"] = tuple(model_cfg["channel_multipliers"])
@@ -91,7 +89,13 @@ def main() -> None:
             random_seed=args.seed,
             checkpoint=str(args.checkpoint),
             weights=args.weights,
-            sampling_config=json.dumps({"method": "ddpm", "prediction_type": prediction_type}),
+            sampling_config=json.dumps(
+                {
+                    "method": "ddpm",
+                    "prediction_parameterization": prediction_type.value,
+                    "prediction_type": prediction_type.value,
+                }
+            ),
         )
         save_heatmap(projected, args.output_dir / f"sample_{i:04d}.png", title=f"N={args.length} raw/projected")
     print(f"Wrote {args.num_samples} samples to {args.output_dir}")

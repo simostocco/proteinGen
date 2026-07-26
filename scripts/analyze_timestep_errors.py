@@ -21,8 +21,9 @@ from protein_distance_diffusion.data.collate import collate_distance_maps
 from protein_distance_diffusion.data.preprocess import load_manifest
 from protein_distance_diffusion.diffusion.gaussian import (
     GaussianDiffusion,
+    ensure_config_matches_checkpoint_parameterization,
+    prediction_parameterization_from_config,
     sample_symmetric_noise,
-    validate_prediction_type,
 )
 from protein_distance_diffusion.diffusion.schedules import cosine_beta_schedule
 from protein_distance_diffusion.models.unet import DistanceUNet
@@ -226,6 +227,9 @@ def _load_item(row: pd.Series, normalization: dict[str, Any]) -> dict[str, Any]:
 def _metrics_for_prediction(
     *,
     name: str,
+    target_name: str = "epsilon",
+    target_true: torch.Tensor | None = None,
+    target_hat: torch.Tensor | None = None,
     eps_true: torch.Tensor,
     eps_hat: torch.Tensor,
     x0: torch.Tensor,
@@ -233,10 +237,18 @@ def _metrics_for_prediction(
     valid: torch.Tensor,
     scale: float,
 ) -> dict[str, Any]:
+    target_true = eps_true if target_true is None else target_true
+    target_hat = eps_hat if target_hat is None else target_hat
+    target_values = target_true[valid]
+    target_pred = target_hat[valid]
     true = eps_true[valid]
     pred = eps_hat[valid]
     clean = x0[valid]
     recon = x0_hat[valid]
+    target_err = target_pred - target_values
+    target_corr = float("nan")
+    if target_values.numel() > 1 and float(target_values.std()) > 0 and float(target_pred.std()) > 0:
+        target_corr = float(torch.corrcoef(torch.stack([target_values.float(), target_pred.float()]))[0, 1].cpu())
     err = pred - true
     x0_err = recon - clean
     corr = float("nan")
@@ -246,8 +258,12 @@ def _metrics_for_prediction(
     true_summary = tensor_summary(true)
     x0_summary = tensor_summary(recon)
     physical = recon * float(scale)
-    return {
+    metrics = {
         "predictor": name,
+        "target_parameterization": target_name,
+        "target_mse": float(target_err.square().mean().cpu()),
+        "target_mae": float(target_err.abs().mean().cpu()),
+        "target_correlation": target_corr,
         "epsilon_mse": float(err.square().mean().cpu()),
         "epsilon_mae": float(err.abs().mean().cpu()),
         "epsilon_correlation": corr,
@@ -270,6 +286,14 @@ def _metrics_for_prediction(
         "negative_reconstructed_physical_fraction": float((physical < 0).float().mean().cpu()),
         "nonfinite_fraction": float((~torch.isfinite(recon)).float().mean().cpu()),
     }
+    metrics[f"{target_name}_mse"] = metrics["target_mse"]
+    metrics[f"{target_name}_mae"] = metrics["target_mae"]
+    metrics[f"{target_name}_correlation"] = metrics["target_correlation"]
+    if target_name == "v":
+        metrics["epsilon_reconstruction_mse"] = metrics["epsilon_mse"]
+        metrics["epsilon_reconstruction_mae"] = metrics["epsilon_mae"]
+        metrics["epsilon_reconstruction_correlation"] = metrics["epsilon_correlation"]
+    return metrics
 
 
 def _build_model(config: dict[str, Any], checkpoint: dict[str, Any], *, weights: str) -> DistanceUNet:
@@ -315,7 +339,7 @@ def write_schedule_summary(
         "sqrt_alpha_bar_t_terminal": float(alpha_bars[-1].sqrt()),
         "terminal_snr": terminal / max(1.0 - terminal, 1e-12),
         "selected_timesteps": selected,
-        "prediction_parameterization": config.get("prediction_type", "epsilon"),
+        "prediction_parameterization": prediction_parameterization_from_config(config).value,
         "normalization": {"mode": normalization.get("mode"), "scale": normalization.get("scale")},
         "q_xT_close_to_standard_normal": bool(terminal < 1e-4),
     }
@@ -444,7 +468,10 @@ def analyze(args: argparse.Namespace) -> None:
         raise ValueError("Refusing to run timestep diagnostics on a test manifest")
     checkpoint = load_checkpoint(args.checkpoint, map_location="cpu")
     config = checkpoint["config"]
-    validate_prediction_type(config.get("prediction_type", "epsilon"))
+    prediction_type = ensure_config_matches_checkpoint_parameterization(
+        config=load_yaml(args.config),
+        checkpoint_config=config,
+    )
     normalization = checkpoint.get("normalization") or json.loads(
         Path(load_yaml(args.config)["normalization_file"]).read_text()
     )
@@ -491,19 +518,33 @@ def analyze(args: argparse.Namespace) -> None:
             t = torch.tensor([t_value], dtype=torch.long)
             eps = sample_symmetric_noise(tuple(x0.shape), mask, generator=generator)
             x_t, eps = diffusion.q_sample(x0, t, mask, noise=eps)
+            target = diffusion.training_target(
+                x_start=x0,
+                t=t,
+                epsilon=eps,
+                prediction_type=prediction_type,
+            )
             with torch.no_grad():
-                eps_model = model(x_t.float(), t, torch.tensor([length]), sep, mask).float()
+                model_output = model(x_t.float(), t, torch.tensor([length]), sep, mask).float()
             alpha_bar = diffusion.alphas_cumprod[t_value]
             predictors = {
-                "model": eps_model,
-                "zero": torch.zeros_like(eps),
+                "model": model_output,
+                "zero": torch.zeros_like(target),
                 "noisy_input": x_t,
-                "oracle": eps,
+                "oracle": target,
             }
-            for name, eps_hat in predictors.items():
-                x0_hat = diffusion.predict_x0_from_epsilon(x_t, t, eps_hat)
+            for name, output_hat in predictors.items():
+                x0_hat, eps_hat = diffusion.predict_x0_epsilon_from_model_output(
+                    x_t=x_t,
+                    t=t,
+                    model_output=output_hat,
+                    prediction_type=prediction_type,
+                )
                 metrics = _metrics_for_prediction(
                     name=name,
+                    target_name=prediction_type.value,
+                    target_true=_crop_to_original(target, length),
+                    target_hat=_crop_to_original(output_hat, length),
                     eps_true=_crop_to_original(eps, length),
                     eps_hat=_crop_to_original(eps_hat, length),
                     x0=_crop_to_original(x0, length),
@@ -530,50 +571,90 @@ def analyze(args: argparse.Namespace) -> None:
                 terminal_gaussian.update(_crop_to_original(pure, length)[valid])
                 terminal_residual.update(_crop_to_original(residual, length)[valid])
                 with torch.no_grad():
-                    eps_forward = model(x_t.float(), t, torch.tensor([length]), sep, mask).float()
-                    eps_pure = model(pure.float(), t, torch.tensor([length]), sep, mask).float()
+                    output_forward = model(x_t.float(), t, torch.tensor([length]), sep, mask).float()
+                    output_pure = model(pure.float(), t, torch.tensor([length]), sep, mask).float()
+                _, eps_forward = diffusion.predict_x0_epsilon_from_model_output(
+                    x_t=x_t,
+                    t=t,
+                    model_output=output_forward,
+                    prediction_type=prediction_type,
+                )
+                _, eps_pure = diffusion.predict_x0_epsilon_from_model_output(
+                    x_t=pure,
+                    t=t,
+                    model_output=output_pure,
+                    prediction_type=prediction_type,
+                )
                 terminal_behavior["forward_eps_prediction"].update(_crop_to_original(eps_forward, length)[valid])
                 terminal_behavior["gaussian_eps_prediction"].update(_crop_to_original(eps_pure, length)[valid])
                 terminal_behavior["forward_x0_hat"].update(
-                    _crop_to_original(diffusion.predict_x0_from_epsilon(x_t, t, eps_forward), length)[valid]
+                    _crop_to_original(
+                        diffusion.predict_x0_epsilon_from_model_output(
+                            x_t=x_t,
+                            t=t,
+                            model_output=output_forward,
+                            prediction_type=prediction_type,
+                        )[0],
+                        length,
+                    )[valid]
                 )
                 terminal_behavior["gaussian_x0_hat"].update(
-                    _crop_to_original(diffusion.predict_x0_from_epsilon(pure, t, eps_pure), length)[valid]
+                    _crop_to_original(
+                        diffusion.predict_x0_epsilon_from_model_output(
+                            x_t=pure,
+                            t=t,
+                            model_output=output_pure,
+                            prediction_type=prediction_type,
+                        )[0],
+                        length,
+                    )[valid]
                 )
             progress.update()
     progress.close()
 
     raw = pd.DataFrame(rows)
     group_cols = ["timestep", "predictor"]
-    summary = raw.groupby(group_cols, as_index=False).agg(
-        {
-            "epsilon_mse": "mean",
-            "epsilon_mae": "mean",
-            "epsilon_correlation": "mean",
-            "x0_reconstruction_mse_normalized": "mean",
-            "x0_reconstruction_mae_normalized": "mean",
-            "x0_reconstruction_mae_angstrom": "mean",
-            "x0_reconstruction_rmse_angstrom": "mean",
-            "negative_reconstructed_physical_fraction": "mean",
-            "nonfinite_fraction": "mean",
-            "snr": "first",
-            "amplification_factor": "first",
-            "valid_pair_count": "sum",
-            "sample_count": "sum",
-            "original_length": ["min", "max"],
-            "padded_length": ["min", "max"],
-            "epsilon_prediction_min": "min",
-            "epsilon_prediction_max": "max",
-            "epsilon_prediction_mean": "mean",
-            "epsilon_prediction_std": "mean",
-            "true_epsilon_min": "min",
-            "true_epsilon_max": "max",
-            "x0_hat_min": "min",
-            "x0_hat_max": "max",
-            "x0_hat_mean": "mean",
-            "x0_hat_std": "mean",
-        }
-    )
+    aggregations: dict[str, Any] = {
+        "target_mse": "mean",
+        "target_mae": "mean",
+        "target_correlation": "mean",
+        "epsilon_mse": "mean",
+        "epsilon_mae": "mean",
+        "epsilon_correlation": "mean",
+        "x0_reconstruction_mse_normalized": "mean",
+        "x0_reconstruction_mae_normalized": "mean",
+        "x0_reconstruction_mae_angstrom": "mean",
+        "x0_reconstruction_rmse_angstrom": "mean",
+        "negative_reconstructed_physical_fraction": "mean",
+        "nonfinite_fraction": "mean",
+        "snr": "first",
+        "amplification_factor": "first",
+        "valid_pair_count": "sum",
+        "sample_count": "sum",
+        "original_length": ["min", "max"],
+        "padded_length": ["min", "max"],
+        "epsilon_prediction_min": "min",
+        "epsilon_prediction_max": "max",
+        "epsilon_prediction_mean": "mean",
+        "epsilon_prediction_std": "mean",
+        "true_epsilon_min": "min",
+        "true_epsilon_max": "max",
+        "x0_hat_min": "min",
+        "x0_hat_max": "max",
+        "x0_hat_mean": "mean",
+        "x0_hat_std": "mean",
+    }
+    for optional in (
+        "v_mse",
+        "v_mae",
+        "v_correlation",
+        "epsilon_reconstruction_mse",
+        "epsilon_reconstruction_mae",
+        "epsilon_reconstruction_correlation",
+    ):
+        if optional in raw.columns:
+            aggregations[optional] = "mean"
+    summary = raw.groupby(group_cols, as_index=False).agg(aggregations)
     summary.columns = [
         "_".join(str(part) for part in col if part) if isinstance(col, tuple) else str(col) for col in summary.columns
     ]
