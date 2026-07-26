@@ -22,6 +22,7 @@ ema_decay: 0.999
 
 # Più significativo del precedente baseline da 100 step.
 diffusion_steps: 500
+prediction_type: epsilon
 
 model:
   input_channels: 3

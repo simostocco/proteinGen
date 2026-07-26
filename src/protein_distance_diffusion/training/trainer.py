@@ -18,7 +18,11 @@ from tqdm.auto import tqdm
 
 from protein_distance_diffusion.data.collate import collate_distance_maps
 from protein_distance_diffusion.data.dataset import DistanceMapDataset
-from protein_distance_diffusion.diffusion.gaussian import GaussianDiffusion, masked_upper_triangular_loss
+from protein_distance_diffusion.diffusion.gaussian import (
+    GaussianDiffusion,
+    masked_upper_triangular_loss,
+    validate_prediction_type,
+)
 from protein_distance_diffusion.diffusion.sampling import sample_ddpm
 from protein_distance_diffusion.diffusion.schedules import cosine_beta_schedule
 from protein_distance_diffusion.models.unet import DistanceUNet
@@ -446,6 +450,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
     )
     model = build_model_from_config(config["model"]).to(device)
     diffusion = GaussianDiffusion(cosine_beta_schedule(int(config.get("diffusion_steps", 100)))).to(device)
+    prediction_type = validate_prediction_type(config.get("prediction_type", "epsilon"))
+    config["prediction_type"] = str(prediction_type.value)
     _patch_torch_pytree_compatibility()
     opt = torch.optim.AdamW(model.parameters(), lr=float(config.get("learning_rate", 1e-4)))
     ema = EMA(model, decay=float(config.get("ema_decay", 0.999)))

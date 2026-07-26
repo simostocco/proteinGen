@@ -2,7 +2,25 @@
 
 from __future__ import annotations
 
+from enum import Enum
+
 import torch
+
+
+class PredictionType(str, Enum):  # noqa: UP042
+    """Supported diffusion model output parameterizations."""
+
+    EPSILON = "epsilon"
+
+
+def validate_prediction_type(value: str | PredictionType) -> PredictionType:
+    """Validate and normalize the diffusion prediction parameterization."""
+    if isinstance(value, PredictionType):
+        return value
+    try:
+        return PredictionType(str(value))
+    except ValueError as exc:
+        raise ValueError("prediction_type must be 'epsilon'") from exc
 
 
 def project_symmetric_zero_diagonal(x: torch.Tensor, pair_mask: torch.Tensor) -> torch.Tensor:
@@ -57,6 +75,10 @@ class GaussianDiffusion:
         self.betas = betas.float()
         self.alphas = 1.0 - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, dim=0)
+        previous = torch.cat([torch.ones(1, dtype=self.alphas_cumprod.dtype), self.alphas_cumprod[:-1]])
+        self.alphas_cumprod_prev = previous
+        self.posterior_variance = self.betas * (1.0 - previous) / (1.0 - self.alphas_cumprod)
+        self.posterior_variance = self.posterior_variance.clamp_min(0.0)
 
     @property
     def timesteps(self) -> int:
@@ -75,6 +97,8 @@ class GaussianDiffusion:
         self.betas = self.betas.to(device)
         self.alphas = self.alphas.to(device)
         self.alphas_cumprod = self.alphas_cumprod.to(device)
+        self.alphas_cumprod_prev = self.alphas_cumprod_prev.to(device)
+        self.posterior_variance = self.posterior_variance.to(device)
         return self
 
     def q_sample(
@@ -104,6 +128,27 @@ class GaussianDiffusion:
         a = self.alphas_cumprod.to(x_start.device)[t].view(-1, 1, 1, 1)
         x_t = a.sqrt() * x_start + (1.0 - a).sqrt() * eps
         return project_symmetric_zero_diagonal(x_t, pair_mask), eps
+
+    def predict_x0_from_epsilon(self, x_t: torch.Tensor, t: torch.Tensor, epsilon: torch.Tensor) -> torch.Tensor:
+        """Reconstruct x_0 from x_t and exact/model-predicted epsilon."""
+        alpha_bar = self.alphas_cumprod.to(x_t.device, dtype=torch.float32)[t].view(-1, 1, 1, 1)
+        return (x_t.float() - (1.0 - alpha_bar).sqrt() * epsilon.float()) / alpha_bar.sqrt()
+
+    def posterior_mean_from_x0_epsilon(
+        self,
+        *,
+        x_t: torch.Tensor,
+        t: torch.Tensor,
+        x0_hat: torch.Tensor,
+    ) -> torch.Tensor:
+        """Compute DDPM q(x_{t-1} | x_t, x0_hat) posterior mean."""
+        beta_t = self.betas.to(x_t.device, dtype=torch.float32)[t].view(-1, 1, 1, 1)
+        alpha_t = self.alphas.to(x_t.device, dtype=torch.float32)[t].view(-1, 1, 1, 1)
+        alpha_bar_t = self.alphas_cumprod.to(x_t.device, dtype=torch.float32)[t].view(-1, 1, 1, 1)
+        alpha_bar_prev = self.alphas_cumprod_prev.to(x_t.device, dtype=torch.float32)[t].view(-1, 1, 1, 1)
+        coef_x0 = beta_t * alpha_bar_prev.sqrt() / (1.0 - alpha_bar_t)
+        coef_xt = alpha_t.sqrt() * (1.0 - alpha_bar_prev) / (1.0 - alpha_bar_t)
+        return coef_x0 * x0_hat.float() + coef_xt * x_t.float()
 
 
 def masked_upper_triangular_loss(

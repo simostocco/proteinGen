@@ -95,3 +95,46 @@ def edm_diagnostics(matrix: np.ndarray) -> dict[str, float]:
         "negative_eigenvalue_mass_fraction": float(np.sum(np.abs(neg)) / total),
         "rank3_residual_energy_fraction": residual,
     }
+
+
+def contact_fractions(matrix: np.ndarray) -> dict[str, float]:
+    """Return off-diagonal contact fractions at common Angstrom thresholds."""
+    d = np.asarray(matrix, dtype=np.float64)
+    offdiag = ~np.eye(d.shape[0], dtype=bool)
+    values = d[offdiag]
+    return {f"contact_fraction_{threshold}A": float(np.mean(values <= threshold)) for threshold in (6, 8, 10)}
+
+
+def generated_matrix_report(matrix: np.ndarray, *, scale: float) -> dict[str, object]:
+    """Compute physical plausibility diagnostics for one generated normalized matrix."""
+    raw = np.asarray(matrix, dtype=np.float64)
+    physical = raw * float(scale)
+    offdiag = ~np.eye(physical.shape[0], dtype=bool)
+    report: dict[str, object] = {
+        "raw_normalized_min": float(np.nanmin(raw)),
+        "raw_normalized_max": float(np.nanmax(raw)),
+        "physical_distance_min_angstrom": float(np.nanmin(physical)),
+        "physical_distance_max_angstrom": float(np.nanmax(physical)),
+        "negative_distance_fraction": float(np.mean(physical[offdiag] < 0.0)),
+        "nonfinite_fraction": float(np.mean(~np.isfinite(physical))),
+    }
+    report.update(basic_identity_metrics(physical))
+    report.update(local_chain_statistics(physical, separations=(1,)))
+    report["adjacent_residue_distance_mean"] = report.pop("sep_1_mean")
+    report["adjacent_residue_distance_std"] = report.pop("sep_1_std")
+    report.update(contact_fractions(physical))
+    report.update(triangle_violation_metrics(physical, num_triplets=1024, seed=42))
+    report.update(edm_diagnostics(physical))
+    centered = np.eye(physical.shape[0]) - np.ones_like(physical) / physical.shape[0]
+    gram = -0.5 * centered @ (physical * physical) @ centered
+    report["effective_embedding_rank"] = int(np.sum(np.linalg.eigvalsh(gram) > 1e-6))
+    report["physically_plausible"] = bool(
+        report["finite"]
+        and report["negative_distance_fraction"] == 0.0
+        and report["physical_distance_max_angstrom"] < 2000.0
+        and report["max_abs_diagonal"] < 1e-5
+        and report["symmetry_error"] < 1e-5
+        and report["negative_eigenvalue_mass_fraction"] < 0.05
+        and report["triangle_violation_fraction"] < 0.05
+    )
+    return report

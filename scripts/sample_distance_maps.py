@@ -27,14 +27,25 @@ def main() -> None:
     parser.add_argument("--num-samples", type=int, default=16)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--weights", choices=("ema", "model"), default="ema")
+    parser.add_argument("--trace-every", type=int, default=None)
+    parser.add_argument("--trace-output", type=Path, default=None)
     args = parser.parse_args()
     ckpt = load_checkpoint(args.checkpoint)
     config = ckpt["config"]
+    prediction_type = str(config.get("prediction_type", "epsilon"))
+    if prediction_type != "epsilon":
+        raise ValueError(f"Unsupported checkpoint prediction_type: {prediction_type}")
     model_cfg = dict(config["model"])
     if "channel_multipliers" in model_cfg:
         model_cfg["channel_multipliers"] = tuple(model_cfg["channel_multipliers"])
     model = DistanceUNet(**model_cfg)
-    model.load_state_dict(ckpt.get("ema", ckpt["model"]))
+    if args.weights == "ema":
+        if "ema" not in ckpt:
+            raise ValueError("EMA weights requested but checkpoint does not contain an 'ema' state")
+        model.load_state_dict(ckpt["ema"])
+    else:
+        model.load_state_dict(ckpt["model"])
     model.eval()
     device = torch.device("cpu")
     side = args.length
@@ -45,29 +56,45 @@ def main() -> None:
     sep = make_sequence_separation(lengths, side)
     gen = torch.Generator(device=device).manual_seed(args.seed)
     diffusion = GaussianDiffusion(cosine_beta_schedule(int(config.get("diffusion_steps", 100))))
-    samples = sample_ddpm(
-        model, diffusion, lengths=lengths, pair_mask=pair_mask, sequence_separation=sep, device=device, generator=gen
+    sampled = sample_ddpm(
+        model,
+        diffusion,
+        lengths=lengths,
+        pair_mask=pair_mask,
+        sequence_separation=sep,
+        device=device,
+        generator=gen,
+        prediction_type=prediction_type,
+        trace_every=args.trace_every,
     )
+    if args.trace_every is not None:
+        samples, trace = sampled
+    else:
+        samples = sampled
+        trace = None
     norm = ckpt["normalization"]
     scale = float(norm.get("scale", 1.0))
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    if trace is not None and args.trace_output is not None:
+        args.trace_output.parent.mkdir(parents=True, exist_ok=True)
+        args.trace_output.write_text(json.dumps(trace, indent=2, sort_keys=True) + "\n")
     for i in range(args.num_samples):
-        normalized = samples[i, 0, : args.length, : args.length].cpu().numpy()
+        normalized = np.asarray(samples[i, 0, : args.length, : args.length].detach().cpu().tolist(), dtype=np.float32)
         physical = normalized * scale
-        unclamped = physical.copy()
-        clamped = np.clip(physical, 0.0, None)
+        projected = 0.5 * (physical + physical.T)
+        np.fill_diagonal(projected, 0.0)
         np.savez_compressed(
             args.output_dir / f"sample_{i:04d}.npz",
             requested_length=args.length,
-            normalized_matrix=normalized,
-            physical_distance_matrix_angstrom=physical,
-            unclamped_matrix_angstrom=unclamped,
-            clamped_matrix_angstrom=clamped,
+            raw_normalized_matrix=normalized,
+            raw_physical_distance_matrix_angstrom=physical,
+            projected_physical_distance_matrix_angstrom=projected,
             random_seed=args.seed,
             checkpoint=str(args.checkpoint),
-            sampling_config=json.dumps({"method": "ddpm"}),
+            weights=args.weights,
+            sampling_config=json.dumps({"method": "ddpm", "prediction_type": prediction_type}),
         )
-        save_heatmap(clamped, args.output_dir / f"sample_{i:04d}.png", title=f"N={args.length}")
+        save_heatmap(projected, args.output_dir / f"sample_{i:04d}.png", title=f"N={args.length} raw/projected")
     print(f"Wrote {args.num_samples} samples to {args.output_dir}")
 
 
