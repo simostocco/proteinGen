@@ -8,7 +8,7 @@ import csv
 import json
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,6 +29,53 @@ from protein_distance_diffusion.models.unet import DistanceUNet
 from protein_distance_diffusion.training.checkpointing import load_checkpoint
 
 DEFAULT_TIMESTEPS = [0, 1, 5, 10, 25, 50, 100, 200, 300, 400, 450, 475, 490, 499]
+PREDICTORS = ("model", "zero", "noisy_input", "oracle")
+
+
+class PlotSpec(NamedTuple):
+    """One plot generated from the aggregated timestep metrics CSV."""
+
+    label: str
+    y_column: str
+    filename: str
+    x_column: str = "timestep"
+    x_label: str = "timestep"
+    log_x: bool = False
+    log_y: bool = False
+    compare_predictors: bool = True
+
+
+PLOT_SPECS = (
+    PlotSpec("epsilon MSE", "epsilon_mse_mean", "epsilon_mse_mean_by_timestep.png", log_y=True),
+    PlotSpec("epsilon MAE", "epsilon_mae_mean", "epsilon_mae_mean_by_timestep.png"),
+    PlotSpec(
+        "x0 reconstruction RMSE (Angstrom)",
+        "x0_reconstruction_rmse_angstrom_mean",
+        "x0_reconstruction_rmse_angstrom_mean_by_timestep.png",
+        log_y=True,
+    ),
+    PlotSpec(
+        "negative reconstructed physical fraction",
+        "negative_reconstructed_physical_fraction_mean",
+        "negative_reconstructed_physical_fraction_mean_by_timestep.png",
+    ),
+    PlotSpec(
+        "epsilon-to-x0 amplification factor",
+        "amplification_factor_first",
+        "amplification_factor_first_by_timestep.png",
+        log_y=True,
+        compare_predictors=False,
+    ),
+    PlotSpec(
+        "epsilon MSE",
+        "epsilon_mse_mean",
+        "epsilon_mse_mean_by_snr.png",
+        x_column="snr_first",
+        x_label="SNR",
+        log_x=True,
+        log_y=True,
+    ),
+)
 
 
 def selected_timesteps(total_steps: int) -> list[int]:
@@ -276,6 +323,119 @@ def write_schedule_summary(
     return summary
 
 
+def _load_json_if_present(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text())
+
+
+def _required_plot_columns() -> set[str]:
+    columns = {"timestep", "predictor"}
+    for spec in PLOT_SPECS:
+        columns.add(spec.x_column)
+        columns.add(spec.y_column)
+    return columns
+
+
+def validate_aggregated_metrics_schema(frame: pd.DataFrame) -> None:
+    """Validate the canonical aggregated timestep metric columns."""
+    missing = sorted(_required_plot_columns() - set(frame.columns))
+    if missing:
+        raise ValueError(
+            "timestep_metrics.csv is missing required aggregated column(s): "
+            + ", ".join(missing)
+            + ". Expected canonical names such as epsilon_mse_mean and snr_first."
+        )
+
+
+def _plot_spec(frame: pd.DataFrame, output_dir: Path, spec: PlotSpec) -> None:
+    plt.figure()
+    predictors = PREDICTORS if spec.compare_predictors else ("model",)
+    for predictor in predictors:
+        rows = frame[frame["predictor"] == predictor].sort_values(spec.x_column)
+        if rows.empty:
+            continue
+        plot_rows = rows
+        if spec.log_x:
+            plot_rows = plot_rows[plot_rows[spec.x_column] > 0]
+        if spec.log_y:
+            plot_rows = plot_rows[plot_rows[spec.y_column] > 0]
+        if plot_rows.empty:
+            continue
+        plt.plot(plot_rows[spec.x_column], plot_rows[spec.y_column], marker="o", label=predictor)
+    if spec.log_x:
+        plt.xscale("log")
+    if spec.log_y:
+        plt.yscale("log")
+    plt.xlabel(spec.x_label)
+    plt.ylabel(spec.label)
+    if spec.compare_predictors:
+        plt.legend()
+    plt.tight_layout()
+    plt.savefig(output_dir / spec.filename)
+    plt.close()
+
+
+def generate_recommendations(output_dir: Path, frame: pd.DataFrame, *, weights: str) -> None:
+    """Generate recommendations.md from existing numerical outputs."""
+    terminal = _load_json_if_present(output_dir / "terminal_distribution.json")
+    schedule = _load_json_if_present(output_dir / "schedule_summary.json")
+    model_rows = frame[frame["predictor"] == "model"].sort_values("timestep")
+    high = model_rows.tail(3)
+    high_epsilon_mse = float(high["epsilon_mse_mean"].mean()) if not high.empty else float("nan")
+    high_rmse = float(high["x0_reconstruction_rmse_angstrom_mean"].mean()) if not high.empty else float("nan")
+    terminal_stats = terminal.get("forward_q_xT", {})
+    terminal_std = terminal_stats.get("std")
+    terminal_close = bool(isinstance(terminal_std, int | float) and 0.8 < float(terminal_std) < 1.2)
+    theoretical_terminal_close = schedule.get("q_xT_close_to_standard_normal", "unknown")
+    terminal_l1 = terminal.get("histogram_l1_distance_q_xT_vs_gaussian", "unknown")
+    high_t = int(high["timestep"].max()) if not high.empty else "unknown"
+    high_t_rows = frame[frame["timestep"] == high_t] if isinstance(high_t, int) else pd.DataFrame()
+    predictor_lines = []
+    if not high_t_rows.empty:
+        ranked = high_t_rows.sort_values("epsilon_mse_mean")[["predictor", "epsilon_mse_mean"]]
+        predictor_lines = [
+            f"- `{row.predictor}` epsilon MSE at t={high_t}: `{float(row.epsilon_mse_mean):.6g}`"
+            for row in ranked.itertuples()
+        ]
+    rec = [
+        "# Timestep Diagnostic Recommendations",
+        "",
+        f"Weights evaluated: `{weights}`.",
+        f"Terminal q(x_T) empirically close to N(0,I): `{terminal_close}`.",
+        f"Terminal q(x_T) theoretically close to N(0,I): `{theoretical_terminal_close}`.",
+        f"Histogram L1 distance q(x_T) vs N(0,I): `{terminal_l1}`.",
+        f"High-timestep model epsilon MSE mean: `{high_epsilon_mse:.6g}`.",
+        f"High-timestep model x0 RMSE Angstrom mean: `{high_rmse:.6g}`.",
+        "",
+        "## High-Timestep Baseline Comparison",
+        "",
+        *(predictor_lines or ["- No high-timestep predictor comparison was available."]),
+        "",
+        "## Decision Notes",
+        "",
+        "- Continue the same training only if repeated diagnostics show high-timestep errors improving.",
+        "- Consider zero-terminal-SNR or schedule changes if q(x_T) is not close to N(0,I).",
+        "- Consider centered/standardized normalization if scale-only normalization leaves a large terminal shift.",
+        "- Consider v-prediction if epsilon-to-x0 amplification dominates high-timestep failures.",
+        "- Consider min-SNR loss weighting if timestep performance is strongly unbalanced.",
+        "- Treat x0 clipping/dynamic thresholding only as a stabilizer, not proof of valid generation.",
+    ]
+    (output_dir / "recommendations.md").write_text("\n".join(rec) + "\n")
+
+
+def generate_plots_and_recommendations(output_dir: Path, *, weights: str) -> None:
+    """Generate plots and recommendations from canonical aggregated diagnostic outputs."""
+    metrics_path = output_dir / "timestep_metrics.csv"
+    if not metrics_path.exists():
+        raise FileNotFoundError(f"Missing aggregated metrics CSV: {metrics_path}")
+    frame = pd.read_csv(metrics_path)
+    validate_aggregated_metrics_schema(frame)
+    for spec in PLOT_SPECS:
+        _plot_spec(frame, output_dir, spec)
+    generate_recommendations(output_dir, frame, weights=weights)
+
+
 def analyze(args: argparse.Namespace) -> None:
     """Run the full diagnostic."""
     output_dir = Path(args.output_dir)
@@ -433,58 +593,40 @@ def analyze(args: argparse.Namespace) -> None:
     }
     (output_dir / "terminal_distribution.json").write_text(json.dumps(terminal, indent=2, sort_keys=True) + "\n")
 
-    model_rows = summary[summary["predictor"] == "model"]
-    for metric in ("epsilon_mse", "x0_reconstruction_mae_angstrom"):
-        plt.figure()
-        plt.plot(model_rows["timestep"], model_rows[metric], marker="o")
-        plt.xlabel("timestep")
-        plt.ylabel(metric)
-        plt.tight_layout()
-        plt.savefig(output_dir / f"{metric}_by_timestep.png")
-        plt.close()
-        plt.figure()
-        plt.plot(model_rows["snr"], model_rows[metric], marker="o")
-        plt.xscale("log")
-        plt.xlabel("SNR")
-        plt.ylabel(metric)
-        plt.tight_layout()
-        plt.savefig(output_dir / f"{metric}_by_snr.png")
-        plt.close()
-
-    high = model_rows.sort_values("timestep").tail(3)
-    terminal_close = bool(terminal["forward_q_xT"].get("std", 0) > 0.8 and terminal["forward_q_xT"].get("std", 0) < 1.2)
-    rec = [
-        "# Timestep Diagnostic Recommendations",
-        "",
-        f"Weights evaluated: `{args.weights}`.",
-        f"Terminal q(x_T) close to N(0,I): `{terminal_close}`.",
-        f"High-timestep model epsilon MSE mean: `{float(high['epsilon_mse'].mean()):.6g}`.",
-        f"High-timestep x0 MAE Angstrom mean: `{float(high['x0_reconstruction_mae_angstrom'].mean()):.6g}`.",
-        "",
-        "- Continue the same training only if repeated diagnostics show high-timestep errors improving.",
-        "- Consider zero-terminal-SNR or schedule changes if q(x_T) is not close to N(0,I).",
-        "- Consider centered/standardized normalization if terminal residual or mean shift is large.",
-        "- Consider v-prediction if epsilon-to-x0 amplification dominates high-timestep failures.",
-        "- Consider min-SNR loss weighting if timestep errors are strongly unbalanced.",
-        "- Treat x0 clipping/dynamic thresholding only as a stabilizer, not proof of valid generation.",
-    ]
-    (output_dir / "recommendations.md").write_text("\n".join(rec) + "\n")
+    if not getattr(args, "skip_plots", False):
+        generate_plots_and_recommendations(output_dir, weights=args.weights)
 
 
 def main() -> None:
     """CLI entry point."""
     parser = argparse.ArgumentParser(description="Analyze timestep-resolved DDPM epsilon errors.")
-    parser.add_argument("--checkpoint", required=True, type=Path)
-    parser.add_argument("--config", required=True, type=Path)
-    parser.add_argument("--manifest", required=True, type=Path)
+    parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument("--config", type=Path)
+    parser.add_argument("--manifest", type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--num-samples", type=int, default=32)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--weights", choices=("ema", "model"), default="ema")
     parser.add_argument("--workers", type=int, default=0)
+    parser.add_argument(
+        "--plots-only",
+        action="store_true",
+        help="Regenerate plots/recommendations from existing outputs.",
+    )
+    parser.add_argument(
+        "--skip-plots",
+        action="store_true",
+        help="Write numerical diagnostics without plots/recommendations.",
+    )
     args = parser.parse_args()
     if args.workers < 0:
         raise ValueError("workers must be non-negative")
+    if args.plots_only:
+        generate_plots_and_recommendations(args.output_dir, weights=args.weights)
+        return
+    missing = [name for name in ("checkpoint", "config", "manifest") if getattr(args, name) is None]
+    if missing:
+        parser.error("normal diagnostic mode requires: " + ", ".join(f"--{name}" for name in missing))
     analyze(args)
 
 

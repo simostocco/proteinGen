@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import math
 from pathlib import Path
 from types import ModuleType
@@ -311,3 +312,78 @@ def test_schedule_summary_reports_terminal_standard_normal_flag(tmp_path: Path) 
     assert "terminal_snr" in summary
     assert "q_xT_close_to_standard_normal" in summary
     assert (tmp_path / "schedule_summary.json").exists()
+
+
+def _aggregated_schema_frame() -> pd.DataFrame:
+    rows = []
+    for timestep, snr, amplification in ((0, 9997.34082, 0.010001), (499, 0.0, 20_291.0)):
+        for predictor, offset in (("model", 0.1), ("zero", 0.2), ("noisy_input", 0.3), ("oracle", 0.001)):
+            rows.append(
+                {
+                    "timestep": timestep,
+                    "predictor": predictor,
+                    "epsilon_mse_mean": offset + timestep * 0.001,
+                    "epsilon_mae_mean": offset,
+                    "epsilon_correlation_mean": 0.5,
+                    "x0_reconstruction_mse_normalized_mean": offset,
+                    "x0_reconstruction_mae_normalized_mean": offset,
+                    "x0_reconstruction_mae_angstrom_mean": offset,
+                    "x0_reconstruction_rmse_angstrom_mean": offset + 0.1,
+                    "negative_reconstructed_physical_fraction_mean": 0.01,
+                    "nonfinite_fraction_mean": 0.0,
+                    "snr_first": snr,
+                    "amplification_factor_first": amplification,
+                    "valid_pair_count_sum": 10,
+                    "sample_count_sum": 1,
+                    "original_length_min": 5,
+                    "original_length_max": 5,
+                    "padded_length_min": 8,
+                    "padded_length_max": 8,
+                    "epsilon_prediction_min_min": -1.0,
+                    "epsilon_prediction_max_max": 1.0,
+                    "epsilon_prediction_mean_mean": 0.0,
+                    "epsilon_prediction_std_mean": 1.0,
+                    "true_epsilon_min_min": -1.0,
+                    "true_epsilon_max_max": 1.0,
+                    "x0_hat_min_min": -1.0,
+                    "x0_hat_max_max": 1.0,
+                    "x0_hat_mean_mean": 0.0,
+                    "x0_hat_std_mean": 1.0,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def test_plots_only_uses_canonical_aggregated_schema_without_model_loading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Plots-only mode consumes the suffixed CSV schema and does not instantiate a model."""
+    _aggregated_schema_frame().to_csv(tmp_path / "timestep_metrics.csv", index=False)
+    (tmp_path / "terminal_distribution.json").write_text(
+        json.dumps(
+            {
+                "forward_q_xT": {"std": 1.0},
+                "histogram_l1_distance_q_xT_vs_gaussian": 0.05,
+            }
+        )
+    )
+    (tmp_path / "schedule_summary.json").write_text(json.dumps({"q_xT_close_to_standard_normal": True}))
+
+    def fail_model_load(*args: object, **kwargs: object) -> None:
+        raise AssertionError("plots-only must not instantiate or load the neural network")
+
+    monkeypatch.setattr(diag, "_build_model", fail_model_load)
+    diag.generate_plots_and_recommendations(tmp_path, weights="ema")
+
+    for spec in diag.PLOT_SPECS:
+        assert (tmp_path / spec.filename).exists()
+    recommendations = (tmp_path / "recommendations.md").read_text()
+    assert "High-Timestep Baseline Comparison" in recommendations
+    assert "`ema`" in recommendations
+
+
+def test_aggregated_schema_validation_reports_missing_columns() -> None:
+    """Missing canonical aggregated columns produce a clear error."""
+    frame = _aggregated_schema_frame().drop(columns=["epsilon_mse_mean"])
+    with pytest.raises(ValueError, match="epsilon_mse_mean"):
+        diag.validate_aggregated_metrics_schema(frame)
