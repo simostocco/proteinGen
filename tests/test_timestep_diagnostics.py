@@ -126,6 +126,136 @@ def test_masked_upper_triangular_metrics_ignore_diagonal_and_lower_triangle() ->
     assert metrics["epsilon_mse"] == pytest.approx(4.0 / 3.0)
 
 
+def _factor_eight_model() -> DistanceUNet:
+    return DistanceUNet(
+        input_channels=3,
+        output_channels=1,
+        base_channels=1,
+        channel_multipliers=(1, 1, 1, 1),
+        residual_blocks_per_level=1,
+        dropout=0.0,
+        group_norm_groups=1,
+        attention_heads=1,
+        use_bottleneck_attention=False,
+        time_embedding_dim=8,
+        length_embedding_dim=8,
+        max_length=500,
+    )
+
+
+def _item(length: int) -> dict[str, object]:
+    return {
+        "sample_id": f"sample_{length}",
+        "length": length,
+        "distance_matrix": torch.ones(length, length, dtype=torch.float32),
+    }
+
+
+def test_diagnostic_collation_pads_311_to_312() -> None:
+    """A length-311 diagnostic sample is padded to the model-compatible side 312."""
+    batch, metadata = diag._collate_diagnostic_item(_item(311), _factor_eight_model())
+    assert batch["distance_matrices"].shape == (1, 1, 312, 312)
+    assert batch["pair_masks"].shape == (1, 1, 312, 312)
+    assert metadata["original_length"] == 311
+    assert metadata["padded_length"] == 312
+    assert metadata["downsample_factor"] == 8
+
+
+def test_diagnostic_collation_leaves_312_unchanged() -> None:
+    """Already divisible lengths are not over-padded."""
+    batch, metadata = diag._collate_diagnostic_item(_item(312), _factor_eight_model())
+    assert batch["distance_matrices"].shape[-1] == 312
+    assert metadata["padded_length"] == 312
+
+
+def test_diagnostic_collation_pads_small_nondivisible_length() -> None:
+    """Small non-divisible lengths are padded to the next model-compatible side."""
+    batch, metadata = diag._collate_diagnostic_item(_item(5), _factor_eight_model())
+    assert batch["distance_matrices"].shape[-1] == 8
+    assert metadata["model_input_shape"] == [1, 3, 8, 8]
+    assert metadata["model_output_shape"] == [1, 1, 8, 8]
+    assert metadata["evaluated_crop_shape"] == [1, 1, 5, 5]
+
+
+def test_padded_cells_are_excluded_from_epsilon_and_x0_metrics() -> None:
+    """Huge padded-cell errors do not affect cropped biological metrics."""
+    length = 5
+    side = 8
+    valid = diag.upper_mask(length, length, device=torch.device("cpu"))
+    eps_true = torch.zeros(1, 1, side, side)
+    eps_hat = torch.zeros_like(eps_true)
+    x0 = torch.zeros_like(eps_true)
+    x0_hat = torch.zeros_like(eps_true)
+    eps_hat[..., length:, :] = 1_000_000.0
+    eps_hat[..., :, length:] = 1_000_000.0
+    x0_hat[..., length:, :] = 1_000_000.0
+    x0_hat[..., :, length:] = 1_000_000.0
+    metrics = diag._metrics_for_prediction(
+        name="cropped",
+        eps_true=diag._crop_to_original(eps_true, length),
+        eps_hat=diag._crop_to_original(eps_hat, length),
+        x0=diag._crop_to_original(x0, length),
+        x0_hat=diag._crop_to_original(x0_hat, length),
+        valid=valid,
+        scale=1.0,
+    )
+    assert metrics["epsilon_mse"] == pytest.approx(0.0)
+    assert metrics["x0_reconstruction_mse_normalized"] == pytest.approx(0.0)
+
+
+def test_cropping_restores_exact_original_shape() -> None:
+    """Cropping a padded tensor restores exactly the biological N x N region."""
+    tensor = torch.randn(1, 1, 8, 8)
+    assert diag._crop_to_original(tensor, 5).shape == (1, 1, 5, 5)
+
+
+def test_sequence_separation_padding_matches_collate_utility() -> None:
+    """Sequence separation is nonzero only inside the original biological region."""
+    batch, _ = diag._collate_diagnostic_item(_item(5), _factor_eight_model())
+    sep = batch["sequence_separation"]
+    assert sep.shape == (1, 1, 8, 8)
+    assert float(sep[0, 0, 0, 4]) == pytest.approx(1.0)
+    assert float(sep[0, 0, 5:, :].abs().sum()) == 0.0
+    assert float(sep[0, 0, :, 5:].abs().sum()) == 0.0
+
+
+def test_padded_ema_and_raw_models_accept_diagnostic_batch() -> None:
+    """Both EMA and raw model diagnostics accept the padded direct model input."""
+    config = {
+        "model": {
+            "input_channels": 3,
+            "output_channels": 1,
+            "base_channels": 1,
+            "channel_multipliers": [1, 1, 1, 1],
+            "residual_blocks_per_level": 1,
+            "dropout": 0.0,
+            "group_norm_groups": 1,
+            "attention_heads": 1,
+            "use_bottleneck_attention": False,
+            "time_embedding_dim": 8,
+            "length_embedding_dim": 8,
+            "max_length": 500,
+        }
+    }
+    base = DistanceUNet(**config["model"])
+    raw_state = {key: value.clone() for key, value in base.state_dict().items()}
+    ema_state = {
+        key: value.clone() + 0.25 if torch.is_floating_point(value) else value.clone()
+        for key, value in raw_state.items()
+    }
+    for weights in ("model", "ema"):
+        model = diag._build_model(config, {"model": raw_state, "ema": ema_state}, weights=weights)
+        batch, _ = diag._collate_diagnostic_item(_item(9), model)
+        out = model(
+            batch["distance_matrices"],
+            torch.tensor([0]),
+            batch["lengths"],
+            batch["sequence_separation"],
+            batch["pair_masks"],
+        )
+        assert out.shape == (1, 1, 16, 16)
+
+
 def test_streaming_terminal_histograms_and_forward_gaussian_comparison() -> None:
     """Streaming histograms expose finite q(xT) versus Gaussian distances."""
     bins = np.linspace(-4.0, 4.0, 41)

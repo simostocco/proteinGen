@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -52,7 +53,8 @@ def main() -> None:
     model.to(device)
     diffusion = GaussianDiffusion(cosine_beta_schedule(int(checkpoint_config.get("diffusion_steps", 100)))).to(device)
     dataset = DistanceMapDataset(config["validation_manifest"], normalization)
-    downsample_stages = len(model_cfg.get("channel_multipliers", (1, 2, 4, 8))) - 1
+    factor = int(getattr(model, "downsample_factor", 1))
+    downsample_stages = int(math.log2(factor))
     loader = DataLoader(
         dataset,
         batch_size=int(config.get("batch_size", 1)),

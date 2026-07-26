@@ -48,9 +48,8 @@ def main() -> None:
         model.load_state_dict(ckpt["model"])
     model.eval()
     device = torch.device("cpu")
-    side = args.length
-    factor = 2 ** (len(model_cfg.get("channel_multipliers", (1, 2, 4, 8))) - 1)
-    side = ((side + factor - 1) // factor) * factor
+    factor = int(getattr(model, "downsample_factor", 1))
+    side = ((args.length + factor - 1) // factor) * factor
     lengths = torch.full((args.num_samples,), args.length, dtype=torch.long)
     pair_mask = make_pair_mask(lengths, side)
     sep = make_sequence_separation(lengths, side)

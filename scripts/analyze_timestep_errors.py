@@ -17,7 +17,7 @@ import torch
 from tqdm.auto import tqdm
 
 from protein_distance_diffusion.config import load_yaml
-from protein_distance_diffusion.data.collate import make_pair_mask, make_sequence_separation
+from protein_distance_diffusion.data.collate import collate_distance_maps
 from protein_distance_diffusion.data.preprocess import load_manifest
 from protein_distance_diffusion.diffusion.gaussian import (
     GaussianDiffusion,
@@ -66,6 +66,34 @@ def upper_mask(length: int, side: int, *, device: torch.device) -> torch.Tensor:
     mask = torch.zeros((side, side), dtype=torch.bool, device=device)
     mask[:length, :length] = torch.triu(torch.ones((length, length), dtype=torch.bool, device=device), diagonal=1)
     return mask[None, None]
+
+
+def _downsample_stages_from_model(model: DistanceUNet) -> int:
+    """Return the collate padding stage count implied by the model architecture."""
+    factor = int(getattr(model, "downsample_factor", 1))
+    if factor < 1 or factor & (factor - 1):
+        raise ValueError(f"Model downsample_factor must be a positive power of two, got {factor}")
+    return int(math.log2(factor))
+
+
+def _collate_diagnostic_item(item: dict[str, Any], model: DistanceUNet) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Pad one diagnostic sample with the same collation path used by training."""
+    batch = collate_distance_maps([item], downsample_stages=_downsample_stages_from_model(model))
+    original_length = int(batch["lengths"][0])
+    padded_length = int(batch["distance_matrices"].shape[-1])
+    return batch, {
+        "original_length": original_length,
+        "padded_length": padded_length,
+        "downsample_factor": int(getattr(model, "downsample_factor", 1)),
+        "model_input_shape": [1, 3, padded_length, padded_length],
+        "model_output_shape": [1, 1, padded_length, padded_length],
+        "evaluated_crop_shape": [1, 1, original_length, original_length],
+    }
+
+
+def _crop_to_original(x: torch.Tensor, length: int) -> torch.Tensor:
+    """Crop a padded spatial tensor back to the biological N x N region."""
+    return x[..., :length, :length]
 
 
 def tensor_summary(values: torch.Tensor) -> dict[str, float]:
@@ -275,6 +303,7 @@ def analyze(args: argparse.Namespace) -> None:
     model = _build_model(config, checkpoint, weights=args.weights)
     model.to(torch.device("cpu"))
     rows: list[dict[str, Any]] = []
+    sample_metadata: list[dict[str, Any]] = []
     bins = np.linspace(-8.0, 8.0, 321)
     terminal_forward = MomentAccumulator(bins=bins)
     terminal_gaussian = MomentAccumulator(bins=bins)
@@ -291,9 +320,12 @@ def analyze(args: argparse.Namespace) -> None:
     for _, row in frame.iterrows():
         item = _load_item(row, normalization)
         length = int(item["length"])
-        x0 = item["distance_matrix"][None, None]
-        mask = make_pair_mask(torch.tensor([length]), length)
-        sep = make_sequence_separation(torch.tensor([length]), length)
+        batch, metadata = _collate_diagnostic_item(item, model)
+        padded_length = int(metadata["padded_length"])
+        sample_metadata.append({"sample_id": str(item["sample_id"]), **metadata})
+        x0 = batch["distance_matrices"]
+        mask = batch["pair_masks"]
+        sep = batch["sequence_separation"]
         valid = upper_mask(length, length, device=torch.device("cpu"))
         for t_value in timesteps:
             t = torch.tensor([t_value], dtype=torch.long)
@@ -312,10 +344,10 @@ def analyze(args: argparse.Namespace) -> None:
                 x0_hat = diffusion.predict_x0_from_epsilon(x_t, t, eps_hat)
                 metrics = _metrics_for_prediction(
                     name=name,
-                    eps_true=eps,
-                    eps_hat=eps_hat,
-                    x0=x0,
-                    x0_hat=x0_hat,
+                    eps_true=_crop_to_original(eps, length),
+                    eps_hat=_crop_to_original(eps_hat, length),
+                    x0=_crop_to_original(x0, length),
+                    x0_hat=_crop_to_original(x0_hat, length),
                     valid=valid,
                     scale=scale,
                 )
@@ -326,24 +358,28 @@ def analyze(args: argparse.Namespace) -> None:
                         "amplification_factor": amplification_factor(alpha_bar),
                         "sample_count": 1,
                         "valid_pair_count": int(valid.sum()),
+                        "original_length": length,
+                        "padded_length": padded_length,
                     }
                 )
                 rows.append(metrics)
             if t_value == diffusion.timesteps - 1:
                 pure = sample_symmetric_noise(tuple(x0.shape), mask, generator=generator)
                 residual = alpha_bar.sqrt() * x0
-                terminal_forward.update(x_t[valid])
-                terminal_gaussian.update(pure[valid])
-                terminal_residual.update(residual[valid])
+                terminal_forward.update(_crop_to_original(x_t, length)[valid])
+                terminal_gaussian.update(_crop_to_original(pure, length)[valid])
+                terminal_residual.update(_crop_to_original(residual, length)[valid])
                 with torch.no_grad():
                     eps_forward = model(x_t.float(), t, torch.tensor([length]), sep, mask).float()
                     eps_pure = model(pure.float(), t, torch.tensor([length]), sep, mask).float()
-                terminal_behavior["forward_eps_prediction"].update(eps_forward[valid])
-                terminal_behavior["gaussian_eps_prediction"].update(eps_pure[valid])
+                terminal_behavior["forward_eps_prediction"].update(_crop_to_original(eps_forward, length)[valid])
+                terminal_behavior["gaussian_eps_prediction"].update(_crop_to_original(eps_pure, length)[valid])
                 terminal_behavior["forward_x0_hat"].update(
-                    diffusion.predict_x0_from_epsilon(x_t, t, eps_forward)[valid]
+                    _crop_to_original(diffusion.predict_x0_from_epsilon(x_t, t, eps_forward), length)[valid]
                 )
-                terminal_behavior["gaussian_x0_hat"].update(diffusion.predict_x0_from_epsilon(pure, t, eps_pure)[valid])
+                terminal_behavior["gaussian_x0_hat"].update(
+                    _crop_to_original(diffusion.predict_x0_from_epsilon(pure, t, eps_pure), length)[valid]
+                )
             progress.update()
     progress.close()
 
@@ -364,6 +400,8 @@ def analyze(args: argparse.Namespace) -> None:
             "amplification_factor": "first",
             "valid_pair_count": "sum",
             "sample_count": "sum",
+            "original_length": ["min", "max"],
+            "padded_length": ["min", "max"],
             "epsilon_prediction_min": "min",
             "epsilon_prediction_max": "max",
             "epsilon_prediction_mean": "mean",
@@ -376,9 +414,15 @@ def analyze(args: argparse.Namespace) -> None:
             "x0_hat_std": "mean",
         }
     )
+    summary.columns = [
+        "_".join(str(part) for part in col if part) if isinstance(col, tuple) else str(col) for col in summary.columns
+    ]
     raw.to_json(output_dir / "timestep_metrics_raw.json", orient="records", indent=2)
     summary.to_json(output_dir / "timestep_metrics.json", orient="records", indent=2)
     summary.to_csv(output_dir / "timestep_metrics.csv", index=False, quoting=csv.QUOTE_MINIMAL)
+    (output_dir / "diagnostic_sample_metadata.json").write_text(
+        json.dumps(sample_metadata, indent=2, sort_keys=True) + "\n"
+    )
 
     terminal = {
         "forward_q_xT": terminal_forward.summary(),
