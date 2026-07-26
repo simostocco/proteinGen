@@ -1,0 +1,183 @@
+"""Regression tests for timestep-resolved diffusion diagnostics."""
+
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import math
+from pathlib import Path
+from types import ModuleType
+
+import numpy as np
+import pandas as pd
+import pytest
+import torch
+
+from protein_distance_diffusion.data.collate import make_pair_mask
+from protein_distance_diffusion.diffusion.gaussian import GaussianDiffusion, sample_symmetric_noise
+from protein_distance_diffusion.diffusion.schedules import cosine_beta_schedule
+from protein_distance_diffusion.models.unet import DistanceUNet
+
+
+def _load_diagnostic_module() -> ModuleType:
+    script = Path(__file__).resolve().parents[1] / "scripts" / "analyze_timestep_errors.py"
+    spec = importlib.util.spec_from_file_location("analyze_timestep_errors", script)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+diag = _load_diagnostic_module()
+
+
+def test_amplification_factor_calculation() -> None:
+    """Amplification is sqrt((1-alpha_bar)/alpha_bar)."""
+    assert diag.amplification_factor(0.25) == pytest.approx(math.sqrt(3.0))
+    assert math.isinf(diag.amplification_factor(0.0))
+
+
+def test_timestep_boundaries_include_terminal_step() -> None:
+    """The timestep grid clips requested high timesteps to T-1."""
+    assert diag.selected_timesteps(3) == [0, 1, 2]
+    steps = diag.selected_timesteps(500)
+    assert steps[0] == 0
+    assert steps[-1] == 499
+    assert steps == sorted(set(steps))
+
+
+def test_deterministic_subset_selection_handles_small_manifests() -> None:
+    """Subset selection is deterministic and does not oversample small manifests."""
+    frame = pd.DataFrame({"sample_id": ["a", "b", "c"]})
+    left = diag.deterministic_subset(frame, num_samples=2, seed=7)
+    right = diag.deterministic_subset(frame, num_samples=2, seed=7)
+    assert left.equals(right)
+    assert len(diag.deterministic_subset(frame, num_samples=10, seed=7)) == 3
+
+
+def test_empty_manifest_is_rejected() -> None:
+    """An empty manifest cannot produce timestep diagnostics."""
+    with pytest.raises(ValueError, match="Manifest is empty"):
+        diag.deterministic_subset(pd.DataFrame(), num_samples=1, seed=1)
+
+
+def test_refuses_test_manifest_before_loading_checkpoint(tmp_path: Path) -> None:
+    """The diagnostic refuses test manifests."""
+    args = argparse.Namespace(
+        checkpoint=tmp_path / "missing.pt",
+        config=tmp_path / "missing.yaml",
+        manifest=tmp_path / "test.parquet",
+        output_dir=tmp_path / "out",
+        num_samples=1,
+        seed=1,
+        weights="ema",
+        workers=0,
+    )
+    with pytest.raises(ValueError, match="test manifest"):
+        diag.analyze(args)
+
+
+def test_oracle_epsilon_reconstruction_is_exact() -> None:
+    """The oracle epsilon baseline reconstructs x0 within numerical tolerance."""
+    diffusion = GaussianDiffusion(torch.tensor([0.1, 0.2, 0.3], dtype=torch.float32))
+    lengths = torch.tensor([4])
+    mask = make_pair_mask(lengths, 4)
+    valid = diag.upper_mask(4, 4, device=torch.device("cpu"))
+    generator = torch.Generator().manual_seed(4)
+    x0 = torch.randn(1, 1, 4, 4, generator=generator)
+    x0 = 0.5 * (x0 + x0.transpose(-1, -2))
+    x0 = x0.masked_fill(torch.eye(4, dtype=torch.bool)[None, None], 0.0) * mask.float()
+    eps = sample_symmetric_noise(tuple(x0.shape), mask, generator=generator)
+    t = torch.tensor([2])
+    x_t, eps = diffusion.q_sample(x0, t, mask, noise=eps)
+    x0_hat = diffusion.predict_x0_from_epsilon(x_t, t, eps)
+    metrics = diag._metrics_for_prediction(
+        name="oracle",
+        eps_true=eps,
+        eps_hat=eps,
+        x0=x0,
+        x0_hat=x0_hat,
+        valid=valid,
+        scale=10.0,
+    )
+    assert metrics["epsilon_mse"] == pytest.approx(0.0)
+    assert metrics["x0_reconstruction_mae_normalized"] < 1e-6
+
+
+def test_masked_upper_triangular_metrics_ignore_diagonal_and_lower_triangle() -> None:
+    """Metric calculations use only valid upper-triangular off-diagonal entries."""
+    valid = diag.upper_mask(3, 3, device=torch.device("cpu"))
+    eps_true = torch.zeros(1, 1, 3, 3)
+    eps_hat = torch.zeros_like(eps_true)
+    eps_hat[0, 0, 0, 1] = 2.0
+    eps_hat[0, 0, 1, 0] = 1000.0
+    eps_hat[0, 0, 0, 0] = 1000.0
+    x0 = torch.zeros_like(eps_true)
+    metrics = diag._metrics_for_prediction(
+        name="masked",
+        eps_true=eps_true,
+        eps_hat=eps_hat,
+        x0=x0,
+        x0_hat=x0,
+        valid=valid,
+        scale=1.0,
+    )
+    assert metrics["epsilon_mse"] == pytest.approx(4.0 / 3.0)
+
+
+def test_streaming_terminal_histograms_and_forward_gaussian_comparison() -> None:
+    """Streaming histograms expose finite q(xT) versus Gaussian distances."""
+    bins = np.linspace(-4.0, 4.0, 41)
+    forward = diag.MomentAccumulator(bins=bins)
+    gaussian = diag.MomentAccumulator(bins=bins)
+    forward.update(torch.tensor([-1.0, 0.0, 1.0]))
+    gaussian.update(torch.tensor([-0.5, 0.0, 0.5]))
+    assert forward.summary()["count"] == 3
+    assert gaussian.summary()["count"] == 3
+    assert math.isfinite(diag.histogram_l1_distance(forward, gaussian))
+
+
+def test_ema_and_raw_weight_selection() -> None:
+    """The model loader selects EMA or raw checkpoint weights explicitly."""
+    config = {
+        "model": {
+            "input_channels": 3,
+            "output_channels": 1,
+            "base_channels": 2,
+            "channel_multipliers": [1],
+            "residual_blocks_per_level": 1,
+            "dropout": 0.0,
+            "group_norm_groups": 1,
+            "attention_heads": 1,
+            "use_bottleneck_attention": False,
+            "time_embedding_dim": 8,
+            "length_embedding_dim": 8,
+            "max_length": 500,
+        }
+    }
+    base = DistanceUNet(**config["model"])
+    raw_state = {key: value.clone() for key, value in base.state_dict().items()}
+    ema_state = {
+        key: value.clone() + 0.25 if torch.is_floating_point(value) else value.clone()
+        for key, value in raw_state.items()
+    }
+    raw = diag._build_model(config, {"model": raw_state, "ema": ema_state}, weights="model")
+    ema = diag._build_model(config, {"model": raw_state, "ema": ema_state}, weights="ema")
+    key = next(key for key, value in raw.state_dict().items() if torch.is_floating_point(value))
+    assert not torch.allclose(raw.state_dict()[key], ema.state_dict()[key])
+
+
+def test_schedule_summary_reports_terminal_standard_normal_flag(tmp_path: Path) -> None:
+    """Schedule summaries contain terminal SNR and the q(xT) standard-normal flag."""
+    diffusion = GaussianDiffusion(cosine_beta_schedule(10))
+    summary = diag.write_schedule_summary(
+        output_dir=tmp_path,
+        diffusion=diffusion,
+        config={"diffusion_steps": 10, "prediction_type": "epsilon"},
+        normalization={"mode": "scale", "scale": 54.625},
+        timesteps=diag.selected_timesteps(10),
+    )
+    assert "terminal_snr" in summary
+    assert "q_xT_close_to_standard_normal" in summary
+    assert (tmp_path / "schedule_summary.json").exists()
