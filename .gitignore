@@ -4,6 +4,9 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 data/
+!src/protein_distance_diffusion/data/
+!src/protein_distance_diffusion/data/**
+src/protein_distance_diffusion/data/__pycache__/
 outputs/
 reports/
 

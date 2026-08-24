@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from protein_distance_diffusion.data.mmcif_parser import parse_mmcif_file, parse_mmcif_file_with_rejections
+from protein_distance_diffusion.data.mmcif_parser import _atom_site, parse_mmcif_file, parse_mmcif_file_with_rejections
 
 
 def _write_poly_gly_mmcif(path: Path, *, length: int) -> None:
@@ -99,6 +99,20 @@ def _write_dna_then_protein_mmcif(path: Path) -> None:
         )
         + "\n"
     )
+
+
+def test_atom_site_adapter_reads_real_gemmi_table() -> None:
+    """Real Gemmi tables are converted to bare atom_site column names with aligned rows."""
+    import gemmi
+
+    fixture = Path(__file__).parent / "fixtures" / "two_residue_xray.cif"
+    block = gemmi.cif.read_file(str(fixture)).sole_block()
+    site = _atom_site(block)
+    assert "label_atom_id" in site
+    assert "_atom_site.label_atom_id" not in site
+    assert site["label_atom_id"][:2] == ["N", "CA"]
+    assert site["pdbx_PDB_ins_code"][:2] == ["?", "?"]
+    assert len({len(values) for values in site.values()}) == 1
 
 
 @pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")

@@ -86,8 +86,14 @@ def test_tiny_dataset_can_reduce_loss(tmp_path: Path) -> None:
 
 
 def test_sequence_package_independent_of_distance_data() -> None:
+    import importlib
     import sys
 
+    for name in list(sys.modules):
+        if name == "protein_distance_diffusion.data" or name.startswith("protein_distance_diffusion.data."):
+            sys.modules.pop(name)
+    importlib.import_module("protein_sequence_generation.dataset")
+    importlib.import_module("protein_sequence_generation.training")
     imported = [name for name in sys.modules if name.startswith("protein_sequence_generation")]
     assert imported
     assert "protein_distance_diffusion.data" not in sys.modules
