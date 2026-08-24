@@ -5,12 +5,13 @@ manifest_path: data/processed/manifest.parquet
 summary_path: data/processed/preprocess_summary.json
 backend: auto
 chain_id:
-min_length:
+min_length: 20
 max_length: 500
 strict_contiguous_ca: true
 allowed_methods:
   - X-RAY DIFFRACTION
   - ELECTRON MICROSCOPY
+  - SOLUTION NMR
 max_xray_resolution_angstrom: 3.0
 max_cryoem_resolution_angstrom: 4.0
 residue_mappings:
