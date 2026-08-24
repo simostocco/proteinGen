@@ -33,7 +33,7 @@ def test_build_query_contains_required_filters() -> None:
     attributes = {node["parameters"]["attribute"]: node["parameters"] for node in nodes}
     assert "rcsb_polymer_entity.type" not in attributes
     assert attributes["entity_poly.rcsb_entity_polymer_type"]["value"] == "Protein"
-    assert attributes["exptl.method"]["value"] == ["X-RAY DIFFRACTION", "ELECTRON MICROSCOPY"]
+    assert attributes["exptl.method"]["value"] == ["X-RAY DIFFRACTION", "ELECTRON MICROSCOPY", "SOLUTION NMR"]
     assert attributes["rcsb_entry_info.structure_determination_methodology"]["value"] == "experimental"
     assert attributes["entity_poly.rcsb_sample_sequence_length"]["operator"] == "less_or_equal"
     assert attributes["entity_poly.rcsb_sample_sequence_length"]["value"] == 500

@@ -65,7 +65,7 @@ def build_query(*, start: int, rows: int, release_date_cutoff: str | None = None
             "parameters": {
                 "attribute": "exptl.method",
                 "operator": "in",
-                "value": ["X-RAY DIFFRACTION", "ELECTRON MICROSCOPY"],
+                "value": ["X-RAY DIFFRACTION", "ELECTRON MICROSCOPY", "SOLUTION NMR"],
             },
         },
         {
