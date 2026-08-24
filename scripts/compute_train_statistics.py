@@ -18,7 +18,7 @@ def main() -> None:
     parser.add_argument("--histogram-bin-width-angstrom", type=float, default=0.05)
     parser.add_argument("--histogram-max-distance-angstrom", type=float, default=2000.0)
     parser.add_argument("--overflow-fraction-tolerance", type=float, default=0.0)
-    parser.add_argument("--workers", type=int, default=2)
+    parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--checkpoint-every", type=int, default=5000)
     parser.add_argument("--resume", dest="resume", action="store_true", default=True)
     parser.add_argument("--no-resume", dest="resume", action="store_false")
