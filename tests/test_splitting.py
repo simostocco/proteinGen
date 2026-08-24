@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from protein_distance_diffusion.data.clustering import deduplicate_sequences
+from protein_distance_diffusion.data.clustering import deduplicate_sequences, load_mmseqs_clusters
 from protein_distance_diffusion.data.splitting import (
     assert_no_leakage,
     assign_clusters_to_splits,
@@ -54,14 +57,63 @@ def test_leakage_detection_rejects_overlap() -> None:
             "split": ["train", "test"],
         }
     )
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="Split leakage detected"):
         assert_no_leakage(frame)
+
+
+def test_leakage_detection_survives_optimized_python(tmp_path: Path) -> None:
+    """Leakage checks use explicit exceptions, so `python -O` cannot remove them."""
+    script = (
+        "import pandas as pd\n"
+        "from protein_distance_diffusion.data.splitting import assert_no_leakage\n"
+        "frame = pd.DataFrame({"
+        "'sample_id':['a','b'], 'cluster_id':['x','y'], 'sequence_hash':['same','same'], "
+        "'pdb_id':['1','2'], 'split':['train','test']})\n"
+        "assert_no_leakage(frame)\n"
+    )
+    completed = subprocess.run(
+        [sys.executable, "-O", "-c", script],
+        cwd=tmp_path,
+        env={**os.environ, "PYTHONPATH": str(Path.cwd() / "src")},
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode != 0
+    assert "Split leakage detected" in completed.stderr
+
+
+def test_load_mmseqs_clusters_accepts_headerless_and_historical_header(tmp_path: Path) -> None:
+    """Cluster TSV loading keeps headerless output canonical while accepting old headers."""
+    headerless = tmp_path / "headerless.tsv"
+    headerless.write_text("c1\ts1\nc2\ts2\n")
+    historical = tmp_path / "historical.tsv"
+    historical.write_text("representative_id\tmember_id\nc1\ts1\n")
+
+    loaded = load_mmseqs_clusters(headerless)
+    assert loaded.to_dict(orient="records") == [
+        {"cluster_id": "c1", "sample_id": "s1"},
+        {"cluster_id": "c2", "sample_id": "s2"},
+    ]
+    assert load_mmseqs_clusters(historical).to_dict(orient="records") == [{"cluster_id": "c1", "sample_id": "s1"}]
+
+
+def test_load_mmseqs_clusters_rejects_malformed_and_contradictory_rows(tmp_path: Path) -> None:
+    """Malformed cluster TSVs fail loudly instead of creating ambiguous groups."""
+    malformed = tmp_path / "malformed.tsv"
+    malformed.write_text("c1\ts1\textra\n")
+    with pytest.raises(ValueError, match="exactly two columns"):
+        load_mmseqs_clusters(malformed)
+
+    contradictory = tmp_path / "contradictory.tsv"
+    contradictory.write_text("c1\ts1\nc2\ts1\n")
+    with pytest.raises(ValueError, match="contradictory duplicate"):
+        load_mmseqs_clusters(contradictory)
 
 
 def test_build_splits_and_train_only_statistics(tmp_path: Path, synthetic_manifest: Path) -> None:
     """Split manifests contain all samples and statistics read only train manifest."""
     clusters = tmp_path / "clusters.tsv"
-    clusters.write_text("cluster_id\tsample_id\nc1\ts1\nc2\ts2\nc3\ts3\n")
+    clusters.write_text("c1\ts1\nc2\ts2\nc3\ts3\n")
     split = build_splits_from_files(synthetic_manifest, clusters, tmp_path / "splits", seed=1)
     assert set(split["sample_id"]) == {"s1", "s2", "s3"}
     stats = compute_scale_statistics(tmp_path / "splits" / "train.parquet")

@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+CLUSTER_CACHE_SCHEMA_VERSION = 1
 
 
 def sequence_hash(sequence: str) -> str:
@@ -106,10 +109,41 @@ def run_mmseqs_easy_cluster(command: list[str], *, log_path: str | Path | None =
         subprocess.run(command, check=True, stdout=handle, stderr=subprocess.STDOUT)
 
 
+def mmseqs_version(mmseqs: str = "mmseqs") -> str:
+    """Return the MMseqs2 version string used for cache metadata."""
+    completed = subprocess.run([mmseqs, "version"], check=True, capture_output=True, text=True)
+    return completed.stdout.strip() or completed.stderr.strip()
+
+
 def load_mmseqs_clusters(path: str | Path) -> pd.DataFrame:
-    """Load MMseqs cluster TSV as ``cluster_id,sample_id``."""
-    frame = pd.read_csv(path, sep="\t", header=None, names=["cluster_id", "sample_id"], usecols=[0, 1])
-    return frame.astype({"cluster_id": str, "sample_id": str})
+    """Load canonical headerless MMseqs cluster TSV as ``cluster_id,sample_id``."""
+    frame = pd.read_csv(path, sep="\t", header=None, dtype=str, keep_default_na=False)
+    if frame.shape[1] != 2:
+        raise ValueError("MMseqs cluster TSV must contain exactly two columns: representative_id<TAB>member_id")
+    frame.columns = ["cluster_id", "sample_id"]
+    if not frame.empty and tuple(frame.iloc[0].tolist()) in {
+        ("cluster_id", "sample_id"),
+        ("representative_id", "member_id"),
+    }:
+        frame = frame.iloc[1:].reset_index(drop=True)
+    if frame[["cluster_id", "sample_id"]].eq("").any().any():
+        raise ValueError("MMseqs cluster TSV contains empty IDs")
+    contradictory = frame.drop_duplicates().groupby("sample_id")["cluster_id"].nunique()
+    contradictory = contradictory[contradictory > 1]
+    if not contradictory.empty:
+        ids = ", ".join(sorted(contradictory.index.astype(str))[:5])
+        raise ValueError(f"MMseqs cluster TSV contains contradictory duplicate assignments for: {ids}")
+    return frame.drop_duplicates().reset_index(drop=True).astype({"cluster_id": str, "sample_id": str})
+
+
+def completed_cache_metadata(**metadata: Any) -> dict[str, Any]:
+    """Return completed MMseqs cache metadata with a timestamp."""
+    return {
+        "schema_version": CLUSTER_CACHE_SCHEMA_VERSION,
+        **metadata,
+        "completed": True,
+        "completed_utc": datetime.now(UTC).isoformat(),
+    }
 
 
 def deduplication_report(duplicates: pd.DataFrame, *, original_count: int, retained_count: int) -> dict[str, Any]:

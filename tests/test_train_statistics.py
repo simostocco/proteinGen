@@ -14,6 +14,8 @@ from protein_distance_diffusion.data.dataset import DistanceMapDataset
 from protein_distance_diffusion.data.statistics import (
     HistogramConfig,
     _empty_state,
+    _finalize,
+    _load_state,
     compute_scale_statistics,
     write_normalization,
 )
@@ -132,38 +134,16 @@ def test_histogram_memory_is_fixed_by_bin_count() -> None:
     assert small.histogram.nbytes == large.histogram.nbytes == 10 * np.dtype(np.int64).itemsize
 
 
-def test_sequential_and_parallel_outputs_match(tmp_path: Path) -> None:
-    """Chunked multiprocessing returns the same histogram-derived result as sequential execution."""
+def test_statistics_workers_other_than_one_fail_clearly(tmp_path: Path) -> None:
+    """The statistics API does not silently ignore unsupported parallel workers."""
     rows = []
     for idx in range(6):
         base = float(idx + 1)
         matrix = np.array([[0, base, base + 1], [base, 0, base + 2], [base + 1, base + 2, 0]], dtype=np.float32)
         rows.append((f"s{idx}", matrix, None, None))
     manifest = _manifest(tmp_path, rows)
-    seq = compute_scale_statistics(
-        manifest,
-        histogram_bin_width_angstrom=0.1,
-        histogram_max_distance_angstrom=20.0,
-        output=tmp_path / "seq.json",
-        workers=1,
-        chunk_size=2,
-    )
-    par = compute_scale_statistics(
-        manifest,
-        histogram_bin_width_angstrom=0.1,
-        histogram_max_distance_angstrom=20.0,
-        output=tmp_path / "par.json",
-        workers=2,
-        chunk_size=2,
-    )
-    comparable = [
-        "scale",
-        "valid_distance_count",
-        "mean_distance_angstrom",
-        "std_distance_angstrom",
-        "observed_max_distance_angstrom",
-    ]
-    assert {key: seq[key] for key in comparable} == {key: par[key] for key in comparable}
+    with pytest.raises(ValueError, match="workers=1"):
+        compute_scale_statistics(manifest, output=tmp_path / "normalization.json", workers=2)
 
 
 def test_resume_matches_uninterrupted_and_config_mismatch_rejects(tmp_path: Path) -> None:
@@ -203,6 +183,126 @@ def test_resume_matches_uninterrupted_and_config_mismatch_rejects(tmp_path: Path
             resume=True,
             chunk_size=1,
         )
+
+
+def test_interrupted_resume_matches_uninterrupted_numerical_json(tmp_path: Path) -> None:
+    """Interrupted state resumes from next_row_index and matches a clean run numerically."""
+    rows = []
+    for idx in range(4):
+        matrix = np.array([[0, idx + 1, idx + 2], [idx + 1, 0, idx + 3], [idx + 2, idx + 3, 0]], dtype=np.float32)
+        rows.append((f"s{idx}", matrix, None, None))
+    manifest = _manifest(tmp_path, rows)
+    clean = compute_scale_statistics(
+        manifest,
+        output=tmp_path / "clean.json",
+        histogram_bin_width_angstrom=0.1,
+        histogram_max_distance_angstrom=20.0,
+        workers=1,
+        chunk_size=1,
+    )
+    interrupted_output = tmp_path / "interrupted.json"
+    with pytest.raises(KeyboardInterrupt):
+        compute_scale_statistics(
+            manifest,
+            output=interrupted_output,
+            histogram_bin_width_angstrom=0.1,
+            histogram_max_distance_angstrom=20.0,
+            workers=1,
+            chunk_size=1,
+            interrupt_after_rows=2,
+        )
+    state = json.loads(interrupted_output.with_suffix(".state.json").read_text())
+    assert state["completed"] is False
+    assert state["next_row_index"] == 2
+    resumed = compute_scale_statistics(
+        manifest,
+        output=interrupted_output,
+        histogram_bin_width_angstrom=0.1,
+        histogram_max_distance_angstrom=20.0,
+        workers=1,
+        resume=True,
+        chunk_size=1,
+    )
+    comparable = [
+        "scale",
+        "valid_distance_count",
+        "mean_distance_angstrom",
+        "std_distance_angstrom",
+        "observed_max_distance_angstrom",
+        "zero_distance_count",
+        "overflow_distance_count",
+    ]
+    assert {key: resumed[key] for key in comparable} == {key: clean[key] for key in comparable}
+
+
+def test_partial_state_cannot_be_finalized(tmp_path: Path) -> None:
+    """A state with remaining manifest rows cannot produce a normalization JSON."""
+    matrix = np.array([[0, 1], [1, 0]], dtype=np.float32)
+    manifest = _manifest(tmp_path, [("s1", matrix, None, None), ("s2", matrix, None, None)])
+    output = tmp_path / "normalization.json"
+    with pytest.raises(KeyboardInterrupt):
+        compute_scale_statistics(manifest, output=output, workers=1, chunk_size=1, interrupt_after_rows=1)
+    state = _load_state(output, HistogramConfig())
+    with pytest.raises(RuntimeError, match="incomplete"):
+        _finalize(state)
+    assert not output.exists()
+
+
+def test_resume_rejects_manifest_hash_mismatch(tmp_path: Path) -> None:
+    """A state sidecar cannot be resumed for a changed manifest."""
+    matrix = np.array([[0, 1], [1, 0]], dtype=np.float32)
+    manifest = _manifest(tmp_path, [("s1", matrix, None, None), ("s2", matrix, None, None)])
+    output = tmp_path / "normalization.json"
+    with pytest.raises(KeyboardInterrupt):
+        compute_scale_statistics(manifest, output=output, workers=1, chunk_size=1, interrupt_after_rows=1)
+    changed = _manifest(tmp_path, [("s1", matrix, None, None), ("s3", matrix * 2, None, None)])
+    with pytest.raises(ValueError, match="incompatible"):
+        compute_scale_statistics(changed, output=output, workers=1, resume=True, chunk_size=1)
+
+
+def test_completed_state_resume_is_idempotent(tmp_path: Path) -> None:
+    """A completed normalization JSON is reused only after manifest/config validation."""
+    matrix = np.array([[0, 1], [1, 0]], dtype=np.float32)
+    manifest = _manifest(tmp_path, [("s1", matrix, None, None)])
+    output = tmp_path / "normalization.json"
+    first = compute_scale_statistics(manifest, output=output, workers=1)
+    second = compute_scale_statistics(manifest, output=output, workers=1, resume=True)
+    assert first["scale"] == second["scale"]
+    assert json.loads(output.read_text())["completed"] is True
+
+
+def test_rejected_rows_are_not_reprocessed_on_resume(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Rejected rows advance next_row_index and are not accumulated repeatedly."""
+    matrix = np.array([[0, 1], [1, 0]], dtype=np.float32)
+    valid_manifest = _manifest(tmp_path, [("good", matrix, None, None)])
+    valid_row = pd.read_parquet(valid_manifest).iloc[0].to_dict()
+    manifest = tmp_path / "mixed.parquet"
+    pd.DataFrame([{"sample_id": "missing", "length": 2, "path": str(tmp_path / "missing.npz")}, valid_row]).to_parquet(
+        manifest, index=False
+    )
+    output = tmp_path / "normalization.json"
+    with pytest.raises(KeyboardInterrupt):
+        compute_scale_statistics(manifest, output=output, workers=1, chunk_size=1, interrupt_after_rows=1)
+    state = json.loads(output.with_suffix(".state.json").read_text())
+    assert state["next_row_index"] == 1
+    assert state["rejected_sample_count"] == 1
+    calls = {"chunks": 0}
+    original = statistics_module._chunk_statistics
+
+    def counting_chunk(chunk, config):  # type: ignore[no-untyped-def]
+        calls["chunks"] += 1
+        assert "missing" not in set(chunk["sample_id"])
+        return original(chunk, config)
+
+    monkeypatch.setattr(statistics_module, "_chunk_statistics", counting_chunk)
+    with pytest.raises(RuntimeError, match="Rejected 1"):
+        compute_scale_statistics(manifest, output=output, workers=1, resume=True, chunk_size=1)
+    assert calls["chunks"] == 1
+    state = json.loads(output.with_suffix(".state.json").read_text())
+    assert state["next_row_index"] == 2
+    with pytest.raises(RuntimeError, match="Rejected 1"):
+        compute_scale_statistics(manifest, output=output, workers=1, resume=True, chunk_size=1)
+    assert calls["chunks"] == 1
 
 
 def test_interruption_writes_checkpoint_but_not_final_output(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

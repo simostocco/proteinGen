@@ -10,7 +10,7 @@ mmseqs_tmp_dir: data/full/processed/mmseqs_tmp
 cluster_assignments_path: data/full/processed/mmseqs_clusters.tsv
 
 output_dir: data/full/splits
-state_db_path: data/full/processed/split_workflow_state.sqlite
+state_db_path: null
 
 mmseqs_executable: mmseqs
 mmseqs_threads: 2
@@ -27,5 +27,5 @@ train_fraction: 0.80
 validation_fraction: 0.10
 test_fraction: 0.10
 
-checkpoint_every: 10000
+checkpoint_every: null
 external_group_label_file: null

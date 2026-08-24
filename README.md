@@ -422,7 +422,7 @@ python scripts/build_splits.py --config configs/split.yaml
 python scripts/compute_train_statistics.py \
   --train-manifest data/full/splits/train.parquet \
   --output data/full/processed/normalization.json \
-  --workers 2 \
+  --workers 1 \
   --checkpoint-every 5000 \
   --resume
 ```
@@ -430,7 +430,8 @@ python scripts/compute_train_statistics.py \
 Train-only normalization reads only the training manifest. It streams one sample
 `.npz` at a time, selects finite non-negative valid upper-triangular
 off-diagonal distances, and updates a fixed histogram instead of concatenating
-all pairwise distances. This is necessary for the full dataset because hundreds
+all pairwise distances. Statistics computation is currently serial; pass
+`--workers 1`. This is necessary for the full dataset because hundreds
 of thousands of distance matrices contain several billion valid pairs, which is
 too large to hold as one NumPy array on an 8 GB machine. The default histogram
 uses 0.05 Angstrom bins over 0-2000 Angstrom, which is about 40,000 int64
@@ -445,9 +446,17 @@ use `--restart` to discard partial state. If Ctrl-C occurs, the command writes a
 consistent checkpoint, prints the resume command, and does not write the final
 `normalization.json`.
 
+MMseqs2 cache reuse requires a matching completed metadata sidecar containing
+the retained FASTA SHA-256, input manifest SHA-256, command, version and split
+configuration. Use the split workflow's force option to recompute stale cached
+clusters. The split workflow itself is not resumable; `state_db_path` and
+`checkpoint_every` are accepted only to warn about ignored historical config
+fields.
+
 The split assignment keeps connected groups indivisible by MMseqs2 cluster,
-exact sequence hash, PDB entry, and optional external group ID. Groups are
-assigned by minimizing deviation from the target total sample counts
+exact sequence hash and PDB entry. External group files are not currently
+implemented and raise `NotImplementedError`. Groups are assigned by minimizing
+deviation from the target total sample counts
 80/10/10. Length and experimental-method distributions are reported after the
 split for auditability, but they are not used as stratification variables.
 `configs/split.yaml` applies `minimum_sequence_length: 20` before exact
@@ -488,7 +497,7 @@ python scripts/train_diffusion.py --config configs/train.yaml
 
 ## Preventing Data Leakage
 
-Random PDB-ID splitting is insufficient because homologous proteins, duplicate chains, and related structures can appear under different entries. This code hashes exact sequences and keeps one deterministic representative by default. Retained sequences are clustered with MMseqs2, then connected components from cluster ID, exact sequence hash, PDB entry, and optional external group labels are assigned whole to train, validation, or test. Hard assertions reject cluster, exact-sequence, sample-ID, PDB-entry, and external-label overlap across splits.
+Random PDB-ID splitting is insufficient because homologous proteins, duplicate chains, and related structures can appear under different entries. This code hashes exact sequences and keeps one deterministic representative by default. Retained sequences are clustered with MMseqs2, then connected components from cluster ID, exact sequence hash, and PDB entry are assigned whole to train, validation, or test. Explicit validation rejects cluster, exact-sequence, sample-ID, and PDB-entry overlap across splits.
 
 Normalization is computed after splitting from valid upper-triangular training distances only. Validation and test files are not read by the statistics command.
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -12,9 +13,11 @@ import pandas as pd
 
 from protein_distance_diffusion.data.clustering import (
     build_mmseqs_easy_cluster_command,
+    completed_cache_metadata,
     deduplicate_sequences,
     deduplication_report,
     load_mmseqs_clusters,
+    mmseqs_version,
     run_mmseqs_easy_cluster,
     write_fasta,
 )
@@ -38,11 +41,31 @@ def expected_mmseqs_cache_metadata(
     fasta_path: str | Path,
     mmseqs_command: list[str],
     minimum_sequence_length: int | None,
+    retained_sequence_count: int | None = None,
+    mmseqs_executable: str | None = None,
+    mmseqs_version_value: str | None = None,
+    min_seq_id: float | None = None,
+    coverage: float | None = None,
+    cov_mode: int | None = None,
+    threads: int | None = None,
+    split_memory_limit: str | None = None,
+    input_manifest_sha256: str | None = None,
 ) -> dict[str, Any]:
     return {
+        "schema_version": 1,
+        "retained_fasta_path": str(Path(fasta_path)),
         "fasta_sha256": file_sha256(fasta_path),
+        "retained_sequence_count": retained_sequence_count,
+        "mmseqs_executable": mmseqs_executable,
+        "mmseqs_version": mmseqs_version_value,
         "mmseqs_command": [str(part) for part in mmseqs_command],
+        "min_seq_id": min_seq_id,
+        "coverage": coverage,
+        "cov_mode": cov_mode,
+        "threads": threads,
+        "split_memory_limit": split_memory_limit,
         "minimum_sequence_length": minimum_sequence_length,
+        "input_manifest_sha256": input_manifest_sha256,
     }
 
 
@@ -149,7 +172,8 @@ def leakage_audit(frame: pd.DataFrame) -> dict[str, Any]:
 def assert_no_leakage(frame: pd.DataFrame) -> None:
     audit = leakage_audit(frame)
     offenders = {key: value for key, value in audit["leakage_checks"].items() if value["overlap_count"]}
-    assert not offenders, offenders
+    if offenders:
+        raise ValueError(f"Split leakage detected: {offenders}")
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
@@ -191,6 +215,39 @@ def build_splits_from_files(
     return split
 
 
+def _load_cache_metadata(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        raise RuntimeError("MMseqs cluster cache metadata is missing; rerun with --force")
+    metadata = json.loads(path.read_text())
+    if metadata.get("completed") is not True:
+        raise RuntimeError("MMseqs cluster cache metadata is incomplete; rerun with --force")
+    return metadata
+
+
+def _validate_cache_or_raise(raw_cluster: Path, metadata_path: Path, expected: dict[str, Any]) -> None:
+    if not raw_cluster.exists():
+        return
+    existing = _load_cache_metadata(metadata_path)
+    comparable = {key: value for key, value in existing.items() if key != "completed_utc"}
+    expected_completed = completed_cache_metadata(**expected)
+    expected_comparable = {key: value for key, value in expected_completed.items() if key != "completed_utc"}
+    if comparable != expected_comparable:
+        raise RuntimeError(
+            "MMseqs cluster cache metadata does not match current inputs/configuration; rerun with --force"
+        )
+
+
+def _validate_cluster_ids(clusters: pd.DataFrame, retained: pd.DataFrame) -> None:
+    retained_ids = set(retained["sample_id"].astype(str))
+    cluster_ids = set(clusters["sample_id"].astype(str))
+    unknown = sorted(cluster_ids - retained_ids)
+    missing = sorted(retained_ids - cluster_ids)
+    if unknown:
+        raise ValueError(f"MMseqs cluster TSV contains unknown sample IDs: {', '.join(unknown[:5])}")
+    if missing:
+        raise ValueError(f"MMseqs cluster TSV is missing retained sample IDs: {', '.join(missing[:5])}")
+
+
 def run_split_workflow(
     *,
     manifest_path: str | Path,
@@ -219,8 +276,22 @@ def run_split_workflow(
     dry_run: bool = False,
 ) -> dict[str, Any]:
     """Run deduplication, FASTA export, MMseqs clustering, split assignment and audit."""
-    del state_db_path, checkpoint_every, external_group_file
+    if external_group_file is not None:
+        raise NotImplementedError("external_group_file grouping is not implemented for split workflow")
+    if state_db_path is not None:
+        warnings.warn(
+            "state_db_path is ignored; split workflow is not currently resumable",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+    if checkpoint_every is not None:
+        warnings.warn(
+            "checkpoint_every is ignored; split workflow is not currently resumable",
+            RuntimeWarning,
+            stacklevel=2,
+        )
     frame = load_manifest(manifest_path)
+    input_manifest_sha256 = file_sha256(manifest_path)
     original_count = len(frame)
     if minimum_sequence_length is not None:
         frame = frame[pd.to_numeric(frame["length"], errors="coerce") >= int(minimum_sequence_length)].copy()
@@ -253,27 +324,44 @@ def run_split_workflow(
     )
     raw_cluster = Path(f"{mmseqs_output_prefix}_cluster.tsv")
     meta_path = mmseqs_cache_metadata_path(mmseqs_output_prefix)
+    version = mmseqs_version(mmseqs)
     metadata = expected_mmseqs_cache_metadata(
         fasta_path=fasta_path,
         mmseqs_command=command,
         minimum_sequence_length=minimum_sequence_length,
+        retained_sequence_count=len(retained),
+        mmseqs_executable=mmseqs,
+        mmseqs_version_value=version,
+        min_seq_id=sequence_identity_threshold,
+        coverage=alignment_coverage_threshold,
+        cov_mode=mmseqs_cov_mode,
+        threads=mmseqs_threads,
+        split_memory_limit=mmseqs_split_memory_limit,
+        input_manifest_sha256=input_manifest_sha256,
     )
+    if raw_cluster.exists() and not force:
+        _validate_cache_or_raise(raw_cluster, meta_path, metadata)
     if force or not raw_cluster.exists():
         run_mmseqs_easy_cluster(command, log_path=mmseqs_log_path)
-    _atomic_json(meta_path, metadata)
+        if not raw_cluster.exists():
+            raise RuntimeError("MMseqs completed but expected cluster TSV was not created")
+        _atomic_json(meta_path, completed_cache_metadata(**metadata))
     clusters = (
         load_mmseqs_clusters(raw_cluster) if raw_cluster.exists() else pd.DataFrame(columns=["cluster_id", "sample_id"])
     )
+    _validate_cluster_ids(clusters, retained)
     clusters = retained[["sample_id"]].merge(clusters, on="sample_id", how="left")
     clusters["cluster_id"] = clusters["cluster_id"].fillna(clusters["sample_id"]).astype(str)
+    clusters = clusters[["cluster_id", "sample_id"]]
     Path(cluster_assignments_path).parent.mkdir(parents=True, exist_ok=True)
-    clusters.to_csv(cluster_assignments_path, sep="\t", index=False)
+    clusters.to_csv(cluster_assignments_path, sep="\t", index=False, header=False)
     split = build_splits_from_files(
         deduplicated_manifest_path, cluster_assignments_path, output_dir, seed=seed, fractions=fractions
     )
     split_sizes = {key: int(value) for key, value in split["split"].value_counts().sort_index().items()}
     workflow_metadata = {
         **metadata,
+        "completed": True,
         "original_count": int(original_count),
         "length_filtered_count": int(length_filtered_count),
         "length_rejected_count": int(original_count - length_filtered_count),

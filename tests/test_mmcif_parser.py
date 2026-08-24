@@ -101,6 +101,79 @@ def _write_dna_then_protein_mmcif(path: Path) -> None:
     )
 
 
+def _write_custom_mmcif(path: Path, rows: list[str], *, scheme_rows: list[str] | None = None) -> None:
+    lines = [
+        "data_CSTM",
+        "#",
+        "_exptl.method 'X-RAY DIFFRACTION'",
+        "_refine.ls_d_res_high 1.50",
+        "#",
+    ]
+    if scheme_rows is not None:
+        lines.extend(
+            [
+                "loop_",
+                "_pdbx_poly_seq_scheme.asym_id",
+                "_pdbx_poly_seq_scheme.entity_id",
+                "_pdbx_poly_seq_scheme.seq_id",
+                "_pdbx_poly_seq_scheme.mon_id",
+                "_pdbx_poly_seq_scheme.pdb_strand_id",
+                "_pdbx_poly_seq_scheme.auth_seq_num",
+                "_pdbx_poly_seq_scheme.pdb_ins_code",
+                *scheme_rows,
+                "#",
+            ]
+        )
+    lines.extend(
+        [
+            "loop_",
+            "_atom_site.group_PDB",
+            "_atom_site.id",
+            "_atom_site.type_symbol",
+            "_atom_site.label_atom_id",
+            "_atom_site.label_alt_id",
+            "_atom_site.label_comp_id",
+            "_atom_site.label_asym_id",
+            "_atom_site.label_entity_id",
+            "_atom_site.label_seq_id",
+            "_atom_site.pdbx_PDB_ins_code",
+            "_atom_site.Cartn_x",
+            "_atom_site.Cartn_y",
+            "_atom_site.Cartn_z",
+            "_atom_site.occupancy",
+            "_atom_site.B_iso_or_equiv",
+            "_atom_site.pdbx_formal_charge",
+            "_atom_site.auth_seq_id",
+            "_atom_site.auth_comp_id",
+            "_atom_site.auth_asym_id",
+            "_atom_site.auth_atom_id",
+            "_atom_site.pdbx_PDB_model_num",
+            *rows,
+            "#",
+        ]
+    )
+    path.write_text("\n".join(lines) + "\n")
+
+
+def _atom_row(
+    atom_id: int,
+    *,
+    atom: str = "CA",
+    altloc: str = ".",
+    resname: str = "GLY",
+    chain: str = "A",
+    seq: int = 1,
+    x: str | float = 0.0,
+    occupancy: str | float = 1.0,
+    group: str = "ATOM",
+) -> str:
+    element = atom[0]
+    return (
+        f"{group} {atom_id} {element} {atom} {altloc} {resname} {chain} 1 {seq} ? "
+        f"{x} 0.000 0.000 {occupancy} 20.00 ? {seq} {resname} {chain} {atom} 1"
+    )
+
+
 def test_atom_site_adapter_reads_real_gemmi_table() -> None:
     """Real Gemmi tables are converted to bare atom_site column names with aligned rows."""
     import gemmi
@@ -113,6 +186,111 @@ def test_atom_site_adapter_reads_real_gemmi_table() -> None:
     assert site["label_atom_id"][:2] == ["N", "CA"]
     assert site["pdbx_PDB_ins_code"][:2] == ["?", "?"]
     assert len({len(values) for values in site.values()}) == 1
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_missing_terminal_calpha_with_other_atoms_is_rejected(tmp_path: Path) -> None:
+    fixture = tmp_path / "missing_terminal.cif"
+    _write_custom_mmcif(fixture, [_atom_row(1, seq=1), _atom_row(2, atom="N", seq=2)])
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, min_length=None)
+    assert samples == []
+    assert [(rejection.reason, rejection.chain_id) for rejection in rejections] == [("missing_calpha", "A")]
+    assert "2" in rejections[0].message
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_missing_internal_calpha_is_rejected(tmp_path: Path) -> None:
+    fixture = tmp_path / "missing_internal.cif"
+    _write_custom_mmcif(fixture, [_atom_row(1, seq=1), _atom_row(2, atom="N", seq=2), _atom_row(3, seq=3)])
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, min_length=None)
+    assert samples == []
+    assert rejections[0].reason == "missing_calpha"
+    assert "2" in rejections[0].message
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_polymer_scheme_detects_absent_terminal_residue(tmp_path: Path) -> None:
+    fixture = tmp_path / "scheme_missing.cif"
+    _write_custom_mmcif(
+        fixture,
+        [_atom_row(1, resname="ALA", seq=1)],
+        scheme_rows=["A 1 1 ALA A 1 ?", "A 1 2 GLY A 2 ?"],
+    )
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, min_length=None)
+    assert samples == []
+    assert rejections[0].reason == "missing_calpha"
+    assert "2" in rejections[0].message
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_valid_complete_chain_ligand_water_ignored_and_mse_mapped(tmp_path: Path) -> None:
+    fixture = tmp_path / "valid_mse_ligand_water.cif"
+    _write_custom_mmcif(
+        fixture,
+        [
+            _atom_row(1, resname="MSE", seq=1, group="HETATM"),
+            _atom_row(2, resname="ALA", seq=2),
+            _atom_row(3, atom="O", resname="HOH", seq=900, group="HETATM"),
+            _atom_row(4, atom="P", resname="ATP", seq=901, group="HETATM"),
+        ],
+    )
+    samples = parse_mmcif_file(fixture, min_length=None, residue_mappings={"MSE": "MET"})
+    assert len(samples) == 1
+    assert samples[0].sequence == "MA"
+    assert samples[0].metadata["original_chain_length"] == 2
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_multiple_chains_keep_valid_chain_when_other_missing_ca(tmp_path: Path) -> None:
+    fixture = tmp_path / "multi_chain_missing.cif"
+    _write_custom_mmcif(
+        fixture,
+        [_atom_row(1, atom="N", chain="A", seq=1), _atom_row(2, chain="B", seq=1), _atom_row(3, chain="B", seq=2)],
+    )
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, min_length=None)
+    assert [sample.chain_id for sample in samples] == ["B"]
+    assert [(rejection.chain_id, rejection.reason) for rejection in rejections] == [("A", "missing_calpha")]
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+@pytest.mark.parametrize(
+    ("rows", "expected_x"),
+    [
+        ([_atom_row(1, altloc="A", x=1.0, occupancy=0.8), _atom_row(2, altloc="B", x=2.0, occupancy=0.3)], 1.0),
+        ([_atom_row(1, altloc="A", x=1.0, occupancy=0.3), _atom_row(2, altloc="B", x=2.0, occupancy=0.8)], 2.0),
+        ([_atom_row(1, altloc="A", x=1.0, occupancy=0.5), _atom_row(2, altloc="B", x=2.0, occupancy=0.5)], 1.0),
+        ([_atom_row(1, altloc=".", x=1.0, occupancy=0.1), _atom_row(2, altloc="A", x=2.0, occupancy=1.0)], 1.0),
+        ([_atom_row(1, altloc="A", x=1.0, occupancy="?"), _atom_row(2, altloc="B", x=2.0, occupancy=0.1)], 2.0),
+    ],
+)
+def test_mmcif_altloc_occupancy_selection_is_deterministic(tmp_path: Path, rows: list[str], expected_x: float) -> None:
+    fixture = tmp_path / "altloc.cif"
+    _write_custom_mmcif(fixture, rows)
+    first = parse_mmcif_file(fixture, min_length=None)[0]
+    second = parse_mmcif_file(fixture, min_length=None)[0]
+    assert first.ca_coordinates[0, 0] == pytest.approx(expected_x)
+    np.testing.assert_allclose(first.ca_coordinates, second.ca_coordinates)
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_duplicate_identical_altloc_rejected(tmp_path: Path) -> None:
+    fixture = tmp_path / "duplicate_altloc.cif"
+    _write_custom_mmcif(
+        fixture,
+        [_atom_row(1, altloc="A", x=1.0, occupancy=0.5), _atom_row(2, altloc="A", x=2.0, occupancy=0.4)],
+    )
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, min_length=None)
+    assert samples == []
+    assert rejections[0].reason == "duplicate_ca"
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_nonfinite_coordinates_rejected(tmp_path: Path) -> None:
+    fixture = tmp_path / "nonfinite.cif"
+    _write_custom_mmcif(fixture, [_atom_row(1, x="nan")])
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, min_length=None)
+    assert samples == []
+    assert rejections[0].reason == "nonfinite_coordinates"
 
 
 @pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
