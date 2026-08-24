@@ -1,0 +1,9 @@
+checkpoint: outputs/sequence_baseline/checkpoints/best_validation.pt
+length: 128
+num_sequences: 10
+temperature: 1.0
+top_p: 0.95
+top_k:
+seed: 42
+weights: model
+output_dir: outputs/sequence_baseline/samples/N128

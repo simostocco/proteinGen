@@ -1,0 +1,45 @@
+seed: 42
+device: cuda
+output_dir: outputs/sequence_baseline
+resume_from:
+
+data:
+  train_manifest: data/full/splits/train.parquet
+  validation_manifest: data/full/splits/validation.parquet
+  min_length: 20
+  max_length: 500
+
+model:
+  vocabulary_size: 24
+  d_model: 384
+  num_layers: 8
+  num_attention_heads: 6
+  feedforward_dimension: 1536
+  dropout: 0.10
+  attention_dropout: 0.10
+  max_length: 500
+  activation: gelu
+
+batch_size: 8
+gradient_accumulation_steps: 8
+num_workers: 2
+epochs: 20
+learning_rate: 0.0003
+weight_decay: 0.01
+adam_beta1: 0.9
+adam_beta2: 0.95
+warmup_fraction: 0.05
+scheduler: cosine
+grad_clip: 1.0
+mixed_precision: true
+amp_dtype: bfloat16
+loss_reduction: sequence_mean
+log_every_optimizer_steps: 50
+validation_every_epochs: 1
+checkpoint_every_optimizer_steps: 2000
+early_stopping_patience: 5
+early_stopping_metric: token_nll
+max_consecutive_amp_overflows: 20
+progress_bar: true
+tensorboard: true
+tensorboard_dir: outputs/sequence_baseline/tensorboard

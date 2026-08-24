@@ -1,0 +1,14 @@
+# Sequence-only dataset inputs. These must already be leakage-safe splits.
+splits:
+  train: data/full/splits/train.parquet
+  validation: data/full/splits/validation.parquet
+  test: data/full/splits/test.parquet
+output_dir: data/sequence
+audit_dir: data/sequence/audits
+min_length: 20
+max_length: 500
+allow_unknown: false
+
+# If only an unsplit manifest exists, do not random split it. Provide clustered
+# split files or add an explicit MMseqs2 grouping preparation step first.
+unsplit_manifest:

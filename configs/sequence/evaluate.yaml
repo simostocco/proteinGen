@@ -1,0 +1,8 @@
+checkpoint: outputs/sequence_baseline/checkpoints/best_validation.pt
+validation_manifest: data/full/splits/validation.parquet
+test_manifest: data/full/splits/test.parquet
+training_manifest: data/full/splits/train.parquet
+output_dir: reports/sequence_baseline
+batch_size: 8
+device: cuda
+weights: model

@@ -8,12 +8,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from protein_distance_diffusion.data.preprocess import ProteinSample, save_processed_sample
-
 
 @pytest.fixture()
 def synthetic_manifest(tmp_path: Path) -> Path:
     """Create a tiny processed manifest with three synthetic proteins."""
+    from protein_distance_diffusion.data.preprocess import ProteinSample, save_processed_sample
+
     rows = []
     samples = [
         ProteinSample(

@@ -22,6 +22,145 @@ The training target is always the continuous matrix `D in R^(N x N)` in angstrom
 
 The documented visualization default is `tau = 8.0 A`. The diagonal is excluded from contact statistics, and near-diagonal sequence contacts can be excluded explicitly with `--exclude-near-diagonal`.
 
+## Structure-Unconditioned Sequence Generation
+
+The repository also contains an independent baseline for protein-chain sequence
+generation:
+
+`p(S | N) = product_i p(a_i | a_<i, N)`.
+
+Here `S = (a_1, ..., a_N)` is a sequence of the 20 canonical amino acids and `N`
+is the requested length. This model is deliberately separate from the distance
+diffusion model. It does not consume distance matrices, coordinates, contact
+maps, secondary structure, PDB metadata, or generated outputs from the U-Net
+diffusion component. Future work may condition a sequence model on a valid
+structure or distance matrix, but that is outside this baseline.
+
+Tokenization uses one token per residue with the canonical alphabet:
+
+```text
+A C D E F G H I K L M N P Q R S T V W Y
+```
+
+The vocabulary also contains `<PAD>`, `<BOS>`, `<EOS>`, and `<UNK>`. By default,
+training data must contain only canonical residues; unresolved or noncanonical
+symbols are rejected and counted in the dataset audit. `<UNK>` can be enabled
+explicitly for recovery experiments, but generated biological sequences never
+include special tokens.
+
+Training examples use teacher forcing. For a length-`N` sequence:
+
+```text
+input_ids  = [BOS, a_1, ..., a_(N-1)]
+target_ids = [a_1, a_2, ..., a_N]
+```
+
+The baseline predicts next-amino-acid logits over the full 24-token vocabulary,
+with padding masked out of the loss. Exact-length sampling masks `<PAD>`,
+`<BOS>`, `<EOS>`, and `<UNK>` before sampling and stops only after exactly `N`
+canonical residues have been generated.
+
+Architecture:
+
+```text
+amino-acid tokens
+  -> learned token embeddings
+  -> RoPE causal self-attention + continuous length conditioning
+  -> pre-normalization Transformer blocks
+  -> final normalization
+  -> next-amino-acid logits
+```
+
+The requested length is embedded continuously as `log(N) / log(max_length)` and
+passed through `Linear(1, d_model) -> SiLU -> Linear(d_model, d_model)`. Each
+Transformer block injects this length vector through a learned projection, so
+the conditioning is not a discrete length bin or length-specific model.
+
+Sequence data are expected to come from leakage-safe split manifests:
+
+```text
+data/full/splits/train.parquet
+data/full/splits/validation.parquet
+data/full/splits/test.parquet
+```
+
+Only `sequence` and `length` are required by the model, but metadata such as
+`sample_id`, `pdb_id`, `chain_id`, `cluster_id`, `sequence_hash`, and
+`experimental_method` is retained for auditing when present. The sequence
+baseline also accepts FASTA files for small smoke tests and recovery situations.
+It never loads `.npz` distance matrices. If only an unsplit manifest exists, the
+preparation script refuses to random split it; provide homology-safe split files
+or add an explicit MMseqs2 grouping step first.
+
+Prepare or audit sequence splits:
+
+```bash
+python scripts/prepare_sequence_dataset.py \
+  --config configs/sequence/data.yaml
+
+python scripts/inspect_sequence_dataset.py \
+  --manifest data/sequence/splits/train.parquet \
+  --output-dir reports/sequence_dataset
+```
+
+Smoke train without starting a full run:
+
+```bash
+python scripts/train_sequence_transformer.py \
+  --config configs/sequence/train.yaml \
+  --max-optimizer-steps 10
+```
+
+Full sequence-baseline training command:
+
+```bash
+python scripts/train_sequence_transformer.py \
+  --config configs/sequence/train.yaml
+```
+
+Resume from an optimizer-step checkpoint:
+
+```bash
+python scripts/train_sequence_transformer.py \
+  --config configs/sequence/train.yaml \
+  --resume-from outputs/sequence_baseline/checkpoints/last.pt
+```
+
+Sample exact-length canonical sequences:
+
+```bash
+python scripts/sample_sequences.py \
+  --checkpoint outputs/sequence_baseline/checkpoints/best_validation.pt \
+  --length 128 \
+  --num-sequences 10 \
+  --temperature 1.0 \
+  --top-p 0.95 \
+  --seed 42 \
+  --output-dir outputs/sequence_baseline/samples/N128
+```
+
+Evaluate held-out language-model metrics:
+
+```bash
+python scripts/evaluate_sequence_model.py \
+  --checkpoint outputs/sequence_baseline/checkpoints/best_validation.pt \
+  --manifest data/sequence/splits/validation.parquet \
+  --output-dir reports/sequence_baseline/validation
+```
+
+Validation reports token-weighted NLL, perplexity, sequence-weighted loss,
+token accuracy, accuracy by residue type, NLL by position, and NLL as a
+diagnostic function of `N`. Generated-sequence evaluation reports exact length
+compliance, canonical validity, uniqueness, exact novelty against training
+sequences, amino-acid composition, Jensen-Shannon divergence, Shannon entropy,
+low-complexity fraction, homopolymer runs, and repeated-substring statistics.
+
+Sequence plausibility does not prove foldability. PDB-derived sequence data are
+structurally selected and biased, and homology-safe splitting is mandatory.
+Proper biological validation remains future work and should include tools such
+as structure prediction, predicted confidence, globularity/disorder checks,
+structural diversity analysis, and aggregation or solubility screening.
+
 ## Environment Setup
 
 Linux with Python 3.11 is the primary target:
