@@ -1,0 +1,302 @@
+{
+  "audit_date": "2026-08-20",
+  "repository": {
+    "path": "/home/simostocco/proteinGen",
+    "branch": "main",
+    "head": "935c2f3b1324dbd3b0abb24b50702bae33c86bd9",
+    "head_subject": "Add v-prediction diffusion baseline",
+    "remote_url": "https://github.com/simostocco/proteinGen.git",
+    "origin_main": "935c2f3b1324dbd3b0abb24b50702bae33c86bd9",
+    "local_remote_aligned": true,
+    "remote_freshness_confirmed": false,
+    "remote_check_blocker": "git remote show origin failed: Could not resolve host: github.com",
+    "tracked_file_count": 79,
+    "git_lfs": {
+      "available": false,
+      "evidence": "git lfs ls-files failed because git-lfs is not executable; no .gitattributes was observed"
+    },
+    "reflog_evidence": "clone from https://github.com/simostocco/proteinGen.git at 2026-08-20 14:02:48 +0200",
+    "large_log_in_history": {
+      "present": true,
+      "commit": "3fab943",
+      "path": "logs/full_preflight.log",
+      "size_bytes": 187052,
+      "present_in_worktree": false
+    },
+    "git_status_ignored_after_audit": [
+      ".ruff_cache/",
+      "scripts/__pycache__/",
+      "src/protein_distance_diffusion/__pycache__/",
+      "src/protein_distance_diffusion/diffusion/__pycache__/",
+      "src/protein_distance_diffusion/utils/__pycache__/",
+      "tests/__pycache__/"
+    ],
+    "tracked_diff_present": false
+  },
+  "latest_commits": [
+    "935c2f3 Add v-prediction diffusion baseline",
+    "59ec200 Fix timestep diagnostic plotting",
+    "76ec989 Fix variable-length padding in diffusion diagnostics",
+    "c31efda Add timestep-resolved diffusion diagnostics",
+    "c57d030 Fix DDPM sampling equations and add sampling diagnostics",
+    "3fab943 Handle FP16 overflows and verify gradient clipping",
+    "31aa7d1 Prepare scalable full-dataset diffusion training",
+    "7b9986e Prepare full diffusion training with AMP and accumulation",
+    "0d5e8ba Add scalable streaming train statistics",
+    "1e2d6e1 Add scalable split workflow with progress reporting",
+    "79c8859 Set protein length limit to 500",
+    "775bf2d Validate real PDB preprocessing pipeline",
+    "da24da6 Initial commit"
+  ],
+  "environment": {
+    "python3_version": "3.10.12",
+    "project_requires_python": ">=3.11",
+    "present_packages": [
+      "numpy",
+      "pandas",
+      "pyarrow",
+      "torch",
+      "yaml",
+      "gemmi",
+      "matplotlib",
+      "tqdm",
+      "tensorboard",
+      "pytest",
+      "ruff"
+    ],
+    "missing_packages": [
+      "MDAnalysis",
+      "seaborn"
+    ],
+    "torch_numpy_abi_warning": true
+  },
+  "scripts": {
+    "query_rcsb.py": {
+      "purpose": "RCSB Search API v2 query for filtered protein PDB IDs",
+      "help_verified": true,
+      "important_args": [
+        "--output",
+        "--num-entries",
+        "--all-matches",
+        "--count-only",
+        "--candidate-limit",
+        "--page-size",
+        "--resume/--no-resume",
+        "--restart",
+        "--seed",
+        "--release-date-cutoff"
+      ],
+      "status": "present"
+    },
+    "download_pdb.py": {
+      "purpose": "Download selected PDB mmCIF files",
+      "status": "blocked_missing_data_package"
+    },
+    "preprocess_pdb.py": {
+      "purpose": "SQLite-backed resumable preprocessing into distance-matrix samples",
+      "status": "partial_source_blocked_missing_data_package"
+    },
+    "build_splits.py": {
+      "purpose": "Run deduplication, FASTA, MMseqs2 clustering and leakage-safe splits",
+      "status": "blocked_missing_data_package"
+    },
+    "compute_train_statistics.py": {
+      "purpose": "Train-only normalization statistics",
+      "status": "blocked_missing_data_package"
+    },
+    "summarize_dataset.py": {
+      "purpose": "Resumable manifest and distance/contact summary",
+      "status": "partial_source_blocked_missing_data_package"
+    },
+    "train_diffusion.py": {
+      "purpose": "Train diffusion model from YAML config",
+      "status": "blocked_missing_data_package"
+    },
+    "sample_distance_maps.py": {
+      "purpose": "Sample generated distance matrices from a checkpoint",
+      "status": "blocked_missing_data_package"
+    },
+    "validate_diffusion.py": {
+      "purpose": "Validate checkpoint and optionally generated matrix",
+      "status": "present_but_matrix_only_memory_bound_fix_absent"
+    },
+    "analyze_timestep_errors.py": {
+      "purpose": "Timestep-resolved diagnostics and plotting",
+      "status": "partial_source_blocked_missing_data_package"
+    },
+    "debug_training_objective.py": {
+      "purpose": "Report objective/loss diagnostics",
+      "status": "blocked_missing_data_package"
+    },
+    "inspect_dataset.py": {
+      "purpose": "Inspect processed manifest/sample",
+      "status": "blocked_missing_data_package"
+    },
+    "visualize_samples.py": {
+      "purpose": "Visualize processed samples/contact maps",
+      "status": "blocked_missing_data_package"
+    }
+  },
+  "modules": {
+    "present": [
+      "protein_distance_diffusion.config",
+      "protein_distance_diffusion.constants",
+      "protein_distance_diffusion.diffusion.gaussian",
+      "protein_distance_diffusion.diffusion.sampling",
+      "protein_distance_diffusion.diffusion.schedules",
+      "protein_distance_diffusion.evaluation.contact_maps",
+      "protein_distance_diffusion.evaluation.metrics",
+      "protein_distance_diffusion.evaluation.plots",
+      "protein_distance_diffusion.models.attention",
+      "protein_distance_diffusion.models.blocks",
+      "protein_distance_diffusion.models.embeddings",
+      "protein_distance_diffusion.models.unet",
+      "protein_distance_diffusion.training.checkpointing",
+      "protein_distance_diffusion.training.ema",
+      "protein_distance_diffusion.training.logging",
+      "protein_distance_diffusion.training.trainer",
+      "protein_distance_diffusion.utils.hashing",
+      "protein_distance_diffusion.utils.io",
+      "protein_distance_diffusion.utils.reproducibility"
+    ],
+    "missing_expected": [
+      "protein_distance_diffusion.data.collate",
+      "protein_distance_diffusion.data.dataset",
+      "protein_distance_diffusion.data.preprocess",
+      "protein_distance_diffusion.data.mmcif_parser",
+      "protein_distance_diffusion.data.mdanalysis_parser",
+      "protein_distance_diffusion.data.structure_parser",
+      "protein_distance_diffusion.data.download",
+      "protein_distance_diffusion.data.clustering",
+      "protein_distance_diffusion.data.splitting",
+      "protein_distance_diffusion.data.statistics"
+    ]
+  },
+  "configs": {
+    "preprocess_max_length": 500,
+    "preprocess_min_length": null,
+    "allowed_methods": [
+      "X-RAY DIFFRACTION",
+      "ELECTRON MICROSCOPY"
+    ],
+    "split": {
+      "sequence_identity_threshold": 0.3,
+      "alignment_coverage_threshold": 0.8,
+      "minimum_sequence_length": 20,
+      "mmseqs_threads": 2,
+      "mmseqs_cov_mode": 0,
+      "mmseqs_split_memory_limit": "4G",
+      "fractions": [
+        0.8,
+        0.1,
+        0.1
+      ]
+    },
+    "training": {
+      "diffusion_steps": 500,
+      "prediction_parameterizations": [
+        "epsilon",
+        "v"
+      ],
+      "model_max_length": 500,
+      "full_batch_size": 2,
+      "full_gradient_accumulation_steps": 4,
+      "mixed_precision_full": true,
+      "tensorboard": true
+    },
+    "stale_or_inconsistent_paths": [
+      "README references outputs/full_baseline while configs/train_full.yaml uses outputs/full_baseline_b2_fp16_fixed",
+      "configs/sample.yaml references outputs/experiment/checkpoints/best.pt while trainer writes best_validation.pt"
+    ]
+  },
+  "verified_features": {
+    "rcsb_querying": "present",
+    "mmcif_downloading": "blocked_missing_data_package",
+    "xray_cryoem_preprocessing": "blocked_missing_data_package",
+    "nmr_preprocessing": "absent_or_blocked",
+    "gemmi_parsing": "blocked_missing_data_package",
+    "mdanalysis_parsing": "blocked_missing_data_package",
+    "resumable_parallel_preprocessing_sqlite": "partial_source_blocked_missing_data_package",
+    "ca_distance_matrices": "blocked_missing_data_package",
+    "exact_sequence_deduplication": "blocked_missing_data_package",
+    "mmseqs2_clustering": "blocked_missing_data_package",
+    "leakage_safe_splitting": "blocked_missing_data_package",
+    "streaming_normalization": "blocked_missing_data_package",
+    "variable_size_model": "present",
+    "dynamic_padding_collate": "missing",
+    "relative_sequence_separation_channel": "model_contract_present_helper_missing",
+    "continuous_length_conditioning": "present",
+    "unet_attention": "present",
+    "epsilon_prediction": "present",
+    "v_prediction": "present",
+    "ddpm_sampling": "present",
+    "ema": "present",
+    "amp_overflow_recovery": "present",
+    "gradient_clipping_accumulation": "present",
+    "atomic_training_checkpoints": "present",
+    "tensorboard_logging": "present",
+    "timestep_diagnostics": "partial",
+    "matrix_only_bounded_validation": "absent"
+  },
+  "missing_features": [
+    "protein_distance_diffusion.data package",
+    "globular protein filtering",
+    "DisProt/MobiDB integration",
+    "CATH coverage filtering",
+    "representative NMR conformer selection",
+    "NMR ensemble handling",
+    "coordinate reconstruction",
+    "sequence generation",
+    "geometric loss terms",
+    "matrix-only bounded-memory validate_diffusion implementation"
+  ],
+  "artifact_inventory": {
+    "files_under_data_outputs_reports_logs": 0,
+    "raw_structures": 0,
+    "processed_npz_samples": 0,
+    "manifests": 0,
+    "split_manifests": 0,
+    "normalization_statistics": 0,
+    "mmseqs_outputs": 0,
+    "sqlite_state_databases": 0,
+    "checkpoints": 0,
+    "tensorboard_events": 0,
+    "diagnostics": 0,
+    "reports": 0,
+    "lost_expected_artifacts": [
+      "646525 processed chain samples",
+      "154940 deduplicated sequences",
+      "26089 MMseqs2 clusters",
+      "train/validation/test split 123952/15494/15494",
+      "normalization scale about 54.625 Angstrom",
+      "epsilon checkpoints and diagnostics",
+      "v-prediction checkpoints and diagnostics"
+    ]
+  },
+  "test_results": {
+    "static_test_function_count": 122,
+    "ruff_check": {
+      "command": "ruff check .",
+      "status": "failed",
+      "summary": "23 fixable I001 import-order findings"
+    },
+    "ruff_format_check": {
+      "command": "ruff format --check .",
+      "status": "passed",
+      "summary": "55 files already formatted"
+    },
+    "pytest": {
+      "command": "PYTHONPATH=src pytest -q",
+      "status": "failed",
+      "summary": "ImportError while loading conftest: ModuleNotFoundError: No module named 'protein_distance_diffusion.data'"
+    }
+  },
+  "recovery_requirements": [
+    "Restore src/protein_distance_diffusion/data/ from backup/logs/older workspace or reimplement it",
+    "Use Python 3.11 environment and install missing dependencies",
+    "Fix Ruff import ordering after code restoration",
+    "Regenerate or restore full data artifacts and checkpoints",
+    "Reimplement matrix-only bounded-memory validation if needed",
+    "Reconcile stale README paths with current configs"
+  ]
+}
