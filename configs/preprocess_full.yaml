@@ -5,11 +5,14 @@ manifest_path: data/full/processed/manifest.parquet
 summary_path: data/full/processed/preprocess_summary.json
 state_db_path: data/full/processed/preprocess_state.sqlite
 backend: auto
-min_length: null
+min_length: 20
 max_length: 500
+strict_contiguous_ca: true
 allowed_methods:
   - X-RAY DIFFRACTION
   - ELECTRON MICROSCOPY
   - SOLUTION NMR
 max_xray_resolution_angstrom: 4.0
 max_cryoem_resolution_angstrom: 8.0
+residue_mappings:
+  MSE: MET
