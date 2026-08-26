@@ -13,7 +13,7 @@ output_dir: data/full/splits
 state_db_path: null
 
 mmseqs_executable: mmseqs
-mmseqs_threads: 2
+mmseqs_threads: 4
 mmseqs_split_memory_limit: "4G"
 mmseqs_cov_mode: 0
 mmseqs_remove_tmp_files: false
