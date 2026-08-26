@@ -40,6 +40,7 @@ class DistanceMapDataset(Dataset):
             "chain_id": str(row.get("chain_id", data["chain_id"] if "chain_id" in data else "")),
             "sequence": str(row.get("sequence", data["sequence"] if "sequence" in data else "")),
             "length": length,
+            "sample_weight": float(row.get("sample_weight", 1.0)),
             "distance_matrix": torch.as_tensor(matrix, dtype=torch.float32),
             "metadata": metadata,
         }

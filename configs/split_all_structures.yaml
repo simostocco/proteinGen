@@ -1,0 +1,34 @@
+# All-structures, group-safe split configuration for relaxed preprocessing outputs.
+manifest_path: data/full/processed_relaxed/manifest.parquet
+deduplicated_manifest_path: data/full/processed_relaxed/manifest_within_pdb_collapsed.parquet
+deduplication_report_path: data/full/processed_relaxed/within_pdb_collapse_report.json
+fasta_path: data/full/processed_relaxed/unique_sequences_for_mmseqs.fasta
+
+mmseqs_output_prefix: data/full/processed_relaxed/mmseqs_unique_sequence_clusters
+mmseqs_tmp_dir: data/full/processed_relaxed/mmseqs_unique_tmp
+cluster_assignments_path: data/full/processed_relaxed/mmseqs_all_structure_clusters.tsv
+
+output_dir: data/full/splits_all_structures
+state_db_path: null
+
+mmseqs_executable: mmseqs
+mmseqs_threads: 4
+mmseqs_split_memory_limit: "4G"
+mmseqs_cov_mode: 0
+mmseqs_remove_tmp_files: false
+
+retention_mode: all_structures_group_safe
+collapse_within_pdb_exact_duplicates: true
+exact_sequence_weight_exponent: 1.0
+
+sequence_identity_threshold: 0.30
+alignment_coverage_threshold: 0.80
+minimum_sequence_length: 20
+
+split_seed: 42
+train_fraction: 0.80
+validation_fraction: 0.10
+test_fraction: 0.10
+
+checkpoint_every: null
+external_group_label_file: null

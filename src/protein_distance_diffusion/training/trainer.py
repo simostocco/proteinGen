@@ -23,6 +23,7 @@ from protein_distance_diffusion.diffusion.gaussian import (
     PredictionType,
     ensure_config_matches_checkpoint_parameterization,
     masked_upper_triangular_loss,
+    per_protein_masked_upper_triangular_loss,
     prediction_parameterization_from_config,
     validate_prediction_type,
 )
@@ -540,6 +541,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 pair_mask = batch["pair_masks"].to(device)
                 lengths = batch["lengths"].to(device)
                 sep = batch["sequence_separation"].to(device)
+                sample_weight = batch.get("sample_weights", torch.ones(clean.shape[0])).to(device)
                 t = torch.randint(0, diffusion.timesteps, (clean.shape[0],), device=device)
                 with _autocast_context(enabled=amp_enabled, dtype=amp_dtype):
                     noisy, eps = diffusion.q_sample(clean, t, pair_mask)
@@ -550,7 +552,13 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         prediction_type=prediction_type,
                     )
                     prediction = model(noisy, t, lengths, sep, pair_mask)
-                    loss = masked_upper_triangular_loss(target.float(), prediction.float(), pair_mask)
+                    per_sample_loss = per_protein_masked_upper_triangular_loss(
+                        target.float(), prediction.float(), pair_mask
+                    )
+                    loss = masked_upper_triangular_loss(
+                        target.float(), prediction.float(), pair_mask, sample_weight=sample_weight
+                    )
+                    unweighted_loss = per_sample_loss.mean()
                 if not torch.isfinite(loss):
                     raise FloatingPointError(
                         "Non-finite training loss: "
@@ -588,6 +596,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     loss_for_backward.backward()
                 batch_size = int(clean.shape[0])
                 loss_value = float(loss.detach().cpu())
+                unweighted_loss_value = float(unweighted_loss.detach().cpu())
                 running_loss += (loss_value - running_loss) / batch_index
                 epoch_loss += loss_value * batch_size
                 epoch_samples += batch_size
@@ -636,6 +645,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     "global_step": global_step,
                     "optimizer_step": global_step,
                     "training_loss": loss_value,
+                    "training_loss_weighted": loss_value,
+                    "training_loss_unweighted": unweighted_loss_value,
                     "running_loss": running_loss,
                     "learning_rate": lr,
                     "gradient_norm": grad_norm_preclip,
@@ -663,6 +674,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 if writer is not None and should_step and global_step % log_every_steps == 0:
                     writer.add_scalar("train/loss", loss_value, global_step)
                     writer.add_scalar("train/loss_step", loss_value, global_step)
+                    writer.add_scalar("train/loss_weighted", loss_value, global_step)
+                    writer.add_scalar("train/loss_unweighted", unweighted_loss_value, global_step)
                     writer.add_scalar("optimizer/learning_rate", lr, global_step)
                     writer.add_scalar("learning_rate", lr, global_step)
                     writer.add_scalar("optimizer/gradient_norm", grad_norm_preclip, global_step)
@@ -878,6 +891,7 @@ def validate_loss(
         pair_mask = batch["pair_masks"].to(device)
         lengths = batch["lengths"].to(device)
         sep = batch["sequence_separation"].to(device)
+        sample_weight = batch.get("sample_weights", torch.ones(clean.shape[0])).to(device)
         t = torch.randint(0, diffusion.timesteps, (clean.shape[0],), device=device, generator=gen)
         with _autocast_context(enabled=amp_enabled, dtype=amp_dtype):
             noisy, eps = diffusion.q_sample(clean, t, pair_mask, generator=gen)
@@ -888,7 +902,9 @@ def validate_loss(
                 prediction_type=parameterization,
             )
             prediction = model(noisy, t, lengths, sep, pair_mask)
-            loss = masked_upper_triangular_loss(target.float(), prediction.float(), pair_mask).cpu()
+            loss = masked_upper_triangular_loss(
+                target.float(), prediction.float(), pair_mask, sample_weight=sample_weight
+            ).cpu()
         if not torch.isfinite(loss):
             raise FloatingPointError("Non-finite validation loss")
         losses.append(loss)

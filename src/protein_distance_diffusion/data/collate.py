@@ -52,6 +52,7 @@ def collate_distance_maps(items: list[dict[str, Any]], *, downsample_stages: int
     return {
         "sample_ids": [str(item["sample_id"]) for item in items],
         "lengths": lengths,
+        "sample_weights": torch.tensor([float(item.get("sample_weight", 1.0)) for item in items], dtype=torch.float32),
         "distance_matrices": matrices,
         "sequence_separation": separation,
         "pair_masks": pair_masks,

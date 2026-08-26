@@ -110,7 +110,17 @@ def save_processed_sample(sample: ProteinSample, samples_dir: str | Path) -> dic
         "resolution_angstrom": metadata.get("resolution_angstrom"),
         "source_file": metadata.get("source_file"),
     }
-    for key in ("structure_format", "model_number", "original_chain_length"):
+    for key in (
+        "structure_format",
+        "model_number",
+        "original_chain_length",
+        "retained_start_label_seq_id",
+        "retained_end_label_seq_id",
+        "trimmed_n_terminal_residues",
+        "trimmed_c_terminal_residues",
+        "terminal_trimming_applied",
+        "missing_calpha_policy",
+    ):
         if key in metadata:
             row[key] = metadata[key]
     return row

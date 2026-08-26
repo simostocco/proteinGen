@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 from protein_distance_diffusion.data.mmcif_parser import _atom_site, parse_mmcif_file, parse_mmcif_file_with_rejections
+from protein_distance_diffusion.data.preprocess import save_processed_sample
 
 
 def _write_poly_gly_mmcif(path: Path, *, length: int) -> None:
@@ -69,6 +70,12 @@ def _write_dna_then_protein_mmcif(path: Path) -> None:
                 "_em_3d_reconstruction.resolution 2.50",
                 "#",
                 "loop_",
+                "_entity_poly.entity_id",
+                "_entity_poly.type",
+                "1 'polydeoxyribonucleotide'",
+                "2 'polypeptide(L)'",
+                "#",
+                "loop_",
                 "_atom_site.group_PDB",
                 "_atom_site.id",
                 "_atom_site.type_symbol",
@@ -101,7 +108,13 @@ def _write_dna_then_protein_mmcif(path: Path) -> None:
     )
 
 
-def _write_custom_mmcif(path: Path, rows: list[str], *, scheme_rows: list[str] | None = None) -> None:
+def _write_custom_mmcif(
+    path: Path,
+    rows: list[str],
+    *,
+    scheme_rows: list[str] | None = None,
+    entity_poly_rows: list[str] | None = None,
+) -> None:
     lines = [
         "data_CSTM",
         "#",
@@ -109,6 +122,16 @@ def _write_custom_mmcif(path: Path, rows: list[str], *, scheme_rows: list[str] |
         "_refine.ls_d_res_high 1.50",
         "#",
     ]
+    if entity_poly_rows is not None:
+        lines.extend(
+            [
+                "loop_",
+                "_entity_poly.entity_id",
+                "_entity_poly.type",
+                *entity_poly_rows,
+                "#",
+            ]
+        )
     if scheme_rows is not None:
         lines.extend(
             [
@@ -166,11 +189,15 @@ def _atom_row(
     x: str | float = 0.0,
     occupancy: str | float = 1.0,
     group: str = "ATOM",
+    entity: str = "1",
+    ins: str = "?",
+    auth_seq: int | str | None = None,
 ) -> str:
     element = atom[0]
+    auth = seq if auth_seq is None else auth_seq
     return (
-        f"{group} {atom_id} {element} {atom} {altloc} {resname} {chain} 1 {seq} ? "
-        f"{x} 0.000 0.000 {occupancy} 20.00 ? {seq} {resname} {chain} {atom} 1"
+        f"{group} {atom_id} {element} {atom} {altloc} {resname} {chain} {entity} {seq} {ins} "
+        f"{x} 0.000 0.000 {occupancy} 20.00 ? {auth} {resname} {chain} {atom} 1"
     )
 
 
@@ -220,6 +247,166 @@ def test_mmcif_polymer_scheme_detects_absent_terminal_residue(tmp_path: Path) ->
     assert samples == []
     assert rejections[0].reason == "missing_calpha"
     assert "2" in rejections[0].message
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_trim_terminal_accepts_complete_chain_with_metadata(tmp_path: Path) -> None:
+    fixture = tmp_path / "complete.cif"
+    rows = [_atom_row(idx, resname="ALA", seq=idx, x=idx) for idx in range(1, 21)]
+    scheme = [f"A 1 {idx} ALA A {idx} ?" for idx in range(1, 21)]
+    _write_custom_mmcif(
+        fixture,
+        rows,
+        scheme_rows=scheme,
+        entity_poly_rows=["1 'polypeptide(L)'"],
+    )
+    sample = parse_mmcif_file(fixture, min_length=None, missing_calpha_policy="trim_terminal")[0]
+    assert len(sample.sequence) == 20
+    assert sample.metadata["original_chain_length"] == 20
+    assert sample.metadata["retained_start_label_seq_id"] == 1
+    assert sample.metadata["retained_end_label_seq_id"] == 20
+    assert sample.metadata["terminal_trimming_applied"] is False
+    assert sample.metadata["missing_calpha_policy"] == "trim_terminal"
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_trim_metadata_is_written_to_npz_and_manifest_row(tmp_path: Path) -> None:
+    fixture = tmp_path / "trimmed_schema.cif"
+    rows = [_atom_row(idx, resname="ALA", seq=seq, x=seq) for idx, seq in enumerate(range(3, 23), start=1)]
+    scheme = [f"A 1 {idx} ALA A {idx} ?" for idx in range(1, 23)]
+    _write_custom_mmcif(
+        fixture,
+        rows,
+        scheme_rows=scheme,
+        entity_poly_rows=["1 'polypeptide(L)'"],
+    )
+    sample = parse_mmcif_file(fixture, min_length=None, missing_calpha_policy="trim_terminal")[0]
+    row = save_processed_sample(sample, tmp_path / "samples")
+    npz = np.load(row["path"], allow_pickle=False)
+    metadata = json.loads(str(npz["metadata"]))
+    for key in (
+        "original_chain_length",
+        "retained_start_label_seq_id",
+        "retained_end_label_seq_id",
+        "trimmed_n_terminal_residues",
+        "trimmed_c_terminal_residues",
+        "terminal_trimming_applied",
+        "missing_calpha_policy",
+    ):
+        assert key in row
+        assert key in metadata
+    assert row["original_chain_length"] == 22
+    assert row["retained_start_label_seq_id"] == 3
+    assert row["trimmed_n_terminal_residues"] == 2
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+@pytest.mark.parametrize(
+    ("observed", "trimmed_n", "trimmed_c"),
+    [
+        (range(3, 23), 2, 0),
+        (range(1, 21), 0, 2),
+        (range(3, 21), 2, 2),
+    ],
+)
+def test_mmcif_trim_terminal_removes_only_terminal_missing_residues(
+    tmp_path: Path,
+    observed: range,
+    trimmed_n: int,
+    trimmed_c: int,
+) -> None:
+    fixture = tmp_path / "terminal_trim.cif"
+    rows = [_atom_row(idx, resname="ALA", seq=seq, x=seq) for idx, seq in enumerate(observed, start=1)]
+    scheme = [f"A 1 {idx} ALA A {idx} ?" for idx in range(1, 23)]
+    _write_custom_mmcif(
+        fixture,
+        rows,
+        scheme_rows=scheme,
+        entity_poly_rows=["1 'polypeptide(L)'"],
+    )
+    sample = parse_mmcif_file(fixture, min_length=None, missing_calpha_policy="trim_terminal")[0]
+    assert len(sample.sequence) == 22 - trimmed_n - trimmed_c
+    assert sample.metadata["trimmed_n_terminal_residues"] == trimmed_n
+    assert sample.metadata["trimmed_c_terminal_residues"] == trimmed_c
+    assert sample.metadata["terminal_trimming_applied"] is True
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_trim_terminal_rejects_internal_missing_residue(tmp_path: Path) -> None:
+    fixture = tmp_path / "internal_missing.cif"
+    observed = [*range(1, 10), *range(11, 22)]
+    rows = [_atom_row(idx, resname="ALA", seq=seq, x=seq) for idx, seq in enumerate(observed, start=1)]
+    scheme = [f"A 1 {idx} ALA A {idx} ?" for idx in range(1, 22)]
+    _write_custom_mmcif(
+        fixture,
+        rows,
+        scheme_rows=scheme,
+        entity_poly_rows=["1 'polypeptide(L)'"],
+    )
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, missing_calpha_policy="trim_terminal")
+    assert samples == []
+    assert rejections[0].reason == "internal_missing_calpha"
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_trim_terminal_applies_min_length_after_trimming(tmp_path: Path) -> None:
+    fixture = tmp_path / "too_short_after_trim.cif"
+    observed = range(3, 22)
+    rows = [_atom_row(idx, resname="ALA", seq=seq, x=seq) for idx, seq in enumerate(observed, start=1)]
+    scheme = [f"A 1 {idx} ALA A {idx} ?" for idx in range(1, 23)]
+    _write_custom_mmcif(
+        fixture,
+        rows,
+        scheme_rows=scheme,
+        entity_poly_rows=["1 'polypeptide(L)'"],
+    )
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, missing_calpha_policy="trim_terminal")
+    assert samples == []
+    assert rejections[0].reason == "length_below_minimum"
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_reject_policy_remains_backward_compatible(tmp_path: Path) -> None:
+    fixture = tmp_path / "reject_terminal_missing.cif"
+    rows = [_atom_row(idx, resname="ALA", seq=seq, x=seq) for idx, seq in enumerate(range(3, 23), start=1)]
+    scheme = [f"A 1 {idx} ALA A {idx} ?" for idx in range(1, 23)]
+    _write_custom_mmcif(
+        fixture,
+        rows,
+        scheme_rows=scheme,
+        entity_poly_rows=["1 'polypeptide(L)'"],
+    )
+    samples, rejections = parse_mmcif_file_with_rejections(fixture)
+    assert samples == []
+    assert rejections[0].reason == "missing_calpha"
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_insertion_codes_use_label_seq_id_ordering(tmp_path: Path) -> None:
+    fixture = tmp_path / "insertion.cif"
+    rows = [
+        _atom_row(1, resname="ALA", seq=1, x=1, auth_seq=10),
+        _atom_row(2, resname="GLY", seq=2, x=2, auth_seq=10, ins="A"),
+        _atom_row(3, resname="SER", seq=3, x=3, auth_seq=11),
+    ]
+    _write_custom_mmcif(fixture, rows, entity_poly_rows=["1 'polypeptide(L)'"])
+    sample = parse_mmcif_file(fixture, min_length=None)[0]
+    assert sample.sequence == "AGS"
+    assert sample.residue_ids == ["10", "10A", "11"]
+    assert sample.metadata["retained_insertion_codes"] == ["", "A", ""]
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_duplicate_canonical_position_is_rejected(tmp_path: Path) -> None:
+    fixture = tmp_path / "duplicate_position.cif"
+    rows = [
+        _atom_row(1, resname="ALA", seq=1, x=1, auth_seq=10),
+        _atom_row(2, resname="GLY", seq=1, x=2, auth_seq=10, ins="A"),
+    ]
+    _write_custom_mmcif(fixture, rows, entity_poly_rows=["1 'polypeptide(L)'"])
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, min_length=None)
+    assert samples == []
+    assert rejections[0].reason == "duplicate_canonical_position"
 
 
 @pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
@@ -380,7 +567,7 @@ def test_mmcif_max_length_500_boundary(tmp_path: Path, length: int, accepted: bo
 
 @pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
 def test_mmcif_nonprotein_chain_does_not_discard_valid_chain(tmp_path: Path) -> None:
-    """A non-protein chain before a valid protein chain is recorded but does not abort the entry."""
+    """A non-protein chain before a valid protein chain is ignored and does not abort the entry."""
     fixture = tmp_path / "dna_then_protein.cif"
     _write_dna_then_protein_mmcif(fixture)
     samples, rejections = parse_mmcif_file_with_rejections(
@@ -392,7 +579,7 @@ def test_mmcif_nonprotein_chain_does_not_discard_valid_chain(tmp_path: Path) -> 
     )
     assert [sample.chain_id for sample in samples] == ["B"]
     assert samples[0].sequence == "GA"
-    assert [(rejection.chain_id, rejection.reason) for rejection in rejections] == [("A", "unsupported_residues")]
+    assert rejections == []
 
 
 @pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")

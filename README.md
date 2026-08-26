@@ -464,6 +464,43 @@ deduplication and FASTA generation. Existing MMseqs2 cluster output is reused
 when valid; `--force` rebuilds it, and new runs write a cache metadata sidecar
 that records the filtered FASTA checksum and exact MMseqs2 command.
 
+### Relaxed All-Structures Mode
+
+The baseline preprocessing mode rejects any chain with a missing C-alpha. For
+large experimental datasets, a scientifically safe relaxed mode can instead trim
+only missing terminal residues while still rejecting internal missing C-alpha
+positions, duplicated canonical `label_seq_id` positions, non-finite
+coordinates, unsupported mixed polymer chains, and chains outside the final
+20-500 residue length range. This avoids imputing coordinates or compressing
+internal gaps while recovering structures with unresolved termini.
+
+```bash
+python scripts/preprocess_pdb.py \
+  --config configs/preprocess_full_relaxed.yaml \
+  --workers 8 \
+  --resume \
+  --checkpoint-every 1000
+```
+
+For training sets that should retain multiple experimental structures for the
+same exact sequence, use the all-structures split mode. It clusters one
+representative per unique exact sequence with MMseqs2, propagates cluster IDs
+back to every retained structure, keeps exact sequence, MMseqs cluster and PDB
+entry constraints in one connected component, and writes inverse-frequency
+`sample_weight` values. Validation and test manifests are deterministic
+one-representative-per-exact-sequence evaluation sets; corresponding
+`*_all_structures.parquet` files are written for distributional analysis.
+
+```bash
+python scripts/build_splits.py --config configs/split_all_structures.yaml
+python scripts/compute_train_statistics.py \
+  --train-manifest data/full/splits_all_structures/train.parquet \
+  --output data/full/processed_relaxed/normalization.json \
+  --workers 1 \
+  --checkpoint-every 5000 \
+  --resume
+```
+
 Train and sample:
 
 ```bash

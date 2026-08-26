@@ -47,6 +47,9 @@ def main() -> None:
             float(cfg.get("test_fraction", 0.1)),
         ),
         external_group_file=cfg.get("external_group_label_file"),
+        retention_mode=str(cfg.get("retention_mode", "exact_sequence_representative")),
+        collapse_within_pdb_exact_duplicates=bool(cfg.get("collapse_within_pdb_exact_duplicates", False)),
+        exact_sequence_weight_exponent=float(cfg.get("exact_sequence_weight_exponent", 1.0)),
         force=args.force,
         dry_run=args.dry_run,
     )

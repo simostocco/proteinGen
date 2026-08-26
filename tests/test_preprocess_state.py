@@ -73,7 +73,14 @@ def _write_poly_gly_mmcif(path: Path, *, length: int, pdb_id: str) -> None:
     )
 
 
-def _write_config(tmp_path: Path, raw_dir: Path, *, name: str, max_length: int = 500) -> Path:
+def _write_config(
+    tmp_path: Path,
+    raw_dir: Path,
+    *,
+    name: str,
+    max_length: int = 500,
+    missing_calpha_policy: str = "reject",
+) -> Path:
     processed = tmp_path / name / "processed"
     config = tmp_path / name / "preprocess.yaml"
     config.parent.mkdir(parents=True, exist_ok=True)
@@ -89,6 +96,7 @@ def _write_config(tmp_path: Path, raw_dir: Path, *, name: str, max_length: int =
                 "chain_id:",
                 "min_length:",
                 f"max_length: {max_length}",
+                f"missing_calpha_policy: {missing_calpha_policy}",
                 "allowed_methods:",
                 "  - X-RAY DIFFRACTION",
                 "max_xray_resolution_angstrom: 3.0",
@@ -151,6 +159,23 @@ def test_interruption_then_resume_equals_uninterrupted_run(tmp_path: Path) -> No
         _write_poly_gly_mmcif(raw / f"{pdb_id.lower()}.cif", length=4, pdb_id=pdb_id)
     clean = _write_config(tmp_path, raw, name="clean")
     resumed = _write_config(tmp_path, raw, name="resumed")
+
+    clean_manifest = _run(clean, workers=1, restart=True)
+    _run(resumed, workers=1, restart=True, interrupt_after_completed=1)
+    resumed_manifest = _run(resumed, workers=1, resume=True)
+
+    pd.testing.assert_frame_equal(_manifest_without_paths(clean_manifest), _manifest_without_paths(resumed_manifest))
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_relaxed_preprocessing_resume_equals_uninterrupted_run(tmp_path: Path) -> None:
+    """Relaxed missing-CA policy participates in resumable preprocessing equivalence."""
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    for pdb_id in ["AAAA", "BBBB", "CCCC"]:
+        _write_poly_gly_mmcif(raw / f"{pdb_id.lower()}.cif", length=20, pdb_id=pdb_id)
+    clean = _write_config(tmp_path, raw, name="relaxed_clean", missing_calpha_policy="trim_terminal")
+    resumed = _write_config(tmp_path, raw, name="relaxed_resumed", missing_calpha_policy="trim_terminal")
 
     clean_manifest = _run(clean, workers=1, restart=True)
     _run(resumed, workers=1, restart=True, interrupt_after_completed=1)

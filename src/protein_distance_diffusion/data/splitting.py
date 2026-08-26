@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from protein_distance_diffusion.data.clustering import (
+    add_sequence_hashes,
     build_mmseqs_easy_cluster_command,
     completed_cache_metadata,
     deduplicate_sequences,
@@ -50,6 +51,9 @@ def expected_mmseqs_cache_metadata(
     threads: int | None = None,
     split_memory_limit: str | None = None,
     input_manifest_sha256: str | None = None,
+    retention_mode: str | None = "exact_sequence_representative",
+    collapse_within_pdb_exact_duplicates: bool | None = False,
+    exact_sequence_weight_exponent: float | None = 1.0,
 ) -> dict[str, Any]:
     return {
         "schema_version": 1,
@@ -66,6 +70,9 @@ def expected_mmseqs_cache_metadata(
         "split_memory_limit": split_memory_limit,
         "minimum_sequence_length": minimum_sequence_length,
         "input_manifest_sha256": input_manifest_sha256,
+        "retention_mode": retention_mode,
+        "collapse_within_pdb_exact_duplicates": collapse_within_pdb_exact_duplicates,
+        "exact_sequence_weight_exponent": exact_sequence_weight_exponent,
     }
 
 
@@ -190,6 +197,94 @@ def _write_split_manifests(frame: pd.DataFrame, output_dir: Path) -> None:
         frame[frame["split"] == split].to_parquet(output_dir / f"{split}.parquet", index=False)
 
 
+def _representatives_per_sequence(frame: pd.DataFrame) -> pd.DataFrame:
+    if frame.empty:
+        return frame.copy()
+    data = frame.copy()
+    if "resolution_angstrom" in data:
+        resolution = pd.to_numeric(data["resolution_angstrom"], errors="coerce")
+    else:
+        resolution = pd.Series(float("inf"), index=data.index)
+    data["_resolution_sort"] = resolution.fillna(float("inf"))
+    data = data.sort_values(["sequence_hash", "_resolution_sort", "sample_id"]).reset_index(drop=True)
+    return data.groupby("sequence_hash", sort=False).head(1).drop(columns=["_resolution_sort"]).reset_index(drop=True)
+
+
+def _write_all_structure_split_manifests(frame: pd.DataFrame, output_dir: Path) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    frame.to_parquet(output_dir / "split_assignments.parquet", index=False)
+    frame[frame["split"] == "train"].to_parquet(output_dir / "train.parquet", index=False)
+    for split in ("validation", "test"):
+        split_frame = frame[frame["split"] == split].reset_index(drop=True)
+        split_frame.to_parquet(output_dir / f"{split}_all_structures.parquet", index=False)
+        _representatives_per_sequence(split_frame).to_parquet(output_dir / f"{split}.parquet", index=False)
+
+
+def _collapse_within_pdb_exact_duplicates(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    data = frame.copy()
+    if "resolution_angstrom" in data:
+        resolution = pd.to_numeric(data["resolution_angstrom"], errors="coerce")
+    else:
+        resolution = pd.Series(float("inf"), index=data.index)
+    data["_resolution_sort"] = resolution.fillna(float("inf"))
+    data = data.sort_values(["pdb_id", "sequence_hash", "_resolution_sort", "sample_id"]).reset_index(drop=True)
+    retained_rows = []
+    duplicate_rows = []
+    for (pdb_id, sequence_hash), group in data.groupby(["pdb_id", "sequence_hash"], sort=False):
+        representative = group.iloc[0].drop(labels=["_resolution_sort"]).to_dict()
+        retained_rows.append(representative)
+        duplicate_rows.append(
+            {
+                "pdb_id": str(pdb_id),
+                "sequence_hash": str(sequence_hash),
+                "representative_sample_id": str(representative["sample_id"]),
+                "duplicate_sample_ids": [str(value) for value in group["sample_id"].iloc[1:].tolist()],
+                "group_size": int(len(group)),
+            }
+        )
+    return pd.DataFrame(retained_rows), pd.DataFrame(duplicate_rows)
+
+
+def _attach_sequence_weights(frame: pd.DataFrame, exponent: float) -> pd.DataFrame:
+    out = frame.copy()
+    counts = out.groupby("sequence_hash")["sample_id"].transform("count").astype(int)
+    out["exact_sequence_count"] = counts
+    out["sample_weight"] = counts.astype(float).pow(-float(exponent))
+    return out
+
+
+def _split_report(frame: pd.DataFrame, *, raw_count: int, retained_count: int) -> dict[str, Any]:
+    cluster_sizes = frame.groupby("cluster_id").size() if "cluster_id" in frame else pd.Series(dtype=int)
+    sequence_sizes = frame.groupby("sequence_hash").size() if "sequence_hash" in frame else pd.Series(dtype=int)
+    split_counts: dict[str, dict[str, int]] = {}
+    for split in ("train", "validation", "test"):
+        split_frame = frame[frame["split"] == split]
+        split_counts[split] = {
+            "samples": int(len(split_frame)),
+            "unique_sequences": int(split_frame["sequence_hash"].nunique()) if "sequence_hash" in split_frame else 0,
+        }
+    train = frame[frame["split"] == "train"]
+    return {
+        "raw_sample_count": int(raw_count),
+        "unique_exact_sequence_count": int(frame["sequence_hash"].nunique()) if "sequence_hash" in frame else 0,
+        "retained_after_within_pdb_collapse_count": int(retained_count),
+        "structures_per_exact_sequence": {
+            "min": int(sequence_sizes.min()) if not sequence_sizes.empty else 0,
+            "max": int(sequence_sizes.max()) if not sequence_sizes.empty else 0,
+            "mean": float(sequence_sizes.mean()) if not sequence_sizes.empty else 0.0,
+        },
+        "mmseqs_cluster_count": int(frame["cluster_id"].nunique()) if "cluster_id" in frame else 0,
+        "mmseqs_cluster_size_distribution": {
+            "min": int(cluster_sizes.min()) if not cluster_sizes.empty else 0,
+            "max": int(cluster_sizes.max()) if not cluster_sizes.empty else 0,
+            "mean": float(cluster_sizes.mean()) if not cluster_sizes.empty else 0.0,
+        },
+        "splits": split_counts,
+        "effective_total_training_weight": float(train.get("sample_weight", pd.Series(dtype=float)).sum()),
+        **leakage_audit(frame),
+    }
+
+
 def build_splits_from_files(
     manifest_path: str | Path,
     cluster_assignments_path: str | Path,
@@ -272,10 +367,15 @@ def run_split_workflow(
     seed: int = 42,
     fractions: tuple[float, float, float] = (0.8, 0.1, 0.1),
     external_group_file: str | Path | None = None,
+    retention_mode: str = "exact_sequence_representative",
+    collapse_within_pdb_exact_duplicates: bool = False,
+    exact_sequence_weight_exponent: float = 1.0,
     force: bool = False,
     dry_run: bool = False,
 ) -> dict[str, Any]:
     """Run deduplication, FASTA export, MMseqs clustering, split assignment and audit."""
+    if retention_mode not in {"exact_sequence_representative", "all_structures_group_safe"}:
+        raise ValueError("retention_mode must be one of: exact_sequence_representative, all_structures_group_safe")
     if external_group_file is not None:
         raise NotImplementedError("external_group_file grouping is not implemented for split workflow")
     if state_db_path is not None:
@@ -296,12 +396,39 @@ def run_split_workflow(
     if minimum_sequence_length is not None:
         frame = frame[pd.to_numeric(frame["length"], errors="coerce") >= int(minimum_sequence_length)].copy()
     length_filtered_count = len(frame)
-    retained, duplicates = deduplicate_sequences(frame)
+    if retention_mode == "exact_sequence_representative":
+        retained, duplicates = deduplicate_sequences(frame)
+        clustering_input = retained
+    else:
+        frame = add_sequence_hashes(frame)
+        if collapse_within_pdb_exact_duplicates:
+            retained, duplicates = _collapse_within_pdb_exact_duplicates(frame)
+        else:
+            retained = frame.sort_values("sample_id").reset_index(drop=True)
+            duplicates = pd.DataFrame(
+                [
+                    {
+                        "representative_sample_id": str(row.sample_id),
+                        "sequence_hash": str(row.sequence_hash),
+                        "duplicate_sample_ids": [],
+                        "group_size": 1,
+                    }
+                    for row in retained.itertuples(index=False)
+                ]
+            )
+        retained = _attach_sequence_weights(retained, exact_sequence_weight_exponent)
+        clustering_input = _representatives_per_sequence(retained)
     if dry_run:
         return {
             "original_count": original_count,
             "length_filtered_count": length_filtered_count,
             "retained_count": len(retained),
+            "unique_sequence_count": (
+                int(clustering_input["sequence_hash"].nunique())
+                if "sequence_hash" in clustering_input
+                else len(clustering_input)
+            ),
+            "retention_mode": retention_mode,
         }
     Path(deduplicated_manifest_path).parent.mkdir(parents=True, exist_ok=True)
     retained.to_parquet(deduplicated_manifest_path, index=False)
@@ -309,7 +436,7 @@ def run_split_workflow(
         Path(deduplication_report_path),
         deduplication_report(duplicates, original_count=length_filtered_count, retained_count=len(retained)),
     )
-    write_fasta(retained, fasta_path)
+    write_fasta(clustering_input, fasta_path)
     command = build_mmseqs_easy_cluster_command(
         fasta_path,
         mmseqs_output_prefix,
@@ -329,7 +456,7 @@ def run_split_workflow(
         fasta_path=fasta_path,
         mmseqs_command=command,
         minimum_sequence_length=minimum_sequence_length,
-        retained_sequence_count=len(retained),
+        retained_sequence_count=len(clustering_input),
         mmseqs_executable=mmseqs,
         mmseqs_version_value=version,
         min_seq_id=sequence_identity_threshold,
@@ -338,6 +465,9 @@ def run_split_workflow(
         threads=mmseqs_threads,
         split_memory_limit=mmseqs_split_memory_limit,
         input_manifest_sha256=input_manifest_sha256,
+        retention_mode=retention_mode,
+        collapse_within_pdb_exact_duplicates=collapse_within_pdb_exact_duplicates,
+        exact_sequence_weight_exponent=exact_sequence_weight_exponent,
     )
     if raw_cluster.exists() and not force:
         _validate_cache_or_raise(raw_cluster, meta_path, metadata)
@@ -349,15 +479,35 @@ def run_split_workflow(
     clusters = (
         load_mmseqs_clusters(raw_cluster) if raw_cluster.exists() else pd.DataFrame(columns=["cluster_id", "sample_id"])
     )
-    _validate_cluster_ids(clusters, retained)
-    clusters = retained[["sample_id"]].merge(clusters, on="sample_id", how="left")
-    clusters["cluster_id"] = clusters["cluster_id"].fillna(clusters["sample_id"]).astype(str)
+    _validate_cluster_ids(clusters, clustering_input)
+    if retention_mode == "exact_sequence_representative":
+        clusters = retained[["sample_id"]].merge(clusters, on="sample_id", how="left")
+        clusters["cluster_id"] = clusters["cluster_id"].fillna(clusters["sample_id"]).astype(str)
+    else:
+        unique_clusters = clustering_input[["sample_id", "sequence_hash"]].merge(clusters, on="sample_id", how="left")
+        unique_clusters["cluster_id"] = unique_clusters["cluster_id"].fillna(unique_clusters["sample_id"]).astype(str)
+        cluster_by_hash = unique_clusters.set_index("sequence_hash")["cluster_id"]
+        clusters = retained[["sample_id", "sequence_hash"]].copy()
+        clusters["cluster_id"] = clusters["sequence_hash"].map(cluster_by_hash).astype(str)
+        clusters = clusters[["sample_id", "cluster_id"]]
     clusters = clusters[["cluster_id", "sample_id"]]
     Path(cluster_assignments_path).parent.mkdir(parents=True, exist_ok=True)
     clusters.to_csv(cluster_assignments_path, sep="\t", index=False, header=False)
-    split = build_splits_from_files(
-        deduplicated_manifest_path, cluster_assignments_path, output_dir, seed=seed, fractions=fractions
-    )
+    if retention_mode == "exact_sequence_representative":
+        split = build_splits_from_files(
+            deduplicated_manifest_path, cluster_assignments_path, output_dir, seed=seed, fractions=fractions
+        )
+    else:
+        merged = retained.merge(clusters, on="sample_id", how="left")
+        split = assign_clusters_to_splits(merged, seed=seed, fractions=fractions)
+        assert_no_leakage(split)
+        out = Path(output_dir)
+        _write_all_structure_split_manifests(split, out)
+        _atomic_json(out / "leakage_audit.json", leakage_audit(split))
+        _atomic_json(
+            out / "split_report.json",
+            _split_report(split, raw_count=original_count, retained_count=len(retained)),
+        )
     split_sizes = {key: int(value) for key, value in split["split"].value_counts().sort_index().items()}
     workflow_metadata = {
         **metadata,
@@ -366,7 +516,15 @@ def run_split_workflow(
         "length_filtered_count": int(length_filtered_count),
         "length_rejected_count": int(original_count - length_filtered_count),
         "retained_count": int(len(retained)),
+        "unique_sequence_count": (
+            int(clustering_input["sequence_hash"].nunique())
+            if "sequence_hash" in clustering_input
+            else int(len(clustering_input))
+        ),
         "cluster_count": int(split["cluster_id"].nunique()),
+        "retention_mode": retention_mode,
+        "collapse_within_pdb_exact_duplicates": bool(collapse_within_pdb_exact_duplicates),
+        "exact_sequence_weight_exponent": float(exact_sequence_weight_exponent),
         "split_sizes": split_sizes,
     }
     _atomic_json(Path(output_dir) / "workflow_metadata.json", workflow_metadata)

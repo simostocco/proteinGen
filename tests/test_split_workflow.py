@@ -39,6 +39,9 @@ def _write_cache_metadata(
     cov_mode: int = 0,
     threads: int | None = None,
     split_memory_limit: str | None = None,
+    retention_mode: str = "exact_sequence_representative",
+    collapse_within_pdb_exact_duplicates: bool = False,
+    exact_sequence_weight_exponent: float = 1.0,
 ) -> None:
     prefix.parent.mkdir(parents=True, exist_ok=True)
     fasta.write_text(
@@ -69,6 +72,9 @@ def _write_cache_metadata(
         threads=threads,
         split_memory_limit=split_memory_limit,
         input_manifest_sha256=file_sha256(manifest),
+        retention_mode=retention_mode,
+        collapse_within_pdb_exact_duplicates=collapse_within_pdb_exact_duplicates,
+        exact_sequence_weight_exponent=exact_sequence_weight_exponent,
     )
     mmseqs_cache_metadata_path(prefix).write_text(json.dumps(completed_cache_metadata(**metadata)))
 
@@ -454,6 +460,192 @@ def test_split_workflow_rejects_or_warns_for_unsupported_resume_args(tmp_path: P
         run_split_workflow(**kwargs, external_group_file=tmp_path / "groups.tsv")
     with pytest.warns(RuntimeWarning, match="not currently resumable"):
         run_split_workflow(**kwargs, state_db_path=tmp_path / "state.sqlite", checkpoint_every=10)
+
+
+def _all_structure_rows() -> list[dict[str, object]]:
+    return [
+        {
+            "sample_id": "p1_low",
+            "pdb_id": "P1",
+            "chain_id": "A",
+            "sequence": "A" * 20,
+            "length": 20,
+            "path": "p1_low.npz",
+            "resolution_angstrom": 2.0,
+        },
+        {
+            "sample_id": "p1_best",
+            "pdb_id": "P1",
+            "chain_id": "B",
+            "sequence": "A" * 20,
+            "length": 20,
+            "path": "p1_best.npz",
+            "resolution_angstrom": 1.0,
+        },
+        {
+            "sample_id": "p2_same",
+            "pdb_id": "P2",
+            "chain_id": "A",
+            "sequence": "A" * 20,
+            "length": 20,
+            "path": "p2_same.npz",
+            "resolution_angstrom": 3.0,
+        },
+        {
+            "sample_id": "p3_link_a",
+            "pdb_id": "P3",
+            "chain_id": "A",
+            "sequence": "C" * 20,
+            "length": 20,
+            "path": "p3_link_a.npz",
+            "resolution_angstrom": 1.5,
+        },
+        {
+            "sample_id": "p3_link_b",
+            "pdb_id": "P3",
+            "chain_id": "B",
+            "sequence": "D" * 20,
+            "length": 20,
+            "path": "p3_link_b.npz",
+            "resolution_angstrom": 1.6,
+        },
+        {
+            "sample_id": "p4_single",
+            "pdb_id": "P4",
+            "chain_id": "A",
+            "sequence": "E" * 20,
+            "length": 20,
+            "path": "p4_single.npz",
+            "resolution_angstrom": 1.7,
+        },
+    ]
+
+
+def _prepare_all_structure_cache(tmp_path: Path, manifest: Path, prefix: Path) -> None:
+    _write_cache_metadata(
+        manifest=manifest,
+        fasta=tmp_path / "unique.fasta",
+        prefix=prefix,
+        tmp_dir=tmp_path / "tmp",
+        retained_sequences={
+            "p1_best": "A" * 20,
+            "p3_link_a": "C" * 20,
+            "p3_link_b": "D" * 20,
+            "p4_single": "E" * 20,
+        },
+        cluster_tsv="c1\tp1_best\nc2\tp3_link_a\nc2\tp3_link_b\nc4\tp4_single\n",
+        minimum_sequence_length=20,
+        retention_mode="all_structures_group_safe",
+        collapse_within_pdb_exact_duplicates=True,
+        exact_sequence_weight_exponent=1.0,
+    )
+
+
+def test_all_structures_group_safe_retains_distinct_pdbs_and_weights(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """All-structures mode keeps cross-PDB exact copies grouped and weighted."""
+    monkeypatch.setattr(splitting_module, "mmseqs_version", lambda _: "test-mmseqs")
+    manifest = tmp_path / "manifest.parquet"
+    pd.DataFrame(_all_structure_rows()).to_parquet(manifest, index=False)
+    prefix = tmp_path / "mmseqs" / "clusters"
+    _prepare_all_structure_cache(tmp_path, manifest, prefix)
+
+    result = run_split_workflow(
+        manifest_path=manifest,
+        deduplicated_manifest_path=tmp_path / "retained.parquet",
+        deduplication_report_path=tmp_path / "collapse_report.json",
+        fasta_path=tmp_path / "unique.fasta",
+        mmseqs_output_prefix=prefix,
+        mmseqs_tmp_dir=tmp_path / "tmp",
+        cluster_assignments_path=tmp_path / "clusters.tsv",
+        output_dir=tmp_path / "splits",
+        retention_mode="all_structures_group_safe",
+        collapse_within_pdb_exact_duplicates=True,
+        exact_sequence_weight_exponent=1.0,
+    )
+
+    retained = pd.read_parquet(tmp_path / "retained.parquet")
+    assert set(retained["sample_id"]) == {"p1_best", "p2_same", "p3_link_a", "p3_link_b", "p4_single"}
+    assert "p1_low" not in set(retained["sample_id"])
+    assert retained.loc[retained["sample_id"] == "p1_best", "exact_sequence_count"].iloc[0] == 2
+    assert retained.loc[retained["sample_id"] == "p1_best", "sample_weight"].iloc[0] == pytest.approx(0.5)
+    assert retained.loc[retained["sample_id"] == "p2_same", "sample_weight"].iloc[0] == pytest.approx(0.5)
+    fasta = (tmp_path / "unique.fasta").read_text()
+    assert fasta.count(">") == 4
+    assert ">p2_same" not in fasta
+
+    split = pd.read_parquet(tmp_path / "splits" / "split_assignments.parquet")
+    for column in ("sequence_hash", "cluster_id", "pdb_id", "sample_id"):
+        assert split.groupby(column)["split"].nunique().max() == 1
+    assert split.loc[split["sample_id"] == "p2_same", "cluster_id"].iloc[0] == "c1"
+    validation = pd.read_parquet(tmp_path / "splits" / "validation.parquet")
+    test = pd.read_parquet(tmp_path / "splits" / "test.parquet")
+    assert validation["sequence_hash"].is_unique
+    assert test["sequence_hash"].is_unique
+    assert (tmp_path / "splits" / "validation_all_structures.parquet").exists()
+    assert (tmp_path / "splits" / "test_all_structures.parquet").exists()
+    report = json.loads((tmp_path / "splits" / "split_report.json").read_text())
+    assert report["raw_sample_count"] == 6
+    assert report["unique_exact_sequence_count"] == 4
+    assert report["retained_after_within_pdb_collapse_count"] == 5
+    assert result["retention_mode"] == "all_structures_group_safe"
+
+
+def test_all_structures_split_is_deterministic_for_fixed_seed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A fixed seed and cache produce identical split assignments."""
+    monkeypatch.setattr(splitting_module, "mmseqs_version", lambda _: "test-mmseqs")
+    outputs = []
+    for run in ("a", "b"):
+        root = tmp_path / run
+        manifest = root / "manifest.parquet"
+        manifest.parent.mkdir()
+        pd.DataFrame(_all_structure_rows()).to_parquet(manifest, index=False)
+        prefix = root / "mmseqs" / "clusters"
+        _prepare_all_structure_cache(root, manifest, prefix)
+        run_split_workflow(
+            manifest_path=manifest,
+            deduplicated_manifest_path=root / "retained.parquet",
+            deduplication_report_path=root / "collapse_report.json",
+            fasta_path=root / "unique.fasta",
+            mmseqs_output_prefix=prefix,
+            mmseqs_tmp_dir=root / "tmp",
+            cluster_assignments_path=root / "clusters.tsv",
+            output_dir=root / "splits",
+            retention_mode="all_structures_group_safe",
+            collapse_within_pdb_exact_duplicates=True,
+            exact_sequence_weight_exponent=1.0,
+            seed=123,
+        )
+        outputs.append(
+            pd.read_parquet(root / "splits" / "split_assignments.parquet")
+            .sort_values("sample_id")[["sample_id", "split", "cluster_id"]]
+            .reset_index(drop=True)
+        )
+    pd.testing.assert_frame_equal(outputs[0], outputs[1])
+
+
+def test_all_structures_rejects_stale_cache_metadata(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """All-structures cache metadata includes retention mode and config."""
+    monkeypatch.setattr(splitting_module, "mmseqs_version", lambda _: "test-mmseqs")
+    manifest = tmp_path / "manifest.parquet"
+    pd.DataFrame(_all_structure_rows()).to_parquet(manifest, index=False)
+    prefix = tmp_path / "mmseqs" / "clusters"
+    _prepare_all_structure_cache(tmp_path, manifest, prefix)
+    with pytest.raises(RuntimeError, match="metadata does not match"):
+        run_split_workflow(
+            manifest_path=manifest,
+            deduplicated_manifest_path=tmp_path / "retained.parquet",
+            deduplication_report_path=tmp_path / "collapse_report.json",
+            fasta_path=tmp_path / "unique.fasta",
+            mmseqs_output_prefix=prefix,
+            mmseqs_tmp_dir=tmp_path / "tmp",
+            cluster_assignments_path=tmp_path / "clusters.tsv",
+            output_dir=tmp_path / "splits",
+            retention_mode="all_structures_group_safe",
+            collapse_within_pdb_exact_duplicates=True,
+            exact_sequence_weight_exponent=0.5,
+        )
 
 
 def test_mmseqs_command_uses_configured_resources(tmp_path: Path) -> None:

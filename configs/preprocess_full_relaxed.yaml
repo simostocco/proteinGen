@@ -1,0 +1,18 @@
+# Full filtered preprocessing config with terminal C-alpha trimming.
+source_dir: data/full/raw/mmcif
+samples_dir: data/full/processed_relaxed/samples
+manifest_path: data/full/processed_relaxed/manifest.parquet
+summary_path: data/full/processed_relaxed/preprocess_summary.json
+state_db_path: data/full/processed_relaxed/preprocess_state.sqlite
+backend: auto
+min_length: 20
+max_length: 500
+missing_calpha_policy: trim_terminal
+allowed_methods:
+  - X-RAY DIFFRACTION
+  - ELECTRON MICROSCOPY
+  - SOLUTION NMR
+max_xray_resolution_angstrom: 3.0
+max_cryoem_resolution_angstrom: 4.0
+residue_mappings:
+  MSE: MET

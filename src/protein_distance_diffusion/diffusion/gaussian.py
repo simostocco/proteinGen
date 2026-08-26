@@ -224,10 +224,10 @@ class GaussianDiffusion:
         return coef_x0 * x0_hat.float() + coef_xt * x_t.float()
 
 
-def masked_upper_triangular_loss(
+def per_protein_masked_upper_triangular_loss(
     epsilon: torch.Tensor, epsilon_hat: torch.Tensor, pair_mask: torch.Tensor
 ) -> torch.Tensor:
-    """Compute per-protein masked upper-triangular epsilon MSE.
+    """Compute per-protein masked upper-triangular epsilon MSE values.
 
     Args:
         epsilon: Target noise [B, 1, L, L].
@@ -235,8 +235,7 @@ def masked_upper_triangular_loss(
         pair_mask: Valid pair mask [B, 1, L, L].
 
     Returns:
-        Scalar loss averaged across proteins, after normalizing each protein by its own
-        valid upper-triangular pair count so long proteins do not dominate by O(N^2).
+        One scalar per protein after normalizing by its own valid upper-triangular pair count.
     """
     matrix_size = epsilon.shape[-1]
     upper = torch.triu(
@@ -246,4 +245,20 @@ def masked_upper_triangular_loss(
     valid = pair_mask.bool() & upper[None, None]
     sq = (epsilon - epsilon_hat).pow(2) * valid.float()
     denom = valid.flatten(1).sum(dim=1).clamp_min(1.0)
-    return (sq.flatten(1).sum(dim=1) / denom).mean()
+    return sq.flatten(1).sum(dim=1) / denom
+
+
+def masked_upper_triangular_loss(
+    epsilon: torch.Tensor,
+    epsilon_hat: torch.Tensor,
+    pair_mask: torch.Tensor,
+    sample_weight: torch.Tensor | None = None,
+) -> torch.Tensor:
+    """Compute masked upper-triangular epsilon MSE, optionally weighted per protein."""
+    per_protein = per_protein_masked_upper_triangular_loss(epsilon, epsilon_hat, pair_mask)
+    if sample_weight is None:
+        return per_protein.mean()
+    weights = sample_weight.to(device=per_protein.device, dtype=per_protein.dtype).flatten()
+    if weights.numel() != per_protein.numel():
+        raise ValueError("sample_weight must contain one value per protein")
+    return (weights * per_protein).sum() / weights.sum().clamp_min(torch.finfo(weights.dtype).eps)

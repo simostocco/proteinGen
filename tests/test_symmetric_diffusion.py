@@ -8,6 +8,7 @@ from protein_distance_diffusion.data.collate import make_pair_mask
 from protein_distance_diffusion.diffusion.gaussian import (
     GaussianDiffusion,
     masked_upper_triangular_loss,
+    per_protein_masked_upper_triangular_loss,
     sample_symmetric_noise,
 )
 from protein_distance_diffusion.diffusion.schedules import cosine_beta_schedule
@@ -34,3 +35,19 @@ def test_forward_noising_and_loss_shapes() -> None:
     assert torch.allclose(noisy, noisy.transpose(-1, -2))
     assert torch.diagonal(noisy, dim1=-1, dim2=-2).abs().sum() == 0
     assert masked_upper_triangular_loss(eps, eps, mask).item() == 0.0
+
+
+def test_weighted_loss_combines_per_protein_losses_not_cells() -> None:
+    """Sample weights combine already-normalized per-protein losses."""
+    lengths = torch.tensor([3, 3])
+    mask = make_pair_mask(lengths, 3)
+    target = torch.zeros(2, 1, 3, 3)
+    prediction = torch.zeros(2, 1, 3, 3)
+    prediction[0, 0, 0, 1] = 1.0
+    prediction[0, 0, 1, 0] = 1.0
+    prediction[1, 0, 0, 1] = 3.0
+    prediction[1, 0, 1, 0] = 3.0
+    per_protein = per_protein_masked_upper_triangular_loss(target, prediction, mask)
+    assert torch.allclose(per_protein, torch.tensor([1.0 / 3.0, 3.0]))
+    weighted = masked_upper_triangular_loss(target, prediction, mask, sample_weight=torch.tensor([3.0, 1.0]))
+    assert weighted.item() == torch.tensor((3.0 * (1.0 / 3.0) + 3.0) / 4.0).item()
