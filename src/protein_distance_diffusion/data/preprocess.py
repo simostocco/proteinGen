@@ -118,6 +118,8 @@ def save_processed_sample(sample: ProteinSample, samples_dir: str | Path) -> dic
         "retained_end_label_seq_id",
         "trimmed_n_terminal_residues",
         "trimmed_c_terminal_residues",
+        "trimmed_fraction",
+        "max_terminal_trim_fraction",
         "terminal_trimming_applied",
         "missing_calpha_policy",
     ):

@@ -290,6 +290,8 @@ def test_mmcif_trim_metadata_is_written_to_npz_and_manifest_row(tmp_path: Path) 
         "retained_end_label_seq_id",
         "trimmed_n_terminal_residues",
         "trimmed_c_terminal_residues",
+        "trimmed_fraction",
+        "max_terminal_trim_fraction",
         "terminal_trimming_applied",
         "missing_calpha_policy",
     ):
@@ -298,6 +300,8 @@ def test_mmcif_trim_metadata_is_written_to_npz_and_manifest_row(tmp_path: Path) 
     assert row["original_chain_length"] == 22
     assert row["retained_start_label_seq_id"] == 3
     assert row["trimmed_n_terminal_residues"] == 2
+    assert row["trimmed_fraction"] == pytest.approx(2 / 22)
+    assert row["max_terminal_trim_fraction"] is None
 
 
 @pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
@@ -329,6 +333,51 @@ def test_mmcif_trim_terminal_removes_only_terminal_missing_residues(
     assert sample.metadata["trimmed_n_terminal_residues"] == trimmed_n
     assert sample.metadata["trimmed_c_terminal_residues"] == trimmed_c
     assert sample.metadata["terminal_trimming_applied"] is True
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+@pytest.mark.parametrize(
+    ("limit", "accepted"),
+    [
+        (None, True),
+        (0.10, True),
+        (2 / 22, True),
+        (0.08, False),
+    ],
+)
+def test_mmcif_terminal_trim_fraction_limit(tmp_path: Path, limit: float | None, accepted: bool) -> None:
+    fixture = tmp_path / "terminal_trim_limit.cif"
+    rows = [_atom_row(idx, resname="ALA", seq=seq, x=seq) for idx, seq in enumerate(range(3, 23), start=1)]
+    scheme = [f"A 1 {idx} ALA A {idx} ?" for idx in range(1, 23)]
+    _write_custom_mmcif(
+        fixture,
+        rows,
+        scheme_rows=scheme,
+        entity_poly_rows=["1 'polypeptide(L)'"],
+    )
+    samples, rejections = parse_mmcif_file_with_rejections(
+        fixture,
+        min_length=None,
+        missing_calpha_policy="trim_terminal",
+        max_terminal_trim_fraction=limit,
+    )
+    if accepted:
+        assert len(samples) == 1
+        assert samples[0].metadata["trimmed_fraction"] == pytest.approx(2 / 22)
+        assert samples[0].metadata["max_terminal_trim_fraction"] == limit
+        assert rejections == []
+    else:
+        assert samples == []
+        assert rejections[0].reason == "terminal_trimming_fraction_above_maximum"
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+@pytest.mark.parametrize("limit", [-0.01, 1.01])
+def test_mmcif_terminal_trim_fraction_invalid_values_rejected(tmp_path: Path, limit: float) -> None:
+    fixture = tmp_path / "terminal_trim_invalid.cif"
+    _write_custom_mmcif(fixture, [_atom_row(1, resname="ALA", seq=1, x=1)])
+    with pytest.raises(ValueError, match="max_terminal_trim_fraction"):
+        parse_mmcif_file(fixture, min_length=None, max_terminal_trim_fraction=limit)
 
 
 @pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
@@ -377,6 +426,22 @@ def test_mmcif_reject_policy_remains_backward_compatible(tmp_path: Path) -> None
         entity_poly_rows=["1 'polypeptide(L)'"],
     )
     samples, rejections = parse_mmcif_file_with_rejections(fixture)
+    assert samples == []
+    assert rejections[0].reason == "missing_calpha"
+
+
+@pytest.mark.skipif(importlib.util.find_spec("gemmi") is None, reason="Gemmi is not installed")
+def test_mmcif_trim_limit_does_not_change_reject_policy_missing_ca(tmp_path: Path) -> None:
+    fixture = tmp_path / "reject_policy_with_limit.cif"
+    rows = [_atom_row(idx, resname="ALA", seq=seq, x=seq) for idx, seq in enumerate(range(3, 23), start=1)]
+    scheme = [f"A 1 {idx} ALA A {idx} ?" for idx in range(1, 23)]
+    _write_custom_mmcif(
+        fixture,
+        rows,
+        scheme_rows=scheme,
+        entity_poly_rows=["1 'polypeptide(L)'"],
+    )
+    samples, rejections = parse_mmcif_file_with_rejections(fixture, max_terminal_trim_fraction=0.5)
     assert samples == []
     assert rejections[0].reason == "missing_calpha"
 

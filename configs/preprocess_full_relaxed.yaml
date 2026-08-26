@@ -8,6 +8,7 @@ backend: auto
 min_length: 20
 max_length: 500
 missing_calpha_policy: trim_terminal
+max_terminal_trim_fraction: 0.25
 allowed_methods:
   - X-RAY DIFFRACTION
   - ELECTRON MICROSCOPY

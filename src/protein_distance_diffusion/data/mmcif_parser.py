@@ -76,6 +76,15 @@ def _validate_missing_calpha_policy(policy: str) -> str:
     return normalized
 
 
+def _validate_max_terminal_trim_fraction(value: float | None) -> float | None:
+    if value is None:
+        return None
+    limit = float(value)
+    if not 0.0 <= limit <= 1.0:
+        raise ValueError("max_terminal_trim_fraction must be between 0 and 1 inclusive or None")
+    return limit
+
+
 def _metadata(block: Any) -> tuple[str | None, float | None]:
     method = _clean(block.find_value("_exptl.method"))
     resolution = _float_or_none(block.find_value("_refine.ls_d_res_high"))
@@ -317,10 +326,12 @@ def parse_mmcif_file_with_rejections(
     max_cryoem_resolution_angstrom: float | None = None,
     strict_contiguous_ca: bool = True,
     missing_calpha_policy: str = "reject",
+    max_terminal_trim_fraction: float | None = None,
 ) -> tuple[list[ProteinSample], list[StructureRejection]]:
     """Parse an mmCIF/mmCIF.gz file into chain-level samples and rejections."""
     _validate_min_length(min_length)
     missing_calpha_policy = _validate_missing_calpha_policy(missing_calpha_policy)
+    max_terminal_trim_fraction = _validate_max_terminal_trim_fraction(max_terminal_trim_fraction)
     try:
         import gemmi
     except ModuleNotFoundError as exc:
@@ -501,6 +512,7 @@ def parse_mmcif_file_with_rejections(
         retained_selections = selections
         trimmed_n = 0
         trimmed_c = 0
+        trimmed_fraction = 0.0
         if missing_calpha_policy == "trim_terminal" and missing:
             valid_indices = [index for index, selection in enumerate(selections) if selection.status == "valid"]
             if not valid_indices:
@@ -518,6 +530,21 @@ def parse_mmcif_file_with_rejections(
             duplicate = any(selection.status == "duplicate" for selection in retained_selections)
             nonfinite = any(selection.status == "nonfinite" for selection in retained_selections)
             missing = []
+        trimmed_fraction = (trimmed_n + trimmed_c) / max(len(residues_for_chain), 1)
+        if max_terminal_trim_fraction is not None and trimmed_fraction > max_terminal_trim_fraction:
+            rejections.append(
+                StructureRejection(
+                    str(src),
+                    "terminal_trimming_fraction_above_maximum",
+                    (
+                        f"Terminal trimming fraction {trimmed_fraction:.6g} "
+                        f"> max_terminal_trim_fraction={max_terminal_trim_fraction:.6g}"
+                    ),
+                    pdb_id,
+                    cid,
+                )
+            )
+            continue
         if missing:
             rejections.append(_missing_ca_rejection(src, pdb_id, cid, missing))
             continue
@@ -586,6 +613,8 @@ def parse_mmcif_file_with_rejections(
                     "retained_end_label_seq_id": retained_end,
                     "trimmed_n_terminal_residues": trimmed_n,
                     "trimmed_c_terminal_residues": trimmed_c,
+                    "trimmed_fraction": trimmed_fraction,
+                    "max_terminal_trim_fraction": max_terminal_trim_fraction,
                     "terminal_trimming_applied": bool(trimmed_n or trimmed_c),
                     "missing_calpha_policy": missing_calpha_policy,
                     "retained_auth_seq_ids": [residue.auth_seq_id for residue in retained_residues],

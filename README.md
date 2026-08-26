@@ -473,6 +473,9 @@ positions, duplicated canonical `label_seq_id` positions, non-finite
 coordinates, unsupported mixed polymer chains, and chains outside the final
 20-500 residue length range. This avoids imputing coordinates or compressing
 internal gaps while recovering structures with unresolved termini.
+`max_terminal_trim_fraction` can cap the accepted terminal loss fraction;
+`null` preserves uncapped trimming, while `configs/preprocess_full_relaxed.yaml`
+uses `0.25`.
 
 ```bash
 python scripts/preprocess_pdb.py \

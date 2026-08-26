@@ -80,10 +80,12 @@ def _write_config(
     name: str,
     max_length: int = 500,
     missing_calpha_policy: str = "reject",
+    max_terminal_trim_fraction: str | float | None = None,
 ) -> Path:
     processed = tmp_path / name / "processed"
     config = tmp_path / name / "preprocess.yaml"
     config.parent.mkdir(parents=True, exist_ok=True)
+    trim_fraction_text = "null" if max_terminal_trim_fraction is None else str(max_terminal_trim_fraction)
     config.write_text(
         "\n".join(
             [
@@ -97,6 +99,7 @@ def _write_config(
                 "min_length:",
                 f"max_length: {max_length}",
                 f"missing_calpha_policy: {missing_calpha_policy}",
+                f"max_terminal_trim_fraction: {trim_fraction_text}",
                 "allowed_methods:",
                 "  - X-RAY DIFFRACTION",
                 "max_xray_resolution_angstrom: 3.0",
@@ -106,6 +109,24 @@ def _write_config(
         + "\n"
     )
     return config
+
+
+def test_max_terminal_trim_fraction_config_validation(tmp_path: Path) -> None:
+    """The optional terminal-trim fraction config accepts null/[0,1] and rejects out-of-range values."""
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    null_config = _write_config(tmp_path, raw, name="null_fraction", max_terminal_trim_fraction=None)
+    assert PREPROCESS.normalized_config(PREPROCESS.load_yaml(null_config))["max_terminal_trim_fraction"] is None
+
+    zero_config = _write_config(tmp_path, raw, name="zero_fraction", max_terminal_trim_fraction=0.0)
+    assert PREPROCESS.normalized_config(PREPROCESS.load_yaml(zero_config))["max_terminal_trim_fraction"] == 0.0
+
+    one_config = _write_config(tmp_path, raw, name="one_fraction", max_terminal_trim_fraction=1.0)
+    assert PREPROCESS.normalized_config(PREPROCESS.load_yaml(one_config))["max_terminal_trim_fraction"] == 1.0
+
+    bad_config = _write_config(tmp_path, raw, name="bad_fraction", max_terminal_trim_fraction=1.01)
+    with pytest.raises(ValueError, match="max_terminal_trim_fraction"):
+        PREPROCESS.normalized_config(PREPROCESS.load_yaml(bad_config))
 
 
 def _manifest_without_paths(path: Path) -> pd.DataFrame:

@@ -55,6 +55,7 @@ class WorkerConfig:
     max_xray_resolution_angstrom: float | None
     max_cryoem_resolution_angstrom: float | None
     missing_calpha_policy: str
+    max_terminal_trim_fraction: float | None
 
 
 @dataclass(frozen=True)
@@ -97,6 +98,16 @@ def _parse_optional_float(value: object) -> float | None:
     return None if value is None else float(value)
 
 
+def _parse_optional_fraction(value: object, *, name: str) -> float | None:
+    """Parse an optional fraction constrained to [0, 1]."""
+    if value is None:
+        return None
+    fraction = float(value)
+    if not 0.0 <= fraction <= 1.0:
+        raise ValueError(f"{name} must be between 0 and 1 inclusive or null")
+    return fraction
+
+
 def _parse_max_length(value: object) -> int:
     """Parse required positive maximum sequence length from YAML."""
     max_length = int(value)
@@ -129,6 +140,10 @@ def normalized_config(cfg: dict[str, Any]) -> dict[str, Any]:
             cfg.get("max_cryoem_resolution_angstrom", cfg.get("em_resolution_max"))
         ),
         "missing_calpha_policy": _parse_missing_calpha_policy(cfg.get("missing_calpha_policy", "reject")),
+        "max_terminal_trim_fraction": _parse_optional_fraction(
+            cfg.get("max_terminal_trim_fraction"),
+            name="max_terminal_trim_fraction",
+        ),
         "residue_mappings": {**DEFAULT_RESIDUE_MAPPINGS, **cfg.get("residue_mappings", {})},
     }
 
@@ -153,6 +168,7 @@ def worker_config_from_cfg(cfg: dict[str, Any]) -> WorkerConfig:
         max_xray_resolution_angstrom=normalized["max_xray_resolution_angstrom"],  # type: ignore[arg-type]
         max_cryoem_resolution_angstrom=normalized["max_cryoem_resolution_angstrom"],  # type: ignore[arg-type]
         missing_calpha_policy=str(normalized["missing_calpha_policy"]),
+        max_terminal_trim_fraction=normalized["max_terminal_trim_fraction"],  # type: ignore[arg-type]
     )
 
 
@@ -284,6 +300,7 @@ def worker_process_source(record: SourceRecord, worker_cfg: WorkerConfig) -> dic
             max_xray_resolution_angstrom=worker_cfg.max_xray_resolution_angstrom,
             max_cryoem_resolution_angstrom=worker_cfg.max_cryoem_resolution_angstrom,
             missing_calpha_policy=worker_cfg.missing_calpha_policy,
+            max_terminal_trim_fraction=worker_cfg.max_terminal_trim_fraction,
         )
     except (IndexError, TypeError, AttributeError, AssertionError):
         raise
