@@ -485,6 +485,22 @@ python scripts/preprocess_pdb.py \
   --checkpoint-every 1000
 ```
 
+When a strict baseline dataset already exists, recovery-only preprocessing can
+target just selected rejection reasons from that baseline summary. It verifies
+strict baseline sample IDs, reuses matching baseline NPZ paths, writes only
+newly recovered samples into `data/full/processed_recovery/samples`, and writes
+both a new-only recovery manifest plus a merged baseline-and-recovered manifest.
+It never copies or rewrites baseline NPZ files.
+
+```bash
+python scripts/preprocess_pdb.py \
+  --config configs/preprocess_full_recovery.yaml \
+  --workers 8 \
+  --resume \
+  --checkpoint-every 1000
+python scripts/build_splits.py --config configs/split_recovered_all_structures.yaml
+```
+
 For training sets that should retain multiple experimental structures for the
 same exact sequence, use the all-structures split mode. It clusters one
 representative per unique exact sequence with MMseqs2, propagates cluster IDs

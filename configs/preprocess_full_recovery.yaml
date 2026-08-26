@@ -1,0 +1,28 @@
+# Recovery-only preprocessing config that reuses strict baseline samples.
+source_dir: data/full/raw/mmcif
+samples_dir: data/full/processed_recovery/samples
+manifest_path: data/full/processed_recovery/manifest.parquet
+summary_path: data/full/processed_recovery/preprocess_summary.json
+state_db_path: data/full/processed_recovery/preprocess_state.sqlite
+merged_manifest_path: data/full/processed_recovery/merged_manifest.parquet
+
+recovery_baseline_manifest_path: data/full/processed/manifest.parquet
+recovery_rejection_summary_path: data/full/processed/preprocess_summary.json
+recovery_reasons:
+  - missing_calpha
+  - insertion_codes
+verify_reused_samples: true
+
+backend: auto
+min_length: 20
+max_length: 500
+missing_calpha_policy: trim_terminal
+max_terminal_trim_fraction: 0.25
+allowed_methods:
+  - X-RAY DIFFRACTION
+  - ELECTRON MICROSCOPY
+  - SOLUTION NMR
+max_xray_resolution_angstrom: 3.0
+max_cryoem_resolution_angstrom: 4.0
+residue_mappings:
+  MSE: MET

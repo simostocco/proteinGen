@@ -13,11 +13,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+import pandas as pd
 from tqdm.auto import tqdm
 
 from protein_distance_diffusion.config import load_yaml
 from protein_distance_diffusion.constants import DEFAULT_RESIDUE_MAPPINGS
-from protein_distance_diffusion.data.preprocess import save_processed_sample, write_manifest
+from protein_distance_diffusion.data.preprocess import (
+    compute_distance_matrix,
+    load_manifest,
+    save_processed_sample,
+    write_manifest,
+)
 from protein_distance_diffusion.data.structure_parser import (
     iter_supported_structure_files,
     parse_structure_file_with_rejections,
@@ -26,6 +33,24 @@ from protein_distance_diffusion.data.structure_parser import (
 DETERMINISTIC_REJECTION_STATUS = "rejected"
 SUCCESS_STATUS = "completed"
 FAILURE_STATUS = "failed"
+RECOVERY_SCHEMA_COLUMNS = {
+    "baseline_reused_count": "INTEGER NOT NULL DEFAULT 0",
+    "baseline_conflict_count": "INTEGER NOT NULL DEFAULT 0",
+}
+BASELINE_SCHEMA_DEFAULTS = {
+    "trimmed_n_terminal_residues": 0,
+    "trimmed_c_terminal_residues": 0,
+    "terminal_trimming_applied": False,
+    "trimmed_fraction": 0.0,
+    "missing_calpha_policy": "reject",
+    "max_terminal_trim_fraction": None,
+    "retained_start_label_seq_id": None,
+    "retained_end_label_seq_id": None,
+}
+
+
+class BaselineConflictError(RuntimeError):
+    """Raised when a recovered sample conflicts with the strict baseline."""
 
 
 @dataclass(frozen=True)
@@ -56,6 +81,8 @@ class WorkerConfig:
     max_cryoem_resolution_angstrom: float | None
     missing_calpha_policy: str
     max_terminal_trim_fraction: float | None
+    baseline_rows_by_sample_id: dict[str, dict[str, Any]] | None = None
+    verify_reused_samples: bool = True
 
 
 @dataclass(frozen=True)
@@ -123,8 +150,43 @@ def _parse_missing_calpha_policy(value: object) -> str:
     return policy
 
 
+def _parse_recovery_reasons(value: object) -> list[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise ValueError("recovery_reasons must be a list")
+    return sorted({str(item) for item in value if str(item)})
+
+
+def _optional_path_string(value: object) -> str | None:
+    if value is None or value == "":
+        return None
+    return str(Path(str(value)))
+
+
+def _file_sha256(path: str | Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def recovery_enabled(cfg: dict[str, Any]) -> bool:
+    normalized = normalized_config(cfg)
+    return (
+        normalized["recovery_baseline_manifest_path"] is not None
+        and normalized["recovery_rejection_summary_path"] is not None
+        and bool(normalized["recovery_reasons"])
+    )
+
+
 def normalized_config(cfg: dict[str, Any]) -> dict[str, Any]:
     """Return the behavior-affecting preprocessing config in canonical form."""
+    baseline_manifest = _optional_path_string(cfg.get("recovery_baseline_manifest_path"))
+    rejection_summary = _optional_path_string(cfg.get("recovery_rejection_summary_path"))
+    recovery_reasons = _parse_recovery_reasons(cfg.get("recovery_reasons", []))
+    recovery_active = baseline_manifest is not None and rejection_summary is not None and bool(recovery_reasons)
     return {
         "source_dir": str(Path(cfg["source_dir"])),
         "samples_dir": str(Path(cfg["samples_dir"])),
@@ -145,6 +207,13 @@ def normalized_config(cfg: dict[str, Any]) -> dict[str, Any]:
             name="max_terminal_trim_fraction",
         ),
         "residue_mappings": {**DEFAULT_RESIDUE_MAPPINGS, **cfg.get("residue_mappings", {})},
+        "recovery_baseline_manifest_path": baseline_manifest,
+        "recovery_baseline_manifest_sha256": _file_sha256(baseline_manifest) if recovery_active else None,
+        "recovery_rejection_summary_path": rejection_summary,
+        "recovery_rejection_summary_sha256": _file_sha256(rejection_summary) if recovery_active else None,
+        "recovery_reasons": recovery_reasons,
+        "merged_manifest_path": _optional_path_string(cfg.get("merged_manifest_path")),
+        "verify_reused_samples": bool(cfg.get("verify_reused_samples", True)),
     }
 
 
@@ -157,6 +226,12 @@ def config_hash(cfg: dict[str, Any]) -> str:
 def worker_config_from_cfg(cfg: dict[str, Any]) -> WorkerConfig:
     """Build the compact worker configuration."""
     normalized = normalized_config(cfg)
+    baseline_rows = None
+    if recovery_enabled(cfg):
+        baseline = load_and_harmonize_baseline_manifest(Path(str(normalized["recovery_baseline_manifest_path"])))
+        baseline_rows = {
+            str(row["sample_id"]): dict(row) for row in baseline.sort_values("sample_id").to_dict(orient="records")
+        }
     return WorkerConfig(
         backend=str(normalized["backend"]),
         samples_dir=str(normalized["samples_dir"]),
@@ -169,6 +244,8 @@ def worker_config_from_cfg(cfg: dict[str, Any]) -> WorkerConfig:
         max_cryoem_resolution_angstrom=normalized["max_cryoem_resolution_angstrom"],  # type: ignore[arg-type]
         missing_calpha_policy=str(normalized["missing_calpha_policy"]),
         max_terminal_trim_fraction=normalized["max_terminal_trim_fraction"],  # type: ignore[arg-type]
+        baseline_rows_by_sample_id=baseline_rows,
+        verify_reused_samples=bool(normalized["verify_reused_samples"]),
     )
 
 
@@ -181,6 +258,118 @@ def source_record(path: Path) -> SourceRecord:
     """Build a source record from the filesystem."""
     stat = path.stat()
     return SourceRecord(path=str(path), size=int(stat.st_size), mtime_ns=int(stat.st_mtime_ns))
+
+
+def load_recovery_candidate_sources(cfg: dict[str, Any]) -> list[Path]:
+    """Load deterministic recovery candidate source files from a rejection summary."""
+    normalized = normalized_config(cfg)
+    reasons = set(normalized["recovery_reasons"])
+    summary_path = Path(str(normalized["recovery_rejection_summary_path"]))
+    summary = json.loads(summary_path.read_text())
+    selected = []
+    for record in summary.get("rejections", []):
+        if str(record.get("reason")) in reasons and record.get("source_file"):
+            source = Path(str(record["source_file"]))
+            if not source.exists() and not source.is_absolute():
+                source = Path(cfg["source_dir"]) / source
+            selected.append(source)
+    unique = sorted({path for path in selected}, key=lambda path: str(path))
+    return [path for path in unique if path.exists()]
+
+
+def _recovery_counts(conn: sqlite3.Connection, cfg: dict[str, Any], *, recovered_rows: int) -> dict[str, Any]:
+    if not recovery_enabled(cfg):
+        return {}
+    baseline = load_and_harmonize_baseline_manifest(
+        Path(str(normalized_config(cfg)["recovery_baseline_manifest_path"]))
+    )
+    reused = conn.execute("SELECT COALESCE(SUM(baseline_reused_count), 0) FROM source_files").fetchone()[0]
+    conflicts = conn.execute("SELECT COALESCE(SUM(baseline_conflict_count), 0) FROM source_files").fetchone()[0]
+    candidate_count = len(load_recovery_candidate_sources(cfg))
+    return {
+        "candidate_source_files": int(candidate_count),
+        "baseline_sample_count": int(len(baseline)),
+        "baseline_reused_samples": int(reused),
+        "newly_recovered_samples": int(recovered_rows),
+        "baseline_conflicts": int(conflicts),
+        "merged_sample_count": int(len(baseline) + recovered_rows),
+        "recovery_reasons": list(normalized_config(cfg)["recovery_reasons"]),
+    }
+
+
+def _merged_manifest_frame(cfg: dict[str, Any], recovered_rows: list[dict[str, Any]]) -> pd.DataFrame:
+    baseline = load_and_harmonize_baseline_manifest(
+        Path(str(normalized_config(cfg)["recovery_baseline_manifest_path"]))
+    )
+    recovered = pd.DataFrame(recovered_rows)
+    if recovered.empty:
+        return baseline.reset_index(drop=True)
+    merged = pd.concat([baseline, recovered], ignore_index=True, sort=False)
+    if merged["sample_id"].duplicated().any():
+        duplicates = sorted(merged.loc[merged["sample_id"].duplicated(), "sample_id"].astype(str).unique())
+        raise BaselineConflictError(
+            f"baseline_conflict: duplicate merged sample_id values: {', '.join(duplicates[:5])}"
+        )
+    return merged.sort_values("sample_id").reset_index(drop=True)
+
+
+def load_and_harmonize_baseline_manifest(path: str | Path) -> pd.DataFrame:
+    """Load strict baseline manifest, validate paths, and add recovery schema defaults."""
+    frame = load_manifest(path).copy()
+    if frame["sample_id"].duplicated().any():
+        duplicates = sorted(frame.loc[frame["sample_id"].duplicated(), "sample_id"].astype(str).unique())
+        raise ValueError(f"Baseline manifest contains duplicate sample_id values: {', '.join(duplicates[:5])}")
+    missing_paths = [str(value) for value in frame["path"] if not Path(str(value)).exists()]
+    if missing_paths:
+        raise FileNotFoundError(f"Baseline manifest references missing NPZ files: {', '.join(missing_paths[:5])}")
+    for column, value in BASELINE_SCHEMA_DEFAULTS.items():
+        if column not in frame:
+            frame[column] = value
+        else:
+            frame[column] = frame[column].where(frame[column].notna(), value)
+    return frame
+
+
+def _sample_model_number(row: dict[str, Any]) -> int | None:
+    value = row.get("model_number")
+    if pd.isna(value):
+        return None
+    return int(value)
+
+
+def _verify_baseline_reuse(sample: Any, row: dict[str, Any], *, verify_npz: bool) -> None:
+    expected = {
+        "pdb_id": str(row.get("pdb_id", "")),
+        "chain_id": str(row.get("chain_id", "")),
+        "model_number": _sample_model_number(row),
+        "sequence": str(row.get("sequence", "")),
+        "length": int(row.get("length")),
+    }
+    observed = {
+        "pdb_id": sample.pdb_id,
+        "chain_id": sample.chain_id,
+        "model_number": sample.metadata.get("model_number"),
+        "sequence": sample.sequence,
+        "length": len(sample.sequence),
+    }
+    if observed != expected:
+        raise BaselineConflictError(
+            f"baseline_conflict for sample_id={sample.sample_id}: metadata mismatch {observed} != {expected}"
+        )
+    if not verify_npz:
+        return
+    baseline_npz = np.load(str(row["path"]), allow_pickle=False)
+    baseline_distance = np.asarray(baseline_npz["distance_matrix"], dtype=np.float32)
+    recovered_distance = compute_distance_matrix(sample.ca_coordinates)
+    if baseline_distance.shape != recovered_distance.shape:
+        raise BaselineConflictError(
+            f"baseline_conflict for sample_id={sample.sample_id}: distance matrix shape "
+            f"{recovered_distance.shape} != {baseline_distance.shape}"
+        )
+    if not np.allclose(recovered_distance, baseline_distance, rtol=1e-5, atol=1e-4):
+        raise BaselineConflictError(
+            f"baseline_conflict for sample_id={sample.sample_id}: distance matrix values differ"
+        )
 
 
 def init_db(conn: sqlite3.Connection) -> None:
@@ -198,6 +387,8 @@ def init_db(conn: sqlite3.Connection) -> None:
             status TEXT NOT NULL,
             config_hash TEXT NOT NULL,
             accepted_chain_count INTEGER NOT NULL DEFAULT 0,
+            baseline_reused_count INTEGER NOT NULL DEFAULT 0,
+            baseline_conflict_count INTEGER NOT NULL DEFAULT 0,
             rejection_info TEXT NOT NULL DEFAULT '[]',
             attempt_count INTEGER NOT NULL DEFAULT 0,
             first_seen_utc TEXT NOT NULL,
@@ -215,6 +406,10 @@ def init_db(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_manifest_rows_source_path ON manifest_rows(source_path);
         """
     )
+    existing_columns = {row[1] for row in conn.execute("PRAGMA table_info(source_files)").fetchall()}
+    for column, definition in RECOVERY_SCHEMA_COLUMNS.items():
+        if column not in existing_columns:
+            conn.execute(f"ALTER TABLE source_files ADD COLUMN {column} {definition}")
     conn.commit()
 
 
@@ -302,6 +497,8 @@ def worker_process_source(record: SourceRecord, worker_cfg: WorkerConfig) -> dic
             missing_calpha_policy=worker_cfg.missing_calpha_policy,
             max_terminal_trim_fraction=worker_cfg.max_terminal_trim_fraction,
         )
+    except BaselineConflictError:
+        raise
     except (IndexError, TypeError, AttributeError, AssertionError):
         raise
     except Exception as exc:
@@ -315,6 +512,18 @@ def worker_process_source(record: SourceRecord, worker_cfg: WorkerConfig) -> dic
             "error_message": str(exc),
         }
     rejections = [rejection.to_dict() for rejection in structural_rejections]
+    baseline_reused = 0
+    samples_to_write = []
+    if worker_cfg.baseline_rows_by_sample_id is not None:
+        for sample in samples:
+            baseline_row = worker_cfg.baseline_rows_by_sample_id.get(sample.sample_id)
+            if baseline_row is None:
+                samples_to_write.append(sample)
+                continue
+            _verify_baseline_reuse(sample, baseline_row, verify_npz=worker_cfg.verify_reused_samples)
+            baseline_reused += 1
+    else:
+        samples_to_write = samples
     if not samples:
         if not rejections:
             rejections = [
@@ -330,7 +539,7 @@ def worker_process_source(record: SourceRecord, worker_cfg: WorkerConfig) -> dic
         status = DETERMINISTIC_REJECTION_STATUS
     else:
         status = SUCCESS_STATUS
-    rows = [save_processed_sample(sample, worker_cfg.samples_dir) for sample in samples]
+    rows = [save_processed_sample(sample, worker_cfg.samples_dir) for sample in samples_to_write]
     return {
         "source_path": record.path,
         "source_size": record.size,
@@ -339,6 +548,8 @@ def worker_process_source(record: SourceRecord, worker_cfg: WorkerConfig) -> dic
         "manifest_rows": rows,
         "rejections": rejections,
         "error_message": "",
+        "baseline_reused_count": baseline_reused,
+        "baseline_conflict_count": 0,
     }
 
 
@@ -361,10 +572,11 @@ def record_result(conn: sqlite3.Connection, result: dict[str, Any], *, current_h
             """
             INSERT OR REPLACE INTO source_files(
                 source_path, source_size, source_mtime_ns, status, config_hash,
-                accepted_chain_count, rejection_info, attempt_count, first_seen_utc,
+                accepted_chain_count, baseline_reused_count, baseline_conflict_count,
+                rejection_info, attempt_count, first_seen_utc,
                 started_utc, finished_utc, error_message
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 source_path,
@@ -373,6 +585,8 @@ def record_result(conn: sqlite3.Connection, result: dict[str, Any], *, current_h
                 str(result["status"]),
                 current_hash,
                 len(manifest_rows),
+                int(result.get("baseline_reused_count", 0)),
+                int(result.get("baseline_conflict_count", 0)),
                 json.dumps(rejections, sort_keys=True),
                 attempt_count,
                 first_seen,
@@ -425,7 +639,7 @@ def build_summary(conn: sqlite3.Connection, cfg: dict[str, Any], *, partial: boo
     for rejection in rejections:
         reason = str(rejection["reason"])
         counts[reason] = counts.get(reason, 0) + 1
-    return {
+    summary = {
         "partial": partial,
         "accepted_samples": len(manifest_rows),
         "accepted_files": int(status_counts.get(SUCCESS_STATUS, 0)),
@@ -441,19 +655,30 @@ def build_summary(conn: sqlite3.Connection, cfg: dict[str, Any], *, partial: boo
         "state_db_path": str(default_state_db_path(cfg)),
         "updated_utc": _utc_now(),
     }
+    summary.update(_recovery_counts(conn, cfg, recovered_rows=len(manifest_rows)))
+    return summary
 
 
 def write_snapshots(conn: sqlite3.Connection, cfg: dict[str, Any], *, partial: bool) -> None:
     """Write manifest and summary snapshots atomically."""
     manifest_path = Path(cfg["manifest_path"])
     summary_path = Path(cfg.get("summary_path", manifest_path.with_suffix(".preprocess_summary.json")))
+    merged_manifest_path = Path(cfg["merged_manifest_path"]) if cfg.get("merged_manifest_path") else None
     if partial:
         manifest_path = manifest_path.with_name(f"{manifest_path.stem}.partial{manifest_path.suffix}")
         summary_path = summary_path.with_name("preprocess_summary.partial.json")
+        if merged_manifest_path is not None:
+            merged_manifest_path = merged_manifest_path.with_name(
+                f"{merged_manifest_path.stem}.partial{merged_manifest_path.suffix}"
+            )
     rows = load_manifest_rows_from_db(conn)
     tmp_manifest = manifest_path.with_name(f".{manifest_path.name}.tmp")
     write_manifest(rows, tmp_manifest)
     tmp_manifest.replace(manifest_path)
+    if recovery_enabled(cfg) and merged_manifest_path is not None:
+        tmp_merged = merged_manifest_path.with_name(f".{merged_manifest_path.name}.tmp")
+        write_manifest(_merged_manifest_frame(cfg, rows).to_dict(orient="records"), tmp_merged)
+        tmp_merged.replace(merged_manifest_path)
     _atomic_write_json(summary_path, build_summary(conn, cfg, partial=partial))
 
 
@@ -487,7 +712,12 @@ def run_preprocessing(config_path: str | Path, options: PreprocessOptions) -> Pa
         if options.restart:
             reset_db(conn)
         validate_or_set_config_hash(conn, current_hash, restart=options.restart)
-        sources = [source_record(path) for path in iter_supported_structure_files(cfg["source_dir"])]
+        source_paths = (
+            load_recovery_candidate_sources(cfg)
+            if recovery_enabled(cfg)
+            else iter_supported_structure_files(cfg["source_dir"])
+        )
+        sources = [source_record(path) for path in source_paths]
         pending = classify_pending_sources(
             conn,
             sources,
