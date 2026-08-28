@@ -147,14 +147,22 @@ def _rng_state() -> dict[str, Any]:
     }
 
 
+def _cpu_byte_rng_state(value: Any) -> torch.Tensor:
+    """Return an RNG state as a detached contiguous CPU uint8 tensor."""
+    if isinstance(value, torch.Tensor):
+        return value.detach().to(device="cpu", dtype=torch.uint8).contiguous()
+    return torch.as_tensor(value, dtype=torch.uint8, device="cpu").contiguous()
+
+
 def _restore_rng_state(state: dict[str, Any] | None) -> None:
     if not state:
         return
     random.setstate(state["python"])
     np.random.set_state(state["numpy"])
-    torch.set_rng_state(state["torch"])
-    if state.get("cuda") is not None and torch.cuda.is_available():
-        torch.cuda.set_rng_state_all(state["cuda"])
+    torch.set_rng_state(_cpu_byte_rng_state(state["torch"]))
+    cuda_states = state.get("cuda")
+    if cuda_states is not None and torch.cuda.is_available():
+        torch.cuda.set_rng_state_all([_cpu_byte_rng_state(item) for item in cuda_states])
 
 
 def _checkpoint_payload(

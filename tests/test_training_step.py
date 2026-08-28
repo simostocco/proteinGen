@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import random
 from pathlib import Path
 
 import numpy as np
@@ -455,6 +456,200 @@ def test_scaler_and_overflow_counters_restore_from_checkpoint(tmp_path: Path) ->
     )
     assert (start_epoch, global_step, total, consecutive) == (3, 17, 5, 2)
     assert restored_scaler.get_scale() == 16.0
+
+
+def test_cpu_byte_rng_state_converts_tensor_inputs() -> None:
+    """RNG tensors are detached, moved to CPU, cast to uint8, and made contiguous."""
+    source = torch.arange(10, dtype=torch.int16)[::2].requires_grad_(False)
+    converted = trainer_module._cpu_byte_rng_state(source)
+
+    assert converted.device.type == "cpu"
+    assert converted.dtype is torch.uint8
+    assert converted.is_contiguous()
+    assert converted.tolist() == [0, 2, 4, 6, 8]
+
+
+def test_restore_rng_state_accepts_numpy_and_list_representations() -> None:
+    """Older NumPy/list RNG-state payloads restore the CPU torch generator exactly."""
+    torch.manual_seed(1234)
+    torch_state_as_numpy = torch.get_rng_state().numpy().copy()
+    expected_after_numpy_restore = torch.rand(4)
+
+    torch.manual_seed(9999)
+    trainer_module._restore_rng_state(
+        {
+            "python": random.getstate(),
+            "numpy": np.random.get_state(),
+            "torch": torch_state_as_numpy,
+            "cuda": None,
+        }
+    )
+    assert torch.allclose(torch.rand(4), expected_after_numpy_restore)
+
+    torch.manual_seed(4321)
+    torch_state_as_list = torch.get_rng_state().tolist()
+    expected_after_list_restore = torch.rand(4)
+
+    torch.manual_seed(9999)
+    trainer_module._restore_rng_state(
+        {
+            "python": random.getstate(),
+            "numpy": np.random.get_state(),
+            "torch": torch_state_as_list,
+            "cuda": None,
+        }
+    )
+    assert torch.allclose(torch.rand(4), expected_after_list_restore)
+
+
+def test_restore_rng_state_converts_cuda_states_with_mocks(monkeypatch: pytest.MonkeyPatch) -> None:
+    """CUDA RNG states are converted to CPU byte tensors before CUDA restoration."""
+    recorded: list[list[torch.Tensor]] = []
+    cpu_state = torch.get_rng_state()
+
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(torch.cuda, "set_rng_state_all", lambda states: recorded.append(states))
+
+    trainer_module._restore_rng_state(
+        {
+            "python": random.getstate(),
+            "numpy": np.random.get_state(),
+            "torch": cpu_state,
+            "cuda": [cpu_state.numpy().copy(), cpu_state.tolist()],
+        }
+    )
+
+    assert len(recorded) == 1
+    assert len(recorded[0]) == 2
+    assert all(state.device.type == "cpu" for state in recorded[0])
+    assert all(state.dtype is torch.uint8 for state in recorded[0])
+    assert all(state.is_contiguous() for state in recorded[0])
+    assert torch.equal(recorded[0][0], cpu_state)
+    assert torch.equal(recorded[0][1], cpu_state)
+
+
+def test_restore_training_state_accepts_checkpoint_without_rng_state(tmp_path: Path) -> None:
+    """Legacy checkpoints without rng_state still restore model and optimizer state."""
+    model = torch.nn.Linear(1, 1, bias=False)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    ema = trainer_module.EMA(model, decay=0.9)
+    norm = tmp_path / "normalization.json"
+    norm.write_text(json.dumps({"mode": "scale", "scale": 1.0}))
+    payload = trainer_module._checkpoint_payload(
+        model=model,
+        ema=ema,
+        optimizer=optimizer,
+        scaler=None,
+        epoch=1,
+        next_epoch=2,
+        global_step=11,
+        amp_overflows_total=0,
+        amp_overflows_consecutive=0,
+        config={"normalization_file": str(norm)},
+        normalization={"mode": "scale", "scale": 1.0},
+    )
+    payload.pop("rng_state")
+    path = tmp_path / "legacy-no-rng.pt"
+    save_checkpoint(path, payload)
+
+    restored_model = torch.nn.Linear(1, 1, bias=False)
+    restored_optimizer = torch.optim.SGD(restored_model.parameters(), lr=0.1)
+    restored_ema = trainer_module.EMA(restored_model, decay=0.9)
+
+    assert trainer_module._restore_training_state(
+        resume_from=path,
+        model=restored_model,
+        ema=restored_ema,
+        optimizer=restored_optimizer,
+        scaler=None,
+        device=torch.device("cpu"),
+    ) == (2, 11, 0, 0)
+
+
+def test_restore_training_state_restores_rng_after_save_load(tmp_path: Path) -> None:
+    """Checkpoint save/load/resume restores the next CPU torch random draw."""
+    model = torch.nn.Linear(1, 1, bias=False)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    ema = trainer_module.EMA(model, decay=0.9)
+    norm = tmp_path / "normalization.json"
+    norm.write_text(json.dumps({"mode": "scale", "scale": 1.0}))
+
+    torch.manual_seed(2468)
+    payload = trainer_module._checkpoint_payload(
+        model=model,
+        ema=ema,
+        optimizer=optimizer,
+        scaler=None,
+        epoch=0,
+        next_epoch=1,
+        global_step=3,
+        amp_overflows_total=0,
+        amp_overflows_consecutive=0,
+        config={"normalization_file": str(norm)},
+        normalization={"mode": "scale", "scale": 1.0},
+    )
+    expected_next = torch.rand(5)
+    path = tmp_path / "rng.pt"
+    save_checkpoint(path, payload)
+    torch.manual_seed(1357)
+
+    restored_model = torch.nn.Linear(1, 1, bias=False)
+    restored_optimizer = torch.optim.SGD(restored_model.parameters(), lr=0.1)
+    restored_ema = trainer_module.EMA(restored_model, decay=0.9)
+    trainer_module._restore_training_state(
+        resume_from=path,
+        model=restored_model,
+        ema=restored_ema,
+        optimizer=restored_optimizer,
+        scaler=None,
+        device=torch.device("cpu"),
+    )
+
+    assert torch.allclose(torch.rand(5), expected_next)
+
+
+def test_cuda_resume_rng_restore_when_cuda_available(tmp_path: Path) -> None:
+    """A real CUDA resume restores CUDA RNG state when CUDA is available."""
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA is not available")
+    model = torch.nn.Linear(1, 1, bias=False).cuda()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    ema = trainer_module.EMA(model, decay=0.9)
+    norm = tmp_path / "normalization.json"
+    norm.write_text(json.dumps({"mode": "scale", "scale": 1.0}))
+
+    torch.cuda.manual_seed_all(9876)
+    payload = trainer_module._checkpoint_payload(
+        model=model,
+        ema=ema,
+        optimizer=optimizer,
+        scaler=None,
+        epoch=0,
+        next_epoch=1,
+        global_step=3,
+        amp_overflows_total=0,
+        amp_overflows_consecutive=0,
+        config={"normalization_file": str(norm)},
+        normalization={"mode": "scale", "scale": 1.0},
+    )
+    expected_next = torch.rand(5, device="cuda")
+    path = tmp_path / "cuda-rng.pt"
+    save_checkpoint(path, payload)
+    torch.cuda.manual_seed_all(1234)
+
+    restored_model = torch.nn.Linear(1, 1, bias=False).cuda()
+    restored_optimizer = torch.optim.SGD(restored_model.parameters(), lr=0.1)
+    restored_ema = trainer_module.EMA(restored_model, decay=0.9)
+    trainer_module._restore_training_state(
+        resume_from=path,
+        model=restored_model,
+        ema=restored_ema,
+        optimizer=restored_optimizer,
+        scaler=None,
+        device=torch.device("cuda"),
+    )
+
+    assert torch.allclose(torch.rand(5, device="cuda"), expected_next)
 
 
 def test_repeated_fp16_overflow_reaches_threshold() -> None:
