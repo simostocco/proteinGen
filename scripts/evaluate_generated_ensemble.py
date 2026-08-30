@@ -252,7 +252,7 @@ def protocol_core(cfg: EvaluationConfig, checkpoint: dict[str, Any], schedule: d
         "selected_weights": cfg.weights,
         "lengths": list(cfg.lengths),
         "seed_schedule": schedule,
-        "samples_per_length": cfg.samples_per_length,
+        "samples_per_length": None if cfg.samples_by_length is not None else cfg.samples_per_length,
         "sample_counts_by_length": {str(length): len(seeds) for length, seeds in schedule.items()},
         "contact_threshold_angstrom": cfg.contact_threshold,
         "num_sampled_triangles": cfg.num_triangles,

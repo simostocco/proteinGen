@@ -328,6 +328,49 @@ def test_per_length_sample_counts_build_distinct_seed_schedule() -> None:
     assert schedule == EVAL.seed_schedule((64, 128), counts, master_seed=8000)
 
 
+def test_protocol_samples_per_length_is_null_for_explicit_per_length_counts(tmp_path: Path) -> None:
+    """Protocol avoids reporting an unused default when --length-samples is supplied."""
+    cfg = EVAL.EvaluationConfig(
+        checkpoint=tmp_path / "checkpoint.pt",
+        weights="ema",
+        config_path=None,
+        normalization_file=tmp_path / "normalization.json",
+        train_manifest=tmp_path / "train.parquet",
+        reference_manifest=tmp_path / "validation.parquet",
+        output_dir=tmp_path / "eval",
+        lengths=(64,),
+        samples_per_length=4,
+        samples_by_length={64: 1},
+        master_seed=8000,
+        seeds=None,
+        contact_threshold=8.0,
+        num_triangles=16,
+        novelty_candidate_count=1,
+        workers=1,
+        resume=True,
+        restart=False,
+        plots=False,
+        control_count=1,
+        real_length_tolerance=1,
+        diversity_pair_limit=10,
+        bootstrap_iterations=4,
+    )
+    schedule = EVAL.build_seed_schedule(cfg)
+    protocol = EVAL.protocol_core(
+        cfg,
+        {
+            "epoch": 7,
+            "next_epoch": 8,
+            "global_step": 10,
+            "config": {"model": {}},
+        },
+        schedule,
+    )
+
+    assert protocol["sample_counts_by_length"] == {"64": 1}
+    assert protocol["samples_per_length"] is None
+
+
 def test_protocol_incompatibility_rejects_resume(tmp_path: Path) -> None:
     """Resume refuses to mix incompatible protocol settings."""
     path = tmp_path / "protocol.json"
