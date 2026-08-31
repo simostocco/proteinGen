@@ -6,7 +6,11 @@ import torch
 from torch import nn
 
 from protein_distance_diffusion.diffusion.gaussian import project_symmetric_zero_diagonal
-from protein_distance_diffusion.models.attention import BottleneckSelfAttention, downsample_pair_mask
+from protein_distance_diffusion.models.attention import (
+    BottleneckSelfAttention,
+    SymmetricAxialAttentionBlock,
+    downsample_pair_mask,
+)
 from protein_distance_diffusion.models.blocks import Downsample, ResidualBlock, Upsample
 from protein_distance_diffusion.models.embeddings import LengthEmbedding, SinusoidalTimeEmbedding
 
@@ -24,6 +28,11 @@ class DistanceUNet(nn.Module):
         group_norm_groups: Preferred GroupNorm groups.
         attention_heads: Bottleneck attention heads.
         use_bottleneck_attention: Whether to apply masked self-attention at the bottleneck.
+        use_pre_bottleneck_axial_attention: Replace the last residual block one encoder level above
+            the bottleneck with symmetry-preserving axial attention.
+        axial_attention_heads: Number of axial attention heads. Defaults to `attention_heads`.
+        axial_attention_dropout: Axial attention and feed-forward dropout probability.
+        axial_attention_chunk_size: Optional number of row/column sequences per attention chunk.
         time_embedding_dim: Conditioning dimension for timesteps.
         length_embedding_dim: Conditioning dimension for lengths. Must match time embedding.
         max_length: Maximum configured protein length for length normalization.
@@ -41,6 +50,10 @@ class DistanceUNet(nn.Module):
         group_norm_groups: int = 8,
         attention_heads: int = 8,
         use_bottleneck_attention: bool = True,
+        use_pre_bottleneck_axial_attention: bool = False,
+        axial_attention_heads: int | None = None,
+        axial_attention_dropout: float | None = None,
+        axial_attention_chunk_size: int | None = None,
         time_embedding_dim: int = 256,
         length_embedding_dim: int = 256,
         max_length: int = 128,
@@ -48,7 +61,14 @@ class DistanceUNet(nn.Module):
         super().__init__()
         if time_embedding_dim != length_embedding_dim:
             raise ValueError("time_embedding_dim and length_embedding_dim must match")
+        if use_pre_bottleneck_axial_attention and len(channel_multipliers) < 2:
+            raise ValueError("use_pre_bottleneck_axial_attention requires at least two U-Net levels")
+        if use_pre_bottleneck_axial_attention and residual_blocks_per_level < 2:
+            raise ValueError("use_pre_bottleneck_axial_attention requires residual_blocks_per_level >= 2")
         self.downsample_factor = 2 ** (len(channel_multipliers) - 1)
+        self.use_pre_bottleneck_axial_attention = bool(use_pre_bottleneck_axial_attention)
+        self.pre_bottleneck_axial_level = len(channel_multipliers) - 2
+        self.pre_bottleneck_axial_block_index = residual_blocks_per_level - 1
         self.time_embedding = SinusoidalTimeEmbedding(time_embedding_dim)
         self.length_embedding = LengthEmbedding(length_embedding_dim, max_length=max_length)
         cond_dim = time_embedding_dim
@@ -60,8 +80,28 @@ class DistanceUNet(nn.Module):
         self.skip_channels: list[int] = []
         for level, out_ch in enumerate(channels):
             blocks = nn.ModuleList()
-            for _ in range(residual_blocks_per_level):
-                blocks.append(ResidualBlock(in_ch, out_ch, cond_dim, groups=group_norm_groups, dropout=dropout))
+            for block_index in range(residual_blocks_per_level):
+                use_axial_here = (
+                    self.use_pre_bottleneck_axial_attention
+                    and level == self.pre_bottleneck_axial_level
+                    and block_index == self.pre_bottleneck_axial_block_index
+                    and level >= 0
+                    and residual_blocks_per_level >= 2
+                    and in_ch == out_ch
+                )
+                if use_axial_here:
+                    blocks.append(
+                        SymmetricAxialAttentionBlock(
+                            out_ch,
+                            cond_dim,
+                            heads=axial_attention_heads or attention_heads,
+                            groups=group_norm_groups,
+                            dropout=dropout if axial_attention_dropout is None else float(axial_attention_dropout),
+                            chunk_size=axial_attention_chunk_size,
+                        )
+                    )
+                else:
+                    blocks.append(ResidualBlock(in_ch, out_ch, cond_dim, groups=group_norm_groups, dropout=dropout))
                 in_ch = out_ch
                 self.skip_channels.append(out_ch)
             self.down_blocks.append(blocks)
@@ -113,7 +153,10 @@ class DistanceUNet(nn.Module):
         downsample_idx = 0
         for level, blocks in enumerate(self.down_blocks):
             for block in blocks:
-                x = block(x, cond)
+                if isinstance(block, SymmetricAxialAttentionBlock):
+                    x = block(x, cond, downsample_pair_mask(pair_mask, x.shape[-2:]))
+                else:
+                    x = block(x, cond)
                 skips.append(x)
             if level != len(self.down_blocks) - 1:
                 x = self.downsamples[downsample_idx](x)

@@ -115,3 +115,97 @@ E001 remains `E001_symmetric_axial_attention`, testing whether one
 symmetry-preserving axial-attention block immediately above the bottleneck
 improves global geometry and scaling with `N` without reducing diversity or
 increasing training-set similarity.
+
+## E001 Worst-Case CUDA Stress Test
+
+Completed on 2026-08-31 for `E001_symmetric_axial_attention`.
+
+### Setup
+
+- GPU: NVIDIA GeForce RTX 5060 with 8,151 MiB VRAM
+- Mixed precision: CUDA float16 enabled
+- Batch size: 2
+- Gradient accumulation steps: 4
+- Effective batch size: 8
+- Stress manifest: `data/benchmarks/train_length500_256.parquet`
+- Sample population: 256 longest training samples
+- Length range: N=495-500
+
+### Initial Failed Attempt
+
+The first real-CUDA attempt failed during the first forward pass and completed
+zero optimizer steps. The exception was:
+
+```text
+RuntimeError: index_copy_(): self and source expected to have the same dtype,
+but got (self) Float and (source) Half
+```
+
+Root cause: under CUDA autocast, `MultiheadAttention` returned `attended` as
+`float16`, while `SymmetricAxialAttentionBlock._attend_axis()` had created the
+destination `out` tensor as `float32`. The in-place `index_copy_()` operation
+requires matching dtypes.
+
+The corrective change converted `attended` to the destination tensor's device
+and dtype before `index_copy_()`:
+
+```python
+attended = attended.to(device=out.device, dtype=out.dtype)
+out.index_copy_(0, indices, attended)
+```
+
+AMP was not disabled. Architecture, masking, chunking, symmetry logic, and
+parameter count were unchanged.
+
+### Verification After Fix
+
+- Focused axial-attention tests: 12 passed, 2 skipped
+- Full test suite: 232 passed, 6 skipped, 6 warnings
+- CPU bfloat16 autocast tests covered chunked and unchunked paths
+- The guarded CUDA unit test was skipped in the Codex environment because CUDA
+  was unavailable
+- Real CUDA verification was performed on the user's RTX 5060
+
+### Successful Retry
+
+The successful real-CUDA stress run completed optimizer step 10 with 40
+training-log records.
+
+| Metric | Value |
+| --- | ---: |
+| Peak allocated GPU memory | 4.12507963180542 GiB |
+| Peak reserved GPU memory | 6.380859375 GiB |
+| Total AMP overflows | 0 |
+| Maximum consecutive AMP overflows | 0 |
+| Skipped updates | 0 |
+| Final recorded training loss | 0.2867460250854492 |
+| Final pre-clipping gradient norm | 3.8645412921905518 |
+
+All critical loss and gradient values were finite. The gradient clipping
+threshold was 1.0, so the reported norm of 3.8645 is a pre-clipping measurement
+and is not itself an instability.
+
+Checkpoint-resume verification resumed from
+`outputs/recovered_stress_b2_v_axial_e001/checkpoints/last.pt` and successfully
+advanced from optimizer step 10 to optimizer step 11 with exit code 0. The final
+checkpoint recorded `optimizer_step: 11`, `global_step: 11`,
+`microbatch_in_accumulation: 0`, and `amp_overflows_consecutive: 0`.
+
+### E000 Comparison
+
+| Metric | E000 | E001 | Difference |
+| --- | ---: | ---: | ---: |
+| Peak allocated GPU memory | 3.897273540496826 GiB | 4.12507963180542 GiB | +0.227806091308594 GiB, approximately +5.85% |
+| Peak reserved GPU memory | 6.140625 GiB | 6.380859375 GiB | +0.240234375 GiB, approximately +3.91% |
+| AMP overflows | 0 | 0 | no change |
+| Skipped updates | 0 | 0 | no change |
+
+Interpretation: the mixed-precision implementation defect is resolved on real
+CUDA hardware. E001 supports worst-case N=495-500 samples at batch size 2 within
+the available 8 GB GPU, with modest measured memory overhead relative to E000.
+Forward pass, backward pass, optimizer update, checkpoint saving, and checkpoint
+resume all succeeded. This short stress test validates execution safety and
+memory feasibility, not convergence or generative quality. E001 is ready for a
+bounded 2000-optimizer-step full-data preflight. It does not establish improved
+physical validity or global geometry; those hypotheses remain to be tested
+against E000 under an identical evaluation protocol.
