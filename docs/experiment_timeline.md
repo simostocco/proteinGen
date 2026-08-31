@@ -64,23 +64,54 @@ schedules, sample counts, thresholds, metric definitions, and completion state.
 
 ### Results
 
-Pending. E000 infrastructure is implemented, but the full E000 evaluation has
-not been run automatically.
+Completed calibrated analysis of 375 generated samples and 320 matched real
+controls. All generated samples are numerically valid and non-duplicated under
+the current diversity thresholds, but 0/375 pass empirical real-like geometry
+thresholds derived from the 99th percentile of matched real controls. The
+deprecated `edm_compatible` field admits 12/375 generated samples, all at
+N=64, but those samples still have nonzero triangle violations, negative
+eigenvalue mass around 0.03-0.05, and rank-3 residual around 0.04-0.10.
+
+The principal result is that the epoch-8 model produces length-conditioned
+distance-like matrices and captures some local statistics, but the generated
+matrices do not lie on the empirical manifold of real three-dimensional protein
+distance matrices. Global geometric inconsistency and excess compactness worsen
+with sequence length.
 
 ### Limitations
 
-- Novelty is approximate unless configured to exhaustively refine every
-  same-length training matrix.
+- Novelty is approximate because it uses descriptor retrieval followed by
+  refined comparisons against retrieved candidates.
 - Classical MDS diagnostics evaluate realizability; generated matrices are not
   projected or repaired.
 - Distance-map diagnostics cannot establish thermodynamic stability.
 - Real controls are distributional references, not reconstruction targets.
+- Checker or diamond-like motifs are not classified as artifacts in E000; their
+  association with geometry rankings remains future analysis.
 
 ### Decision Criteria For E001
 
-E001 should proceed only after E000 identifies which length strata and metric
-families fail most clearly. The planned E001 experiment is
-`E001_symmetric_axial_attention`: add one symmetry-preserving axial-attention
+E001 should target the metric families that fail most clearly in E000:
+negative eigenvalue mass, rank-3 residual, MDS stress, triangle consistency,
+radius-of-gyration matching, and scaling with `N`. The planned E001 experiment
+is `E001_symmetric_axial_attention`: add one symmetry-preserving axial-attention
 block at the resolution immediately above the existing bottleneck attention,
 while preserving convolutional residual blocks. E002 may add a corresponding
 decoder block. Physical auxiliary losses come after the attention ablations.
+
+## E000 Finalized Results
+
+Final calibrated analysis completed at `2026-08-31T06:55:24.198454+00:00`.
+
+- Generated samples: 375
+- Real controls: 320
+- Empirical real-like geometry pass count: 0
+- Deprecated/permissive heuristic EDM-quality pass count: 12
+- Raw E000 inputs unchanged during finalization: True
+
+Conclusion: The current model produces numerically valid, non-duplicated, length-conditioned distance-like matrices and approximates several local distributional properties, but its generated matrices do not lie on the empirical manifold of real three-dimensional protein distance matrices. Global geometric inconsistency and excess compactness worsen with sequence length.
+
+E001 remains `E001_symmetric_axial_attention`, testing whether one
+symmetry-preserving axial-attention block immediately above the bottleneck
+improves global geometry and scaling with `N` without reducing diversity or
+increasing training-set similarity.

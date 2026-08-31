@@ -97,3 +97,27 @@ PY
 E000 does not call samples “physically stable”. It reports numerical,
 EDM-compatible, chain-like, and protein-like diagnostics with explicit
 empirical criteria.
+
+
+## Calibrated Final Analysis
+
+Run the analysis-only finalizer without regenerating samples:
+
+```bash
+python scripts/finalize_generated_ensemble_analysis.py \
+  --evaluation-dir reports/experiments/E000_epoch8_baseline \
+  --output-dir reports/experiments/E000_epoch8_baseline \
+  --real-quantile 0.99 \
+  --pair-limit 1000 \
+  --bootstrap-iterations 200 \
+  --contact-threshold 8.0 \
+  --seed 8000 \
+  --plots \
+  --resume
+```
+
+Calibrated outputs include empirical real-like geometry thresholds, corrected
+novelty by requested length, real-vs-real diversity calibration, deterministic
+sample rankings, figures, `metrics/calibrated_summary.json`, and
+`E000_FINAL_REPORT.md`. The original `protocol.json` and raw metric files are
+not modified by the finalizer.
