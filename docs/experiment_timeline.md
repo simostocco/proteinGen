@@ -116,96 +116,62 @@ symmetry-preserving axial-attention block immediately above the bottleneck
 improves global geometry and scaling with `N` without reducing diversity or
 increasing training-set similarity.
 
-## E001 Worst-Case CUDA Stress Test
+## E001 Calibrated Selected-Model Comparison To E000
 
-Completed on 2026-08-31 for `E001_symmetric_axial_attention`.
+Completed on 2026-09-02 under
+`reports/experiments/E001_symmetric_axial_attention/comparison_to_E000`.
 
-### Setup
+### Selected Model Provenance
 
-- GPU: NVIDIA GeForce RTX 5060 with 8,151 MiB VRAM
-- Mixed precision: CUDA float16 enabled
-- Batch size: 2
-- Gradient accumulation steps: 4
-- Effective batch size: 8
-- Stress manifest: `data/benchmarks/train_length500_256.parquet`
-- Sample population: 256 longest training samples
-- Length range: N=495-500
+- E000 selected checkpoint: epoch 8,
+  `outputs/recovered_full_b2_v/checkpoints/final_validation_selected.pt`
+- E000 checkpoint SHA-256:
+  `8a9da579153612556f568716b4ce5eaaa5fc3f036f82555497901f2ab7599cf8`
+- E001 selected checkpoint: epoch 4, global_step 160166,
+  `outputs/recovered_full_b2_v_axial_e001_epoch1/checkpoints/final_validation_selected.pt`
+- E001 checkpoint SHA-256:
+  `e6ddc698738718a0a73c5c4a3cbded23601990c107118ec3e1c99a185b58700a`
+- E001 epoch-4 validation loss: 0.0184613932
+- E001 epoch-5 validation loss: 0.0187884234
+- E001 final checkpoint global_step: 194002
 
-### Initial Failed Attempt
+The E001 selected checkpoint reflects the previously documented mid-epoch
+resume/replay caveat. The selected-model comparison is therefore not a perfectly
+controlled causal architecture ablation. The earlier step-2000 comparison used
+matched optimization steps but only two samples per length and remains
+exploratory screening rather than formal statistical evidence.
 
-The first real-CUDA attempt failed during the first forward pass and completed
-zero optimizer steps. The exception was:
+### Ensemble And Comparison
 
-```text
-RuntimeError: index_copy_(): self and source expected to have the same dtype,
-but got (self) Float and (source) Half
-```
+- E001 complete ensemble: 375 generated samples and 320 real controls
+- E001 requested-length counts: N=64: 100, N=128: 100, N=256: 100,
+  N=384: 50, N=500: 25
+- E001 generation/evaluation protocol runtime: 9,754.049385 seconds
+- E001 calibrated-finalization runtime: 17.806966543197632 seconds
+- Comparison paired samples: 375 exact pairs by requested length, sample index,
+  and seed
+- Comparison bootstrap: deterministic length-stratified paired bootstrap,
+  2,000 iterations, seed 8000
+- Input hashes preserved: true
 
-Root cause: under CUDA autocast, `MultiheadAttention` returned `attended` as
-`float16`, while `SymmetricAxialAttentionBlock._attend_axis()` had created the
-destination `out` tensor as `float32`. The in-place `index_copy_()` operation
-requires matching dtypes.
+Primary lower-is-better paired effects, defined as E000 minus E001:
 
-The corrective change converted `attended` to the destination tensor's device
-and dtype before `index_copy_()`:
+| Metric | Mean improvement | 95% CI |
+| --- | ---: | ---: |
+| triangle_violation_fraction | 0.0037239583333333335 | [0.0030468424479166666, 0.004445377604166666] |
+| negative_eigenvalue_mass_fraction | 0.03555181422234015 | [0.03379576492521358, 0.03726582691123128] |
+| rank3_residual_energy_fraction | 0.03479467005340526 | [0.03128290943186638, 0.03845387632871159] |
+| classical_mds_stress | 0.019002312775985533 | [0.016046398411326216, 0.021792401833207808] |
+| adjacent_residue_distance_rmse | 0.07468501927806964 | [0.06101909166309191, 0.08915228026826212] |
 
-```python
-attended = attended.to(device=out.device, dtype=out.dtype)
-out.index_copy_(0, indices, attended)
-```
+Strict empirical real-like geometry remained 0/375 for both E000 and E001.
+Heuristic EDM-quality transitions were 319 fail/fail, 44 E000-fail/E001-pass,
+2 E000-pass/E001-fail, and 10 pass/pass, increasing the pass fraction from
+0.032 to 0.144.
 
-AMP was not disabled. Architecture, masking, chunking, symmetry logic, and
-parameter count were unchanged.
-
-### Verification After Fix
-
-- Focused axial-attention tests: 12 passed, 2 skipped
-- Full test suite: 232 passed, 6 skipped, 6 warnings
-- CPU bfloat16 autocast tests covered chunked and unchunked paths
-- The guarded CUDA unit test was skipped in the Codex environment because CUDA
-  was unavailable
-- Real CUDA verification was performed on the user's RTX 5060
-
-### Successful Retry
-
-The successful real-CUDA stress run completed optimizer step 10 with 40
-training-log records.
-
-| Metric | Value |
-| --- | ---: |
-| Peak allocated GPU memory | 4.12507963180542 GiB |
-| Peak reserved GPU memory | 6.380859375 GiB |
-| Total AMP overflows | 0 |
-| Maximum consecutive AMP overflows | 0 |
-| Skipped updates | 0 |
-| Final recorded training loss | 0.2867460250854492 |
-| Final pre-clipping gradient norm | 3.8645412921905518 |
-
-All critical loss and gradient values were finite. The gradient clipping
-threshold was 1.0, so the reported norm of 3.8645 is a pre-clipping measurement
-and is not itself an instability.
-
-Checkpoint-resume verification resumed from
-`outputs/recovered_stress_b2_v_axial_e001/checkpoints/last.pt` and successfully
-advanced from optimizer step 10 to optimizer step 11 with exit code 0. The final
-checkpoint recorded `optimizer_step: 11`, `global_step: 11`,
-`microbatch_in_accumulation: 0`, and `amp_overflows_consecutive: 0`.
-
-### E000 Comparison
-
-| Metric | E000 | E001 | Difference |
-| --- | ---: | ---: | ---: |
-| Peak allocated GPU memory | 3.897273540496826 GiB | 4.12507963180542 GiB | +0.227806091308594 GiB, approximately +5.85% |
-| Peak reserved GPU memory | 6.140625 GiB | 6.380859375 GiB | +0.240234375 GiB, approximately +3.91% |
-| AMP overflows | 0 | 0 | no change |
-| Skipped updates | 0 | 0 | no change |
-
-Interpretation: the mixed-precision implementation defect is resolved on real
-CUDA hardware. E001 supports worst-case N=495-500 samples at batch size 2 within
-the available 8 GB GPU, with modest measured memory overhead relative to E000.
-Forward pass, backward pass, optimizer update, checkpoint saving, and checkpoint
-resume all succeeded. This short stress test validates execution safety and
-memory feasibility, not convergence or generative quality. E001 is ready for a
-bounded 2000-optimizer-step full-data preflight. It does not establish improved
-physical validity or global geometry; those hypotheses remain to be tested
-against E000 under an identical evaluation protocol.
+Calibrated comparison conclusion: E001 improves several selected-model global
+geometry diagnostics and increases heuristic EDM-quality passes without evidence
+of diversity collapse or exact-duplicate novelty failure. However, E001 still
+does not reach the empirical 3D distance-matrix manifold under strict calibrated
+criteria. The next justified intervention is a bounded physical auxiliary-loss
+experiment evaluated against E000 and E001 under the same protocol.

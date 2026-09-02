@@ -212,3 +212,57 @@ ready for a bounded 2000-optimizer-step full-data preflight. It does not yet
 establish any improvement in physical validity or global geometry; those
 hypotheses remain to be tested against E000 under an identical evaluation
 protocol.
+
+## Calibrated Comparison To E000
+
+Completed on 2026-09-02 under
+`reports/experiments/E001_symmetric_axial_attention/comparison_to_E000`.
+
+Selected-model provenance:
+
+- E000 selected checkpoint: epoch 8,
+  `outputs/recovered_full_b2_v/checkpoints/final_validation_selected.pt`
+- E000 checkpoint SHA-256:
+  `8a9da579153612556f568716b4ce5eaaa5fc3f036f82555497901f2ab7599cf8`
+- E001 selected checkpoint: epoch 4, global_step 160166,
+  `outputs/recovered_full_b2_v_axial_e001_epoch1/checkpoints/final_validation_selected.pt`
+- E001 checkpoint SHA-256:
+  `e6ddc698738718a0a73c5c4a3cbded23601990c107118ec3e1c99a185b58700a`
+- E001 epoch-4 validation loss: 0.0184613932
+- E001 epoch-5 validation loss: 0.0187884234
+- E001 final checkpoint global_step: 194002
+
+The E001 selected checkpoint reflects the previously documented mid-epoch
+resume/replay caveat. The complete-ensemble comparison is therefore a
+selected-model comparison, not a perfectly controlled causal architecture
+ablation. The earlier step-2000 comparison matched optimization steps but used
+only two samples per length and remains exploratory screening.
+
+The complete E001 ensemble has 375 generated samples and 320 real controls. The
+generation/evaluation protocol runtime was 9,754.049385 seconds and calibrated
+finalization runtime was 17.806966543197632 seconds. The comparison paired all
+375 samples exactly by requested length, sample index, and seed, using a
+deterministic length-stratified paired bootstrap with 2,000 iterations and seed
+8000. Input hashes were preserved before and after the analysis.
+
+Primary lower-is-better paired effects, defined as E000 minus E001:
+
+| Metric | Mean improvement | 95% CI |
+| --- | ---: | ---: |
+| triangle_violation_fraction | 0.0037239583333333335 | [0.0030468424479166666, 0.004445377604166666] |
+| negative_eigenvalue_mass_fraction | 0.03555181422234015 | [0.03379576492521358, 0.03726582691123128] |
+| rank3_residual_energy_fraction | 0.03479467005340526 | [0.03128290943186638, 0.03845387632871159] |
+| classical_mds_stress | 0.019002312775985533 | [0.016046398411326216, 0.021792401833207808] |
+| adjacent_residue_distance_rmse | 0.07468501927806964 | [0.06101909166309191, 0.08915228026826212] |
+
+Strict empirical real-like geometry remained 0/375 for both E000 and E001.
+Heuristic EDM-quality transitions were 319 fail/fail, 44 E000-fail/E001-pass,
+2 E000-pass/E001-fail, and 10 pass/pass, increasing the pass fraction from
+0.032 to 0.144.
+
+Comparison conclusion: E001 improves several selected-model global geometry
+diagnostics and increases heuristic EDM-quality passes without evidence of
+diversity collapse or exact-duplicate novelty failure. E001 still does not
+reach the empirical 3D distance-matrix manifold under strict calibrated
+criteria. The next justified intervention is a bounded physical auxiliary-loss
+experiment evaluated against E000 and E001 under the same protocol.

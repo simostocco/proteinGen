@@ -1,0 +1,113 @@
+{
+  "baseline_checkpoint": {
+    "epoch": 7,
+    "optimizer_step": 280696,
+    "path": "outputs/recovered_full_b2_v/checkpoints/final_validation_selected.pt",
+    "sha256": "8a9da579153612556f568716b4ce5eaaa5fc3f036f82555497901f2ab7599cf8"
+  },
+  "candidate_checkpoint": {
+    "epoch": 3,
+    "optimizer_step": 160166,
+    "path": "outputs/recovered_full_b2_v_axial_e001_epoch1/checkpoints/final_validation_selected.pt",
+    "sha256": "e6ddc698738718a0a73c5c4a3cbded23601990c107118ec3e1c99a185b58700a"
+  },
+  "heuristic_validity_overall": {
+    "baseline_fail_candidate_fail": 319,
+    "baseline_fail_candidate_pass": 44,
+    "baseline_pass_candidate_fail": 2,
+    "baseline_pass_candidate_pass": 10,
+    "baseline_pass_fraction": 0.032,
+    "candidate_pass_fraction": 0.144,
+    "discordant_baseline_better": 2,
+    "discordant_candidate_better": 44,
+    "flag": "heuristic_edm_quality_pass",
+    "group": "overall",
+    "mcnemar_exact_p_value": 3.0752289603697136e-11,
+    "mcnemar_exact_p_value_bh": 8.833467290969566e-11,
+    "requested_length": NaN
+  },
+  "input_hashes_preserved": true,
+  "interpretation_constraint": "Selected-model comparison: E000 epoch 8 versus E001 epoch 4/global_step 160166; not a perfectly controlled causal architecture ablation.",
+  "paired_counts_by_length": {
+    "128": 100,
+    "256": 100,
+    "384": 50,
+    "500": 25,
+    "64": 100
+  },
+  "paired_sample_count": 375,
+  "primary_findings": {
+    "adjacent_residue_distance_rmse": {
+      "baseline_mean": 0.3271140822664099,
+      "bootstrap_ci": [
+        0.06101909166309191,
+        0.08915228026826212
+      ],
+      "candidate_mean": 0.2524290629883402,
+      "effect_size": 0.43094970106254715,
+      "fraction_improved": 0.672,
+      "mean_improvement": 0.07468501927806964
+    },
+    "classical_mds_stress": {
+      "baseline_mean": 0.09493132243723063,
+      "bootstrap_ci": [
+        0.016046398411326216,
+        0.021792401833207808
+      ],
+      "candidate_mean": 0.07592900966124509,
+      "effect_size": 0.5143530198356137,
+      "fraction_improved": 0.6986666666666667,
+      "mean_improvement": 0.019002312775985533
+    },
+    "negative_eigenvalue_mass_fraction": {
+      "baseline_mean": 0.13298076386605545,
+      "bootstrap_ci": [
+        0.03379576492521358,
+        0.03726582691123128
+      ],
+      "candidate_mean": 0.09742894964371529,
+      "effect_size": 1.4005523412732004,
+      "fraction_improved": 0.952,
+      "mean_improvement": 0.03555181422234015
+    },
+    "rank3_residual_energy_fraction": {
+      "baseline_mean": 0.18924574840836517,
+      "bootstrap_ci": [
+        0.03128290943186638,
+        0.03845387632871159
+      ],
+      "candidate_mean": 0.15445107835495991,
+      "effect_size": 0.7809513212363636,
+      "fraction_improved": 0.76,
+      "mean_improvement": 0.03479467005340526
+    },
+    "triangle_violation_fraction": {
+      "baseline_mean": 0.0056484375,
+      "bootstrap_ci": [
+        0.0030468424479166666,
+        0.004445377604166666
+      ],
+      "candidate_mean": 0.0019244791666666666,
+      "effect_size": 0.510206583560651,
+      "fraction_improved": 0.736,
+      "mean_improvement": 0.0037239583333333335
+    }
+  },
+  "protocol_compatible": true,
+  "runtime_seconds": 0.9836094379425049,
+  "strict_validity_overall": {
+    "baseline_fail_candidate_fail": 375,
+    "baseline_fail_candidate_pass": 0,
+    "baseline_pass_candidate_fail": 0,
+    "baseline_pass_candidate_pass": 0,
+    "baseline_pass_fraction": 0.0,
+    "candidate_pass_fraction": 0.0,
+    "discordant_baseline_better": 0,
+    "discordant_candidate_better": 0,
+    "flag": "empirical_real_like_geometry_pass",
+    "group": "overall",
+    "mcnemar_exact_p_value": NaN,
+    "mcnemar_exact_p_value_bh": NaN,
+    "requested_length": NaN
+  }
+}
