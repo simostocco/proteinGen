@@ -38,6 +38,25 @@ class PhysicalAuxiliaryLossResult:
     subset_count: int
 
 
+@dataclass(frozen=True)
+class AdjacentAuxiliaryLossConfig:
+    """Configuration for the adjacent-residue distance auxiliary loss."""
+
+    enabled: bool = False
+    weight: float = 0.0
+    warmup_steps: int = 0
+    huber_beta_angstrom: float = 0.25
+
+
+@dataclass(frozen=True)
+class AdjacentAuxiliaryLossResult:
+    """Adjacent-chain loss and eligibility diagnostics."""
+
+    loss: torch.Tensor
+    eligible_fraction: float
+    eligible_pair_count: int
+
+
 def physical_auxiliary_config_from_mapping(config: dict[str, Any]) -> PhysicalAuxiliaryLossConfig:
     """Build and validate physical auxiliary-loss config from a training config."""
     cfg = PhysicalAuxiliaryLossConfig(
@@ -68,8 +87,35 @@ def physical_auxiliary_config_from_mapping(config: dict[str, Any]) -> PhysicalAu
     return cfg
 
 
+def adjacent_auxiliary_config_from_mapping(config: dict[str, Any]) -> AdjacentAuxiliaryLossConfig:
+    """Build and validate adjacent-chain auxiliary-loss config from a training config."""
+    cfg = AdjacentAuxiliaryLossConfig(
+        enabled=bool(config.get("adjacent_auxiliary_loss_enabled", False)),
+        weight=float(config.get("adjacent_auxiliary_loss_weight", 0.0)),
+        warmup_steps=int(config.get("adjacent_auxiliary_loss_warmup_steps", 0)),
+        huber_beta_angstrom=float(config.get("adjacent_auxiliary_huber_beta_angstrom", 0.25)),
+    )
+    if cfg.weight < 0.0:
+        raise ValueError("adjacent_auxiliary_loss_weight must be non-negative")
+    if cfg.warmup_steps < 0:
+        raise ValueError("adjacent_auxiliary_loss_warmup_steps must be non-negative")
+    if cfg.huber_beta_angstrom <= 0.0:
+        raise ValueError("adjacent_auxiliary_huber_beta_angstrom must be positive")
+    return cfg
+
+
 def physical_auxiliary_weight(config: PhysicalAuxiliaryLossConfig, optimizer_step: int) -> float:
     """Return the active auxiliary weight after linear warmup."""
+    if not config.enabled or config.weight <= 0.0:
+        return 0.0
+    if config.warmup_steps <= 0:
+        return config.weight
+    progress = min(1.0, max(0.0, float(optimizer_step + 1) / float(config.warmup_steps)))
+    return config.weight * progress
+
+
+def adjacent_auxiliary_weight(config: AdjacentAuxiliaryLossConfig, optimizer_step: int) -> float:
+    """Return the active adjacent-chain auxiliary weight after linear warmup."""
     if not config.enabled or config.weight <= 0.0:
         return 0.0
     if config.warmup_steps <= 0:
@@ -126,6 +172,11 @@ def _zero_like_loss(x: torch.Tensor) -> PhysicalAuxiliaryLossResult:
         mean_subset_size=0.0,
         subset_count=0,
     )
+
+
+def _zero_like_adjacent_loss(x: torch.Tensor) -> AdjacentAuxiliaryLossResult:
+    zero = x.float().sum() * 0.0
+    return AdjacentAuxiliaryLossResult(loss=zero, eligible_fraction=0.0, eligible_pair_count=0)
 
 
 def _spectral_components(distance_matrix: torch.Tensor, *, eps: float) -> tuple[torch.Tensor, torch.Tensor]:
@@ -212,4 +263,56 @@ def stochastic_edm_spectral_loss(
             eligible_fraction=float(eligible) / float(max(1, physical.shape[0])),
             mean_subset_size=float(sum(subset_sizes)) / float(len(subset_sizes)),
             subset_count=len(subset_sizes),
+        )
+
+
+def adjacent_chain_smooth_l1_loss(
+    *,
+    x0_hat_normalized: torch.Tensor,
+    clean_normalized: torch.Tensor,
+    pair_mask: torch.Tensor,
+    lengths: torch.Tensor,
+    normalization_scale: float,
+    config: AdjacentAuxiliaryLossConfig,
+) -> AdjacentAuxiliaryLossResult:
+    """Compute SmoothL1 loss on upper adjacent C-alpha distances only."""
+    if x0_hat_normalized.shape != clean_normalized.shape:
+        raise ValueError("x0_hat_normalized and clean_normalized must have the same shape")
+    if x0_hat_normalized.ndim != 4 or x0_hat_normalized.shape[1] != 1:
+        raise ValueError("x0_hat_normalized must have shape [B, 1, L, L]")
+    if pair_mask.shape != x0_hat_normalized.shape:
+        raise ValueError("pair_mask must match x0_hat_normalized shape")
+    if lengths.numel() != x0_hat_normalized.shape[0]:
+        raise ValueError("lengths must contain one length per sample")
+    if not config.enabled:
+        return _zero_like_adjacent_loss(x0_hat_normalized)
+
+    scale = float(normalization_scale)
+    if scale <= 0.0:
+        raise ValueError("normalization_scale must be positive")
+
+    with torch.amp.autocast(device_type=x0_hat_normalized.device.type, enabled=False):
+        predicted = project_symmetric_zero_diagonal(x0_hat_normalized.float() * scale, pair_mask.bool())
+        target = project_symmetric_zero_diagonal(clean_normalized.float() * scale, pair_mask.bool())
+        side = int(predicted.shape[-1])
+        if side < 2:
+            return _zero_like_adjacent_loss(x0_hat_normalized)
+        row = torch.arange(side - 1, device=predicted.device)
+        valid_by_length = row[None, :] < (lengths.to(device=predicted.device, dtype=torch.long)[:, None] - 1)
+        valid_by_mask = pair_mask[:, 0, row, row + 1].bool()
+        valid = valid_by_length & valid_by_mask
+        if not bool(valid.any()):
+            return _zero_like_adjacent_loss(x0_hat_normalized)
+        delta = predicted[:, 0, row, row + 1] - target[:, 0, row, row + 1]
+        abs_delta = delta.abs()[valid]
+        beta = float(config.huber_beta_angstrom)
+        quadratic = torch.minimum(abs_delta, abs_delta.new_tensor(beta))
+        linear = abs_delta - quadratic
+        loss = (0.5 * quadratic.square() / beta + linear).mean()
+        possible = torch.clamp(lengths.to(device=predicted.device, dtype=torch.long) - 1, min=0).sum().item()
+        count = int(valid.sum().detach().cpu())
+        return AdjacentAuxiliaryLossResult(
+            loss=loss,
+            eligible_fraction=float(count) / float(max(1, int(possible))),
+            eligible_pair_count=count,
         )

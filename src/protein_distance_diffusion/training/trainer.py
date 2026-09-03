@@ -34,6 +34,9 @@ from protein_distance_diffusion.training.checkpointing import load_checkpoint, s
 from protein_distance_diffusion.training.ema import EMA
 from protein_distance_diffusion.training.logging import JsonlLogger
 from protein_distance_diffusion.training.physical_auxiliary import (
+    adjacent_auxiliary_config_from_mapping,
+    adjacent_auxiliary_weight,
+    adjacent_chain_smooth_l1_loss,
     physical_auxiliary_config_from_mapping,
     physical_auxiliary_weight,
     stochastic_edm_spectral_loss,
@@ -478,6 +481,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
     config["prediction_parameterization"] = prediction_type.value
     config["prediction_type"] = prediction_type.value
     auxiliary_config = physical_auxiliary_config_from_mapping(config)
+    adjacent_auxiliary_config = adjacent_auxiliary_config_from_mapping(config)
     _patch_torch_pytree_compatibility()
     opt = torch.optim.AdamW(model.parameters(), lr=float(config.get("learning_rate", 1e-4)))
     ema = EMA(model, decay=float(config.get("ema_decay", 0.999)))
@@ -573,13 +577,16 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         target.float(), prediction.float(), pair_mask, sample_weight=sample_weight
                     )
                     unweighted_loss = per_sample_loss.mean()
-                    if auxiliary_config.enabled:
+                    if auxiliary_config.enabled or adjacent_auxiliary_config.enabled:
                         x0_hat, _ = diffusion.predict_x0_epsilon_from_model_output(
                             x_t=noisy,
                             t=t,
                             model_output=prediction,
                             prediction_type=prediction_type,
                         )
+                    else:
+                        x0_hat = prediction.float()
+                    if auxiliary_config.enabled:
                         auxiliary_result = stochastic_edm_spectral_loss(
                             x0_hat_normalized=x0_hat,
                             pair_mask=pair_mask,
@@ -600,7 +607,17 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         )
                     auxiliary_loss_weight = physical_auxiliary_weight(auxiliary_config, global_step)
                     weighted_auxiliary_loss = auxiliary_result.loss * auxiliary_loss_weight
-                    optimization_loss = loss + weighted_auxiliary_loss
+                    adjacent_result = adjacent_chain_smooth_l1_loss(
+                        x0_hat_normalized=x0_hat,
+                        clean_normalized=clean,
+                        pair_mask=pair_mask,
+                        lengths=lengths,
+                        normalization_scale=float(normalization.get("scale", 1.0)),
+                        config=adjacent_auxiliary_config,
+                    )
+                    adjacent_loss_weight = adjacent_auxiliary_weight(adjacent_auxiliary_config, global_step)
+                    weighted_adjacent_loss = adjacent_result.loss * adjacent_loss_weight
+                    optimization_loss = loss + weighted_auxiliary_loss + weighted_adjacent_loss
                 if not torch.isfinite(optimization_loss):
                     raise FloatingPointError(
                         "Non-finite training loss: "
@@ -643,6 +660,8 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 auxiliary_negative_value = float(auxiliary_result.negative_loss.detach().cpu())
                 auxiliary_rank3_value = float(auxiliary_result.rank3_loss.detach().cpu())
                 weighted_auxiliary_value = float(weighted_auxiliary_loss.detach().cpu())
+                adjacent_loss_value = float(adjacent_result.loss.detach().cpu())
+                weighted_adjacent_value = float(weighted_adjacent_loss.detach().cpu())
                 optimization_loss_value = float(optimization_loss.detach().cpu())
                 running_loss += (loss_value - running_loss) / batch_index
                 epoch_loss += loss_value * batch_size
@@ -703,6 +722,11 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     "physical_auxiliary_eligible_fraction": auxiliary_result.eligible_fraction,
                     "physical_auxiliary_mean_subset_size": auxiliary_result.mean_subset_size,
                     "physical_auxiliary_subset_count": auxiliary_result.subset_count,
+                    "adjacent_auxiliary_loss": adjacent_loss_value,
+                    "adjacent_auxiliary_weight": adjacent_loss_weight,
+                    "adjacent_auxiliary_weighted_loss": weighted_adjacent_value,
+                    "adjacent_auxiliary_eligible_fraction": adjacent_result.eligible_fraction,
+                    "adjacent_auxiliary_eligible_pair_count": adjacent_result.eligible_pair_count,
                     "optimization_loss": optimization_loss_value,
                     "running_loss": running_loss,
                     "learning_rate": lr,
@@ -748,6 +772,19 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     writer.add_scalar(
                         "train/physical_auxiliary_mean_subset_size",
                         auxiliary_result.mean_subset_size,
+                        global_step,
+                    )
+                    writer.add_scalar("train/adjacent_auxiliary_loss", adjacent_loss_value, global_step)
+                    writer.add_scalar("train/adjacent_auxiliary_weight", adjacent_loss_weight, global_step)
+                    writer.add_scalar("train/adjacent_auxiliary_weighted_loss", weighted_adjacent_value, global_step)
+                    writer.add_scalar(
+                        "train/adjacent_auxiliary_eligible_fraction",
+                        adjacent_result.eligible_fraction,
+                        global_step,
+                    )
+                    writer.add_scalar(
+                        "train/adjacent_auxiliary_eligible_pair_count",
+                        adjacent_result.eligible_pair_count,
                         global_step,
                     )
                     writer.add_scalar("optimizer/learning_rate", lr, global_step)

@@ -212,6 +212,41 @@ def test_v_training_checkpoint_records_parameterization(tmp_path: Path) -> None:
     assert ckpt["config"]["prediction_type"] == "v"
 
 
+def test_e003_adjacent_auxiliary_logs_and_resumes(tmp_path: Path) -> None:
+    """Adjacent-chain auxiliary fields are checkpoint-compatible and logged."""
+    config = _tiny_training_config(tmp_path, output_name="e003-run")
+    config["prediction_parameterization"] = "v"
+    config["physical_auxiliary_loss_enabled"] = True
+    config["physical_auxiliary_loss_weight"] = 0.01
+    config["edm_subset_size"] = 4
+    config["adjacent_auxiliary_loss_enabled"] = True
+    config["adjacent_auxiliary_loss_weight"] = 0.05
+    config["adjacent_auxiliary_loss_warmup_steps"] = 1
+    config["adjacent_auxiliary_huber_beta_angstrom"] = 0.25
+    config["max_optimizer_steps"] = 1
+    ckpt_path = train_from_config(config)
+    ckpt = load_checkpoint(ckpt_path)
+    assert ckpt["config"]["adjacent_auxiliary_loss_enabled"] is True
+    assert ckpt["config"]["adjacent_auxiliary_huber_beta_angstrom"] == 0.25
+    rows = [
+        json.loads(line)
+        for line in (tmp_path / "e003-run" / "logs" / "train.jsonl").read_text().splitlines()
+        if "training_loss" in line
+    ]
+    assert rows
+    row = rows[0]
+    assert "physical_auxiliary_loss" in row
+    assert "adjacent_auxiliary_loss" in row
+    assert "adjacent_auxiliary_weighted_loss" in row
+    assert "adjacent_auxiliary_eligible_pair_count" in row
+    resumed = dict(config)
+    resumed["output_dir"] = str(tmp_path / "e003-resume")
+    resumed["resume_from"] = str(ckpt_path)
+    resumed["max_optimizer_steps"] = 2
+    resumed_ckpt = load_checkpoint(train_from_config(resumed))
+    assert resumed_ckpt["global_step"] == 2
+
+
 def test_resume_rejects_prediction_parameterization_mismatch(tmp_path: Path) -> None:
     """Resume fails clearly when a v config points at an epsilon checkpoint."""
     config = _tiny_training_config(tmp_path, output_name="epsilon-run")

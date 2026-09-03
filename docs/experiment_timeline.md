@@ -179,3 +179,64 @@ consistency, and MDS stress. It does not achieve strict empirical protein
 geometry and introduces a statistically supported degradation in local
 adjacent-residue geometry. Retain E002 as a positive partial experiment, not as
 the final model. Do not claim that E002 produces physically valid proteins.
+
+## E003 Adjacent Chain Geometry
+
+Status: CUDA calibration and step-2000 adjacent-chain preflight passed;
+definitive full-training config prepared.
+
+E003 is a controlled extension of E002 that preserves the E001/E002
+architecture, v-prediction diffusion objective, stochastic EDM spectral loss,
+optimizer, schedule, manifests, normalization, batch size 2, gradient
+accumulation 4, and mixed precision settings. The only new intervention is a
+disabled-by-default adjacent-chain SmoothL1 auxiliary loss on reconstructed
+physical `x0_hat` distances for upper adjacent-diagonal pairs `D[i, i+1]`.
+
+The target is the clean training distance matrix, not a hardcoded 3.8 Angstrom
+constant. The configured SmoothL1 beta is `0.25` Angstrom, a robust physical
+scale that treats sub-quarter-Angstrom deviations quadratically and larger
+errors linearly. The selected adjacent weight is `0.0001`, with 500-step warmup.
+
+CUDA calibration at adjacent weight `0.0001` gave a general-batch
+adjacent/diffusion gradient ratio median `0.0385003`, p90 `0.0593762`, and max
+`0.0722183`; combined auxiliary/diffusion median `0.0916737`, p90 `0.128118`,
+and max `0.150298`. On N=495-500 batches, adjacent/diffusion median was
+`0.0514392`, p90 `0.114064`, and max `0.176750`; combined auxiliary/diffusion
+median was `0.0877296`, p90 `0.162382`, and max `0.235053`. Median gradient
+cosines were positive in both profiles: general diffusion/adjacent `0.334203`,
+EDM/adjacent `0.331063`, diffusion/EDM `0.201883`; N=495-500
+diffusion/adjacent `0.312720`, EDM/adjacent `0.211347`, diffusion/EDM
+`0.211596`. Negative tails were occasional and modest, with no systematic
+gradient antagonism.
+
+Worst-case CUDA stress covered N=495-500 with batch size 2, gradient
+accumulation 4, 10 steps plus resume to 11, peak allocated memory approximately
+4.13 GiB, zero AMP overflows, zero skipped updates, and successful checkpoint
+resume. The full-data step-2000 preflight produced 8008 JSONL records, two
+isolated AMP overflows, final AMP scale 16384, maximum consecutive overflows 1,
+no non-finite losses, successful resume to step 2001, and frozen step-2000
+SHA-256 `c1e63f84522f22aaeab1ee6627fa60906c46f55bc4ed811d872768e535635764`.
+
+First-versus-last quartile medians improved for adjacent loss `7.39698 ->
+1.88258`, diffusion loss `0.0568248 -> 0.0244930`, EDM loss `0.330965 ->
+0.0825215`, EDM negative component `0.141549 -> 0.0287379`, EDM rank3 component
+`0.188910 -> 0.0514521`, weighted adjacent contribution `0.000296195 ->
+0.000188258`, and weighted EDM contribution `0.00128259 -> 0.000825215`.
+
+A paired step-2000 generated screening bank used 10 paired samples, two each at
+N=64, 128, 256, 384, and 500, with the same sampling seeds for E002 and E003.
+Adjacent RMSE-to-3.8A improved in 9/10 samples, mean improvement `0.452242` A;
+negative eigenvalue mass improved in 9/10, mean improvement `0.00192891`; rank3
+residual improved in 9/10, mean improvement `0.00630272`; triangle behavior was
+mixed; and negative-distance fraction was slightly improved overall. Mean
+adjacent RMSE-to-3.8A changes by length were N=64 `3.57996 -> 3.56029`, N=128
+`2.71956 -> 2.46473`, N=256 `2.19848 -> 1.81046`, N=384 `2.24399 -> 1.35034`,
+and N=500 `2.26398 -> 1.55894`. This is a small screening bank, not final
+statistical evidence; definitive evaluation must use calibrated real controls,
+not only a fixed 3.8A reference.
+
+This adjacent-chain term is established physical regularization, not a novelty
+claim. The experiment tests whether combining global spectral consistency with
+local backbone geometry resolves the specific E002 trade-off before any triangle,
+contact, non-negativity, radius-of-gyration, projection, or architecture changes
+are considered.

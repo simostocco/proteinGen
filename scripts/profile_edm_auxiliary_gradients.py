@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Profile EDM auxiliary-loss gradient scale without optimizer updates."""
+"""Profile physical auxiliary-loss gradient scale without optimizer updates."""
 
 from __future__ import annotations
 
@@ -25,6 +25,8 @@ from protein_distance_diffusion.diffusion.gaussian import (
 from protein_distance_diffusion.diffusion.schedules import cosine_beta_schedule
 from protein_distance_diffusion.training.checkpointing import load_checkpoint
 from protein_distance_diffusion.training.physical_auxiliary import (
+    adjacent_auxiliary_config_from_mapping,
+    adjacent_chain_smooth_l1_loss,
     physical_auxiliary_config_from_mapping,
     stochastic_edm_spectral_loss,
 )
@@ -49,6 +51,23 @@ def _grad_norm(parameters: list[torch.nn.Parameter]) -> float:
     return float(np.sqrt(total))
 
 
+def _grad_vector(parameters: list[torch.nn.Parameter]) -> torch.Tensor:
+    chunks = []
+    for parameter in parameters:
+        if parameter.grad is None:
+            chunks.append(torch.zeros(parameter.numel(), dtype=torch.float32))
+        else:
+            chunks.append(parameter.grad.detach().float().cpu().reshape(-1))
+    return torch.cat(chunks) if chunks else torch.empty(0, dtype=torch.float32)
+
+
+def _cosine(a: torch.Tensor, b: torch.Tensor) -> float:
+    denom = float(a.norm() * b.norm())
+    if denom <= 0.0:
+        return float("nan")
+    return float(torch.dot(a, b) / denom)
+
+
 def _bin_label(value: int, edges: list[int]) -> str:
     previous = 0
     for edge in edges:
@@ -63,13 +82,23 @@ def _profile_one(
     config: dict[str, Any],
     checkpoint: Path | None,
     candidate_weights: list[float],
+    candidate_adjacent_weights: list[float],
     max_batches: int,
     subset_size: int,
     subsets_per_sample: int,
+    adjacent_beta_angstrom: float,
+    min_length: int | None,
+    max_length: int | None,
     device: torch.device,
 ) -> dict[str, Any]:
     normalization = json.loads(Path(config["normalization_file"]).read_text())
     dataset = DistanceMapDataset(config["train_manifest"], normalization)
+    if min_length is not None:
+        dataset.frame = dataset.frame[dataset.frame["length"].astype(int) >= int(min_length)].reset_index(drop=True)
+    if max_length is not None:
+        dataset.frame = dataset.frame[dataset.frame["length"].astype(int) <= int(max_length)].reset_index(drop=True)
+    if len(dataset) == 0:
+        raise ValueError("No training samples remain after length filtering")
     downsample_stages = len(config["model"].get("channel_multipliers", [1, 2, 4, 8])) - 1
     loader = DataLoader(
         dataset,
@@ -99,6 +128,13 @@ def _profile_one(
             "physical_auxiliary_loss_enabled": True,
             "edm_subset_size": subset_size,
             "edm_subsets_per_sample": subsets_per_sample,
+        }
+    )
+    adjacent_config = adjacent_auxiliary_config_from_mapping(
+        {
+            **config,
+            "adjacent_auxiliary_loss_enabled": True,
+            "adjacent_auxiliary_huber_beta_angstrom": adjacent_beta_angstrom,
         }
     )
 
@@ -134,12 +170,26 @@ def _profile_one(
             optimizer_step=0,
             microbatch=batch_index,
         )
+        adjacent = adjacent_chain_smooth_l1_loss(
+            x0_hat_normalized=x0_hat,
+            clean_normalized=clean,
+            pair_mask=pair_mask,
+            lengths=lengths,
+            normalization_scale=float(normalization.get("scale", 1.0)),
+            config=adjacent_config,
+        )
 
         diffusion_loss.backward(retain_graph=True)
         diffusion_norm = _grad_norm(parameters)
+        diffusion_grad = _grad_vector(parameters)
         model.zero_grad(set_to_none=True)
-        auxiliary.loss.backward()
+        auxiliary.loss.backward(retain_graph=True)
         auxiliary_norm = _grad_norm(parameters)
+        auxiliary_grad = _grad_vector(parameters)
+        model.zero_grad(set_to_none=True)
+        adjacent.loss.backward()
+        adjacent_norm = _grad_norm(parameters)
+        adjacent_grad = _grad_vector(parameters)
         model.zero_grad(set_to_none=True)
 
         base = {
@@ -154,24 +204,63 @@ def _profile_one(
             "auxiliary_loss": float(auxiliary.loss.detach().cpu()),
             "auxiliary_negative_loss": float(auxiliary.negative_loss.detach().cpu()),
             "auxiliary_rank3_loss": float(auxiliary.rank3_loss.detach().cpu()),
+            "adjacent_loss": float(adjacent.loss.detach().cpu()),
             "diffusion_grad_norm": diffusion_norm,
-            "auxiliary_grad_norm": auxiliary_norm,
-            "eligible_fraction": auxiliary.eligible_fraction,
-            "mean_subset_size": auxiliary.mean_subset_size,
-            "subset_count": auxiliary.subset_count,
+            "edm_spectral_grad_norm": auxiliary_norm,
+            "adjacent_grad_norm": adjacent_norm,
+            "cosine_diffusion_edm": _cosine(diffusion_grad, auxiliary_grad),
+            "cosine_diffusion_adjacent": _cosine(diffusion_grad, adjacent_grad),
+            "cosine_edm_adjacent": _cosine(auxiliary_grad, adjacent_grad),
+            "edm_eligible_fraction": auxiliary.eligible_fraction,
+            "edm_mean_subset_size": auxiliary.mean_subset_size,
+            "edm_subset_count": auxiliary.subset_count,
+            "adjacent_eligible_fraction": adjacent.eligible_fraction,
+            "adjacent_eligible_pair_count": adjacent.eligible_pair_count,
         }
-        for weight in candidate_weights:
-            row = dict(base)
-            row["candidate_weight"] = float(weight)
-            row["weighted_aux_to_diffusion_grad_ratio"] = (
-                float(weight) * auxiliary_norm / diffusion_norm if diffusion_norm > 0.0 else float("nan")
+        for edm_weight in candidate_weights:
+            weighted_edm_grad = float(edm_weight) * auxiliary_grad
+            weighted_edm_ratio = (
+                float(weighted_edm_grad.norm()) / diffusion_norm if diffusion_norm > 0.0 else float("nan")
             )
-            rows.append(row)
+            for adjacent_weight in candidate_adjacent_weights:
+                weighted_adjacent_grad = float(adjacent_weight) * adjacent_grad
+                total_auxiliary_grad = weighted_edm_grad + weighted_adjacent_grad
+                row = dict(base)
+                row["candidate_edm_weight"] = float(edm_weight)
+                row["candidate_adjacent_weight"] = float(adjacent_weight)
+                row["weighted_edm_to_diffusion_grad_ratio"] = weighted_edm_ratio
+                row["weighted_adjacent_to_diffusion_grad_ratio"] = (
+                    float(weighted_adjacent_grad.norm()) / diffusion_norm if diffusion_norm > 0.0 else float("nan")
+                )
+                row["weighted_total_auxiliary_to_diffusion_grad_ratio"] = (
+                    float(total_auxiliary_grad.norm()) / diffusion_norm if diffusion_norm > 0.0 else float("nan")
+                )
+                rows.append(row)
+    reference_edm_weight = float(
+        config.get("physical_auxiliary_loss_weight", candidate_weights[0] if candidate_weights else 0.0)
+    )
     ratios_by_weight: dict[str, dict[str, float]] = {}
-    for weight in candidate_weights:
-        ratios = [row["weighted_aux_to_diffusion_grad_ratio"] for row in rows if row["candidate_weight"] == weight]
+    for weight in candidate_adjacent_weights:
+        ratios = [
+            row["weighted_adjacent_to_diffusion_grad_ratio"]
+            for row in rows
+            if row["candidate_adjacent_weight"] == weight and row["candidate_edm_weight"] == reference_edm_weight
+        ]
         finite = np.asarray([ratio for ratio in ratios if np.isfinite(ratio)], dtype=np.float64)
         ratios_by_weight[str(weight)] = {
+            "median": float(np.median(finite)) if finite.size else float("nan"),
+            "p90": float(np.percentile(finite, 90)) if finite.size else float("nan"),
+            "max": float(np.max(finite)) if finite.size else float("nan"),
+        }
+    total_ratios_by_adjacent_weight: dict[str, dict[str, float]] = {}
+    for weight in candidate_adjacent_weights:
+        ratios = [
+            row["weighted_total_auxiliary_to_diffusion_grad_ratio"]
+            for row in rows
+            if row["candidate_adjacent_weight"] == weight and row["candidate_edm_weight"] == reference_edm_weight
+        ]
+        finite = np.asarray([ratio for ratio in ratios if np.isfinite(ratio)], dtype=np.float64)
+        total_ratios_by_adjacent_weight[str(weight)] = {
             "median": float(np.median(finite)) if finite.size else float("nan"),
             "p90": float(np.percentile(finite, 90)) if finite.size else float("nan"),
             "max": float(np.max(finite)) if finite.size else float("nan"),
@@ -179,11 +268,17 @@ def _profile_one(
     return {
         "checkpoint": checkpoint_info,
         "max_batches": max_batches,
+        "min_length_filter": min_length,
+        "max_length_filter": max_length,
         "subset_size": subset_size,
         "subsets_per_sample": subsets_per_sample,
+        "adjacent_beta_angstrom": adjacent_beta_angstrom,
         "candidate_weights": candidate_weights,
+        "candidate_edm_weights": candidate_weights,
+        "candidate_adjacent_weights": candidate_adjacent_weights,
         "rows": rows,
-        "ratios_by_weight": ratios_by_weight,
+        "adjacent_ratios_by_weight": ratios_by_weight,
+        "total_auxiliary_ratios_by_adjacent_weight": total_ratios_by_adjacent_weight,
     }
 
 
@@ -196,6 +291,10 @@ def main() -> None:
     parser.add_argument("--subset-size", type=int, default=64)
     parser.add_argument("--subsets-per-sample", type=int, default=1)
     parser.add_argument("--candidate-weights", default="0.001,0.003,0.01,0.03,0.1")
+    parser.add_argument("--candidate-adjacent-weights", default="0.001,0.003,0.01,0.03,0.1")
+    parser.add_argument("--adjacent-beta-angstrom", type=float, default=0.25)
+    parser.add_argument("--min-length", type=int, default=None)
+    parser.add_argument("--max-length", type=int, default=None)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     args = parser.parse_args()
 
@@ -204,15 +303,20 @@ def main() -> None:
     config["device"] = args.device
     device = torch.device(args.device)
     candidate_weights = [float(item) for item in args.candidate_weights.split(",") if item.strip()]
+    candidate_adjacent_weights = [float(item) for item in args.candidate_adjacent_weights.split(",") if item.strip()]
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     result = _profile_one(
         config=config,
         checkpoint=Path(args.checkpoint) if args.checkpoint else None,
         candidate_weights=candidate_weights,
+        candidate_adjacent_weights=candidate_adjacent_weights,
         max_batches=int(args.max_batches),
         subset_size=int(args.subset_size),
         subsets_per_sample=int(args.subsets_per_sample),
+        adjacent_beta_angstrom=float(args.adjacent_beta_angstrom),
+        min_length=args.min_length,
+        max_length=args.max_length,
         device=device,
     )
     output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
