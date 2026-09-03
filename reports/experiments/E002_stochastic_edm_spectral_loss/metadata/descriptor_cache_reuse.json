@@ -1,0 +1,9 @@
+{
+  "source_experiment": "E001_symmetric_axial_attention",
+  "target_experiment": "E002_stochastic_edm_spectral_loss",
+  "source_path": "reports/experiments/E001_symmetric_axial_attention/state/training_descriptors.parquet",
+  "target_path": "reports/experiments/E002_stochastic_edm_spectral_loss/state/training_descriptors.parquet",
+  "sha256": "ad738db4085c42ff44f91a62d023d26e3416f548faa2d2d17090ef6434f8f865",
+  "source_rows": 270785,
+  "reason": "The training descriptor cache is model-independent and was reused because E001 and E002 use the identical training manifest, normalization, descriptor implementation, contact threshold, triangle protocol, and master seed."
+}

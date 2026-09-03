@@ -24,7 +24,7 @@ sys.modules[SPEC.name] = compare
 SPEC.loader.exec_module(compare)
 
 
-def _protocol(counts: dict[int, int]) -> dict:
+def _protocol(counts: dict[int, int], *, checkpoint_epoch: int = 0, checkpoint_optimizer_step: int = 1) -> dict:
     seeds = {str(length): [1000 + length + index for index in range(count)] for length, count in sorted(counts.items())}
     return {
         "lengths": sorted(counts),
@@ -42,8 +42,8 @@ def _protocol(counts: dict[int, int]) -> dict:
         "reference_manifest_sha256": "ref",
         "checkpoint_path": "checkpoint.pt",
         "checkpoint_sha256": "ckpt",
-        "checkpoint_epoch": 0,
-        "checkpoint_optimizer_step": 1,
+        "checkpoint_epoch": checkpoint_epoch,
+        "checkpoint_optimizer_step": checkpoint_optimizer_step,
         "status": "completed",
     }
 
@@ -84,10 +84,25 @@ def _validity_rows(counts: dict[int, int], *, candidate: bool = False) -> list[d
     return rows
 
 
-def _write_experiment(root: Path, counts: dict[int, int], *, candidate: bool = False) -> None:
+def _write_experiment(
+    root: Path,
+    counts: dict[int, int],
+    *,
+    candidate: bool = False,
+    checkpoint_epoch: int = 0,
+    checkpoint_optimizer_step: int = 1,
+) -> None:
     metrics = root / "metrics"
     metrics.mkdir(parents=True)
-    (root / "protocol.json").write_text(json.dumps(_protocol(counts)))
+    (root / "protocol.json").write_text(
+        json.dumps(
+            _protocol(
+                counts,
+                checkpoint_epoch=checkpoint_epoch,
+                checkpoint_optimizer_step=checkpoint_optimizer_step,
+            )
+        )
+    )
     (root / "calibrated_analysis_protocol.json").write_text(json.dumps(_calibrated_protocol(counts)))
     (metrics / "calibrated_summary.json").write_text(
         json.dumps(
@@ -269,3 +284,51 @@ def test_input_hash_preservation_report_and_figure_creation(tmp_path: Path, monk
     assert (output_dir / "paired_validity_per_sample.parquet").exists()
     assert (output_dir / "E001_VS_E000_REPORT.md").exists()
     assert len(list((output_dir / "figures").glob("*.png"))) == 8
+
+
+def test_arbitrary_labels_drive_selected_model_interpretation_and_report_name(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Comparison caveats and report filenames use CLI labels and checkpoint metadata."""
+    counts = {64: 2, 128: 1}
+    baseline_dir = tmp_path / "baseline"
+    candidate_dir = tmp_path / "candidate"
+    output_dir = tmp_path / "out"
+    _write_experiment(baseline_dir, counts, checkpoint_epoch=3, checkpoint_optimizer_step=160166)
+    _write_experiment(
+        candidate_dir,
+        counts,
+        candidate=True,
+        checkpoint_epoch=4,
+        checkpoint_optimizer_step=169181,
+    )
+    monkeypatch.setattr(compare, "EXPECTED_COUNTS", counts)
+
+    summary = compare.run_comparison(
+        argparse.Namespace(
+            baseline_dir=baseline_dir,
+            candidate_dir=candidate_dir,
+            output_dir=output_dir,
+            baseline_label="E001",
+            candidate_label="E002",
+            bootstrap_iterations=100,
+            seed=8000,
+            plots=False,
+            restart=True,
+            resume=True,
+        )
+    )
+
+    expected = (
+        "Selected-model comparison: E001 epoch 4/global step 160166 versus "
+        "E002 epoch 5/global step 169181. Selected epochs, optimizer steps, and training histories differ, "
+        "so this is not a perfectly controlled causal auxiliary-loss ablation."
+    )
+    assert summary["interpretation_constraint"] == expected
+    report = output_dir / "E002_VS_E001_REPORT.md"
+    assert report.exists()
+    text = report.read_text()
+    assert expected in text
+    assert "E000 epoch 8" not in text
+    assert "E001 epoch 4 at global_step 160166" not in text

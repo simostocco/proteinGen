@@ -101,12 +101,12 @@ decoder block. Physical auxiliary losses come after the attention ablations.
 
 ## E000 Finalized Results
 
-Final calibrated analysis completed at `2026-08-31T06:55:24.198454+00:00`.
+Final calibrated analysis completed at `2026-09-03T11:42:59.388298+00:00`.
 
 - Generated samples: 375
 - Real controls: 320
 - Empirical real-like geometry pass count: 0
-- Deprecated/permissive heuristic EDM-quality pass count: 12
+- Deprecated/permissive heuristic EDM-quality pass count: 48
 - Raw E000 inputs unchanged during finalization: True
 
 Conclusion: The current model produces numerically valid, non-duplicated, length-conditioned distance-like matrices and approximates several local distributional properties, but its generated matrices do not lie on the empirical manifold of real three-dimensional protein distance matrices. Global geometric inconsistency and excess compactness worsen with sequence length.
@@ -116,83 +116,17 @@ symmetry-preserving axial-attention block immediately above the bottleneck
 improves global geometry and scaling with `N` without reducing diversity or
 increasing training-set similarity.
 
-## E001 Calibrated Selected-Model Comparison To E000
-
-Completed on 2026-09-02 under
-`reports/experiments/E001_symmetric_axial_attention/comparison_to_E000`.
-
-### Selected Model Provenance
-
-- E000 selected checkpoint: epoch 8,
-  `outputs/recovered_full_b2_v/checkpoints/final_validation_selected.pt`
-- E000 checkpoint SHA-256:
-  `8a9da579153612556f568716b4ce5eaaa5fc3f036f82555497901f2ab7599cf8`
-- E001 selected checkpoint: epoch 4, global_step 160166,
-  `outputs/recovered_full_b2_v_axial_e001_epoch1/checkpoints/final_validation_selected.pt`
-- E001 checkpoint SHA-256:
-  `e6ddc698738718a0a73c5c4a3cbded23601990c107118ec3e1c99a185b58700a`
-- E001 epoch-4 validation loss: 0.0184613932
-- E001 epoch-5 validation loss: 0.0187884234
-- E001 final checkpoint global_step: 194002
-
-The E001 selected checkpoint reflects the previously documented mid-epoch
-resume/replay caveat. The selected-model comparison is therefore not a perfectly
-controlled causal architecture ablation. The earlier step-2000 comparison used
-matched optimization steps but only two samples per length and remains
-exploratory screening rather than formal statistical evidence.
-
-### Ensemble And Comparison
-
-- E001 complete ensemble: 375 generated samples and 320 real controls
-- E001 requested-length counts: N=64: 100, N=128: 100, N=256: 100,
-  N=384: 50, N=500: 25
-- E001 generation/evaluation protocol runtime: 9,754.049385 seconds
-- E001 calibrated-finalization runtime: 17.806966543197632 seconds
-- Comparison paired samples: 375 exact pairs by requested length, sample index,
-  and seed
-- Comparison bootstrap: deterministic length-stratified paired bootstrap,
-  2,000 iterations, seed 8000
-- Input hashes preserved: true
-
-Primary lower-is-better paired effects, defined as E000 minus E001:
-
-| Metric | Mean improvement | 95% CI |
-| --- | ---: | ---: |
-| triangle_violation_fraction | 0.0037239583333333335 | [0.0030468424479166666, 0.004445377604166666] |
-| negative_eigenvalue_mass_fraction | 0.03555181422234015 | [0.03379576492521358, 0.03726582691123128] |
-| rank3_residual_energy_fraction | 0.03479467005340526 | [0.03128290943186638, 0.03845387632871159] |
-| classical_mds_stress | 0.019002312775985533 | [0.016046398411326216, 0.021792401833207808] |
-| adjacent_residue_distance_rmse | 0.07468501927806964 | [0.06101909166309191, 0.08915228026826212] |
-
-Strict empirical real-like geometry remained 0/375 for both E000 and E001.
-Heuristic EDM-quality transitions were 319 fail/fail, 44 E000-fail/E001-pass,
-2 E000-pass/E001-fail, and 10 pass/pass, increasing the pass fraction from
-0.032 to 0.144.
-
-Calibrated comparison conclusion: E001 improves several selected-model global
-geometry diagnostics and increases heuristic EDM-quality passes without evidence
-of diversity collapse or exact-duplicate novelty failure. However, E001 still
-does not reach the empirical 3D distance-matrix manifold under strict calibrated
-criteria. The next justified intervention is a bounded physical auxiliary-loss
-experiment evaluated against E000 and E001 under the same protocol.
-
 ## E002 Stochastic EDM Spectral Auxiliary Loss
 
-Status: step-2000 CUDA preflight completed successfully; full epoch training
-not yet started.
+Status: full training, calibrated evaluation, and 375-sample paired
+E001-versus-E002 comparison completed.
 
 E002 preserves the E001 architecture, recovered full-data splits,
-normalization, batch size, gradient accumulation, optimizer, diffusion schedule,
-and v-parameterization. The only planned experimental intervention is a
-stochastic spectral auxiliary loss on deterministic principal submatrices of
-the reconstructed physical `x0_hat` distance map.
-
-The design and prior-art boundary are documented in
-`reports/experiments/E002_stochastic_edm_spectral_loss/DESIGN.md`. The
-validated preflight config is `configs/train_recovered_full_v_axial_edm_e002.yaml`.
-The clean full-run config is
-`configs/train_recovered_full_v_axial_edm_e002_full.yaml`, with definitive output
-directory `outputs/recovered_full_b2_v_axial_edm_e002`.
+normalization, batch size 2, gradient accumulation 4, optimizer, diffusion
+schedule, mixed precision `float16`, and v-parameterization. The experimental
+intervention is only the stochastic EDM spectral auxiliary loss: weight `0.01`,
+500-step warmup, global subset size 64, one subset per sample, negative and
+rank3 component weights 1.0, and physical auxiliary seed 2002.
 
 CUDA gradient calibration at auxiliary weight `0.01` gave a median
 auxiliary/diffusion gradient ratio of `0.0553471` on general full-data batches
@@ -206,28 +140,42 @@ accumulation 4, 10 optimizer steps plus resume to step 11. Peak allocated memory
 was approximately 4.13 GiB, with zero AMP overflows, zero skipped updates, and
 checkpoint resume passed.
 
-The full-data preflight ran 2000 optimizer steps plus resume to step 2001 with
-auxiliary weight `0.01`, 500-step warmup, subset size 64, and one subset per
-sample. Peak allocated memory was approximately 4.10 GiB. There were 2 early AMP
-overflows, final AMP scale was 16384, final consecutive overflows were 0, no
-non-finite losses occurred, and checkpoint serialization/resume passed.
+The full-data preflight ran 2000 optimizer steps plus resume to step 2001. Peak
+allocated memory was approximately 4.10 GiB. There were 2 early AMP overflows,
+final AMP scale was 16384, final consecutive overflows were 0, no non-finite
+losses occurred, and checkpoint serialization/resume passed.
 
-Median first-to-last-quartile losses improved: diffusion loss `0.0578014 ->
-0.0248815`, total EDM auxiliary loss `0.329871 -> 0.0849254`,
-negative-spectrum loss `0.140084 -> 0.0298418`, rank-3 loss `0.188657 ->
-0.0518208`, and weighted auxiliary loss `0.00129356 -> 0.000849254`.
+The completed full run selected E002 epoch 5/global step 169181, SHA-256
+`2b6b9967a5de6035accad7cc1c24e379743459531c641727221541fde9aa669f`, with best
+validation loss `0.0185558852`. E001 best validation loss was `0.0184613932`.
+Training recorded 64 isolated AMP overflows, maximum consecutive overflows 1,
+and no non-finite losses. Median total auxiliary loss decreased `0.033532 ->
+0.014498`; negative component `0.007644 -> 0.002655`; rank3 component
+`0.023429 -> 0.010450`.
 
-A paired step-2000 generative screen used 10 exactly paired samples at lengths
-64, 128, 256, 384, and 500, with two samples per length and identical sampling
-seeds between E001 and E002. Rank-3 residual improved in 10/10 samples with mean
-improvement `0.0370193`; negative eigenvalue mass improved in 7/10 with mean
-improvement `0.00078317`. Triangle violation fraction worsened in 10/10, and
-negative-distance fraction worsened or remained tied. Reconstruction diagnostics
-generally improved, especially at `t=499`, where x0 RMSE improved from
-`12.184747` to `11.810533` Angstrom and negative reconstructed fraction improved
-from `0.002038` to `0.000924`.
+The corrected selected-model comparison is E001 epoch 4/global step 160166
+versus E002 epoch 5/global step 169181. Selected epochs, optimizer steps, and
+training histories differ, so this is not a perfectly controlled causal
+auxiliary-loss ablation. On 375 exactly paired generated samples, E002 improved
+negative eigenvalue mass by `0.00473265` (95% bootstrap CI `[0.00359787,
+0.00582859]`, 68.8% improved), rank3 residual by `0.00676679` (`[0.00427944,
+0.00915147]`, 65.07% improved), and classical MDS stress by `0.00381575`
+(`[0.00172839, 0.00587892]`, 60.53% improved). Adjacent-residue RMSE degraded by
+`-0.02684371` (`[-0.03430045, -0.01979658]`, 35.47% improved). Triangle
+violation fraction changed by `-0.00026823` (`[-0.00056901, 0.00001563]`,
+40.53% improved); because the interval includes zero, this is not described as
+a conclusive regression.
 
-Scientific decision: E002 shows a successful targeted rank-3 effect, but strict
-EDM validity has not yet been achieved. Keep E002 spectral-only for causal
-attribution, and run one complete epoch from scratch before considering triangle
-or non-negativity terms.
+Strict empirical real-like geometry remained 0/375 for both E001 and E002.
+Heuristic validity changed from 14.4% to 12.8%, with McNemar `p=0.30746`, not
+statistically significant. E001 training descriptors were reused because they
+are model-independent and the manifest, normalization, descriptor implementation,
+and evaluation protocol were identical; descriptor SHA-256:
+`ad738db4085c42ff44f91a62d023d26e3416f548faa2d2d17090ef6434f8f865`.
+
+Scientific conclusion: E002 confirms that stochastic spectral EDM
+regularization improves global low-dimensional embeddability, negative-spectrum
+consistency, and MDS stress. It does not achieve strict empirical protein
+geometry and introduces a statistically supported degradation in local
+adjacent-residue geometry. Retain E002 as a positive partial experiment, not as
+the final model. Do not claim that E002 produces physically valid proteins.

@@ -3,8 +3,9 @@
 ## Status
 
 Implemented as a disabled-by-default training component. CUDA gradient
-calibration, worst-case stress, and the step-2000 full-data preflight have
-completed successfully. Full epoch training has not yet started.
+calibration, worst-case stress, the step-2000 full-data preflight, full E002
+training, calibrated evaluation, and the 375-sample paired E001-versus-E002
+comparison have completed.
 
 ## Baseline To Preserve
 
@@ -229,3 +230,59 @@ Scientific decision:
   non-negativity terms;
 - do not fold triangle, non-negativity, projection, contact, or radius losses
   into E002.
+
+## Completed E002 Results
+
+Selected E002 checkpoint: epoch 5/global step 169181, SHA-256
+`2b6b9967a5de6035accad7cc1c24e379743459531c641727221541fde9aa669f`.
+Best validation loss was `0.0185558852`; E001 best validation loss was
+`0.0184613932`. Training recorded 64 isolated AMP overflows, maximum consecutive
+overflows 1, and no non-finite losses.
+
+Auxiliary-loss evolution from first to last quartile:
+
+| Quantity | First quartile median | Last quartile median |
+| --- | ---: | ---: |
+| Total auxiliary loss | 0.033532 | 0.014498 |
+| Negative component | 0.007644 | 0.002655 |
+| Rank3 component | 0.023429 | 0.010450 |
+
+The 375-sample paired comparison uses E001 as baseline and E002 as candidate:
+E001 epoch 4/global step 160166 versus E002 epoch 5/global step 169181.
+Selected epochs, optimizer steps, and training histories differ, so this is not
+a perfectly controlled causal auxiliary-loss ablation.
+
+Overall paired effects:
+
+| Metric | E001 mean | E002 mean | Mean improvement | 95% bootstrap CI | Improved pairs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Negative eigenvalue mass | 0.09742895 | 0.09269630 | 0.00473265 | [0.00359787, 0.00582859] | 68.8% |
+| Rank3 residual | 0.15445108 | 0.14768429 | 0.00676679 | [0.00427944, 0.00915147] | 65.07% |
+| Classical MDS stress | 0.07592901 | 0.07211326 | 0.00381575 | [0.00172839, 0.00587892] | 60.53% |
+| Adjacent-residue RMSE | 0.25242906 | 0.27927277 | -0.02684371 | [-0.03430045, -0.01979658] | 35.47% |
+| Triangle violations | 0.00192448 | 0.00219271 | -0.00026823 | [-0.00056901, 0.00001563] | 40.53% |
+
+The triangle-violation interval includes zero, so this is not described as a
+conclusive regression. The adjacent-residue RMSE interval is entirely negative,
+so local adjacent-residue geometry is a statistically supported degradation.
+
+Validity:
+
+- strict empirical real-like geometry remains 0/375 for both models;
+- heuristic pass fraction changes from 14.4% to 12.8%;
+- McNemar `p=0.30746`, not statistically significant.
+
+Descriptor-cache reuse:
+
+- E001 training descriptors were reused because they are model-independent and
+  the manifest, normalization, descriptor implementation, and evaluation
+  protocol were identical;
+- descriptor SHA-256:
+  `ad738db4085c42ff44f91a62d023d26e3416f548faa2d2d17090ef6434f8f865`.
+
+Final interpretation: E002 confirms that stochastic spectral EDM regularization
+improves global low-dimensional embeddability, negative-spectrum consistency,
+and MDS stress. It does not achieve strict empirical protein geometry and
+introduces a statistically supported degradation in local adjacent-residue
+geometry. Retain E002 as a positive partial experiment, not as the final model.
+Do not claim that E002 produces physically valid proteins.

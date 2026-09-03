@@ -1,0 +1,113 @@
+{
+  "baseline_checkpoint": {
+    "epoch": 3,
+    "optimizer_step": 160166,
+    "path": "outputs/recovered_full_b2_v_axial_e001_epoch1/checkpoints/final_validation_selected.pt",
+    "sha256": "e6ddc698738718a0a73c5c4a3cbded23601990c107118ec3e1c99a185b58700a"
+  },
+  "candidate_checkpoint": {
+    "epoch": 4,
+    "optimizer_step": 169181,
+    "path": "outputs/recovered_full_b2_v_axial_edm_e002/checkpoints/final_validation_selected.pt",
+    "sha256": "2b6b9967a5de6035accad7cc1c24e379743459531c641727221541fde9aa669f"
+  },
+  "heuristic_validity_overall": {
+    "baseline_fail_candidate_fail": 312,
+    "baseline_fail_candidate_pass": 9,
+    "baseline_pass_candidate_fail": 15,
+    "baseline_pass_candidate_pass": 39,
+    "baseline_pass_fraction": 0.144,
+    "candidate_pass_fraction": 0.128,
+    "discordant_baseline_better": 15,
+    "discordant_candidate_better": 9,
+    "flag": "heuristic_edm_quality_pass",
+    "group": "overall",
+    "mcnemar_exact_p_value": 0.30745625495910645,
+    "mcnemar_exact_p_value_bh": 0.4099416732788086,
+    "requested_length": NaN
+  },
+  "input_hashes_preserved": true,
+  "interpretation_constraint": "Selected-model comparison: E001 epoch 4/global step 160166 versus E002 epoch 5/global step 169181. Selected epochs, optimizer steps, and training histories differ, so this is not a perfectly controlled causal auxiliary-loss ablation.",
+  "paired_counts_by_length": {
+    "128": 100,
+    "256": 100,
+    "384": 50,
+    "500": 25,
+    "64": 100
+  },
+  "paired_sample_count": 375,
+  "primary_findings": {
+    "adjacent_residue_distance_rmse": {
+      "baseline_mean": 0.2524290629883402,
+      "bootstrap_ci": [
+        -0.03430044863558826,
+        -0.01979658044117325
+      ],
+      "candidate_mean": 0.27927277439240433,
+      "effect_size": -0.3631501957452775,
+      "fraction_improved": 0.3546666666666667,
+      "mean_improvement": -0.026843711404064014
+    },
+    "classical_mds_stress": {
+      "baseline_mean": 0.07592900966124509,
+      "bootstrap_ci": [
+        0.0017283938138251275,
+        0.005878916236410917
+      ],
+      "candidate_mean": 0.07211326259446629,
+      "effect_size": 0.1875240128108485,
+      "fraction_improved": 0.6053333333333333,
+      "mean_improvement": 0.003815747066778823
+    },
+    "negative_eigenvalue_mass_fraction": {
+      "baseline_mean": 0.09742894964371529,
+      "bootstrap_ci": [
+        0.0035978744153848437,
+        0.005828588729636269
+      ],
+      "candidate_mean": 0.09269630313151236,
+      "effect_size": 0.3794218954430898,
+      "fraction_improved": 0.688,
+      "mean_improvement": 0.004732646512202906
+    },
+    "rank3_residual_energy_fraction": {
+      "baseline_mean": 0.15445107835495991,
+      "bootstrap_ci": [
+        0.004279436524805996,
+        0.009151474759864582
+      ],
+      "candidate_mean": 0.14768428771472178,
+      "effect_size": 0.28259919840515574,
+      "fraction_improved": 0.6506666666666666,
+      "mean_improvement": 0.006766790640238142
+    },
+    "triangle_violation_fraction": {
+      "baseline_mean": 0.0019244791666666666,
+      "bootstrap_ci": [
+        -0.0005690104166666667,
+        1.5625e-05
+      ],
+      "candidate_mean": 0.0021927083333333334,
+      "effect_size": -0.0898152121626655,
+      "fraction_improved": 0.4053333333333333,
+      "mean_improvement": -0.00026822916666666667
+    }
+  },
+  "protocol_compatible": true,
+  "runtime_seconds": 0.9994473457336426,
+  "strict_validity_overall": {
+    "baseline_fail_candidate_fail": 375,
+    "baseline_fail_candidate_pass": 0,
+    "baseline_pass_candidate_fail": 0,
+    "baseline_pass_candidate_pass": 0,
+    "baseline_pass_fraction": 0.0,
+    "candidate_pass_fraction": 0.0,
+    "discordant_baseline_better": 0,
+    "discordant_candidate_better": 0,
+    "flag": "empirical_real_like_geometry_pass",
+    "group": "overall",
+    "mcnemar_exact_p_value": NaN,
+    "mcnemar_exact_p_value_bh": NaN,
+    "requested_length": NaN
+  }
+}

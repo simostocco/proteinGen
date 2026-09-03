@@ -508,6 +508,37 @@ def protocol_payload(
     return payload
 
 
+def report_filename(*, baseline_label: str, candidate_label: str) -> str:
+    """Return the Markdown report filename for a labeled comparison."""
+    return f"{candidate_label}_VS_{baseline_label}_REPORT.md"
+
+
+def _human_checkpoint_epoch(checkpoint: dict[str, Any]) -> int | None:
+    epoch = checkpoint.get("epoch")
+    if epoch is None:
+        return None
+    return int(epoch) + 1
+
+
+def _checkpoint_description(label: str, checkpoint: dict[str, Any]) -> str:
+    epoch = _human_checkpoint_epoch(checkpoint)
+    step = checkpoint.get("optimizer_step")
+    epoch_text = f"epoch {epoch}" if epoch is not None else "epoch unknown"
+    step_text = f"global step {int(step)}" if step is not None else "global step unknown"
+    return f"{label} {epoch_text}/{step_text}"
+
+
+def selected_model_interpretation_constraint(protocol: dict[str, Any]) -> str:
+    """Return a label-generic selected-checkpoint interpretation caveat."""
+    baseline = _checkpoint_description(protocol["baseline_label"], protocol["baseline_checkpoint"])
+    candidate = _checkpoint_description(protocol["candidate_label"], protocol["candidate_checkpoint"])
+    return (
+        f"Selected-model comparison: {baseline} versus {candidate}. "
+        "Selected epochs, optimizer steps, and training histories differ, so this is not a perfectly controlled "
+        "causal auxiliary-loss ablation."
+    )
+
+
 def write_csv(df: pd.DataFrame, path: Path) -> None:
     """Write CSV with stable formatting."""
     df.to_csv(path, index=False)
@@ -661,8 +692,8 @@ def make_figures(
     im = ax.imshow(summary.to_numpy(dtype=float), aspect="auto", cmap="coolwarm")
     ax.set_yticks(np.arange(len(summary.index)), summary.index.astype(str))
     ax.set_xticks(np.arange(len(summary.columns)), [col.replace("_", "\n") for col in summary.columns], rotation=0)
-    ax.set_title("Improvement Summary: Positive Means E001 Lower/Better")
-    fig.colorbar(im, ax=ax, label="E000 - E001")
+    ax.set_title(f"Improvement Summary: Positive Means {baseline_label} Lower/Better")
+    fig.colorbar(im, ax=ax, label=f"{baseline_label} - {candidate_label}")
     fig.tight_layout()
     fig.savefig(figures / "improvement_summary_directional.png", dpi=180)
     plt.close(fig)
@@ -710,17 +741,19 @@ def write_report(
     h1_large = large.groupby("metric")["mean_improvement_baseline_minus_candidate"].mean().to_dict()
     diversity_closer = int(diversity["candidate_moves_closer_to_real_ratio"].sum())
     novelty_closer = int(novelty["candidate_moves_closer_to_real_ratio"].sum())
+    baseline_label = str(protocol["baseline_label"])
+    candidate_label = str(protocol["candidate_label"])
+    interpretation_constraint = selected_model_interpretation_constraint(protocol)
     lines = [
-        "# E001 Versus E000 Calibrated Ensemble Comparison",
+        f"# {candidate_label} Versus {baseline_label} Calibrated Ensemble Comparison",
         "",
         "## Executive Conclusion",
         "",
         (
-            "This selected-model comparison finds that E001 improves several global geometry diagnostics "
-            "relative to E000, especially negative eigenvalue mass and rank-3 residual energy, while both "
-            "models still fail strict empirical real-like geometry for all 375 paired generated samples. "
-            "E001 increases heuristic EDM-quality passes and remains diverse, but the result is not a "
-            "perfect causal architecture ablation because the selected checkpoints differ in training history."
+            f"This selected-model comparison evaluates {candidate_label} relative to {baseline_label} "
+            "under the calibrated paired generated-ensemble protocol. Positive improvement means the "
+            f"{baseline_label} value is lower than the {candidate_label} value for lower-is-better metrics; "
+            "strict empirical real-like geometry and heuristic validity are reported separately."
         ),
         "",
         "## Protocol Compatibility",
@@ -733,12 +766,7 @@ def write_report(
         "",
         "## Checkpoint And Training-History Caveat",
         "",
-        (
-            "The complete ensembles compare selected models: E000 selected checkpoint epoch 8, and E001 "
-            "selected checkpoint epoch 4 at global_step 160166. This is a selected-model comparison, not a "
-            "perfectly controlled causal architecture ablation. The earlier matched-step, two-samples-per-length "
-            "comparison should be treated as exploratory screening, not formal statistical evidence."
-        ),
+        interpretation_constraint,
         "",
         "## Paired Primary Results",
         "",
@@ -758,15 +786,16 @@ def write_report(
             ]
         ),
         "",
-        "Positive improvement means E001 has the lower value for these lower-is-better metrics.",
+        f"Positive improvement means {candidate_label} has the lower value for these lower-is-better metrics.",
         "",
         "## Validity Transitions",
         "",
         markdown_table(transitions[transitions["group"] == "overall"]),
         "",
         (
-            f"Strict empirical real-like geometry remains zero-pass: E000 pass fraction "
-            f"{strict['baseline_pass_fraction']:.6g}, E001 pass fraction {strict['candidate_pass_fraction']:.6g}. "
+            f"Strict empirical real-like geometry pass fractions: {baseline_label} "
+            f"{strict['baseline_pass_fraction']:.6g}, {candidate_label} "
+            f"{strict['candidate_pass_fraction']:.6g}. "
             f"Heuristic EDM-quality pass fraction changes from {heuristic['baseline_pass_fraction']:.6g} "
             f"to {heuristic['candidate_pass_fraction']:.6g}."
         ),
@@ -811,7 +840,7 @@ def write_report(
         "## Diversity",
         "",
         (
-            f"E001 moves the generated/real diversity ratio closer to 1 for {diversity_closer}/"
+            f"{candidate_label} moves the generated/real diversity ratio closer to 1 for {diversity_closer}/"
             f"{len(diversity)} length-metric rows. Ratios below 1 are reported as reduced diversity, "
             "not by themselves as mode collapse."
         ),
@@ -821,7 +850,7 @@ def write_report(
         "## Novelty",
         "",
         (
-            f"E001 moves calibrated novelty ratios closer to the real calibration baseline for "
+            f"{candidate_label} moves calibrated novelty ratios closer to the real calibration baseline for "
             f"{novelty_closer}/{len(novelty)} rows. Larger novelty distance is not interpreted as "
             "automatically better because excessive distance can indicate out-of-distribution invalidity."
         ),
@@ -849,7 +878,7 @@ def write_report(
         "",
         "## Limitations",
         "",
-        "- This is selected-model evidence, not a perfectly controlled architecture-only ablation.",
+        f"- {interpretation_constraint}",
         "- The matched-step comparison had only two samples per length and remains exploratory screening.",
         "- Existing calibrated outputs are reused; no ensemble evaluation was rerun.",
         "- Approximate nearest-neighbour novelty remains approximate.",
@@ -858,10 +887,9 @@ def write_report(
         "## Decision For Next Experiment",
         "",
         (
-            "E001 provides enough execution and selected-model quality evidence to proceed, but it still does "
-            "not reach the empirical 3D distance-matrix manifold. The next scientifically justified intervention "
-            "is a bounded physical auxiliary-loss experiment under the same calibrated evaluation protocol, "
-            "while retaining E000 and E001 as explicit baselines."
+            f"{candidate_label} should be interpreted against {baseline_label} using the paired metrics above. "
+            "Any next experiment should be justified from the full pattern of global geometry, local geometry, "
+            "validity, diversity, and novelty diagnostics rather than a single scalar."
         ),
     ]
     path.write_text("\n".join(lines) + "\n")
@@ -945,10 +973,7 @@ def run_comparison(args: argparse.Namespace) -> dict[str, Any]:
         .to_dict(),
         "baseline_checkpoint": protocol["baseline_checkpoint"],
         "candidate_checkpoint": protocol["candidate_checkpoint"],
-        "interpretation_constraint": (
-            "Selected-model comparison: E000 epoch 8 versus E001 epoch 4/global_step 160166; "
-            "not a perfectly controlled causal architecture ablation."
-        ),
+        "interpretation_constraint": selected_model_interpretation_constraint(protocol),
     }
     (output_dir / "comparison_summary.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True, default=json_default) + "\n"
@@ -963,7 +988,11 @@ def run_comparison(args: argparse.Namespace) -> dict[str, Any]:
             candidate_label=args.candidate_label,
         )
     write_report(
-        output_dir / "E001_VS_E000_REPORT.md",
+        output_dir
+        / report_filename(
+            baseline_label=args.baseline_label,
+            candidate_label=args.candidate_label,
+        ),
         protocol=protocol,
         by_length=by_length,
         overall=overall,

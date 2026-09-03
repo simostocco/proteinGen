@@ -1,0 +1,65 @@
+{
+  "completed_utc": "2026-09-03T11:41:12.335298+00:00",
+  "diversity": [
+    {
+      "contact_hamming_distance_mean": 0.08212053571428571,
+      "contact_jaccard_distance_mean": 0.6828236975059161,
+      "descriptor_distance_mean": 4.523131490318717,
+      "distance_map_rmse_mean": 0.5442939649520058,
+      "length": 64,
+      "pair_count": 1000
+    },
+    {
+      "contact_hamming_distance_mean": 0.04585605314960629,
+      "contact_jaccard_distance_mean": 0.744724549060863,
+      "descriptor_distance_mean": 5.577987944527035,
+      "distance_map_rmse_mean": 0.5768861501624293,
+      "length": 128,
+      "pair_count": 1000
+    },
+    {
+      "contact_hamming_distance_mean": 0.02430484068627451,
+      "contact_jaccard_distance_mean": 0.7800253041023086,
+      "descriptor_distance_mean": 4.969881938313621,
+      "distance_map_rmse_mean": 0.5137060518966374,
+      "length": 256,
+      "pair_count": 1000
+    },
+    {
+      "contact_hamming_distance_mean": 0.014324874891209748,
+      "contact_jaccard_distance_mean": 0.7138738196989759,
+      "descriptor_distance_mean": 4.265990462561696,
+      "distance_map_rmse_mean": 0.47457448642978967,
+      "length": 384,
+      "pair_count": 1000
+    },
+    {
+      "contact_hamming_distance_mean": 0.010899291917167668,
+      "contact_jaccard_distance_mean": 0.7082455040094534,
+      "descriptor_distance_mean": 4.636258716725561,
+      "distance_map_rmse_mean": 0.469927976307869,
+      "length": 500,
+      "pair_count": 300
+    }
+  ],
+  "generated_sample_count": 375,
+  "lengths": [
+    64,
+    128,
+    256,
+    384,
+    500
+  ],
+  "novelty": {
+    "approximate": true,
+    "generated_nearest_descriptor_distance_mean": 1.019022111133791,
+    "real_calibration_nearest_descriptor_distance_mean": 1.3050652633633775
+  },
+  "real_control_count": 320,
+  "validity": {
+    "chain_like_fraction": 1.0,
+    "edm_compatible_fraction": 0.128,
+    "numerically_valid_fraction": 1.0,
+    "protein_like_diagnostic_fraction": 0.128
+  }
+}
