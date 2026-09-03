@@ -175,3 +175,59 @@ of diversity collapse or exact-duplicate novelty failure. However, E001 still
 does not reach the empirical 3D distance-matrix manifold under strict calibrated
 criteria. The next justified intervention is a bounded physical auxiliary-loss
 experiment evaluated against E000 and E001 under the same protocol.
+
+## E002 Stochastic EDM Spectral Auxiliary Loss
+
+Status: step-2000 CUDA preflight completed successfully; full epoch training
+not yet started.
+
+E002 preserves the E001 architecture, recovered full-data splits,
+normalization, batch size, gradient accumulation, optimizer, diffusion schedule,
+and v-parameterization. The only planned experimental intervention is a
+stochastic spectral auxiliary loss on deterministic principal submatrices of
+the reconstructed physical `x0_hat` distance map.
+
+The design and prior-art boundary are documented in
+`reports/experiments/E002_stochastic_edm_spectral_loss/DESIGN.md`. The
+validated preflight config is `configs/train_recovered_full_v_axial_edm_e002.yaml`.
+The clean full-run config is
+`configs/train_recovered_full_v_axial_edm_e002_full.yaml`, with definitive output
+directory `outputs/recovered_full_b2_v_axial_edm_e002`.
+
+CUDA gradient calibration at auxiliary weight `0.01` gave a median
+auxiliary/diffusion gradient ratio of `0.0553471` on general full-data batches
+(`p90=0.162501`, `max=0.183165`). On worst-case N=495-500 batches, the median
+ratio was lower at `0.0166878` (`p90=0.0431464`, `max=0.0627834`). That lower
+long-chain signal is a documented limitation of using one fixed-size 64-residue
+subset, not something corrected inside E002.
+
+Worst-case CUDA stress covered lengths 495-500 with batch size 2, gradient
+accumulation 4, 10 optimizer steps plus resume to step 11. Peak allocated memory
+was approximately 4.13 GiB, with zero AMP overflows, zero skipped updates, and
+checkpoint resume passed.
+
+The full-data preflight ran 2000 optimizer steps plus resume to step 2001 with
+auxiliary weight `0.01`, 500-step warmup, subset size 64, and one subset per
+sample. Peak allocated memory was approximately 4.10 GiB. There were 2 early AMP
+overflows, final AMP scale was 16384, final consecutive overflows were 0, no
+non-finite losses occurred, and checkpoint serialization/resume passed.
+
+Median first-to-last-quartile losses improved: diffusion loss `0.0578014 ->
+0.0248815`, total EDM auxiliary loss `0.329871 -> 0.0849254`,
+negative-spectrum loss `0.140084 -> 0.0298418`, rank-3 loss `0.188657 ->
+0.0518208`, and weighted auxiliary loss `0.00129356 -> 0.000849254`.
+
+A paired step-2000 generative screen used 10 exactly paired samples at lengths
+64, 128, 256, 384, and 500, with two samples per length and identical sampling
+seeds between E001 and E002. Rank-3 residual improved in 10/10 samples with mean
+improvement `0.0370193`; negative eigenvalue mass improved in 7/10 with mean
+improvement `0.00078317`. Triangle violation fraction worsened in 10/10, and
+negative-distance fraction worsened or remained tied. Reconstruction diagnostics
+generally improved, especially at `t=499`, where x0 RMSE improved from
+`12.184747` to `11.810533` Angstrom and negative reconstructed fraction improved
+from `0.002038` to `0.000924`.
+
+Scientific decision: E002 shows a successful targeted rank-3 effect, but strict
+EDM validity has not yet been achieved. Keep E002 spectral-only for causal
+attribution, and run one complete epoch from scratch before considering triangle
+or non-negativity terms.

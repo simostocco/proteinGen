@@ -33,6 +33,11 @@ from protein_distance_diffusion.models.unet import DistanceUNet
 from protein_distance_diffusion.training.checkpointing import load_checkpoint, save_checkpoint
 from protein_distance_diffusion.training.ema import EMA
 from protein_distance_diffusion.training.logging import JsonlLogger
+from protein_distance_diffusion.training.physical_auxiliary import (
+    physical_auxiliary_config_from_mapping,
+    physical_auxiliary_weight,
+    stochastic_edm_spectral_loss,
+)
 from protein_distance_diffusion.utils.hashing import sha256_file
 from protein_distance_diffusion.utils.reproducibility import collect_runtime_versions, seed_everything
 
@@ -472,6 +477,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
     prediction_type = prediction_parameterization_from_config(config)
     config["prediction_parameterization"] = prediction_type.value
     config["prediction_type"] = prediction_type.value
+    auxiliary_config = physical_auxiliary_config_from_mapping(config)
     _patch_torch_pytree_compatibility()
     opt = torch.optim.AdamW(model.parameters(), lr=float(config.get("learning_rate", 1e-4)))
     ema = EMA(model, decay=float(config.get("ema_decay", 0.999)))
@@ -567,7 +573,35 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         target.float(), prediction.float(), pair_mask, sample_weight=sample_weight
                     )
                     unweighted_loss = per_sample_loss.mean()
-                if not torch.isfinite(loss):
+                    if auxiliary_config.enabled:
+                        x0_hat, _ = diffusion.predict_x0_epsilon_from_model_output(
+                            x_t=noisy,
+                            t=t,
+                            model_output=prediction,
+                            prediction_type=prediction_type,
+                        )
+                        auxiliary_result = stochastic_edm_spectral_loss(
+                            x0_hat_normalized=x0_hat,
+                            pair_mask=pair_mask,
+                            lengths=lengths,
+                            normalization_scale=float(normalization.get("scale", 1.0)),
+                            config=auxiliary_config,
+                            sample_ids=list(batch["sample_ids"]),
+                            optimizer_step=global_step,
+                            microbatch=batch_index,
+                        )
+                    else:
+                        auxiliary_result = stochastic_edm_spectral_loss(
+                            x0_hat_normalized=prediction.float(),
+                            pair_mask=pair_mask,
+                            lengths=lengths,
+                            normalization_scale=float(normalization.get("scale", 1.0)),
+                            config=auxiliary_config,
+                        )
+                    auxiliary_loss_weight = physical_auxiliary_weight(auxiliary_config, global_step)
+                    weighted_auxiliary_loss = auxiliary_result.loss * auxiliary_loss_weight
+                    optimization_loss = loss + weighted_auxiliary_loss
+                if not torch.isfinite(optimization_loss):
                     raise FloatingPointError(
                         "Non-finite training loss: "
                         + _training_diagnostic(
@@ -579,7 +613,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
                             old_scale=float(scaler.get_scale()) if scaler is not None else None,
                             new_scale=float(scaler.get_scale()) if scaler is not None else None,
                             grad_norm_preclip=float("nan"),
-                            loss_value=float(loss.detach().cpu()),
+                            loss_value=float(optimization_loss.detach().cpu()),
                             accumulation_window=[
                                 {
                                     "sample_ids": list(batch["sample_ids"]),
@@ -597,7 +631,7 @@ def train_from_config(config: dict[str, Any]) -> Path:
                         "timesteps": [int(x) for x in t.detach().cpu().tolist()],
                     }
                 )
-                loss_for_backward = loss / gradient_accumulation_steps
+                loss_for_backward = optimization_loss / gradient_accumulation_steps
                 if scaler is not None:
                     scaler.scale(loss_for_backward).backward()
                 else:
@@ -605,6 +639,11 @@ def train_from_config(config: dict[str, Any]) -> Path:
                 batch_size = int(clean.shape[0])
                 loss_value = float(loss.detach().cpu())
                 unweighted_loss_value = float(unweighted_loss.detach().cpu())
+                auxiliary_loss_value = float(auxiliary_result.loss.detach().cpu())
+                auxiliary_negative_value = float(auxiliary_result.negative_loss.detach().cpu())
+                auxiliary_rank3_value = float(auxiliary_result.rank3_loss.detach().cpu())
+                weighted_auxiliary_value = float(weighted_auxiliary_loss.detach().cpu())
+                optimization_loss_value = float(optimization_loss.detach().cpu())
                 running_loss += (loss_value - running_loss) / batch_index
                 epoch_loss += loss_value * batch_size
                 epoch_samples += batch_size
@@ -655,6 +694,16 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     "training_loss": loss_value,
                     "training_loss_weighted": loss_value,
                     "training_loss_unweighted": unweighted_loss_value,
+                    "diffusion_loss": loss_value,
+                    "physical_auxiliary_negative_loss": auxiliary_negative_value,
+                    "physical_auxiliary_rank3_loss": auxiliary_rank3_value,
+                    "physical_auxiliary_loss": auxiliary_loss_value,
+                    "physical_auxiliary_weight": auxiliary_loss_weight,
+                    "physical_auxiliary_weighted_loss": weighted_auxiliary_value,
+                    "physical_auxiliary_eligible_fraction": auxiliary_result.eligible_fraction,
+                    "physical_auxiliary_mean_subset_size": auxiliary_result.mean_subset_size,
+                    "physical_auxiliary_subset_count": auxiliary_result.subset_count,
+                    "optimization_loss": optimization_loss_value,
                     "running_loss": running_loss,
                     "learning_rate": lr,
                     "gradient_norm": grad_norm_preclip,
@@ -684,6 +733,23 @@ def train_from_config(config: dict[str, Any]) -> Path:
                     writer.add_scalar("train/loss_step", loss_value, global_step)
                     writer.add_scalar("train/loss_weighted", loss_value, global_step)
                     writer.add_scalar("train/loss_unweighted", unweighted_loss_value, global_step)
+                    writer.add_scalar("train/diffusion_loss", loss_value, global_step)
+                    writer.add_scalar("train/optimization_loss", optimization_loss_value, global_step)
+                    writer.add_scalar("train/physical_auxiliary_negative_loss", auxiliary_negative_value, global_step)
+                    writer.add_scalar("train/physical_auxiliary_rank3_loss", auxiliary_rank3_value, global_step)
+                    writer.add_scalar("train/physical_auxiliary_loss", auxiliary_loss_value, global_step)
+                    writer.add_scalar("train/physical_auxiliary_weight", auxiliary_loss_weight, global_step)
+                    writer.add_scalar("train/physical_auxiliary_weighted_loss", weighted_auxiliary_value, global_step)
+                    writer.add_scalar(
+                        "train/physical_auxiliary_eligible_fraction",
+                        auxiliary_result.eligible_fraction,
+                        global_step,
+                    )
+                    writer.add_scalar(
+                        "train/physical_auxiliary_mean_subset_size",
+                        auxiliary_result.mean_subset_size,
+                        global_step,
+                    )
                     writer.add_scalar("optimizer/learning_rate", lr, global_step)
                     writer.add_scalar("learning_rate", lr, global_step)
                     writer.add_scalar("optimizer/gradient_norm", grad_norm_preclip, global_step)
