@@ -298,3 +298,40 @@ loss; if it concentrates at long lengths, consider length-dependent weighting;
 if it is widespread, abandon the adjacent loss or investigate a multi-objective
 gradient method; if no systematic conflict appears, evaluate training-seed
 variability before changing the objective.
+
+## Post-E003 Gradient-Interaction Diagnostic
+
+An analysis-only diagnostic mode has been added to
+`scripts/profile_edm_auxiliary_gradients.py`. It reuses the existing E003 model
+loading, diffusion target construction, reconstructed `x0_hat`, stochastic EDM
+spectral loss, adjacent-chain loss, and separate gradient-vector extraction.
+The new mode accepts explicit fixed diffusion timesteps and stratifies
+observations by the established length bins: 20-64, 65-128, 129-192, 193-256,
+257-320, 321-384, 385-448, and 449-500.
+
+For each available length-bin/timestep/batch combination, it records:
+
+- `||g_edm|| / ||g_diff||`;
+- `||g_adj|| / ||g_diff||`;
+- `||g_edm + g_adj|| / ||g_diff||`;
+- cosine similarities for diffusion/EDM, diffusion/adjacent, EDM/adjacent, and
+  diffusion/total-auxiliary gradients;
+- raw diffusion, EDM, EDM component, adjacent, and weighted auxiliary losses;
+- EDM subset and adjacent-pair eligibility diagnostics;
+- actual sequence lengths, sample ids, fixed timestep, and deterministic seed.
+
+The diagnostic is explicitly not E004. It performs no optimizer step, EMA
+update, scheduler update, checkpoint write, diffusion sampling, preprocessing,
+splitting, or ensemble evaluation. Its purpose is to determine whether the E003
+local/global trade-off is concentrated at high-noise timesteps, long requested
+lengths, their interaction, or is broadly distributed.
+
+Conditional interpretation before E004:
+
+- conflict mainly at high-noise timesteps: investigate timestep/SNR gating;
+- conflict mainly for long proteins: investigate length-aware weighting;
+- conflict concentrated in both: investigate joint timestep-length scheduling;
+- widespread conflict: abandon the adjacent objective or study explicit
+  multi-objective gradient handling;
+- no systematic conflict: test training-seed variability before changing the
+  loss.

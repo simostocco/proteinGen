@@ -177,3 +177,28 @@ timestep/SNR-gated adjacent loss; if it concentrates at long lengths, consider
 length-dependent weighting; if it is widespread, abandon the adjacent loss or
 investigate a multi-objective gradient method; if no systematic conflict
 appears, evaluate training-seed variability before changing the objective.
+
+### Post-E003 Gradient Diagnostic Prepared
+
+An analysis-only gradient-interaction mode was added to
+`scripts/profile_edm_auxiliary_gradients.py`. It supports fixed timesteps
+`0, 50, 100, 200, 300, 400, 450, 475, 490, 499` and the established recovered
+training length bins 20-64, 65-128, 129-192, 193-256, 257-320, 321-384,
+385-448, and 449-500. The mode writes observations, grouped summaries, heatmaps,
+and a README under
+`reports/experiments/E003_adjacent_chain_geometry/gradient_interaction_diagnostic/`
+when run by the user.
+
+For each available length-bin/timestep combination, the diagnostic computes
+separate gradients for diffusion loss, weighted stochastic EDM spectral loss,
+and weighted adjacent-chain loss over the same trainable parameter set. It
+reports gradient-norm ratios, pairwise cosines, raw losses, eligibility counts,
+actual lengths, sample ids, fixed timestep, and seed. Parameters with missing
+gradients are zero-filled consistently in every objective vector.
+
+This is not E004 and does not select a new objective. It is intended to decide
+among conditional directions: timestep/SNR gating if conflict concentrates at
+high noise, length-aware weighting if conflict concentrates in long proteins,
+joint timestep-length scheduling if both concentrate, abandoning adjacent loss
+or using multi-objective gradient handling if conflict is widespread, or
+training-seed variability checks if no systematic conflict appears.
