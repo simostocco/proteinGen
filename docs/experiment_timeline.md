@@ -101,12 +101,12 @@ decoder block. Physical auxiliary losses come after the attention ablations.
 
 ## E000 Finalized Results
 
-Final calibrated analysis completed at `2026-09-03T11:42:59.388298+00:00`.
+Final calibrated analysis completed at `2026-09-04T21:52:02.550306+00:00`.
 
 - Generated samples: 375
 - Real controls: 320
 - Empirical real-like geometry pass count: 0
-- Deprecated/permissive heuristic EDM-quality pass count: 48
+- Deprecated/permissive heuristic EDM-quality pass count: 49
 - Raw E000 inputs unchanged during finalization: True
 
 Conclusion: The current model produces numerically valid, non-duplicated, length-conditioned distance-like matrices and approximates several local distributional properties, but its generated matrices do not lie on the empirical manifold of real three-dimensional protein distance matrices. Global geometric inconsistency and excess compactness worsen with sequence length.
@@ -116,127 +116,64 @@ symmetry-preserving axial-attention block immediately above the bottleneck
 improves global geometry and scaling with `N` without reducing diversity or
 increasing training-set similarity.
 
-## E002 Stochastic EDM Spectral Auxiliary Loss
+## E003 Adjacent Chain Geometry Finalized
 
-Status: full training, calibrated evaluation, and 375-sample paired
-E001-versus-E002 comparison completed.
+Status: E003 full training, calibrated evaluation, and paired E002-versus-E003
+analysis are complete. This reporting pass was documentation-only: no training,
+preprocessing, splitting, sampling, descriptor rebuilding, ensemble evaluation,
+checkpoint modification, commit, or push was performed.
 
-E002 preserves the E001 architecture, recovered full-data splits,
-normalization, batch size 2, gradient accumulation 4, optimizer, diffusion
-schedule, mixed precision `float16`, and v-parameterization. The experimental
-intervention is only the stochastic EDM spectral auxiliary loss: weight `0.01`,
-500-step warmup, global subset size 64, one subset per sample, negative and
-rank3 component weights 1.0, and physical auxiliary seed 2002.
+Selected checkpoint provenance:
 
-CUDA gradient calibration at auxiliary weight `0.01` gave a median
-auxiliary/diffusion gradient ratio of `0.0553471` on general full-data batches
-(`p90=0.162501`, `max=0.183165`). On worst-case N=495-500 batches, the median
-ratio was lower at `0.0166878` (`p90=0.0431464`, `max=0.0627834`). That lower
-long-chain signal is a documented limitation of using one fixed-size 64-residue
-subset, not something corrected inside E002.
+| Model | User-facing epoch | Stored epoch index | Optimizer step | SHA-256 |
+| --- | ---: | ---: | ---: | --- |
+| E002 | 5 | 4 | 169181 | `2b6b9967a5de6035accad7cc1c24e379743459531c641727221541fde9aa669f` |
+| E003 | 5 | 4 | 169182 | `bdbaf25ee3b9d7d7a7cfe2ebe03a12b09b16261b1a8a3e95d28b2c48058ca101` |
 
-Worst-case CUDA stress covered lengths 495-500 with batch size 2, gradient
-accumulation 4, 10 optimizer steps plus resume to step 11. Peak allocated memory
-was approximately 4.13 GiB, with zero AMP overflows, zero skipped updates, and
-checkpoint resume passed.
+E003 training evidence: best validation epoch 5 with validation loss
+`0.0183565374`, compared with E002 epoch-5 validation loss `0.0185558852`.
+E003 reached optimizer step `169182`, recorded `63` isolated AMP overflow
+events across `252` log rows in affected four-microbatch windows, had maximum
+consecutive overflows `1`, no non-finite losses, and accumulation state `0` at
+the selected checkpoint. Diffusion, stochastic EDM spectral, and adjacent median
+losses decreased across epochs.
 
-The full-data preflight ran 2000 optimizer steps plus resume to step 2001. Peak
-allocated memory was approximately 4.10 GiB. There were 2 early AMP overflows,
-final AMP scale was 16384, final consecutive overflows were 0, no non-finite
-losses occurred, and checkpoint serialization/resume passed.
+In the 375-sample paired E002-to-E003 comparison, positive improvement means
+E003 is lower/better. Adjacent-residue distance RMSE improved modestly by
+`0.0083769942` with bootstrap CI `[0.0007474087, 0.0161266259]`. Negative
+eigenvalue mass degraded by `-0.0042051035` with CI
+`[-0.0050886455, -0.0033259991]`, and triangle violation fraction degraded by
+`-0.0004375` with CI `[-0.0006771159, -0.0001874674]`. Rank-3 residual
+(`-0.0007241938`, CI `[-0.0025555061, 0.0011522294]`) and classical MDS stress
+(`0.0012353564`, CI `[-0.0004186714, 0.0028830080]`) are inconclusive.
 
-The completed full run selected E002 epoch 5/global step 169181, SHA-256
-`2b6b9967a5de6035accad7cc1c24e379743459531c641727221541fde9aa669f`, with best
-validation loss `0.0185558852`. E001 best validation loss was `0.0184613932`.
-Training recorded 64 isolated AMP overflows, maximum consecutive overflows 1,
-and no non-finite losses. Median total auxiliary loss decreased `0.033532 ->
-0.014498`; negative component `0.007644 -> 0.002655`; rank3 component
-`0.023429 -> 0.010450`.
+Strict empirical real-like geometry remained `0/375` for both E002 and E003.
+Heuristic validity changed from `0.128` to `0.1306667`, with E002-fail/E003-pass
+transitions `9`, E002-pass/E003-fail transitions `8`, and exact McNemar
+`p=1.0`.
 
-The corrected selected-model comparison is E001 epoch 4/global step 160166
-versus E002 epoch 5/global step 169181. Selected epochs, optimizer steps, and
-training histories differ, so this is not a perfectly controlled causal
-auxiliary-loss ablation. On 375 exactly paired generated samples, E002 improved
-negative eigenvalue mass by `0.00473265` (95% bootstrap CI `[0.00359787,
-0.00582859]`, 68.8% improved), rank3 residual by `0.00676679` (`[0.00427944,
-0.00915147]`, 65.07% improved), and classical MDS stress by `0.00381575`
-(`[0.00172839, 0.00587892]`, 60.53% improved). Adjacent-residue RMSE degraded by
-`-0.02684371` (`[-0.03430045, -0.01979658]`, 35.47% improved). Triangle
-violation fraction changed by `-0.00026823` (`[-0.00056901, 0.00001563]`,
-40.53% improved); because the interval includes zero, this is not described as
-a conclusive regression.
+`generated_count=0` warnings for `empirical_real_like_geometry_pass` novelty
+subgroups are expected because no generated sample passed strict empirical
+validity. They are not missing-data warnings.
 
-Strict empirical real-like geometry remained 0/375 for both E001 and E002.
-Heuristic validity changed from 14.4% to 12.8%, with McNemar `p=0.30746`, not
-statistically significant. E001 training descriptors were reused because they
-are model-independent and the manifest, normalization, descriptor implementation,
-and evaluation protocol were identical; descriptor SHA-256:
-`ad738db4085c42ff44f91a62d023d26e3416f548faa2d2d17090ef6434f8f865`.
+Distribution matching is mixed: E003 moves closer to real controls in `25/60`
+descriptor-length rows by standardized mean discrepancy, `24/60` by
+Wasserstein distance, and `23/60` by KS statistic. Diversity does not collapse:
+generated/real diversity ratios move closer to one in `13/20` rows. Novelty is
+mixed and approximate, moving closer to the real calibration baseline in `6/15`
+rows.
 
-Scientific conclusion: E002 confirms that stochastic spectral EDM
-regularization improves global low-dimensional embeddability, negative-spectrum
-consistency, and MDS stress. It does not achieve strict empirical protein
-geometry and introduces a statistically supported degradation in local
-adjacent-residue geometry. Retain E002 as a positive partial experiment, not as
-the final model. Do not claim that E002 produces physically valid proteins.
+Scientific decision: E003 is not promoted to the new baseline. E002 remains the current
+baseline. E003 is retained as evidence that a local adjacent-chain
+objective can improve adjacent-residue geometry while degrading global EDM and
+triangle consistency. Bootstrap confidence intervals quantify generated-pair
+variability, not training-seed uncertainty.
 
-## E003 Adjacent Chain Geometry
-
-Status: CUDA calibration and step-2000 adjacent-chain preflight passed;
-definitive full-training config prepared.
-
-E003 is a controlled extension of E002 that preserves the E001/E002
-architecture, v-prediction diffusion objective, stochastic EDM spectral loss,
-optimizer, schedule, manifests, normalization, batch size 2, gradient
-accumulation 4, and mixed precision settings. The only new intervention is a
-disabled-by-default adjacent-chain SmoothL1 auxiliary loss on reconstructed
-physical `x0_hat` distances for upper adjacent-diagonal pairs `D[i, i+1]`.
-
-The target is the clean training distance matrix, not a hardcoded 3.8 Angstrom
-constant. The configured SmoothL1 beta is `0.25` Angstrom, a robust physical
-scale that treats sub-quarter-Angstrom deviations quadratically and larger
-errors linearly. The selected adjacent weight is `0.0001`, with 500-step warmup.
-
-CUDA calibration at adjacent weight `0.0001` gave a general-batch
-adjacent/diffusion gradient ratio median `0.0385003`, p90 `0.0593762`, and max
-`0.0722183`; combined auxiliary/diffusion median `0.0916737`, p90 `0.128118`,
-and max `0.150298`. On N=495-500 batches, adjacent/diffusion median was
-`0.0514392`, p90 `0.114064`, and max `0.176750`; combined auxiliary/diffusion
-median was `0.0877296`, p90 `0.162382`, and max `0.235053`. Median gradient
-cosines were positive in both profiles: general diffusion/adjacent `0.334203`,
-EDM/adjacent `0.331063`, diffusion/EDM `0.201883`; N=495-500
-diffusion/adjacent `0.312720`, EDM/adjacent `0.211347`, diffusion/EDM
-`0.211596`. Negative tails were occasional and modest, with no systematic
-gradient antagonism.
-
-Worst-case CUDA stress covered N=495-500 with batch size 2, gradient
-accumulation 4, 10 steps plus resume to 11, peak allocated memory approximately
-4.13 GiB, zero AMP overflows, zero skipped updates, and successful checkpoint
-resume. The full-data step-2000 preflight produced 8008 JSONL records, two
-isolated AMP overflows, final AMP scale 16384, maximum consecutive overflows 1,
-no non-finite losses, successful resume to step 2001, and frozen step-2000
-SHA-256 `c1e63f84522f22aaeab1ee6627fa60906c46f55bc4ed811d872768e535635764`.
-
-First-versus-last quartile medians improved for adjacent loss `7.39698 ->
-1.88258`, diffusion loss `0.0568248 -> 0.0244930`, EDM loss `0.330965 ->
-0.0825215`, EDM negative component `0.141549 -> 0.0287379`, EDM rank3 component
-`0.188910 -> 0.0514521`, weighted adjacent contribution `0.000296195 ->
-0.000188258`, and weighted EDM contribution `0.00128259 -> 0.000825215`.
-
-A paired step-2000 generated screening bank used 10 paired samples, two each at
-N=64, 128, 256, 384, and 500, with the same sampling seeds for E002 and E003.
-Adjacent RMSE-to-3.8A improved in 9/10 samples, mean improvement `0.452242` A;
-negative eigenvalue mass improved in 9/10, mean improvement `0.00192891`; rank3
-residual improved in 9/10, mean improvement `0.00630272`; triangle behavior was
-mixed; and negative-distance fraction was slightly improved overall. Mean
-adjacent RMSE-to-3.8A changes by length were N=64 `3.57996 -> 3.56029`, N=128
-`2.71956 -> 2.46473`, N=256 `2.19848 -> 1.81046`, N=384 `2.24399 -> 1.35034`,
-and N=500 `2.26398 -> 1.55894`. This is a small screening bank, not final
-statistical evidence; definitive evaluation must use calibrated real controls,
-not only a fixed 3.8A reference.
-
-This adjacent-chain term is established physical regularization, not a novelty
-claim. The experiment tests whether combining global spectral consistency with
-local backbone geometry resolves the specific E002 trade-off before any triangle,
-contact, non-negativity, radius-of-gyration, projection, or architecture changes
-are considered.
+Before E004, run an analysis-only diagnostic that stratifies diffusion,
+stochastic EDM, and adjacent-chain gradient norms and pairwise cosine
+similarities by diffusion timestep bins, requested-length bins, and optionally
+their interaction. If conflict concentrates at high noise, consider
+timestep/SNR-gated adjacent loss; if it concentrates at long lengths, consider
+length-dependent weighting; if it is widespread, abandon the adjacent loss or
+investigate a multi-objective gradient method; if no systematic conflict
+appears, evaluate training-seed variability before changing the objective.

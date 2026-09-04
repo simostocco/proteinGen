@@ -2,11 +2,10 @@
 
 ## Status
 
-Implemented for preflight calibration. CUDA gradient calibration, worst-case
-stress, and the full-data step-2000 preflight passed. Definitive full-training
-configuration has been prepared. No training, preprocessing, splitting,
-sampling, ensemble evaluation, commit, or push was started during this
-documentation/configuration update.
+Finalized as an analysis/documentation-only experiment. CUDA calibration,
+worst-case stress, the full-data step-2000 preflight, full training, calibrated
+evaluation, and the paired E002-versus-E003 comparison have completed. E003 is
+not promoted to the new baseline; E002 remains the current baseline.
 
 ## Motivation
 
@@ -248,3 +247,54 @@ adjacent-residue geometry.
 E003 should remain causal and interpretable. Triangle, contact, non-negativity,
 radius-of-gyration, projection, and architecture changes are deferred unless
 E003 evidence justifies a new experiment.
+
+## Final Calibrated Outcome
+
+The final selected-model comparison is E002 epoch 5/global step `169181` versus
+E003 epoch 5/global step `169182`. The selected E002 checkpoint SHA-256 is
+`2b6b9967a5de6035accad7cc1c24e379743459531c641727221541fde9aa669f`; the
+selected E003 checkpoint SHA-256 is
+`bdbaf25ee3b9d7d7a7cfe2ebe03a12b09b16261b1a8a3e95d28b2c48058ca101`.
+
+E003 training was stable: best validation epoch 5, validation loss
+`0.0183565374`, `169182` optimizer steps, `63` isolated AMP overflow events,
+maximum consecutive overflows `1`, no non-finite losses, and accumulation state
+`0` at the selected checkpoint. Diffusion, stochastic EDM spectral, and adjacent
+median losses decreased across epochs.
+
+On the 375-sample calibrated paired comparison, E003 modestly improves
+adjacent-residue distance RMSE by `0.0083769942` with bootstrap CI
+`[0.0007474087, 0.0161266259]`. It significantly degrades negative eigenvalue
+mass by `-0.0042051035` with CI `[-0.0050886455, -0.0033259991]` and triangle
+violation fraction by `-0.0004375` with CI
+`[-0.0006771159, -0.0001874674]`. Rank-3 residual and classical MDS stress are
+inconclusive because their bootstrap intervals include zero.
+
+Strict empirical real-like geometry remains `0/375` for both E002 and E003.
+Heuristic EDM-quality validity is essentially unchanged: E002 `0.128`, E003
+`0.1306667`, exact McNemar p-value `1.0`.
+
+Distribution matching is mixed: E003 moves closer to real controls in `25/60`
+descriptor-length rows by standardized mean discrepancy, `24/60` by
+Wasserstein distance, and `23/60` by KS statistic. Diversity does not collapse:
+generated/real diversity ratios move closer to one in `13/20` rows. Novelty is
+mixed and approximate, with calibrated novelty ratios moving closer to the real
+calibration baseline in `6/15` rows.
+
+`generated_count=0` warnings for `empirical_real_like_geometry_pass` novelty
+subgroups are expected because no generated samples passed strict empirical
+validity. They are not missing-data warnings.
+
+Bootstrap confidence intervals quantify variability across the generated pairs
+in this comparison, not training-seed uncertainty. Since there is one training
+run per configuration, E003 should be interpreted as evidence of a
+local-versus-global objective trade-off, not as a universal causal result.
+
+Before E004, run an analysis-only gradient diagnostic that stratifies diffusion,
+EDM, and adjacent gradient norms and pairwise cosine similarities by diffusion
+timestep bins, requested-length bins, and optionally their interaction. If
+conflict concentrates at high noise, consider timestep- or SNR-gated adjacent
+loss; if it concentrates at long lengths, consider length-dependent weighting;
+if it is widespread, abandon the adjacent loss or investigate a multi-objective
+gradient method; if no systematic conflict appears, evaluate training-seed
+variability before changing the objective.
