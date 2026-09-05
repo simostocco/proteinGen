@@ -2,9 +2,15 @@
 
 ## Status
 
-E004 is prepared as a controlled architectural extension of E002. No training,
-preprocessing, splitting, sampling, ensemble evaluation, checkpoint modification,
-commit, or push was performed during implementation.
+E004 is prepared as a controlled architectural extension of E002. The CUDA
+worst-case stress test, 2,000-step preflight, paired step-2,000 screen, and
+timestep diagnostic have completed successfully. E004 passes the five-epoch
+training gate, but E002 remains the baseline until the full E004 ensemble is
+trained and evaluated.
+
+This documentation/configuration update did not start training, preprocessing,
+splitting, sampling, ensemble evaluation, checkpoint modification, commit, or
+push.
 
 ## Parent Baseline
 
@@ -107,6 +113,8 @@ invalid outputs.
 
 ## Parameters
 
+Implementation commit: `cd31047`.
+
 Verified parameter counts:
 
 | Model | Parameters |
@@ -137,6 +145,10 @@ the full message output is `B * 126 * 126 * 32` values.
 Preflight config:
 `configs/train_recovered_full_v_axial_edm_triangle_e004.yaml`.
 
+Definitive five-epoch config:
+`configs/train_recovered_full_v_axial_edm_triangle_e004_full.yaml`, with output
+directory `outputs/recovered_full_b2_v_axial_edm_triangle_e004`.
+
 New model fields:
 
 | Field | E004 value | Default | Meaning |
@@ -149,6 +161,102 @@ New model fields:
 The block is disabled by default, so E000-E003 configs and existing checkpoints
 remain compatible.
 
+## Completed Preflight Evidence
+
+The worst-case CUDA stress test used lengths N=495-500, batch size 2, and
+gradient accumulation 4. It completed 10 optimizer steps plus resume to step 11.
+Peak allocated memory was `4.22 GiB`; peak reserved memory was `7.64 GiB` during
+the initial run and `6.54 GiB` after resume. There were zero AMP overflows, zero
+skipped updates, clean accumulation state, and the resume passed. Approximate
+resume throughput was `9.22 samples/s`.
+
+The four-batch N=495-500 gradient profile is preserved as
+`reports/experiments/E004_symmetric_triangle_multiplication/gradient_profile_N495_500.json`.
+It is retained as a bounded stress/profile artifact and should not be
+overinterpreted as a full-data gradient distribution.
+
+The full-data preflight completed `2000` optimizer steps and `8008` JSONL
+records. The step-2000 checkpoint SHA-256 was
+`ecd1b34780e74bf2f367bf2ced884e57e8a6ec3233f6b75f29c798cdbca80d01`. It had
+`2` AMP overflow events, maximum consecutive overflows `1`, `8` skipped-window
+records, no non-finite losses, no unexpected non-finite gradients, final
+consecutive overflows `0`, clean microbatch accumulation state, and final
+recorded throughput `23.8145 samples/s`.
+
+First-versus-last quartile median losses:
+
+| Quantity | First quartile | Last quartile |
+| --- | ---: | ---: |
+| Diffusion loss | 0.053101562 | 0.022458778 |
+| Optimization loss | 0.054552520 | 0.023218437 |
+| EDM total | 0.30521363 | 0.058729568 |
+| EDM negative | 0.12913704 | 0.018167607 |
+| EDM rank3 | 0.17434631 | 0.037178006 |
+
+## Step-2000 Screen Against E002
+
+The screen used two paired samples per requested length at N=64, 128, 256, 384,
+and 500, with matching seeds and sample indices. Positive improvement means
+E004 is lower/better than E002. Matrices were not projected before comparison.
+
+Overall results:
+
+| Metric | Mean improvement | Improved samples |
+| --- | ---: | ---: |
+| Negative-distance fraction | -0.0001035543 | 7/10 |
+| Triangle-violation fraction | 0.0009765625 | 7/10 |
+| Negative-eigenvalue mass fraction | 0.026845372 | 7/10 |
+| Rank3 residual | 0.066621558 | 10/10 |
+| Adjacent RMSE to 3.8 A | 0.66738602 | 8/10 |
+
+Per-length effects:
+
+| N | Negative eigenvalue mass | Rank3 residual | Triangle violation | Adjacent RMSE to 3.8 A |
+| ---: | ---: | ---: | ---: | ---: |
+| 64 | -0.019554 | 0.052774 | -0.007812 | -0.597252 |
+| 128 | 0.003792 | 0.076017 | -0.000488 | 1.205684 |
+| 256 | 0.038827 | 0.055579 | 0.002441 | 0.858173 |
+| 384 | 0.053112 | 0.075206 | 0.005859 | 0.894127 |
+| 500 | 0.058049 | 0.073532 | 0.004883 | 0.976197 |
+
+E004 passes the preflight gate because it produces a coherent, large improvement
+in global geometric metrics, especially for N>=256. The screen remains small:
+it has only two samples per length, N=64 regresses in several metrics, and no
+strict-validity conclusion can be made from ten samples. The result justifies
+full training but is not final evidence. E002 remains the baseline until the
+full E004 ensemble is evaluated.
+
+## Timestep Diagnostic
+
+The completed E002-to-E004 step-2000 timestep diagnostic shows single-step `x0`
+reconstruction RMSE improvement in Angstrom at 8/9 reported timesteps, with mean
+improvement `0.19944867 A`. Positive means E004 is lower/better.
+
+| Timestep | x0 RMSE improvement (A) |
+| ---: | ---: |
+| 0 | 0.009868 |
+| 100 | 0.330156 |
+| 200 | 0.282385 |
+| 300 | 0.243457 |
+| 400 | 0.391255 |
+| 450 | 0.029041 |
+| 475 | 0.261914 |
+| 490 | 0.352500 |
+| 499 | -0.105538 |
+
+Target-MSE improved at t=0, 100, 200, 300, 400, 475, and 490. It was slightly
+worse at t=450 by `0.000511` and at t=499 by `0.001043`.
+
+Negative reconstructed physical fraction showed small mixed changes through
+t=490. At t=499, E002 was `0.000924`, E004 was `0.004554`, for a change of
+`-0.003630`.
+
+Interpretation: E004 improves single-step `x0` reconstruction across almost the
+entire diffusion trajectory. The isolated t=499 regression is small relative to
+the reconstruction magnitude, but the increased negative-distance fraction at
+t=499 is retained as a caveat. This does not block full training, and no special
+t=499 correction should be added before the controlled full experiment.
+
 ## Literature And Novelty Boundary
 
 Triangle multiplication is not claimed as novel. AlphaFold uses triangle
@@ -160,8 +268,8 @@ novelty claim is outside E004 and is not implemented here.
 
 ## Preflight Acceptance Criteria
 
-E004 proceeds to five-epoch training only if CUDA profiling and the 2,000-step
-screening show:
+E004 proceeds to five-epoch training because CUDA profiling and the 2,000-step
+screening showed:
 
 - finite losses and gradients;
 - no persistent AMP overflow sequence;
@@ -174,6 +282,13 @@ screening show:
 - improvements visible across multiple lengths, not only 2/10 samples.
 
 ## Commands To Run Later
+
+Definitive five-epoch training:
+
+```bash
+PYTHONPATH=src /home/simostocco/miniforge3/envs/proteingen/bin/python scripts/train_diffusion.py \
+  --config configs/train_recovered_full_v_axial_edm_triangle_e004_full.yaml
+```
 
 Parameter-count comparison:
 

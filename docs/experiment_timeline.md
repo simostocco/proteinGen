@@ -203,12 +203,14 @@ joint timestep-length scheduling if both concentrate, abandoning adjacent loss
 or using multi-objective gradient handling if conflict is widespread, or
 training-seed variability checks if no systematic conflict appears.
 
-## E004 Symmetric Triangle Multiplication Prepared
+## E004 Symmetric Triangle Multiplication Preflight Finalized
 
-Status: implementation and preflight configuration prepared only. No
-preprocessing, splitting, training, sampling, ensemble evaluation, checkpoint
-modification, generated-sample modification, descriptor-cache rebuild, commit,
-or push was performed.
+Status: implementation, CUDA stress, 2,000-step preflight, paired step-2,000
+screen, timestep diagnostic, and definitive five-epoch configuration are
+complete. This update was documentation/configuration-only: no preprocessing,
+splitting, training, sampling, ensemble evaluation, checkpoint modification,
+generated-sample modification, descriptor-cache rebuild, commit, or push was
+performed.
 
 E004 uses E002 as the parent baseline and does not enable the E003 adjacent
 auxiliary loss. It preserves the E001/E002 U-Net, v-prediction, bottleneck full
@@ -224,7 +226,7 @@ encoder level `2`, block index `1`, with `96` feature channels. For requested
 N=500 the padded side is `504`, so the triangle block runs at side `126`.
 
 E004 parameter counts are E002 `7,557,681` versus E004 `7,582,833`, a delta of
-`25,152`. Triangle multiplication is not claimed as novel: AlphaFold uses
+`25,152`. Implementation commit: `cd31047`. Triangle multiplication is not claimed as novel: AlphaFold uses
 triangle multiplicative updates and triangle attention, and Proteus already uses
 graph-based triangle operations in protein backbone diffusion. E004 is an
 architectural baseline/ablation in this project.
@@ -233,9 +235,59 @@ Preflight config:
 `configs/train_recovered_full_v_axial_edm_triangle_e004.yaml`, with output
 directory `outputs/recovered_full_b2_v_axial_edm_triangle_e004_preflight`.
 
-E004 proceeds to five-epoch training only if CUDA profiling and a 2,000-step
-screening show finite losses and gradients, no persistent AMP overflow sequence,
-safe resume, acceptable memory, no material reconstruction regression, improved
-negative eigenvalue mass and/or rank-3 residual, improved or neutral triangle
-violations, no major adjacent-distance regression, and improvements across
-multiple lengths rather than only a 2/10 screening bank.
+Definitive full config:
+`configs/train_recovered_full_v_axial_edm_triangle_e004_full.yaml`, with output
+directory `outputs/recovered_full_b2_v_axial_edm_triangle_e004`.
+
+Worst-case CUDA stress covered N=495-500 with batch size 2 and gradient
+accumulation 4 for 10 optimizer steps plus resume to step 11. Peak allocated
+memory was `4.22 GiB`; peak reserved memory was `7.64 GiB` initially and
+`6.54 GiB` on resume. There were zero AMP overflows, zero skipped updates, clean
+accumulation state, successful resume, and approximate resume throughput
+`9.22 samples/s`.
+
+The full-data preflight completed `2000` optimizer steps and `8008` JSONL
+records. Step-2000 checkpoint SHA-256:
+`ecd1b34780e74bf2f367bf2ced884e57e8a6ec3233f6b75f29c798cdbca80d01`. It had
+`2` AMP overflow events, maximum consecutive overflows `1`, `8` skipped-window
+records, no non-finite losses, no unexpected non-finite gradients, final
+consecutive overflows `0`, clean microbatch accumulation state, and final
+throughput `23.8145 samples/s`.
+
+First-versus-last quartile medians improved for diffusion loss `0.053101562 ->
+0.022458778`, optimization loss `0.054552520 -> 0.023218437`, EDM total
+`0.30521363 -> 0.058729568`, EDM negative `0.12913704 -> 0.018167607`, and EDM
+rank3 `0.17434631 -> 0.037178006`.
+
+The paired step-2000 screen used two samples per length at N=64, 128, 256, 384,
+and 500, with matching seeds and sample indices. Positive means E004 is
+lower/better than E002, and projected matrices were not used for the comparison.
+Overall, E004 improved triangle-violation fraction by `0.0009765625` in `7/10`
+samples, negative-eigenvalue mass by `0.026845372` in `7/10`, rank3 residual by
+`0.066621558` in `10/10`, and adjacent RMSE to 3.8 A by `0.66738602` in `8/10`.
+Negative-distance fraction changed by `-0.0001035543` while improving in `7/10`.
+
+Per-length negative-eigenvalue improvements were N64 `-0.019554`, N128
+`0.003792`, N256 `0.038827`, N384 `0.053112`, and N500 `0.058049`.
+Per-length rank3 improvements were N64 `0.052774`, N128 `0.076017`, N256
+`0.055579`, N384 `0.075206`, and N500 `0.073532`. Per-length triangle
+improvements were N64 `-0.007812`, N128 `-0.000488`, N256 `0.002441`, N384
+`0.005859`, and N500 `0.004883`. Per-length adjacent-RMSE improvements were N64
+`-0.597252`, N128 `1.205684`, N256 `0.858173`, N384 `0.894127`, and N500
+`0.976197`.
+
+The timestep diagnostic showed single-step `x0` reconstruction RMSE improvement
+at 8/9 reported timesteps, with mean improvement `0.19944867 A`. Improvements
+were t=0 `0.009868`, t=100 `0.330156`, t=200 `0.282385`, t=300 `0.243457`,
+t=400 `0.391255`, t=450 `0.029041`, t=475 `0.261914`, t=490 `0.352500`, and
+t=499 `-0.105538`. Target-MSE was slightly worse at t=450 by `0.000511` and
+t=499 by `0.001043`. Negative reconstructed physical fraction at t=499 changed
+from E002 `0.000924` to E004 `0.004554`, a `-0.003630` change.
+
+E004 passes the five-epoch training gate because it produces a coherent, large
+improvement in global geometric metrics, especially for N>=256. Caveats: the
+screen has only two samples per length, N64 regresses in several metrics, no
+strict-validity conclusion can be made from ten samples, and the isolated t=499
+negative-distance caveat should be retained. No special t=499 correction should
+be added before the controlled full experiment. E002 remains the baseline until
+the full E004 ensemble is evaluated.

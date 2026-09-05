@@ -1,0 +1,68 @@
+train_manifest: data/full/splits_recovered_all_structures/train.parquet
+validation_manifest: data/full/splits_recovered_all_structures/validation.parquet
+normalization_file: data/full/processed_recovery/normalization_train.json
+output_dir: outputs/recovered_full_b2_v_axial_edm_triangle_e004
+
+seed: 42
+device: cuda
+
+batch_size: 2
+num_workers: 2
+gradient_accumulation_steps: 4
+mixed_precision: true
+amp_dtype: float16
+
+epochs: 5
+learning_rate: 0.0001
+grad_clip: 1.0
+max_consecutive_amp_overflows: 20
+ema_decay: 0.999
+diffusion_steps: 500
+prediction_parameterization: v
+
+physical_auxiliary_loss_enabled: true
+physical_auxiliary_loss_weight: 0.01
+physical_auxiliary_loss_warmup_steps: 500
+edm_subset_size: 64
+edm_subsets_per_sample: 1
+edm_negative_weight: 1.0
+edm_rank3_weight: 1.0
+physical_auxiliary_seed: 2002
+
+model:
+  input_channels: 3
+  output_channels: 1
+  base_channels: 24
+  channel_multipliers: [1, 2, 4, 8]
+  residual_blocks_per_level: 2
+  dropout: 0.0
+  group_norm_groups: 8
+  attention_heads: 4
+  use_bottleneck_attention: true
+  # E004 preserves E002 and adds exactly one symmetric triangle-multiplicative
+  # update after the pre-bottleneck axial block at the N/4 encoder resolution.
+  use_pre_bottleneck_axial_attention: true
+  axial_attention_heads: 4
+  axial_attention_dropout: 0.0
+  axial_attention_chunk_size: 128
+  use_pre_bottleneck_triangle_multiplication: true
+  triangle_hidden_channels: 32
+  triangle_dropout: 0.0
+  triangle_chunk_size: 16
+  time_embedding_dim: 256
+  length_embedding_dim: 256
+  max_length: 500
+
+# Generation diagnostics only; these are not training groups or split bins.
+validation_sample_lengths: [64, 128, 256, 500]
+samples_per_length: 1
+
+checkpoint_every_steps: 500
+
+logging:
+  progress_bar: true
+  tensorboard: true
+  tensorboard_dir: outputs/recovered_full_b2_v_axial_edm_triangle_e004/tensorboard
+  log_every_steps: 50
+  validation_every_epochs: 1
+  image_every_epochs: 1
