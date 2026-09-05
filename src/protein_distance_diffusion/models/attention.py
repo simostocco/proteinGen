@@ -186,3 +186,82 @@ class SymmetricAxialAttentionBlock(nn.Module):
         if out.shape[-1] == out.shape[-2]:
             out = 0.5 * (out + out.transpose(-1, -2))
         return out * valid.to(dtype=out.dtype)
+
+
+class SymmetricTriangleMultiplicativeUpdate(nn.Module):
+    """Symmetric masked triangle-multiplicative update for pair features.
+
+    The contraction computes per-hidden-channel matrix products ``A_r @ B_r`` and
+    never materializes a ``[B, M, M, M, R]`` path tensor.
+    """
+
+    def __init__(
+        self,
+        channels: int,
+        *,
+        hidden_channels: int = 32,
+        groups: int = 8,
+        dropout: float = 0.0,
+        chunk_size: int | None = 16,
+    ) -> None:
+        super().__init__()
+        if hidden_channels <= 0:
+            raise ValueError("triangle_hidden_channels must be positive")
+        self.channels = int(channels)
+        self.hidden_channels = int(hidden_channels)
+        self.chunk_size = None if chunk_size is None or chunk_size <= 0 else int(chunk_size)
+        self.norm = nn.GroupNorm(valid_group_count(channels, groups), channels)
+        self.a = nn.Linear(channels, hidden_channels)
+        self.a_gate = nn.Linear(channels, hidden_channels)
+        self.b = nn.Linear(channels, hidden_channels)
+        self.b_gate = nn.Linear(channels, hidden_channels)
+        self.message_norm = nn.LayerNorm(hidden_channels)
+        self.output = nn.Linear(hidden_channels, channels)
+        self.output_gate = nn.Linear(channels, channels)
+        self.dropout = nn.Dropout(dropout)
+
+    def _triangle_message(self, a: torch.Tensor, b: torch.Tensor, valid_pairs: torch.Tensor) -> torch.Tensor:
+        """Compute normalized triangle messages without constructing triplets."""
+        batch, side, _, hidden = a.shape
+        mask = valid_pairs.to(dtype=a.dtype)
+        denominator = torch.bmm(mask, mask).clamp_min(1.0).to(dtype=a.dtype)
+        chunks: list[torch.Tensor] = []
+        chunk_size = self.chunk_size or hidden
+        for start in range(0, hidden, chunk_size):
+            end = min(start + chunk_size, hidden)
+            a_chunk = (a[..., start:end] * mask[..., None]).permute(0, 3, 1, 2).reshape(-1, side, side)
+            b_chunk = (b[..., start:end] * mask[..., None]).permute(0, 3, 1, 2).reshape(-1, side, side)
+            message = torch.bmm(a_chunk, b_chunk)
+            message = message.reshape(batch, end - start, side, side).permute(0, 2, 3, 1)
+            chunks.append(message / denominator[..., None])
+        return torch.cat(chunks, dim=-1)
+
+    def forward(self, x: torch.Tensor, valid_mask: torch.Tensor) -> torch.Tensor:
+        """Apply one symmetric triangle-multiplicative residual update.
+
+        Args:
+            x: Pair representation ``[B, C, M, M]``.
+            valid_mask: Boolean pair mask ``[B, 1, M, M]``.
+
+        Returns:
+            Updated pair representation with invalid positions zeroed.
+        """
+        if x.ndim != 4 or x.shape[-1] != x.shape[-2]:
+            raise ValueError("x must have shape [B, C, M, M]")
+        if valid_mask.shape != (x.shape[0], 1, x.shape[-2], x.shape[-1]):
+            raise ValueError("valid_mask must have shape [B, 1, M, M]")
+        valid = valid_mask.bool()
+        h = SymmetricAxialAttentionBlock._masked_group_norm(self.norm, x, valid)
+        z = h.permute(0, 2, 3, 1)
+        valid_pairs = valid[:, 0]
+        a = torch.sigmoid(self.a_gate(z)) * self.a(z)
+        b = torch.sigmoid(self.b_gate(z)) * self.b(z)
+        raw_message = self._triangle_message(a, b, valid_pairs)
+        message = 0.5 * (raw_message + raw_message.transpose(1, 2))
+        message = message * valid_pairs[..., None].to(dtype=message.dtype)
+        delta = torch.sigmoid(self.output_gate(z)) * self.output(self.message_norm(message))
+        delta = self.dropout(delta).permute(0, 3, 1, 2)
+        delta = delta.to(device=x.device, dtype=x.dtype)
+        out = x + delta.masked_fill(~valid, 0.0)
+        out = 0.5 * (out + out.transpose(-1, -2))
+        return out * valid.to(dtype=out.dtype)

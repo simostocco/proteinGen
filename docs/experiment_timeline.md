@@ -202,3 +202,40 @@ high noise, length-aware weighting if conflict concentrates in long proteins,
 joint timestep-length scheduling if both concentrate, abandoning adjacent loss
 or using multi-objective gradient handling if conflict is widespread, or
 training-seed variability checks if no systematic conflict appears.
+
+## E004 Symmetric Triangle Multiplication Prepared
+
+Status: implementation and preflight configuration prepared only. No
+preprocessing, splitting, training, sampling, ensemble evaluation, checkpoint
+modification, generated-sample modification, descriptor-cache rebuild, commit,
+or push was performed.
+
+E004 uses E002 as the parent baseline and does not enable the E003 adjacent
+auxiliary loss. It preserves the E001/E002 U-Net, v-prediction, bottleneck full
+attention, pre-bottleneck symmetric axial attention, stochastic EDM spectral
+loss at weight `0.01`, 500-step warmup, subset size `64`, one subset per sample,
+optimizer, scheduler, EMA, diffusion schedule, data, batching, masking,
+normalization, and AMP settings.
+
+The controlled architectural intervention is exactly one symmetric
+triangle-multiplicative update after the existing pre-bottleneck axial block and
+before downsampling into the bottleneck. In the production config this is
+encoder level `2`, block index `1`, with `96` feature channels. For requested
+N=500 the padded side is `504`, so the triangle block runs at side `126`.
+
+E004 parameter counts are E002 `7,557,681` versus E004 `7,582,833`, a delta of
+`25,152`. Triangle multiplication is not claimed as novel: AlphaFold uses
+triangle multiplicative updates and triangle attention, and Proteus already uses
+graph-based triangle operations in protein backbone diffusion. E004 is an
+architectural baseline/ablation in this project.
+
+Preflight config:
+`configs/train_recovered_full_v_axial_edm_triangle_e004.yaml`, with output
+directory `outputs/recovered_full_b2_v_axial_edm_triangle_e004_preflight`.
+
+E004 proceeds to five-epoch training only if CUDA profiling and a 2,000-step
+screening show finite losses and gradients, no persistent AMP overflow sequence,
+safe resume, acceptable memory, no material reconstruction regression, improved
+negative eigenvalue mass and/or rank-3 residual, improved or neutral triangle
+violations, no major adjacent-distance regression, and improvements across
+multiple lengths rather than only a 2/10 screening bank.

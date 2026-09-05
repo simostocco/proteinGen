@@ -9,6 +9,7 @@ from protein_distance_diffusion.diffusion.gaussian import project_symmetric_zero
 from protein_distance_diffusion.models.attention import (
     BottleneckSelfAttention,
     SymmetricAxialAttentionBlock,
+    SymmetricTriangleMultiplicativeUpdate,
     downsample_pair_mask,
 )
 from protein_distance_diffusion.models.blocks import Downsample, ResidualBlock, Upsample
@@ -33,6 +34,11 @@ class DistanceUNet(nn.Module):
         axial_attention_heads: Number of axial attention heads. Defaults to `attention_heads`.
         axial_attention_dropout: Axial attention and feed-forward dropout probability.
         axial_attention_chunk_size: Optional number of row/column sequences per attention chunk.
+        use_pre_bottleneck_triangle_multiplication: Add one symmetric triangle-multiplicative
+            update after pre-bottleneck axial attention and before bottleneck downsampling.
+        triangle_hidden_channels: Hidden width for triangle path-composition factors.
+        triangle_dropout: Triangle output dropout probability.
+        triangle_chunk_size: Number of hidden triangle channels per contraction chunk.
         time_embedding_dim: Conditioning dimension for timesteps.
         length_embedding_dim: Conditioning dimension for lengths. Must match time embedding.
         max_length: Maximum configured protein length for length normalization.
@@ -54,6 +60,10 @@ class DistanceUNet(nn.Module):
         axial_attention_heads: int | None = None,
         axial_attention_dropout: float | None = None,
         axial_attention_chunk_size: int | None = None,
+        use_pre_bottleneck_triangle_multiplication: bool = False,
+        triangle_hidden_channels: int = 32,
+        triangle_dropout: float = 0.0,
+        triangle_chunk_size: int | None = 16,
         time_embedding_dim: int = 256,
         length_embedding_dim: int = 256,
         max_length: int = 128,
@@ -65,8 +75,11 @@ class DistanceUNet(nn.Module):
             raise ValueError("use_pre_bottleneck_axial_attention requires at least two U-Net levels")
         if use_pre_bottleneck_axial_attention and residual_blocks_per_level < 2:
             raise ValueError("use_pre_bottleneck_axial_attention requires residual_blocks_per_level >= 2")
+        if use_pre_bottleneck_triangle_multiplication and not use_pre_bottleneck_axial_attention:
+            raise ValueError("use_pre_bottleneck_triangle_multiplication requires pre-bottleneck axial attention")
         self.downsample_factor = 2 ** (len(channel_multipliers) - 1)
         self.use_pre_bottleneck_axial_attention = bool(use_pre_bottleneck_axial_attention)
+        self.use_pre_bottleneck_triangle_multiplication = bool(use_pre_bottleneck_triangle_multiplication)
         self.pre_bottleneck_axial_level = len(channel_multipliers) - 2
         self.pre_bottleneck_axial_block_index = residual_blocks_per_level - 1
         self.time_embedding = SinusoidalTimeEmbedding(time_embedding_dim)
@@ -76,6 +89,7 @@ class DistanceUNet(nn.Module):
         self.input = nn.Conv2d(input_channels, channels[0], kernel_size=3, padding=1)
         self.down_blocks = nn.ModuleList()
         self.downsamples = nn.ModuleList()
+        self.pre_bottleneck_triangle = nn.ModuleDict()
         in_ch = channels[0]
         self.skip_channels: list[int] = []
         for level, out_ch in enumerate(channels):
@@ -105,6 +119,14 @@ class DistanceUNet(nn.Module):
                 in_ch = out_ch
                 self.skip_channels.append(out_ch)
             self.down_blocks.append(blocks)
+            if self.use_pre_bottleneck_triangle_multiplication and level == self.pre_bottleneck_axial_level:
+                self.pre_bottleneck_triangle[str(level)] = SymmetricTriangleMultiplicativeUpdate(
+                    in_ch,
+                    hidden_channels=triangle_hidden_channels,
+                    groups=group_norm_groups,
+                    dropout=triangle_dropout,
+                    chunk_size=triangle_chunk_size,
+                )
             if level != len(channels) - 1:
                 self.downsamples.append(Downsample(in_ch))
         self.mid1 = ResidualBlock(in_ch, in_ch, cond_dim, groups=group_norm_groups, dropout=dropout)
@@ -158,6 +180,9 @@ class DistanceUNet(nn.Module):
                 else:
                     x = block(x, cond)
                 skips.append(x)
+            if str(level) in self.pre_bottleneck_triangle:
+                x = self.pre_bottleneck_triangle[str(level)](x, downsample_pair_mask(pair_mask, x.shape[-2:]))
+                skips[-1] = x
             if level != len(self.down_blocks) - 1:
                 x = self.downsamples[downsample_idx](x)
                 downsample_idx += 1
