@@ -1,0 +1,38 @@
+# E010 Phase 4B: authentic frozen-denoiser errors
+
+This is one bounded, non-authorizing experiment. It reuses the authorized 16,384 training identities, the existing 320 identity-disjoint development panel, their 98,280-example multicorruption v2 identity/seed schedule, and selected E010 update 1,092. It does not read prospective/test identities or outcomes. Authorization fields remain false.
+
+The frozen E007 model is the Phase 3i2 `v_only/step-00500.pt` checkpoint, pinned to SHA-256 `2553ce18b5644aaf1e2d512b85664dfff2eaf5488f9536accbfb3e8ec18c2add`. It is a 500-step centered coordinate VP model with `centered_coordinate_v` prediction. Timesteps are fixed at 50, 250 and 450. The repository schedule uses increasing indices for increasing noise: timestep 50 is late/low-noise (`alpha_bar≈0.9710`), 250 is intermediate (`alpha_bar≈0.4907`), and 450 is early/high-noise (`alpha_bar≈0.0231`). Within each training length stratum, SHA-256-ranked examples are assigned round-robin, exactly 6,552 per timestep. Development gets all three conditions per identity with deterministic identity-specific seeds.
+
+For every example, centered real coordinates are divided by the pinned 12.22820347644835 Å scale, forward noised with the exact cosine VP alpha-bar, and passed once through the frozen denoiser in inference mode. The canonical v equation reconstructs normalized x0 as `sqrt(alpha_bar)*x_t - sqrt(1-alpha_bar)*v`; results are converted back to Å. Cache shards contain concatenated float32 targets/predictions and record offsets, seeds, timesteps, identities, masks/lengths, source hashes, and per-record target/prediction hashes. Completed shards are independently verified before atomic final publication; only complete deterministic shards are reused on resume.
+
+The selected update-1092 synthetic E010 checkpoint initializes every trainable refiner parameter. Training uses the existing five-stratum, 18-example-per-stratum effective batch of 90 and coordinate objective (masked xyz MSE plus the existing 1e-5 residual penalty), AdamW at 3e-4, constant schedule, and stops at updates 364, 728 and 1,092. It preserves full precision because Phase 4A used no AMP and this model has no validated AMP path. No bond constraints, geometry priors, or additional losses are introduced. Cache building never loads E010 or trains it. Training does not load E007.
+
+Before adaptation, zero-shot evaluation compares the frozen denoiser coordinates with the same coordinates passed through the selected synthetic-trained E010 model. Each boundary compares those fixed references with the adapted refiner on the exact same cached pairs. Reports retain paired per-identity and per-condition metrics and deterministic identity bootstrap intervals. The overall adjudication is `strong_pass` at ≥30% paired RMSE reduction, each length stratum ≥20%, local-distance RMSE ≥20%, and every safety gate passing; `promising_real_domain_gain` at 20–30% with all strata non-worsening, CI excluding zero and safety gates passing; otherwise `insufficient_real_domain_gain` under the user-declared conditions. Strong pass only prepares a later full-sampler validation; promising gain is human-review evidence; insufficient gain recommends integrating global equivariant blocks into the diffusion denoiser.
+
+## Lifecycle commands
+
+The completed cache is published at `phase4b_real_denoiser_v1.final/manifest.json` and remains immutable. Zero-shot and training use `phase4b_training_v1.staging/`; completed training publishes to `phase4b_training_v1.final/`. Scientific review publishes separately to `phase4b_real_denoiser_v1_review_v1/`. A cache directory is not a training result; training completion requires validated `results.json`, zero-shot artifacts, journal, and final checkpoint.
+
+Run from the repository root, in order. These commands are intentionally commands only; implementation and validation do not execute them.
+
+```bash
+python reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/runner.py --plan-only
+python reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/runner.py --validate-contract
+python reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/runner.py --build-cache
+python reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/runner.py --zero-shot
+python reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/runner.py --execute
+python reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/runner.py --monitor
+# After a committed full-state checkpoint exists, including a recoverable pending.pt:
+python reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/runner.py --resume
+```
+
+The journal prefix is exactly the existing journal bytes, or `b""` when absent. Each update hashes that prefix followed by one `canonical(event) + b"\n"` row. The same rule applies to every update. A flushed checkpoint containing model, optimizer, constant scheduler, scaler, all RNG states, cursor, boundaries, the event, and the prefix hash is atomically published as `pending.pt` and the directory is synced. This is the durable commit point. The complete journal is then flushed and atomically published, followed by renaming `pending.pt` to `latest.pt`, with directory syncs after both publications.
+
+Monitoring inspects these files without repairing them. Resume validates the pending checkpoint against either the preceding journal or the already-published journal and deterministically finishes publication before restoring full state. Temporary files alone are uncommitted attempts. Fresh execute is allowed only at zero committed updates; any durable checkpoint requires resume. An empty or absent journal without a durable checkpoint can restart from the pinned update-1092 initialization, using the original seeds and settings.
+
+The October 1 first attempt reached `optimizer.step()` and appended its event in memory, then failed reading the absent journal while constructing its first checkpoint. It persisted no training checkpoint, journal row, model/optimizer/scheduler/RNG state, boundary, or training metric. The three zero-shot artifacts remain committed separately. Scientific state is zero committed training updates; the next action is `--execute`. Failure log, original runner, file inventory, checks, and hash reconciliation are preserved under `lifecycle_repair_audit/`.
+
+The published manifest's byte SHA-256 is `56018f2b9160151da9c206dbee0780ed269c319ab43ca13be10f8df3e3f8e1ff`, with mtime `2026-10-01T08:38:25.096656Z`. Its compact canonical JSON SHA-256 is `d3b25887068d9ee15e0e490484769a8086850e078cd9ce24ab6fca817e9fcef7`. The former was correctly reported as a file hash. The earlier monitor mislabeled the latter as a manifest file hash; it is a serialization of the manifest itself, not a verification summary or a different cache. The current monitor reports both explicitly. Verification checks all 776 archives, sidecars, and 99,240 record tensor hashes without rewriting the manifest.
+
+The existing zero-shot report and completion marker pin the matching canonical content through `cache_sha256`. They do not pin original manifest whitespace bytes, so exact consumed-file serialization cannot be established from those fields alone. The observed manifest bytes still match the earlier file hash and the build log's manifest output. No manifest modification by zero-shot or this repair is evidenced. Existing zero-shot artifacts are preserved; future reports additionally record and validate `cache_manifest_file_sha256`. Monitoring, verification, zero-shot, and training never rewrite the published cache manifest.

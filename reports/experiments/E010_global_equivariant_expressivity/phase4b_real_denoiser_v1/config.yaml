@@ -1,0 +1,69 @@
+schema: e010_phase4b_real_denoiser_v1
+seed: 41045
+diffusion:
+  checkpoint: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt
+  checkpoint_sha256: 2553ce18b5644aaf1e2d512b85664dfff2eaf5488f9536accbfb3e8ec18c2add
+  source_config: configs/e007_coordinate_real_pilot_v1.yaml
+  source_config_sha256: f2d66f8b8aef9470251edc7213f0ad1e7063f4939f0e97a051e8476fac1d3f90
+  parameterization: centered_coordinate_v
+  steps: 500
+  coordinate_scale_angstrom: 12.22820347644835
+  # E007 cosine VP indices run 0..499; larger index means more noise.
+  timesteps: [50, 250, 450]
+  condition_labels: [late_low_noise, intermediate, early_high_noise]
+e010:
+  review: reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/phase4a_multicorruption_v2_scientific_review_v1/review.json
+  final_dir: reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/phase4a_multicorruption_v2.final
+  checkpoint: reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/phase4a_multicorruption_v2.final/checkpoint_update_1092.pt
+  checkpoint_sha256: e2a369d9c43617918056ea0ac5bb5f161ccb7adc0a829d694fecf9be4ed81c16
+  selected_update: 1092
+  config: configs/e010_phase4a_multicorruption_v2.yaml
+  model_source: src/protein_distance_diffusion/models/e010_global_equivariant.py
+  config_sha256: cd5e42340ae3ce67d50beba73d1056c54f275eb4ad5997fc88d8b4a5f8734bfb
+  model_source_sha256: 05adad11750e4c47ab5308965973626c226b064c5ba6117bff9bfcfce4186f65
+  review_sha256: 33380f188403f629a3ccd04dad737a06f70c48aaa54b2ed18728c8adfef3860b
+  final_directory_inventory_sha256: 0136277cc6d0e2abb9c4ba0770be359f5f52996425fac362ac6233e544fc11b8
+data:
+  source_plan: reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/plan.json
+  source_plan_sha256: e318ffd5fa1b2f919d6e2ba5709ec9893f54ad7d7da77d05dcf29c8345185765
+  training_manifest: reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/training_seed_manifest.json
+  training_manifest_sha256: 69696551bbfbe00c0b7140a6e1b6e3c79de0f050dba25269ccf3068dd9f56cd0
+  development_reference: reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/development_baseline_reference.json
+  development_reference_sha256: 4bbbb7e56b45965039f1de0f28d774e3f29e5ba11e13bef8f01eb41e0812100a
+  diffusion_model_source: src/protein_distance_diffusion/models/equivariant_pair_coordinate_unet.py
+  diffusion_model_source_sha256: 18a66901f1d1ee7a46af5efc3a228f96f35e0b702f5f740231b90876875a1d0e
+  diffusion_equations_source: src/protein_distance_diffusion/training/coordinate_diffusion.py
+  diffusion_equations_source_sha256: e8f6b0288bd64570226963c2b1d6025a87b1598c7c9ef683c793e90e373a05fa
+  diffusion_schedule_source: src/protein_distance_diffusion/diffusion/schedules.py
+  diffusion_schedule_source_sha256: 602232415edea804b0a2bdecee3a7330c3eb50199c19c356d33d3b8d0fb0a6c2
+  development_conditions_per_identity: 3
+  train_identity_count: 16384
+  train_example_count: 98280
+  development_identity_count: 320
+  development_example_count: 960
+  effective_batch_size: 90
+  microbatch_per_stratum: 18
+  updates: 1092
+  boundaries: [364, 728, 1092]
+  length_strata: [20-64, 65-128, 129-256, 257-384, 385-500]
+training:
+  learning_rate: 0.0003
+  weight_decay: 0.0
+  gradient_clip_norm: 5.0
+  objective: mean_structure_masked_xyz_mse_plus_1e-5_masked_delta_l2
+  amp: disabled_phase4a_reference
+  scheduler: constant
+cache:
+  shard_records: 128
+  format: deterministic_npz
+  staging_dir: phase4b_real_denoiser_v1.staging
+  final_dir: phase4b_real_denoiser_v1.final
+  review_dir: phase4b_real_denoiser_v1_review_v1
+adjudication:
+  strong_pass_overall_reduction_min: 0.30
+  strong_pass_each_stratum_min: 0.20
+  strong_pass_local_distance_min: 0.20
+  promising_overall_min: 0.20
+  bootstrap_replicates: 10000
+  bootstrap_seed: 41046
+authorization: {phase4b: false, prospective: false, production: false, downstream: false}
