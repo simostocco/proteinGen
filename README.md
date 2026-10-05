@@ -1,4 +1,80 @@
-# Protein Distance Diffusion
+# Protein structure generation research
+
+This repository investigates protein structure generation through C-alpha distance
+matrix diffusion, coordinate diffusion, and geometric refinement. It also contains
+an independent sequence baseline and experimental sequence/geometry co-design
+branches. It is a research history, not a validated final structure generator.
+
+## Research progression / selected experiments
+
+Early experiments generated length-conditioned distance matrices and tested
+Euclidean embeddability, rank, triangle consistency and local chain geometry.
+Sequence/geometry experiments then investigated whether structural information
+improved residue prediction. Later work moved to coordinate generation and
+diagnostics of denoising versus sampling, followed by E008's internal-coordinate
+decoder, E009's Bayesian geometry refiner and E010's global equivariant coordinate
+refiner. Numerical completion and improved reconstruction metrics do not by
+themselves establish physically meaningful generated structures.
+
+| Experiment | Question | Result | Decision |
+|---|---|---|---|
+| E000 | Does baseline distance diffusion generate protein-like geometry? | Finite, diverse matrices; 0/375 pass calibrated real-like geometry. | Investigate global geometric consistency. |
+| E001 | Does symmetric axial attention improve matrix geometry? | Several global metrics improve; strict validity still 0/375; training histories differ. | Useful selected-model evidence, not a clean causal ablation. |
+| E002 | Does spectral EDM regularization improve realizability? | Global geometry improves, adjacent-distance error worsens; strict validity remains zero. | Retain as the historical matrix baseline; investigate local tradeoffs. |
+| E003 | Can an adjacent-distance objective repair local geometry? | Modest adjacent improvement, global spectral/triangle regression. | Do not promote E003. |
+| E004 | Does triangle multiplication improve relational geometry? | Better global consistency/repairability, but reconstructed traces remain imperfect. | Treat as a proposal model, not a valid backbone generator. |
+| E005 | Does sequence/geometry feedback improve residue prediction? | Scaffold and training execute; measured conditioning benefit is small and structural utility ambiguous. | Do not infer useful inverse folding from execution success. |
+| E006 | Can richer backbone features and a scratch sequence prior support co-design? | Rich-data provenance work succeeds; scratch prior lacks validated contextual utility; definitive joint Stage B is not established. | Keep data infrastructure; close the scratch-prior route. |
+| E007 | Can coordinate diffusion avoid invalid distance matrices? | Coordinate denoising is learned; sampling and local-geometry limitations persist. | Diagnose denoiser/sampler behavior and local repair separately. |
+| E008 | Can a fixed-bond internal-coordinate decoder repair structures? | Corrected tiny-overfit RMSE 3.591 Å exceeds the 0.5 Å gate. | Decoder pilot remains blocked. |
+| E009 | Can a Bayesian geometry-prior refiner resolve the error? | Bounded overfit/objective diagnostics do not establish a useful generalizing refiner. | Test global coordinate expressivity in E010. |
+| E010 | Can global coordinate refinement transfer to real denoiser outputs? | Phase 4B optimizes successfully but gains only ~1.25% aligned RMSD while local geometry regresses; weight-only diagnostics fail the final decision gates. | No validated final generator; stop weight-only tuning. |
+
+### Completed / established findings
+
+- Phase 4B genuinely optimized all 129 E010 refiner parameter tensors through
+  1,092 Adam updates; successful optimization is not successful scientific learning.
+- Malformed historical archives, including `7ar7_M.npz`, were excluded from the
+  actual Phase 4B training/evaluation populations.
+- The Phase 4B objective is masked Cartesian component MSE plus `1e-5` residual
+  component MSE, without alignment or an explicit local-distance term.
+- Gradient and finite-displacement diagnostics confirmed that the historical
+  mixed Adam direction reduces Cartesian error while degrading local i+1/i+2/i+3
+  geometry on the fixed diagnostic panels.
+- E010 is reflection-inclusive O(3)/E(3)-equivariant and has no intrinsic
+  handedness preference. Ordinary pairwise distances cannot distinguish mirrors.
+- Both condition-weight counterfactuals are complete. CF1 partially improves the
+  tradeoff; CF2 reverses aggregate training local harm but retains only 66.26% of
+  Cartesian descent, below the pre-registered 70% gate, and leaves development
+  local harm. **Weight-only tuning is closed; CF2 should not be trained.**
+
+### Ongoing research
+
+The next question is an explicit local structural auxiliary objective:
+
+```text
+L_total = L_cart + lambda * mean(L_local_i+1, L_local_i+2, L_local_i+3)
+```
+
+Restore historical equal corruption-condition weights `(1/3, 1/3, 1/3)` and
+pre-register a frozen-state coefficient diagnostic before retraining. The local
+terms initially use the validated endpoint-masked distance errors, not an
+unrestricted all-pairs loss. No further condition-weight search is planned.
+Chirality-aware representation is a separate future architectural track.
+
+Deeper records:
+
+- [Experiment timeline](docs/experiment_timeline.md)
+- [E010 Phase 4B forensic closeout](docs/e010_phase4b_forensic_closeout.md)
+- [Completed condition-weight counterfactuals](docs/e010_condition_weight_counterfactual.md)
+- [Audited baseline consolidation](docs/recovery/baseline_consolidation_20261004.md)
+
+Source/configs and textual research records are public. Large datasets,
+checkpoints and raw diagnostic outputs are intentionally excluded; a source-only
+clone is suitable for inspection, not a complete reproduction bundle. Some
+research tests require separately retained local artifacts.
+
+## Original distance-diffusion baseline
 
 Stage 1 implements unconditional generation of continuous protein residue-distance matrices conditioned on residue count:
 
@@ -16,7 +92,7 @@ The model learns a distribution, not a deterministic function `D = f(N)`. Differ
 
 ## Distance Maps And Contact Maps
 
-The training target is always the continuous matrix `D in R^(N x N)` in angstrom. Binary contact maps are derived only for diagnostics and visualization:
+For the original distance-diffusion branch, the training target is the continuous matrix `D in R^(N x N)` in angstrom. Binary contact maps are derived only for diagnostics and visualization:
 
 `C_ij^(tau) = 1[D_ij < tau]`
 

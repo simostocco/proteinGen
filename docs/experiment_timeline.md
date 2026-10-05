@@ -179,4 +179,21 @@ Distance-AF execution was started during this preparation.
 
 ## E010 Phase 4B forensic closeout — 2026-10-02
 
-Phase 4B completed 98,280 examples and 1,092 updates; all 129 refiner tensors changed. All three boundaries were `insufficient_real_domain_gain`. Final paired aligned-coordinate RMSD gain was 1.2499% while mean local-distance improvement was −14.0092%. Historical malformed archives were excluded from actual training/evaluation populations. Zero-update gradients and finite Adam displacements confirmed Cartesian/local-geometry conflict on fixed training and development panels; condition 450 dominated the final mixed displacement. These panels do not establish a length law. E010 remains reflection-inclusive E(3)-equivariant without a handedness preference. See [the forensic closeout](e010_phase4b_forensic_closeout.md) for metrics, limitations, checkpoint hashes and the condition-weight counterfactual.
+Phase 4B completed 98,280 examples and 1,092 updates; all 129 refiner tensors changed. All three boundaries were `insufficient_real_domain_gain`. Final paired aligned-coordinate RMSD gain was 1.2499% while mean local-distance improvement was −14.0092%. Historical malformed archives were excluded from actual training/evaluation populations. Zero-update gradients and finite Adam displacements confirmed Cartesian/local-geometry conflict on fixed training and development panels; condition 450 dominated the historical equal-mixture displacement. These panels do not establish a length law. E010 remains reflection-inclusive E(3)-equivariant without a handedness preference. See [the forensic closeout](e010_phase4b_forensic_closeout.md) for metrics, limitations and checkpoint hashes.
+
+## E010 frozen condition-weight closeout — 2026-10-05
+
+CF1 `(5/12,5/12,1/6)` versus equal weights retained 89.00% Cartesian descent,
+reduced predicted local harm 37.62% and was classified W2 (partial improvement).
+CF2 `(11/24,11/24,1/12)` reversed all three aggregate training local derivatives,
+but retained only 66.26% Cartesian descent versus the pre-registered 70% gate.
+Development mean-local MSE remained slightly harmful. CF2 was classified X4
+under the retention gate; alpha=0.01 independent copies confirmed the responses.
+Condition 250, rather than 450, dominated CF2's raw gradient projection.
+
+**Weight-only tuning is closed; CF2 should not be trained.** The next step is a
+pre-registered frozen-state coefficient diagnostic for an explicit local
+i+1/i+2/i+3 auxiliary objective, restoring historical equal condition weights.
+Chirality-aware representation remains separate. The
+[completed counterfactual note](e010_condition_weight_counterfactual.md) records
+both results and the unchanged checkpoint/panels; no retraining was performed.

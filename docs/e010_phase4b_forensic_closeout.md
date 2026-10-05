@@ -177,15 +177,20 @@ identity exposed to frozen E007 training. Independent development here means
 independent of the five-protein diagnostic training panel, not a leakage-free
 prospective biological test. No production checkpoint is authorized.
 
-Next: a zero-update condition-weight counterfactual at final update 1092.
-Control weights (50,250,450)=(1/3,1/3,1/3); counterfactual=(5/12,5/12,1/6).
-Hold checkpoint, Adam moments, clipping, proteins, cached noise, coordinate
-objective, masks and local metrics fixed. Reconstruct both directions without
-`optimizer.step()`. Evaluate original equal-mixture Cartesian descent, each local
-offset, common-direction condition-50 harm and independent development transfer.
-A useful outcome retains Cartesian descent while reducing local harm; stopping
-condition-50 harm is a stronger criterion. Report all five criteria even if the
-counterfactual fails. Do not retrain, add a local loss or change architecture.
+The original next step was a frozen condition-weight counterfactual. Both
+pre-registered diagnostics are now complete: CF1 `(5/12,5/12,1/6)` was W2,
+partial improvement; CF2 `(11/24,11/24,1/12)` reversed aggregate training local
+harm but retained only 66.26% of Cartesian descent, below the 70% gate, and left
+development local harm. CF2 was X4 under that retention gate. Independent
+alpha=0.01 copies confirmed the responses; no training or optimizer steps ran.
+See [the completed condition-weight record](e010_condition_weight_counterfactual.md)
+for both diagnostics, gate results, projection contributions and finite changes.
+
+Weight-only tuning is closed; CF2 should not be trained. The next question is
+`L_cart + lambda * mean(L_local_i+1,L_local_i+2,L_local_i+3)`, restoring historical
+equal condition weights `(1/3,1/3,1/3)`. Pre-register the coefficient choices for
+a frozen-state diagnostic before any retraining. No auxiliary objective or
+architecture modification was implemented by the completed diagnostics.
 
 Separate later tracks: objective/local-geometry balancing; orientation-sensitive
 chirality features; EDM/coordinate consistency; sequence conditioning only after

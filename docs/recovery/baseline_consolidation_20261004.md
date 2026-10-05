@@ -118,9 +118,17 @@ original conditions. The environment snapshots and raw audit provenance distingu
 historical setup from currently installed package versions. Final validation and
 pushed SHA are recorded in the external consolidation report and Git history.
 
-No condition weights, structural objective or architecture were changed. The next
-step is the predeclared zero-update condition-weight counterfactual in the closeout,
-prepared only after the baseline is pushed and verified.
+No condition weights, structural objective or architecture were changed during
+consolidation. Its planned next step was the predeclared frozen condition-weight
+counterfactual, prepared only after the baseline was pushed and verified.
+
+Subsequent closeout: both frozen counterfactuals are complete; CF1 was W2 and
+CF2 was X4 under the pre-registered Cartesian-retention gate. Weight-only tuning
+is closed and CF2 should not be trained. See the
+[completed record](../e010_condition_weight_counterfactual.md). The next question
+is a frozen local-auxiliary coefficient diagnostic with equal condition weights,
+not another weighting or a training run. The audited baseline commit remains
+`058ac3e747d9dc28d1a3e9d0f449627de24cf2be`.
 
 ## Final validation
 
