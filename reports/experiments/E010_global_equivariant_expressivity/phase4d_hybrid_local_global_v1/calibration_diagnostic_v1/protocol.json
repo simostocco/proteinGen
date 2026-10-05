@@ -1,0 +1,29 @@
+{
+  "schema": "e010_phase4d_frozen_calibration_v1",
+  "base_commit": "7745c3b45c856251af16c83d22995d479329cfd0",
+  "device": "cpu",
+  "threads": 2,
+  "seed": 41047,
+  "panel": "../tiny_panel.json",
+  "direction": "negative raw total local-parameter gradient at exact zero initialization; no normalization, optimizer or optimizer state",
+  "variants": {"A": {"beta": 0.0, "rho": 0.0}, "B": {"beta": 1.0, "rho": 0.0}, "C": {"beta": 1.0, "rho": 0.01}},
+  "delta_cart": [0.0, 0.005, 0.01],
+  "alpha": [0.0, 0.0001, 0.001, 0.01],
+  "guard_reduction": "relu after equal-example mean raw Cartesian objective over all 60 examples",
+  "independent_copies": "fresh local parameter copy from theta0 for every scale; no cumulative displacement",
+  "shared_direction_policy": "prove initial directions equal for all nine variant/tolerance combinations, then reuse four identical physical points while reporting all 36 combinations",
+  "metric_reduction": "equal-example mean MSE; RMSE reported both sqrt(mean MSE) and mean per-example RMSE; primary mean-local RMSE follows preparation mean per-example convention",
+  "chirality_primary": "pooled inversion rate on jointly assessable windows; also report paired common baseline/point assessability and retained-assessability counts",
+  "primary_criteria": {
+    "mean_local_rmse_lower": true,
+    "each_offset_rmse_non_harmful": true,
+    "aligned_rmsd_degradation_max": 0.01,
+    "chirality_inversion_rate_non_worsening": true,
+    "displacement_rms_max_angstrom": 1.0,
+    "displacement_max_angstrom": 3.0,
+    "all_finite": true
+  },
+  "training_launched": false,
+  "optimizer_steps": 0,
+  "coefficient_or_scale_expansion": false
+}

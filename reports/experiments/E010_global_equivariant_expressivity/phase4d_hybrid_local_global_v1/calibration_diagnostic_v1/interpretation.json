@@ -1,0 +1,639 @@
+{
+  "additional_coefficients_or_alpha_evaluations": false,
+  "analytic_guard_boundary_estimates": [
+    {
+      "activation_semantics": "strictly above boundary; ReLU derivative zero at boundary",
+      "delta_cart": 0,
+      "estimated_boundary_alpha": 0,
+      "estimated_displacement_rms_angstrom": 0.0,
+      "local_metric_at_boundary": "not evaluated",
+      "method": "analytic quadratic raw-Cartesian crossing on head-only linear-output path, inferred from registered points; no extra evaluation"
+    },
+    {
+      "activation_semantics": "strictly above boundary; ReLU derivative zero at boundary",
+      "delta_cart": 0.005,
+      "estimated_boundary_alpha": 0.0018662678341281461,
+      "estimated_displacement_rms_angstrom": 0.5040233956343924,
+      "local_metric_at_boundary": "not evaluated",
+      "method": "analytic quadratic raw-Cartesian crossing on head-only linear-output path, inferred from registered points; no extra evaluation"
+    },
+    {
+      "activation_semantics": "strictly above boundary; ReLU derivative zero at boundary",
+      "delta_cart": 0.01,
+      "estimated_boundary_alpha": 0.0029281386308428517,
+      "estimated_displacement_rms_angstrom": 0.7908030930057365,
+      "local_metric_at_boundary": "not evaluated",
+      "method": "analytic quadratic raw-Cartesian crossing on head-only linear-output path, inferred from registered points; no extra evaluation"
+    }
+  ],
+  "displacement_penalty": [
+    {
+      "alpha": 0.0,
+      "displacement_penalty": 0.0,
+      "local_directional_derivative": -963.0765347606858,
+      "penalty_directional_derivative": 0.0,
+      "weighted_penalty_gradient_norm": 0.0,
+      "weighted_penalty_to_local_gradient_norm_ratio": 0.0
+    },
+    {
+      "alpha": 0.0001,
+      "displacement_penalty": 7.293795992154629e-06,
+      "local_directional_derivative": -970.918997714136,
+      "penalty_directional_derivative": 0.14587250510192007,
+      "weighted_penalty_gradient_norm": 0.00497500399031105,
+      "weighted_penalty_to_local_gradient_norm_ratio": 0.0001590119122390963
+    },
+    {
+      "alpha": 0.001,
+      "displacement_penalty": 0.0007293794142703218,
+      "local_directional_derivative": -986.562750939883,
+      "penalty_directional_derivative": 1.4587537115381792,
+      "weighted_penalty_gradient_norm": 0.049776868884979876,
+      "weighted_penalty_to_local_gradient_norm_ratio": 0.0015634199707969811
+    },
+    {
+      "alpha": 0.01,
+      "displacement_penalty": 0.07293793272972104,
+      "local_directional_derivative": 671.1645151796965,
+      "penalty_directional_derivative": 14.587591633497823,
+      "weighted_penalty_gradient_norm": 0.5239111120738276,
+      "weighted_penalty_to_local_gradient_norm_ratio": 0.020777217833019893
+    }
+  ],
+  "interpretation": "alpha=1e-4 passes aggregate criteria with only 0.6175% local improvement. alpha=1e-3 gains 6.4320% but worsens chirality; alpha=1e-2 overshoots magnitude, i+1, Cartesian and orientation criteria. No sampled movement demonstrates substantial safe improvement or reaches the later proposed 20% gate.",
+  "points": [
+    {
+      "alpha": 0.0,
+      "condition_change": {
+        "250": {
+          "aligned_rmsd_change_fraction": 0.0,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.0,
+          "local_offset_change_fraction": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "raw_cartesian_change": 0.0,
+          "raw_cartesian_change_fraction": 0.0
+        },
+        "450": {
+          "aligned_rmsd_change_fraction": 0.0,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.0,
+          "local_offset_change_fraction": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "raw_cartesian_change": 0.0,
+          "raw_cartesian_change_fraction": 0.0
+        },
+        "50": {
+          "aligned_rmsd_change_fraction": 0.0,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.0,
+          "local_offset_change_fraction": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "raw_cartesian_change": 0.0,
+          "raw_cartesian_change_fraction": 0.0
+        }
+      },
+      "overall_change": {
+        "aligned_rmsd_change_fraction": 0.0,
+        "chirality_assessability_count_change": 0,
+        "chirality_inversion_count_change": 0,
+        "chirality_inversion_rate_change": 0.0,
+        "local_improvement_fraction": 0.0,
+        "local_offset_change_fraction": {
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0
+        },
+        "raw_cartesian_change": 0.0,
+        "raw_cartesian_change_fraction": 0.0
+      },
+      "primary_criteria": {
+        "aligned_degradation_le_1pct": true,
+        "all_finite": true,
+        "all_offsets_non_harmful": true,
+        "chirality_non_worsening": true,
+        "displacement_max_le_3A": true,
+        "displacement_rms_le_1A": true,
+        "mean_local_lower": false,
+        "simultaneous_pass": false
+      },
+      "stratum_change": {
+        "129-256": {
+          "aligned_rmsd_change_fraction": 0.0,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.0,
+          "local_offset_change_fraction": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "raw_cartesian_change": 0.0,
+          "raw_cartesian_change_fraction": 0.0
+        },
+        "20-64": {
+          "aligned_rmsd_change_fraction": 0.0,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.0,
+          "local_offset_change_fraction": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "raw_cartesian_change": 0.0,
+          "raw_cartesian_change_fraction": 0.0
+        },
+        "257-384": {
+          "aligned_rmsd_change_fraction": 0.0,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.0,
+          "local_offset_change_fraction": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "raw_cartesian_change": 0.0,
+          "raw_cartesian_change_fraction": 0.0
+        },
+        "385-500": {
+          "aligned_rmsd_change_fraction": 0.0,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.0,
+          "local_offset_change_fraction": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "raw_cartesian_change": 0.0,
+          "raw_cartesian_change_fraction": 0.0
+        },
+        "65-128": {
+          "aligned_rmsd_change_fraction": 0.0,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.0,
+          "local_offset_change_fraction": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "raw_cartesian_change": 0.0,
+          "raw_cartesian_change_fraction": 0.0
+        }
+      }
+    },
+    {
+      "alpha": 0.0001,
+      "condition_change": {
+        "250": {
+          "aligned_rmsd_change_fraction": 0.00020830173143693287,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 1,
+          "chirality_inversion_rate_change": 0.00023025558369788035,
+          "local_improvement_fraction": 0.004411169160112527,
+          "local_offset_change_fraction": {
+            "1": -0.010294223051431128,
+            "2": -0.0030870896713087737,
+            "3": -0.0020673776461418436
+          },
+          "raw_cartesian_change": 0.006529712677002308,
+          "raw_cartesian_change_fraction": 0.0004199438935232891
+        },
+        "450": {
+          "aligned_rmsd_change_fraction": 0.0001329116875667946,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": -5,
+          "chirality_inversion_rate_change": -0.0011512779184895128,
+          "local_improvement_fraction": 0.005825198920429875,
+          "local_offset_change_fraction": {
+            "1": -0.014007226042616616,
+            "2": -0.004848623679657438,
+            "3": -0.003133777178961461
+          },
+          "raw_cartesian_change": 0.017237186431884766,
+          "raw_cartesian_change_fraction": 0.00019605155838497978
+        },
+        "50": {
+          "aligned_rmsd_change_fraction": -0.0024863116205626756,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 2,
+          "chirality_inversion_rate_change": 0.0004605111673958162,
+          "local_improvement_fraction": 0.010713559850415888,
+          "local_offset_change_fraction": {
+            "1": -0.014438003758154072,
+            "2": -0.012250635360378515,
+            "3": -0.0059279528900810785
+          },
+          "raw_cartesian_change": -0.008453202247619584,
+          "raw_cartesian_change_fraction": -0.004794970461379111
+        }
+      },
+      "overall_change": {
+        "aligned_rmsd_change_fraction": -9.574692172564792e-05,
+        "chirality_assessability_count_change": 0,
+        "chirality_inversion_count_change": -2,
+        "chirality_inversion_rate_change": -0.00015350372246525357,
+        "local_improvement_fraction": 0.006175173702214876,
+        "local_offset_change_fraction": {
+          "1": -0.012812002972064085,
+          "2": -0.005505120187565438,
+          "3": -0.0031775948169060486
+        },
+        "raw_cartesian_change": 0.005104565620428048,
+        "raw_cartesian_change_fraction": 0.0001455209219141107
+      },
+      "primary_criteria": {
+        "aligned_degradation_le_1pct": true,
+        "all_finite": true,
+        "all_offsets_non_harmful": true,
+        "chirality_non_worsening": true,
+        "displacement_max_le_3A": true,
+        "displacement_rms_le_1A": true,
+        "mean_local_lower": true,
+        "simultaneous_pass": true
+      },
+      "stratum_change": {
+        "129-256": {
+          "aligned_rmsd_change_fraction": -8.278136394024305e-05,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 4,
+          "chirality_inversion_rate_change": 0.001891252955082745,
+          "local_improvement_fraction": 0.006365749887118577,
+          "local_offset_change_fraction": {
+            "1": -0.013344517741730066,
+            "2": -0.005925936992133396,
+            "3": -0.0031490845462616157
+          },
+          "raw_cartesian_change": 0.006814708312351314,
+          "raw_cartesian_change_fraction": 0.00022835443312763104
+        },
+        "20-64": {
+          "aligned_rmsd_change_fraction": -0.0001246969861454783,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.006006588408584701,
+          "local_offset_change_fraction": {
+            "1": -0.011979834395897115,
+            "2": -0.0050724941805906365,
+            "3": -0.003167149902188471
+          },
+          "raw_cartesian_change": 0.002871185541152954,
+          "raw_cartesian_change_fraction": 0.00012226045472885083
+        },
+        "257-384": {
+          "aligned_rmsd_change_fraction": -0.00010165479897383811,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": -2,
+          "chirality_inversion_rate_change": -0.0005001250312577921,
+          "local_improvement_fraction": 0.006449715857720029,
+          "local_offset_change_fraction": {
+            "1": -0.013560437502037725,
+            "2": -0.005836265806446361,
+            "3": -0.0031634253107496457
+          },
+          "raw_cartesian_change": 0.007740219434104745,
+          "raw_cartesian_change_fraction": 0.00016874886368567488
+        },
+        "385-500": {
+          "aligned_rmsd_change_fraction": -8.065362622722283e-05,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": -4,
+          "chirality_inversion_rate_change": -0.0007724990343762062,
+          "local_improvement_fraction": 0.00618866849933708,
+          "local_offset_change_fraction": {
+            "1": -0.01295575147017547,
+            "2": -0.005415104168477791,
+            "3": -0.003245148740439019
+          },
+          "raw_cartesian_change": 0.006817390521362654,
+          "raw_cartesian_change_fraction": 0.00013238094357648222
+        },
+        "65-128": {
+          "aligned_rmsd_change_fraction": -9.725004830973827e-05,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 0,
+          "chirality_inversion_rate_change": 0.0,
+          "local_improvement_fraction": 0.0058967122044122355,
+          "local_offset_change_fraction": {
+            "1": -0.01235546255423503,
+            "2": -0.005333889233756106,
+            "3": -0.0031646773727406208
+          },
+          "raw_cartesian_change": 0.0012793242931365967,
+          "raw_cartesian_change_fraction": 5.180289244832714e-05
+        }
+      }
+    },
+    {
+      "alpha": 0.001,
+      "condition_change": {
+        "250": {
+          "aligned_rmsd_change_fraction": 0.00281795550421049,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 25,
+          "chirality_inversion_rate_change": 0.005756389592447619,
+          "local_improvement_fraction": 0.04799844080162852,
+          "local_offset_change_fraction": {
+            "1": -0.11229743965731287,
+            "2": -0.03340336478806516,
+            "3": -0.022486814118871767
+          },
+          "raw_cartesian_change": 0.08661861419677663,
+          "raw_cartesian_change_fraction": 0.005570682799797
+        },
+        "450": {
+          "aligned_rmsd_change_fraction": 0.0014778775063801763,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 4,
+          "chirality_inversion_rate_change": 0.0009210223347916324,
+          "local_improvement_fraction": 0.060878260068138346,
+          "local_offset_change_fraction": {
+            "1": -0.14276325312820948,
+            "2": -0.051097355654283194,
+            "3": -0.03394824324925172
+          },
+          "raw_cartesian_change": 0.19423532485961914,
+          "raw_cartesian_change_fraction": 0.002209185256690338
+        },
+        "50": {
+          "aligned_rmsd_change_fraction": -0.018454902252483696,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 18,
+          "chirality_inversion_rate_change": 0.00414460050656229,
+          "local_improvement_fraction": 0.10693258839184105,
+          "local_offset_change_fraction": {
+            "1": -0.1485838824221648,
+            "2": -0.1224508697218828,
+            "3": -0.055080253311669214
+          },
+          "raw_cartesian_change": -0.06210159063339238,
+          "raw_cartesian_change_fraction": -0.03522633008995202
+        }
+      },
+      "overall_change": {
+        "aligned_rmsd_change_fraction": -5.071590971084117e-05,
+        "chirality_assessability_count_change": 0,
+        "chirality_inversion_count_change": 47,
+        "chirality_inversion_rate_change": 0.0036073374779338474,
+        "local_improvement_fraction": 0.0643202331818914,
+        "local_offset_change_fraction": {
+          "1": -0.1334643782055157,
+          "2": -0.057190249326148135,
+          "3": -0.033211388990670554
+        },
+        "raw_cartesian_change": 0.07291744947433898,
+        "raw_cartesian_change_fraction": 0.002078730152603292
+      },
+      "primary_criteria": {
+        "aligned_degradation_le_1pct": true,
+        "all_finite": true,
+        "all_offsets_non_harmful": true,
+        "chirality_non_worsening": false,
+        "displacement_max_le_3A": true,
+        "displacement_rms_le_1A": true,
+        "mean_local_lower": true,
+        "simultaneous_pass": false
+      },
+      "stratum_change": {
+        "129-256": {
+          "aligned_rmsd_change_fraction": 0.000109780434202289,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 5,
+          "chirality_inversion_rate_change": 0.0023640661938534313,
+          "local_improvement_fraction": 0.06581195175236354,
+          "local_offset_change_fraction": {
+            "1": -0.13858123033815606,
+            "2": -0.060991359242769105,
+            "3": -0.032453127402305215
+          },
+          "raw_cartesian_change": 0.09028168519337854,
+          "raw_cartesian_change_fraction": 0.0030252539212525242
+        },
+        "20-64": {
+          "aligned_rmsd_change_fraction": -7.695984358657704e-05,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 3,
+          "chirality_inversion_rate_change": 0.007299270072992692,
+          "local_improvement_fraction": 0.06341035258454819,
+          "local_offset_change_fraction": {
+            "1": -0.12622934398588437,
+            "2": -0.053279479147497644,
+            "3": -0.033824395348226455
+          },
+          "raw_cartesian_change": 0.04900452494621277,
+          "raw_cartesian_change_fraction": 0.002086704400612316
+        },
+        "257-384": {
+          "aligned_rmsd_change_fraction": -0.00021560285852328942,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 30,
+          "chirality_inversion_rate_change": 0.007501875468867214,
+          "local_improvement_fraction": 0.06685531410925394,
+          "local_offset_change_fraction": {
+            "1": -0.14008429006483447,
+            "2": -0.06045381986533094,
+            "3": -0.03307967220819519
+          },
+          "raw_cartesian_change": 0.10013154149055481,
+          "raw_cartesian_change_fraction": 0.002183023878000956
+        },
+        "385-500": {
+          "aligned_rmsd_change_fraction": -8.035351270729851e-05,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 4,
+          "chirality_inversion_rate_change": 0.0007724990343762062,
+          "local_improvement_fraction": 0.063799595854514,
+          "local_offset_change_fraction": {
+            "1": -0.13262225879869483,
+            "2": -0.056098035034976235,
+            "3": -0.033729773782297245
+          },
+          "raw_cartesian_change": 0.09054475029309117,
+          "raw_cartesian_change_fraction": 0.0017582093092853857
+        },
+        "65-128": {
+          "aligned_rmsd_change_fraction": 4.190267596149155e-05,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 5,
+          "chirality_inversion_rate_change": 0.0037707390648566985,
+          "local_improvement_fraction": 0.06195998063909469,
+          "local_offset_change_fraction": {
+            "1": -0.13093799910497994,
+            "2": -0.05564894958866551,
+            "3": -0.033011872759338146
+          },
+          "raw_cartesian_change": 0.034624745448429195,
+          "raw_cartesian_change_fraction": 0.0014020385402988556
+        }
+      }
+    },
+    {
+      "alpha": 0.01,
+      "condition_change": {
+        "250": {
+          "aligned_rmsd_change_fraction": 0.09743684301122513,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 15,
+          "chirality_inversion_rate_change": 0.0034538337554685383,
+          "local_improvement_fraction": 0.16026642306778272,
+          "local_offset_change_fraction": {
+            "1": 0.1399852056246198,
+            "2": -0.2931798303182057,
+            "3": -0.22439135458770354
+          },
+          "raw_cartesian_change": 2.998372554779051,
+          "raw_cartesian_change_fraction": 0.19283363712499058
+        },
+        "450": {
+          "aligned_rmsd_change_fraction": 0.02935227436574772,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 33,
+          "chirality_inversion_rate_change": 0.007598434262030884,
+          "local_improvement_fraction": 0.3140245972013572,
+          "local_offset_change_fraction": {
+            "1": 0.04241786477047049,
+            "2": -0.43980708782226985,
+            "3": -0.3697401219750367
+          },
+          "raw_cartesian_change": 4.131574058532706,
+          "raw_cartesian_change_fraction": 0.04699151662361656
+        },
+        "50": {
+          "aligned_rmsd_change_fraction": 0.39663061812352085,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 90,
+          "chirality_inversion_rate_change": 0.020723002532811396,
+          "local_improvement_fraction": -0.4968053533298338,
+          "local_offset_change_fraction": {
+            "1": 0.5982317881470751,
+            "2": 0.5327746494608416,
+            "3": 0.372352368909898
+          },
+          "raw_cartesian_change": 1.622050082683563,
+          "raw_cartesian_change_fraction": 0.9200870871787497
+        }
+      },
+      "overall_change": {
+        "aligned_rmsd_change_fraction": 0.08312788840434449,
+        "chirality_assessability_count_change": 0,
+        "chirality_inversion_count_change": 138,
+        "chirality_inversion_rate_change": 0.010591756850103606,
+        "local_improvement_fraction": 0.12879986295628054,
+        "local_offset_change_fraction": {
+          "1": 0.19988579902930748,
+          "2": -0.22867735147624213,
+          "3": -0.22330770630988317
+        },
+        "raw_cartesian_change": 2.9173322319984436,
+        "raw_cartesian_change_fraction": 0.08316728738503842
+      },
+      "primary_criteria": {
+        "aligned_degradation_le_1pct": false,
+        "all_finite": true,
+        "all_offsets_non_harmful": false,
+        "chirality_non_worsening": false,
+        "displacement_max_le_3A": false,
+        "displacement_rms_le_1A": false,
+        "mean_local_lower": true,
+        "simultaneous_pass": false
+      },
+      "stratum_change": {
+        "129-256": {
+          "aligned_rmsd_change_fraction": 0.08717766762026513,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 28,
+          "chirality_inversion_rate_change": 0.013238770685579215,
+          "local_improvement_fraction": 0.08449434045656323,
+          "local_offset_change_fraction": {
+            "1": 0.30005972395636116,
+            "2": -0.20025309370739142,
+            "3": -0.1906839945715032
+          },
+          "raw_cartesian_change": 3.1156562467416116,
+          "raw_cartesian_change_fraction": 0.10440269538102931
+        },
+        "20-64": {
+          "aligned_rmsd_change_fraction": 0.1084161145305107,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 5,
+          "chirality_inversion_rate_change": 0.012165450121654486,
+          "local_improvement_fraction": 0.19776004738935937,
+          "local_offset_change_fraction": {
+            "1": -0.0649197735903696,
+            "2": -0.2263440819261302,
+            "3": -0.25390019837099287
+          },
+          "raw_cartesian_change": 2.520917773246765,
+          "raw_cartesian_change_fraction": 0.10734539752786998
+        },
+        "257-384": {
+          "aligned_rmsd_change_fraction": 0.07323053472349716,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 86,
+          "chirality_inversion_rate_change": 0.021505376344086002,
+          "local_improvement_fraction": 0.09181233174100345,
+          "local_offset_change_fraction": {
+            "1": 0.34447975546527143,
+            "2": -0.2201883847994368,
+            "3": -0.22010520077360773
+          },
+          "raw_cartesian_change": 3.2736830711364746,
+          "raw_cartesian_change_fraction": 0.07137140012942655
+        },
+        "385-500": {
+          "aligned_rmsd_change_fraction": 0.06687766268966655,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 6,
+          "chirality_inversion_rate_change": 0.0011587485515642815,
+          "local_improvement_fraction": 0.05562148622070051,
+          "local_offset_change_fraction": {
+            "1": 0.4419043758839043,
+            "2": -0.18688929095591633,
+            "3": -0.2120677992451646
+          },
+          "raw_cartesian_change": 3.1461718479792253,
+          "raw_cartesian_change_fraction": 0.0610927592579702
+        },
+        "65-128": {
+          "aligned_rmsd_change_fraction": 0.09055314034638018,
+          "chirality_assessability_count_change": 0,
+          "chirality_inversion_count_change": 13,
+          "chirality_inversion_rate_change": 0.009803921568627416,
+          "local_improvement_fraction": 0.20416777711273526,
+          "local_offset_change_fraction": {
+            "1": 0.022356097237484995,
+            "2": -0.3041008199260503,
+            "3": -0.23870320346281848
+          },
+          "raw_cartesian_change": 2.530232220888138,
+          "raw_cartesian_change_fraction": 0.10245513847530696
+        }
+      }
+    }
+  ],
+  "training_authorized": false
+}

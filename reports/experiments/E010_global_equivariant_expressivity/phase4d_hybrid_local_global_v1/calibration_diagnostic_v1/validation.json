@@ -1,0 +1,39 @@
+{
+  "all_protected_input_pins_rechecked": true,
+  "base_commit": "7745c3b45c856251af16c83d22995d479329cfd0",
+  "cuda_used": false,
+  "determinism_test": "bitwise identical synthetic diagnostic result dictionaries",
+  "diagnostic_files_sha256": {
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/calibration_diagnostic_v1/REPORT.md": "9e1e093a724a21ba6cf88074abf5b9ad5aee6cf6382c03ce1eab2bbba728ed9a",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/calibration_diagnostic_v1/interpretation.json": "e90ba380184a310b4a6424d765c0176f387b34fc6ea2a8124e2fd69ac340c769",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/calibration_diagnostic_v1/protocol.json": "e24f921d1ef58872f20771ce384f494b43dd2453211316d3438c7e27d3294973",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/calibration_diagnostic_v1/results.json": "cf49f59cbf05b518314dff63e8dea46b76cacdd55e17cb8c1efc52333e427ffa",
+    "scripts/diagnose_e010_phase4d_frozen_local.py": "8e88ecaa02adc9e9384462b9b5dfbb651e1b2d941393d4fffa76f002b3f4860d",
+    "src/protein_distance_diffusion/training/e010_phase4d_diagnostic.py": "b7fdce33b35bebcde10594e8351c4422160fb922315b85a0836441465815fd65",
+    "tests/test_e010_phase4d_diagnostic.py": "25573d10f3651db64646275909f55c5ba9e7cc8a0244e6298c756dd344a3040c"
+  },
+  "effective_panel_guard_gradient_test": "matches joint-batch autograd",
+  "environment_modified": false,
+  "execution_head": "7745c3b45c856251af16c83d22995d479329cfd0",
+  "focused_cpu_tests": {
+    "failed": 0,
+    "files": [
+      "tests/test_e010_phase4d_diagnostic.py",
+      "tests/test_e010_phase4d_hybrid.py",
+      "tests/test_e010_global_equivariant.py",
+      "tests/test_e010_phase4c_local_auxiliary.py"
+    ],
+    "new_diagnostic_cases": 13,
+    "passed": 57,
+    "seconds": 4.8
+  },
+  "global_gradient_isolation": true,
+  "global_state_unchanged": true,
+  "independent_copy_isolation_test": "passed",
+  "initial_gradient_matches_preparation": true,
+  "lint": "passed",
+  "local_base_unchanged": true,
+  "optimizer_steps": 0,
+  "prepared_and_historical_tracked_files_unchanged": true,
+  "training_launched": false
+}
