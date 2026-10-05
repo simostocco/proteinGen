@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import importlib.util
 import json
@@ -106,6 +107,68 @@ def schedule_records(records):
     return queues, metadata
 
 
+def read_verified_cache(root=None, expected_manifest_sha256=None):
+    """Validate historical bytes independently of pre-formatting source-byte pins.
+
+    The audited cache manifest is immutable. Its archive and every individual
+    input/target tensor hash are checked; current source is pinned separately.
+    Historical configurations/checkpoints/cache files are never modified.
+    """
+    root = BASE / "phase4b_real_denoiser_v1.final" if root is None else Path(root)
+    if expected_manifest_sha256 is None:
+        expected_manifest_sha256 = json.loads((HERE / "diagnostic_panel.json").read_text())["cache_manifest_sha256"]
+    if pc.sha256(root / "manifest.json") != expected_manifest_sha256:
+        raise ValueError("historical cache manifest hash mismatch")
+    manifest = json.loads((root / "manifest.json").read_text())
+    records = []
+    counts = Counter()
+    for shard in manifest["shards"]:
+        path = root / shard["shard"]
+        if pc.sha256(path) != shard["archive_sha256"]:
+            raise ValueError("cache archive hash mismatch")
+        if json.loads(path.with_suffix(".json").read_text()) != shard:
+            raise ValueError("cache sidecar mismatch")
+        with np.load(path, allow_pickle=False) as z:
+            if set(z.files) != {"prediction", "target", "offsets", "records_json"}:
+                raise ValueError("cache fields mismatch")
+            meta = json.loads(z["records_json"].tobytes())
+            offsets, pred, target = z["offsets"], z["prediction"], z["target"]
+            if (
+                meta != shard["records"]
+                or len(offsets) != len(meta) + 1
+                or offsets.dtype != np.int64
+                or offsets[0] != 0
+                or offsets[-1] != len(pred)
+                or pred.dtype != np.float32
+                or target.dtype != np.float32
+                or pred.shape != target.shape
+                or pred.ndim != 2
+                or pred.shape[1] != 3
+                or not np.isfinite(pred).all()
+                or not np.isfinite(target).all()
+            ):
+                raise ValueError("cache metadata/shape/finiteness mismatch")
+            for i, row in enumerate(meta):
+                a, b = int(offsets[i]), int(offsets[i + 1])
+                if b - a != row["length"] or not row["mask_all_valid"]:
+                    raise ValueError("cache length/mask mismatch")
+                x, y = pred[a:b].copy(), target[a:b].copy()
+                if (
+                    hashlib.sha256(x.tobytes()).hexdigest() != row["prediction_sha256"]
+                    or hashlib.sha256(y.tobytes()).hexdigest() != row["target_sha256"]
+                ):
+                    raise ValueError("cache tensor hash mismatch")
+                records.append({**row, "prediction": x, "target": y})
+                counts[row["split"]] += 1
+    if (
+        len(records) != manifest["record_count"]
+        or counts["train"] != manifest["training_record_count"]
+        or counts["development"] != manifest["development_record_count"]
+    ):
+        raise ValueError("cache split counts mismatch")
+    return records, manifest
+
+
 def verify_records(records):
     for row in records:
         x, y, n = row["prediction"], row["target"], int(row["length"])
@@ -142,7 +205,7 @@ def prepare():
         raise ValueError("starting checkpoint hash mismatch")
     if not torch.cuda.is_available():
         raise RuntimeError("historical CUDA execution required")
-    records, manifest = history._load_cache()
+    records, manifest = read_verified_cache()
     dev = verify_records(records)
     queues, schedule = schedule_records(records)
     selected = [r for strata in queues.values() for rows in strata.values() for r in rows]
@@ -153,7 +216,20 @@ def prepare():
     panel_keys = sorted(
         [[r["sample_id"], r["seed"], r["timestep"]] for r in frozen_manifest["records"] if r["split"] == "train"]
     )
-    pins = pc.pins()
+    receipt = json.loads((HERE / "source_equivalence.json").read_text())
+    model_path = ROOT / "src/protein_distance_diffusion/models/e010_global_equivariant.py"
+    if (
+        pc.sha256(model_path) != receipt["execution_source_sha256"]
+        or hashlib.sha256(ast.dump(ast.parse(model_path.read_text()), include_attributes=False).encode()).hexdigest()
+        != receipt["canonical_ast_sha256"]
+    ):
+        raise ValueError("verified architecture/source equivalence changed")
+    pins = {
+        "historical_model_source_sha256": receipt["historical_source_sha256"],
+        "source_equivalence": receipt,
+        "historical_config_sha256": pc.sha256(BASE / "config.yaml"),
+        "model_config_sha256": pc.sha256(ROOT / pc.config()["e010"]["config"]),
+    }
     relevant = [
         str(Path(__file__).relative_to(ROOT)),
         "src/protein_distance_diffusion/training/local_geometry.py",
@@ -161,7 +237,9 @@ def prepare():
         str((BASE / "prepare_cache.py").relative_to(ROOT)),
         "tests/test_e010_phase4c_local_auxiliary.py",
     ]
-    relevant.append(str((HERE / "diagnostic_panel.json").relative_to(ROOT)))
+    relevant.extend(
+        str((HERE / name).relative_to(ROOT)) for name in ("diagnostic_panel.json", "source_equivalence.json")
+    )
     sources = {p: pc.sha256(ROOT / p) for p in relevant}
     source_data = sorted({(r["source_path"], r["source_sha256"]) for r in selected + dev})
     for path, expected in source_data:
@@ -535,7 +613,7 @@ def execute(resume=False):
     contract = validate_contract()
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA required")
-    records, manifest = history._load_cache()
+    records, manifest = read_verified_cache()
     queues, schedule = schedule_records(records)
     dev = verify_records(records)
     if digest(schedule) != contract["schedule_sha256"] or digest(manifest) != contract["historical_cache_digest"]:

@@ -210,3 +210,59 @@ def test_paired_local_bootstrap_uses_identity_not_condition():
     assert result["identity_count"] == 2
     assert result["mean_paired_percentage_improvement"] == 0.5
     assert result["bootstrap_ci95"] == [0.5, 0.5]
+
+
+def cache_fixture(tmp_path, *, length=4, mask_valid=True, tensor_hash=None):
+    import hashlib
+    import json
+
+    x = np.arange(12, dtype=np.float32).reshape(4, 3)
+    row = {
+        "split": "train",
+        "sample_id": "fixture_A",
+        "length": length,
+        "mask_all_valid": mask_valid,
+        "prediction_sha256": tensor_hash or hashlib.sha256(x.tobytes()).hexdigest(),
+        "target_sha256": hashlib.sha256(x.tobytes()).hexdigest(),
+    }
+    path = tmp_path / "shard_00000.npz"
+    np.savez(
+        path,
+        prediction=x,
+        target=x,
+        offsets=np.array([0, 4], dtype=np.int64),
+        records_json=np.frombuffer(json.dumps([row]).encode(), dtype=np.uint8),
+    )
+    entry = {"shard": path.name, "archive_sha256": runner.pc.sha256(path), "records": [row]}
+    path.with_suffix(".json").write_text(json.dumps(entry))
+    manifest = {"shards": [entry], "record_count": 1, "training_record_count": 1, "development_record_count": 0}
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+    return runner.pc.sha256(tmp_path / "manifest.json")
+
+
+def test_historical_cache_reader_checks_pinned_bytes_and_tensor_identity(tmp_path):
+    pin = cache_fixture(tmp_path)
+    records, manifest = runner.read_verified_cache(tmp_path, pin)
+    assert len(records) == manifest["record_count"] == 1
+    np.testing.assert_array_equal(records[0]["prediction"], records[0]["target"])
+    with pytest.raises(ValueError, match="manifest hash"):
+        runner.read_verified_cache(tmp_path, "0" * 64)
+    path = tmp_path / "shard_00000.npz"
+    with path.open("ab") as f:
+        f.write(b"changed")
+    with pytest.raises(ValueError, match="archive hash"):
+        runner.read_verified_cache(tmp_path, pin)
+
+
+@pytest.mark.parametrize(
+    "kwargs,message",
+    [
+        ({"length": 67}, "length/mask"),
+        ({"mask_valid": False}, "length/mask"),
+        ({"tensor_hash": "0" * 64}, "tensor hash"),
+    ],
+)
+def test_historical_cache_reader_rejects_length_mask_and_tensor_mismatches(tmp_path, kwargs, message):
+    pin = cache_fixture(tmp_path, **kwargs)
+    with pytest.raises(ValueError, match=message):
+        runner.read_verified_cache(tmp_path, pin)

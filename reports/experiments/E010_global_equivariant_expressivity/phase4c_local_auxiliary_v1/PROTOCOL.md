@@ -73,3 +73,19 @@ The contract, schedule, data manifest, arm states and results live under the ign
 `execution/` child directory. Concise results may be published after completion;
 no conclusions are written to main during execution. Full adaptation and production
 remain unauthorized.
+
+## Historical source-byte provenance
+
+Preparation found that the legacy cache validator pins the pre-consolidation
+E010 model source bytes (`05adad...`), while the audited formatted source has hash
+`b79467...`. The original source was recovered from the preserved consolidation
+staged diff: its SHA256 exactly matches the historical pin, and its Python AST
+is identical to the current model. `source_equivalence.json` records both hashes
+and the canonical AST hash. No architecture changed.
+
+Phase 4C therefore reads the original cache using its independently established
+manifest SHA256, archive SHA256 values, sidecars, metadata, lengths, finite arrays,
+masks and per-record prediction/target tensor hashes. Current execution code is
+pinned separately. Historical pins and artifacts remain unchanged. Regression
+tests exercise manifest/archive corruption, tensor mismatch, length mismatch and
+invalid masks. No source/config pins are silently rewritten to permit execution.
