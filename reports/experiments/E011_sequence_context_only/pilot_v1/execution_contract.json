@@ -1,0 +1,78 @@
+{
+  "S2_authorized": false,
+  "boundaries": [
+    0,
+    250,
+    500,
+    1000,
+    1500,
+    2000
+  ],
+  "deterministic_algorithms": true,
+  "effective_sampling": "deterministic epoch permutation; per-regime queues; each protein once per epoch; tail retained",
+  "evaluation_seed": 6111,
+  "fraction_schedule": [
+    0.15,
+    0.3,
+    0.5
+  ],
+  "full_tests_passed": true,
+  "gpu_before_pilot": {
+    "compute_workload": "none; desktop graphics only",
+    "memory_used_mib": 875,
+    "utilization_percent": 5
+  },
+  "hyperparameter_selection_using_independent_panel": false,
+  "implementation_commit": "429221ac957b340bc5198ea17ea6b8c34ba8101b",
+  "independent_panel_count": 2048,
+  "mixed_precision": false,
+  "model_parameter_count": 6457364,
+  "no_scientific_early_stopping": true,
+  "operational_authorization": "User explicitly authorized one 2000-successful-update CUDA real-data pilot",
+  "phase4c_head": "215fb5b3eb127f690b382adae1c1607979169a85",
+  "phase4c_processes_remaining": 0,
+  "phase4c_worktree_unchanged": true,
+  "precision": "float32",
+  "preparation_commit": "ef30a6f759a4032e89c6be881c4c137f5de6dac7",
+  "primary_panel_count": 2048,
+  "primary_selection_note": "Seal defines only independent panel; primary panel fixed before training from disjoint validation identities, equal allocation across five strata, seed 6121",
+  "regimes": [
+    {
+      "accumulation": 1,
+      "maximum_length": 128,
+      "physical_batch": 32
+    },
+    {
+      "accumulation": 1,
+      "maximum_length": 256,
+      "physical_batch": 16
+    },
+    {
+      "accumulation": 1,
+      "maximum_length": 384,
+      "physical_batch": 8
+    },
+    {
+      "accumulation": 1,
+      "maximum_length": 500,
+      "physical_batch": 8
+    }
+  ],
+  "registered_utc": "2026-10-05T18:49:02.572587+00:00",
+  "sealed_preparation_sha256": "487d873edacd3ca03deff9065d944226df91149add5ea4ce58f7e09387306b2a",
+  "seed": 6011,
+  "sha256": {
+    "reports/experiments/E011_sequence_context_only/diagnostic_panel.json": "e7c68e412d1aa3efb0251089e6de568fe4579a3668107f58f81d58f456063004",
+    "reports/experiments/E011_sequence_context_only/pilot_v1/cuda_smoke_deterministic.json": "4c7fc6f4ee0b785482bc10185858166300e6b05c0833454aef9eb641f9e9e1c5",
+    "reports/experiments/E011_sequence_context_only/pilot_v1/dataset_integrity.json": "628082d9e2e7108db7684806bfb54639e6e619c269c2ad7f2532d57ff160e430",
+    "reports/experiments/E011_sequence_context_only/pilot_v1/primary_panel.json": "f1c583d37811ca0024605b4c89f3516d4e6487447e5eedafc8f45491f4f3465a",
+    "reports/experiments/E011_sequence_context_only/pilot_v1/quality_gates.json": "326ca47adfe77a9c57aa3a9d40766801d3fba9f53a9dd46e01c7939f9050d05f",
+    "reports/experiments/E011_sequence_context_only/train_baselines.json": "ed1f2b9c94b5cbbb569f38f94038cc7aa84f14b8f1cfcece6d3621b76aa9c5eb",
+    "scripts/prepare_e011_test_mirror.py": "72243b03c387904ec10d6a16839f05238a37820741757d22880b0beb9f154959",
+    "scripts/run_e011_sequence_context_pilot.py": "94db13b811c9d535af41eb4aa2e38cda8dfe6aa10071e7c5240d21a2c3740bf1",
+    "scripts/verify_e011_pilot_inputs.py": "ae866f131fffd83473617530b222fad240c2d9fc2e4c096b63c7a383ef2705b0",
+    "tests/test_e011_pilot.py": "0133309ca38f810dac551c4da4879906c602f5e8268bf79ef494ee52b199f0db"
+  },
+  "updates": 2000,
+  "version": "e011_s1_bounded_pilot_v1"
+}

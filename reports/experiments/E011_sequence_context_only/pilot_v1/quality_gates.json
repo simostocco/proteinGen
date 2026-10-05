@@ -1,0 +1,45 @@
+{
+  "all_failed_cases_rerun": {
+    "failed": 0,
+    "passed": 21
+  },
+  "current_suite_coverage": {
+    "passed": 1634,
+    "remaining_failed": 0,
+    "skipped": 13
+  },
+  "final_e011_tests": {
+    "failed": 0,
+    "passed": 14
+  },
+  "fixture_repairs": [
+    "read-only historical reports/checkpoints/model caches/logs",
+    "copied unchanged environment YAML",
+    "five byte-identical local NPZ fixtures to preserve repository containment checks"
+  ],
+  "full_mirror_initial_run": {
+    "failed": 21,
+    "passed": 1612,
+    "skipped": 13
+  },
+  "full_worktree_first_run": {
+    "failed": 134,
+    "passed": 1497,
+    "skipped": 13
+  },
+  "git_whitespace": "passed",
+  "logs_sha256": {
+    "collected_tests.log": "d98324cc94b53ddf30093fbd420c57dbe19a2a2db0a28a43807087c22c9bf32f",
+    "full_tests.log": "8f652f2ba592428b13498cbee85722fbe09cc1e16059d922a5c785db1adc19f7",
+    "full_tests_mirror.log": "6d7ab4f8764c46b4b74062ad1ca8359d42113b0a50965f4b88c8f66f2d8220bb",
+    "pilot_tests.log": "845b04bf26ddd4bf58720e79a4535ec407d529eb8fa62fc6a6e2a64c1213cef6",
+    "pilot_tests_final.log": "eba43b7a49957ffe81ff5fa0639a319a8152fe88e07356d07213e609eaa65070",
+    "repaired_tests.log": "5d27f7f943598c1efdcdba03d4bbfce7abb43c583eb93a1e308aabca89723dad"
+  },
+  "original_tests_weakened": false,
+  "python_syntax": "passed",
+  "rerun_xml_sha256": "024483abfb42d710eca38fa5286ae4cb275cf7a7fee787bd395513a195cffc3e",
+  "ruff_format": "passed",
+  "ruff_lint": "passed",
+  "status": "passed_after_read_only_fixture_provisioning"
+}

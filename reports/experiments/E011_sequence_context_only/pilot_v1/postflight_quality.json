@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "cuda_previously_skipped_cases_passed": 11,
+  "unique_full_suite_coverage": {
+    "passed": 1645,
+    "skipped": 2,
+    "unresolved_failures": 0
+  },
+  "cuda_junit_sha256": "b2c0958ec4ea743a69fdf3bfe88ddcf2d2f46ca8abe706a2b2010dd4928c6bb0",
+  "cuda_test_cases": [
+    "tests.test_triangle_multiplication::test_triangle_block_cuda_float16_autocast_dtype_safety",
+    "tests.test_physical_auxiliary_loss::test_cuda_float16_autocast",
+    "tests.test_physical_auxiliary_loss::test_adjacent_loss_cuda_float16_autocast",
+    "tests.test_e007_coordinate_equivariance::test_production_capacity_cuda_strict_equivariance",
+    "tests.test_e007_coordinate_objective_pilot::test_quantiles_match_cuda_input_dtype_and_device[dtype0]",
+    "tests.test_e007_coordinate_objective_pilot::test_quantiles_match_cuda_input_dtype_and_device[dtype1]",
+    "tests.test_training_step::test_cuda_resume_rng_restore_when_cuda_available",
+    "tests.test_training_step::test_optional_cuda_amp_smoke",
+    "tests.test_rich_geometry_sidecars::test_cuda_feature_backend_matches_canonical_cpu_when_available",
+    "tests.test_axial_attention::test_axial_block_cuda_float16_autocast_regression[None]",
+    "tests.test_axial_attention::test_axial_block_cuda_float16_autocast_regression[128]"
+  ],
+  "original_pre_execution_quality_gates_unchanged": true,
+  "remaining_conditional_skips": [
+    "Optional live RCSB API integration (RUN_RCSB_INTEGRATION_TESTS unset)",
+    "Optional preprocessing resume smoke: local pilot mmCIF fixtures absent"
+  ]
+}
