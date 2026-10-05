@@ -197,3 +197,14 @@ i+1/i+2/i+3 auxiliary objective, restoring historical equal condition weights.
 Chirality-aware representation remains separate. The
 [completed counterfactual note](e010_condition_weight_counterfactual.md) records
 both results and the unchanged checkpoint/panels; no retraining was performed.
+
+## E010 frozen local auxiliary closeout — 2026-10-05
+
+The pre-registered training-only rule selected kappa=0.50,
+lambda=0.06719407652184162. Saved-history Adam Cartesian descent retained
+117.98%; mean-local derivatives were -0.147686 on training and -0.140530 on
+development. All aggregate offsets improved; alpha=0.01 independent-copy checks
+confirmed both objectives improve. Classification L1 is confined to the frozen
+panels; condition-50 Cartesian and short-identity local regressions persist.
+See [the reviewed record](e010_local_geometry_auxiliary.md). Next: one short
+matched continuation with fixed lambda and full evaluation, not more weight tuning.

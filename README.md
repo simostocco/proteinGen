@@ -56,11 +56,15 @@ The next question is an explicit local structural auxiliary objective:
 L_total = L_cart + lambda * mean(L_local_i+1, L_local_i+2, L_local_i+3)
 ```
 
-Restore historical equal corruption-condition weights `(1/3, 1/3, 1/3)` and
-pre-register a frozen-state coefficient diagnostic before retraining. The local
-terms initially use the validated endpoint-masked distance errors, not an
-unrestricted all-pairs loss. No further condition-weight search is planned.
+The frozen coefficient diagnostic is complete: **L1 on the prescribed panels**,
+with training-selected `lambda=0.06719407652184162` and equal condition weights.
+A small finite displacement improved Cartesian and local metrics on both panels.
+The next step is a short matched control-versus-auxiliary continuation on the full
+fixed evaluation population. No further condition-weight search is planned.
 Chirality-aware representation is a separate future architectural track.
+
+See [the reviewed auxiliary diagnostic](docs/e010_local_geometry_auxiliary.md)
+for selection, numerical results and small-panel limitations.
 
 Deeper records:
 
