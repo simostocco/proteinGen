@@ -1,0 +1,217 @@
+{
+  "arms": {
+    "cartesian_control": 0.0,
+    "local_auxiliary": 0.06719407652184162
+  },
+  "authorization": {
+    "full_adaptation": false,
+    "production": false,
+    "short_matched_364": true
+  },
+  "bootstrap_replicates": 10000,
+  "bootstrap_seed": 41046,
+  "boundaries": [
+    0,
+    91,
+    182,
+    273,
+    364
+  ],
+  "branch": "e010-phase4c-local-auxiliary",
+  "cache_manifest_sha256": "56018f2b9160151da9c206dbee0780ed269c319ab43ca13be10f8df3e3f8e1ff",
+  "checkpoint": "reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/phase4b_training_v1.final/latest.pt",
+  "checkpoint_sha256": "f5211cbc1be5092175ce15b9761a4efba761d242310287cd6b1e04df6a6744ef",
+  "classification_precedence": "safety->C5; local benefit with Cartesian margin fail->C2; condition/stratum->C4; local gate fail->C3; otherwiseC1",
+  "condition_sampling_semantics": "historical equal-probability pool, unchanged unweighted microbatch reduction; finite schedule realized counts recorded, not forced balanced",
+  "condition_weights": [
+    "1/3",
+    "1/3",
+    "1/3"
+  ],
+  "environment": {
+    "cuda": "13.0",
+    "cudnn_tf32": true,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 5060",
+    "matmul_tf32": false,
+    "python": "3.12.14 | packaged by conda-forge | (main, Aug 21 2026, 22:48:28) [GCC 14.4.0]",
+    "torch": "2.13.0+cu130"
+  },
+  "evaluation_array_hashes_sha256": "953a86eecb6e957361fd944eeac6b37fb8cc9c49e5112b9374a66f24735a2ebf",
+  "evaluation_population": {
+    "conditions": 960,
+    "identities": 320,
+    "identity_condition_order_sha256": "c103bad5f588e15ceaf82c8a3ea55a8327b369e2643f7e32e05b723d0eaeeab1"
+  },
+  "execution_git_sha": "a91d3432ec461f334ca5d9dd27fec9efd19b61d4",
+  "gates": {
+    "1": "paired identity mean of mean local RMSE relative improvement >0 and bootstrap95% lower bound>0; offsets disclosed",
+    "2": "existing paired aligned RMSD improvement >=-0.02 (2% non-inferiority)",
+    "3": "all condition mean local RMSE improvements >=-0.02; preferred each>0; major regression pre-defined>2%",
+    "4": "chirality assessable in both; auxiliary inversion <=control (existing Phase4B semantics, no relaxed margin)",
+    "5": "finite rate1; no meanRg<1e-3; each stratum Rg SD >=.05*target SD",
+    "6": "no stratum mean local RMSE or aligned RMSD relative regression>2%; length slope reported, Phase4B slope gate separately reported"
+  },
+  "global_final_update": 1456,
+  "gradient_boundaries": [
+    0,
+    91,
+    182,
+    273,
+    364
+  ],
+  "gradient_clip_norm": 5.0,
+  "gradient_panel": "fixed five established training diagnostic identities, all3conditions; explanatory only",
+  "gradient_panel_keys": [
+    [
+      "1bf9_A",
+      53285058557195884,
+      450
+    ],
+    [
+      "1bf9_A",
+      3034611613132755537,
+      50
+    ],
+    [
+      "1bf9_A",
+      3306385175397967128,
+      250
+    ],
+    [
+      "1chp_D",
+      1580362962583051769,
+      50
+    ],
+    [
+      "1chp_D",
+      2939647325872476828,
+      250
+    ],
+    [
+      "1chp_D",
+      6113149122112941749,
+      450
+    ],
+    [
+      "1czz_A",
+      108335528235182071,
+      50
+    ],
+    [
+      "1czz_A",
+      636623281223988272,
+      250
+    ],
+    [
+      "1czz_A",
+      2682449669562816930,
+      450
+    ],
+    [
+      "1fhf_A",
+      1772399240382645168,
+      50
+    ],
+    [
+      "1fhf_A",
+      7216209078253323263,
+      450
+    ],
+    [
+      "1fhf_A",
+      7660893402742162041,
+      250
+    ],
+    [
+      "1k6m_A",
+      105472131047375745,
+      250
+    ],
+    [
+      "1k6m_A",
+      1023694226035394010,
+      450
+    ],
+    [
+      "1k6m_A",
+      2859626093437099314,
+      50
+    ]
+  ],
+  "gradient_panel_manifest_sha256": "7be0bcb1c36996d0ef17fefb643e6021f5b4c4a5e9b1d24af89c185431fd1718",
+  "historical_cache_digest": "d3b25887068d9ee15e0e490484769a8086850e078cd9ce24ab6fca817e9fcef7",
+  "historical_pins": {
+    "historical_config_sha256": "b968fea81971bb8f8e054d544e99b088b9d5d671166b95f78a4ae15c2c52ddd2",
+    "historical_model_source_sha256": "05adad11750e4c47ab5308965973626c226b064c5ba6117bff9bfcfce4186f65",
+    "model_config_sha256": "cd5e42340ae3ce67d50beba73d1056c54f275eb4ad5997fc88d8b4a5f8734bfb",
+    "source_equivalence": {
+      "ast_identical": true,
+      "canonical_ast_sha256": "ae0f0510f543ca76d6abc5bed3486f20b447689f96d2242c8879a020a1821712",
+      "evidence": "historical source extracted from preserved consolidation staged.diff; byte hash matches original Phase4B model pin; AST compared with audited current source",
+      "execution_source_sha256": "b7946793a57fb48e1991a7c79316af1ab9e1eb00d8b7d986de8d19fabdc176aa",
+      "historical_source_sha256": "05adad11750e4c47ab5308965973626c226b064c5ba6117bff9bfcfce4186f65",
+      "scope": "E010 model only; cache arrays independently verified, no historical source/config repinning"
+    }
+  },
+  "initial_model_tensor_hash": "2190e04804771ea24c7c60c6f6bc00b08c2014950f06a0247eb05170abf88a2f",
+  "initial_optimizer_tensor_hash": "b300227878bacd0ecb8d6f634383d4a5034e5ce2c29159c5804cafe87d82ef35",
+  "module_boundaries": [
+    0,
+    364
+  ],
+  "objective": {
+    "cartesian": "equal-protein masked xyz-component MSE +1e-5 masked residual-component MSE; no alignment; Angstrom squared",
+    "local": "mean of endpoint-masked distance-error MSE offsets1/2/3, each normalized within protein, then equal proteins",
+    "microbatch_reduction": "18 proteins per stratum, 5 strata, each microbatch objective divided by 5"
+  },
+  "optimizer": {
+    "amsgrad": false,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "capturable": false,
+    "decoupled_weight_decay": true,
+    "differentiable": false,
+    "eps": 1e-08,
+    "foreach": null,
+    "fused": null,
+    "lr": 0.0003,
+    "maximize": false,
+    "weight_decay": 0.0
+  },
+  "precision": "historical float32, no AMP, no changed TF32 flags",
+  "primary_endpoint": "auxiliary vs matched control at continuation update364 on full fixed evaluation population",
+  "public_baseline_sha": "3b200ffb0389be87cc928c391117ce96bd8b5eb2",
+  "realized_condition_counts": {
+    "50": 10886,
+    "250": 11011,
+    "450": 10863
+  },
+  "rng": "restore identical checkpoint Python/NumPy/Torch/CUDA states separately for both arms; no stochastic model layers",
+  "schedule_sha256": "f8944455b46394269a32328c35db0cb77e407f310af814cb7fb689a350cba7b0",
+  "scheduler": null,
+  "schema": "e010_phase4c_local_auxiliary_v1",
+  "seed_reference": 41045,
+  "source_hashes": {
+    "reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/prepare_cache.py": "08a378a298b6e3ae07472a113c2a6797d09094edcb031297450859a4e6ed29f9",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/runner.py": "cb40f72507cda21d3c4bdb8c5a3d439fc14ca00f335dff19e5b6cbbcb3a8b285",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4c_local_auxiliary_v1/diagnostic_panel.json": "11712b0a32a3514203e230428236bc04bf7a82c55958aae7a7a00092c9e5fc72",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4c_local_auxiliary_v1/runner.py": "382baf9ce6650cdfb0c4e4be4580e38d2173f1c7909985543a9658f40f0ddc19",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4c_local_auxiliary_v1/source_equivalence.json": "ee8c8f2f54147e73e4b399e374944b7635922e6b40b8e12cca0af2764b3ba443",
+    "src/protein_distance_diffusion/training/local_geometry.py": "d76de565bf1b6da84d904df4c21f776ad3b0063bbeafca4035936f947ca69cde",
+    "tests/test_e010_phase4c_local_auxiliary.py": "564492e3d9f270d4f03a9de7cda624482be86c602ccc66557a4208264af5903a"
+  },
+  "stop_rules": [
+    "nonfinite loss/gradient/parameter/output",
+    "cache/source/checkpoint integrity violation",
+    "catastrophic coordinate collapse meanRg<1e-3",
+    "unrecoverable runtime failure"
+  ],
+  "training_array_hashes_sha256": "b856dc30b5ee88f23c7d1167a5f5588e2f65a2517442da8dfddeab36ad1df86d",
+  "training_example_count": 32760,
+  "training_identity_count": 14668,
+  "training_schedule": "replay historical schedule_update1..364, fixed cached noise; no augmentation or reshuffle",
+  "updates": 364
+}
