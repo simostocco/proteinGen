@@ -1,0 +1,107 @@
+version: e008_geometry_native_decoder_v1
+seed: 8015
+device: cuda
+output_dir: reports/experiments/E008_geometry_native/decoder_pilot_v1
+
+decoder:
+  width: 48
+  layers: 3
+  pair_rbf_bins: 8
+  bond_length_angstrom: 3.8
+  max_length: 500
+
+frozen_prior:
+  checkpoint: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt
+  checkpoint_sha256: 2553ce18b5644aaf1e2d512b85664dfff2eaf5488f9536accbfb3e8ec18c2add
+  generator_config: configs/e007_coordinate_generator_v1.yaml
+  generator_config_sha256: a437bd8dad29b12bb67f0da97f9529e9abd82b19534d957afc5b2c6f23800b74
+  coordinate_scale_angstrom: 12.22820347644835
+  diffusion_steps: 500
+
+real_structures:
+  source_config: configs/e007_coordinate_generator_v1.yaml
+  train_split: train
+  clean_validation_manifest: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/mmseqs/identity_30/clean_validation_manifest.parquet
+  clean_validation_manifest_sha256: a847fbf36497df7a015dd4cb3c683f47ec6c2d3217b1b6eaebdddcf7af0adb11
+  validation_cluster_split_seed: 8015
+  development_fraction: 0.5
+  sidecar_acceptance_policy: contiguous_single_chain_complete_calpha_v1
+  experimental_method_policy: use_only_optional_pinned_local_metadata; otherwise_unknown
+  conformation_label_policy: authoritative_local_label_with_label_source_only; otherwise_unknown
+  prototype_selection_policy: complete_contiguous_calpha_plus_predeclared_geometry_quality_v1
+  local_metadata_manifest: data/full/processed/manifest.parquet
+  local_metadata_sha256: 6fc2628104714e32782a4b7606b22b8113c0e088ed3befd4a1f5f7029e8c3052
+  protected_input_relocations:
+    - recorded_root: /home/simostocco/proteinGen/data
+      verification_root: /home/simostocco/proteinGen.pre-relocation-20260922T064202Z/data
+  generated_manifest: reports/experiments/E008_geometry_native/e008_prototype_manifest_v1.csv
+  structure_class_manifest: reports/experiments/E008_geometry_native/e008_prototype_manifest_v1.csv
+
+corruption_calibration:
+  observed_error_summary: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/evaluations.json
+  observed_error_summary_sha256: db9445ef441adc8db7be02c933ceae4bb2ce729d5a20d288256194a2fb7ebc79
+  published_coordinate_sources_for_optional_analysis:
+    - reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/samples/update-0500
+    - reports/experiments/E007_matrix_sequence_cogeneration/coordinate_sampling_replication_v1/samples/step-1000
+  minimum_sigma_angstrom: 0.15
+  maximum_sigma_angstrom: 2.0
+  mapping: adjacent_distance_rmse_div_sqrt_6
+  reuse_published_coordinates_for_training: false
+  rerun_diffusion_for_training_set: false
+
+milestones:
+  real_structure_roundtrip_count: 32
+  tiny_overfit_structure_count: 32
+  tiny_overfit_updates: 500
+  pilot_updates: 2000
+  checkpoint_interval: 100
+  evaluation_lengths: [64, 128, 256, 384, 500]
+  generated_evaluation_count: 100
+  generated_samples_per_length: 20
+
+optimizer:
+  name: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  gradient_clip_norm: 1.0
+
+loss_weights:
+  internal_angle_torsion: 1.0
+  kabsch_coordinate: 1.0
+  i_plus_2: 0.5
+  i_plus_3: 0.5
+  long_range_pair: 0.5
+  contact_map: 0.2
+  chirality: 0.2
+  radius_of_gyration: 0.2
+# There is intentionally no adjacent-distance loss: forward kinematics fixes
+# every adjacent distance exactly at the configured bond length.
+
+go_no_go:
+  adjacent_distance_rmse_angstrom_max: 0.05
+  locally_valid_bond_fraction_min: 0.95
+  locally_valid_residue_fraction_improvement_min: 0.10
+  i_plus_2_rmse_relative_improvement_min: 0.05
+  i_plus_3_rmse_relative_improvement_min: 0.05
+  global_safeguards:
+    - radius_of_gyration
+    - long_range_contacts
+    - chirality
+    - diversity
+  median_coordinate_displacement: report_angstrom
+  inference_overhead_fraction_of_500_step_sampler_max: 0.20
+  maximum_radius_of_gyration_relative_degradation: 0.05
+  maximum_long_range_contact_density_absolute_change: 0.03
+  maximum_chirality_agreement_decrease: 0.05
+  minimum_generated_diversity_retention_fraction: 0.95
+
+runtime_estimates:
+  cuda_smoke_minutes: 2
+  pilot_gpu_hours: [3, 6]
+  estimate_basis: "2000 single-structure decoder updates plus 100 frozen-prior 500-step samples; anchored to the existing 160-sample E007 replication runtime"
+
+authorization:
+  trains_frozen_prior: false
+  authorizes_production: false
+  authorizes_downstream_generation: false
+  authorizes_full_generative_retraining: false

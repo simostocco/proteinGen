@@ -1,0 +1,174 @@
+version: e007_coordinate_capacity_pilot_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_capacity_pilot_v1
+device: cuda
+capacities: [small, medium, production]
+seeds: [7301, 7302, 7303]
+families: [helix, hairpin, open_ring, compact_smooth]
+lengths: [16, 24, 31, 48]
+train_replicates_per_family_length: 8
+heldout_replicates_per_family_length: 4
+train_parameter_seed_offset: 1300000
+heldout_parameter_seed_offset: 1900000
+bond_length_angstrom: 3.8
+coordinate_scale_angstrom: 10.0
+
+optimizer_updates_per_capacity_seed: 1500
+evaluation_updates: [0, 100, 300, 600, 1000, 1500]
+learning_rate: 0.0003
+weight_decay: 0.01
+gradient_clip_norm: 1.0
+diffusion_steps: 32
+batch_size: 1
+metrics_frequency: 10
+mixed_precision: false
+
+sampling_lengths: [16, 24, 31, 48]
+sampling_replicates_per_length: 8
+sampling_seed: 17319
+bootstrap_seed: 17301
+bootstrap_replicates: 5000
+timestep_evaluation_bins:
+  - {name: very_low_noise, fraction: 0.0}
+  - {name: low_noise, fraction: 0.25}
+  - {name: intermediate_noise, fraction: 0.5}
+  - {name: high_noise, fraction: 0.75}
+  - {name: very_high_noise, fraction: 1.0}
+
+decision_thresholds:
+  minimum_train_v_mse_relative_improvement: 0.25
+  minimum_heldout_v_mse_relative_improvement_per_seed: 0.10
+  minimum_heldout_pair_rmse_relative_improvement_per_seed: 0.05
+  maximum_target_normalized_adjacent_error: 0.50
+  maximum_target_normalized_radius_error: 0.40
+  maximum_clash_fraction_excess: 0.10
+  maximum_joint_polymer_quality_error: 0.30
+  equivariance_atol: 0.00005
+  euclidean_scaled_tolerance: 0.00005
+  oracle_sampler_tolerance: 0.00002
+  maximum_optimizer_updates_per_seed: 1500
+  maximum_near_duplicate_fraction: 0.10
+  maximum_per_length_relative_regression: 0.10
+  material_pareto_relative_improvement: 0.10
+  material_pareto_bootstrap_lower_bound: 0.0
+
+phase3b_v2:
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v2/report.json
+  report_sha256: 7341a7efdb387af97a0be9e0cdd2ca97394c76ed7d3c02f5cbe122acf042ada4
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v2/protocol.json
+  protocol_sha256: 90283a77094f652b6a2226d990da36c6c0220639158248d464df98165b119420
+
+phase3c:
+  config_path: configs/e007_coordinate_objective_correction_pilot_v1.yaml
+  config_sha256: 680de79e462ffd3e2307391edf08f401b56e1f1321c3132fd2b11ef372513009
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_objective_correction_pilot_v1/report.json
+  report_sha256: 5d321dc7ab9bcc9169c6dbc52ae9a796de2fed7d035a7ba2beb3906a98434c49
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_objective_correction_pilot_v1/protocol.json
+  protocol_sha256: 06c8690d2a761be76f4b4c830f13cb942ca7645df97933fe35a422110e6f6435
+
+coordinate_model_contract:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json
+  sha256: 2768f037cd12e00f399dd8b4773ddb926b25e2cf72f0d437cb972914fc9b996d
+
+expected_parameter_counts:
+  small: 224697
+  medium: 1902581
+  production: 7586505
+medium_parameter_range: [1000000, 2000000]
+
+capacity_parameters:
+  - rbf_bins
+  - base_channels
+  - channel_multipliers
+  - group_norm_groups
+  - attention_heads
+  - axial_attention_heads
+  - axial_attention_chunk_size
+  - triangle_hidden_channels
+  - triangle_chunk_size
+  - time_embedding_dim
+  - length_embedding_dim
+
+models:
+  small:
+    rbf_bins: 8
+    rbf_min_distance: 0.0
+    rbf_max_distance: 5.0
+    lifting_epsilon: 1.0e-6
+    base_channels: 8
+    channel_multipliers: [1, 2, 4]
+    residual_blocks_per_level: 2
+    dropout: 0.0
+    group_norm_groups: 4
+    attention_heads: 2
+    use_bottleneck_attention: true
+    use_pre_bottleneck_axial_attention: true
+    axial_attention_heads: 2
+    axial_attention_dropout: 0.0
+    axial_attention_chunk_size: 32
+    use_pre_bottleneck_triangle_multiplication: true
+    triangle_hidden_channels: 8
+    triangle_dropout: 0.0
+    triangle_chunk_size: 4
+    time_embedding_dim: 64
+    length_embedding_dim: 64
+    max_length: 500
+  medium:
+    rbf_bins: 12
+    rbf_min_distance: 0.0
+    rbf_max_distance: 5.0
+    lifting_epsilon: 1.0e-6
+    base_channels: 12
+    channel_multipliers: [1, 2, 4, 8]
+    residual_blocks_per_level: 2
+    dropout: 0.0
+    group_norm_groups: 4
+    attention_heads: 4
+    use_bottleneck_attention: true
+    use_pre_bottleneck_axial_attention: true
+    axial_attention_heads: 4
+    axial_attention_dropout: 0.0
+    axial_attention_chunk_size: 64
+    use_pre_bottleneck_triangle_multiplication: true
+    triangle_hidden_channels: 16
+    triangle_dropout: 0.0
+    triangle_chunk_size: 8
+    time_embedding_dim: 128
+    length_embedding_dim: 128
+    max_length: 500
+  production:
+    rbf_bins: 16
+    rbf_min_distance: 0.0
+    rbf_max_distance: 5.0
+    lifting_epsilon: 1.0e-6
+    base_channels: 24
+    channel_multipliers: [1, 2, 4, 8]
+    residual_blocks_per_level: 2
+    dropout: 0.0
+    group_norm_groups: 8
+    attention_heads: 4
+    use_bottleneck_attention: true
+    use_pre_bottleneck_axial_attention: true
+    axial_attention_heads: 4
+    axial_attention_dropout: 0.0
+    axial_attention_chunk_size: 128
+    use_pre_bottleneck_triangle_multiplication: true
+    triangle_hidden_channels: 32
+    triangle_dropout: 0.0
+    triangle_chunk_size: 16
+    time_embedding_dim: 256
+    length_embedding_dim: 256
+    max_length: 500
+
+expected_panel_hashes:
+  sample_id_sha256:
+    train: 2a80f4ded67e44d35c6c84f73c710204f5270c4b3a883094efbe5df1dfddb57d
+    heldout: 0ed8562feaa5a1d4b938aee1194a0c86a80b9752078a8f44b6dcf91b1414d5e2
+  coordinate_sha256:
+    train: 33ed7065f61140a9a09df2e83f64ad662f3b6a377ef991f8f1d61dd9757a92a5
+    heldout: b98731574e4f63fb9b0dfcf067321603b3295dc8c312f7ffefa0a1de32cc8267
+  target_sha256:
+    train: b1c1dd4dd8c9fb9e6fca113f0f616dfb4aa5f460f790bd5223edfea5d38d682f
+    heldout: 1afaaa825acdb00f3334f76d46226237fb1a187718b854904c318f916c409f44
+  shape_sha256:
+    train: 83ca2833f99c0be6e9ed822ab156ea9eef74441c8277d53f47eba90c8e1aab63
+    heldout: abc1522cbe9ec27d198c39c788a8c36fba762699b71c70379a1e5133c04dd9c8

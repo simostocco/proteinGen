@@ -1,0 +1,61 @@
+schema: e010_global_equivariant_phase2_config_v1
+version: phase2_v1
+authorizes_downstream: false
+seed: 8015
+output_dir: reports/experiments/E010_global_equivariant_expressivity/phase2_v1_prepared
+model:
+  width: 192
+  layers: 4
+  heads: 4
+  vector_channels: 32
+  max_length: 500
+  sigma_distance: 2.0
+panel:
+  source_split: data/full/splits/train.parquet
+  count: 32
+  strata:
+    - {name: "1-64", min: 1, max: 64, count: 6}
+    - {name: "65-128", min: 65, max: 128, count: 6}
+    - {name: "129-256", min: 129, max: 256, count: 7}
+    - {name: "257-384", min: 257, max: 384, count: 6}
+    - {name: "385-500", min: 385, max: 500, count: 7}
+  ranking: sha256("e010_phase2_v1|sample_id")
+  exclude_existing_development_prospective_validation_test_holdout_panels: true
+  exclude_e010_v1_identity: true
+corruption:
+  construction: "E009 fixed-corruption v1: independent Gaussian noise, centered by coordinate axis, plus centered cumulative drift normalized to 0.12 sigma RMS"
+  sigma_mapping: "E009 calibrated adjacent-distance denoising error divided by sqrt(6), clipped by E008 calibration bounds"
+  seed: "8015 + 900000 + 1009 * panel_rank"
+training:
+  objective: masked coordinate MSE over xyz scalars plus 1e-5 masked residual L2
+  optimizer: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.0
+  gradient_clip_max_norm: 5.0
+  max_updates: 2000
+  evaluation_updates: [0, 100, 250, 500, 1000, 1500, 2000]
+  sampling: false
+  fixed_bond_constraints: false
+  e009_geometry_priors: false
+  local_geometry_losses: false
+  prospective_panel: false
+acceptance:
+  evaluation_split: training_panel_only
+  mean_aligned_rmse_angstrom_max: 0.20
+  median_aligned_rmse_angstrom_max: 0.15
+  maximum_aligned_rmse_angstrom_max: 0.50
+  non_finite_outputs: 0
+  positive_error_vs_length_slope_angstrom_per_residue_max: 0.0005
+  chirality_and_local_distances: descriptive_only
+cuda_lifecycle:
+  lengths: [64, 128, 256, 384, 500]
+  batch_size: 1
+  warmup_steps: 2
+  measured_steps: 5
+  operations: [forward, backward]
+conditional_supervised_pilot:
+  prepare_only_if_phase2_passes: true
+  coarse_input_source: frozen_E007_denoiser_prediction_on_corrupted_real_structure
+  target_source: corresponding_known_real_structure
+  automatically_execute: false
+  bayesian_prior: false

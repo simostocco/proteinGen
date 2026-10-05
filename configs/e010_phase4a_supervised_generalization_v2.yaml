@@ -1,0 +1,140 @@
+schema: e010_phase4a_supervised_generalization_v2
+authorizes_downstream: false
+output_dir: reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v2
+phase3_closeout: reports/experiments/E010_global_equivariant_expressivity/phase3_shared_capacity_v1/phase3_closeout.json
+phase3_selection: reports/experiments/E010_global_equivariant_expressivity/phase3_shared_capacity_v1/selection_adjudication.json
+phase3_large_result: reports/experiments/E010_global_equivariant_expressivity/phase3_shared_capacity_v1/large_training_result.json
+phase3_large_model: reports/experiments/E010_global_equivariant_expressivity/phase3_shared_capacity_v1/large_model_final.pt
+phase3_config: configs/e010_phase3_shared_capacity.yaml
+model_source: src/protein_distance_diffusion/models/e010_global_equivariant.py
+phase2_config: configs/e010_global_equivariant_phase2_v2.yaml
+phase2_protocol: reports/experiments/E010_global_equivariant_expressivity/phase2_v1_prepared/protocol.json
+train_split: data/full/splits/train.parquet
+development_split: data/full/splits/validation.parquet
+e009_corruption_config: configs/e009_bayesian_refiner_v4_execution.yaml
+corruption_validation_reference: reports/experiments/E010_global_equivariant_expressivity/phase2_v1_prepared/protocol.json
+data_access_policy:
+  permitted_split_files:
+  - data/full/splits/train.parquet
+  - data/full/splits/validation.parquet
+  prohibited:
+  - test_split
+  - prospective_split
+  - prospective_identity_records
+  parquet_columns:
+  - sample_id
+  - length
+  - path
+  - split
+selection:
+  namespace: e010_phase4a_supervised_generalization_v1
+  strata:
+  - name: 20-64
+    min: 20
+    max: 64
+  - name: 65-128
+    min: 65
+    max: 128
+  - name: 129-256
+    min: 129
+    max: 256
+  - name: 257-384
+    min: 257
+    max: 384
+  - name: 385-500
+    min: 385
+    max: 500
+  training_counts:
+    20-64: 410
+    65-128: 410
+    129-256: 410
+    257-384: 409
+    385-500: 409
+  development_count_per_stratum: 64
+  train_dev_identity_disjoint: true
+  rank: sha256(namespace|split_name|sample_id)
+corruption:
+  process: 'E009 validated fixed corruption: calibrated independent centered Gaussian
+    noise plus centered cumulative drift at 0.12 sigma RMS'
+  seed: 908015 + 1009 * deterministic_cache_rank
+  one_corruption_per_identity: true
+  deterministic_npz_timestamps: true
+model:
+  architecture: GlobalEquivariantResidual
+  variant: Large
+  width: 416
+  layers: 6
+  heads: 8
+  vector_channels: 64
+  max_length: 500
+  sigma_distance: 2.0
+  parameter_count: 12844352
+  initialization: fresh deterministic initialization, independent from Phase 3 memorization
+    weights
+  seed: 41041
+training_plan:
+  epochs: 50
+  exposures_per_identity: 50
+  total_sample_exposures: 102400
+  optimizer: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.0
+  scheduler: none
+  gradient_clip_max_norm: 5.0
+  objective: mean over structures of masked xyz coordinate MSE plus 1e-5 masked Cartesian
+    residual L2
+  equal_structure_weight: true
+  length_buckets: five fixed strata
+  microbatch_candidates_at_length_500:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
+  - 32
+  effective_batch_size_rule: 5 * largest_passing_microbatch; accumulate one length-bucket
+    microbatch per stratum before optimizer step
+  evaluate_after_exposures:
+  - 5
+  - 10
+  - 20
+  - 35
+  - 50
+  checkpoint_selection: lowest development mean aligned RMSE only; earliest boundary
+    wins exact ties
+  execute_training_during_preparation: false
+acceptance:
+  overall_development_rmse_reduction_fraction_min: 0.3
+  every_stratum_rmse_reduction_fraction_min: 0.2
+  no_stratum_mean_rmse_worsening: true
+  error_vs_length_slope_not_increased: true
+  non_finite_outputs: 0
+  chirality_inversion_rate_not_increased: true
+  mean_i_plus_1_i_plus_2_i_plus_3_distance_rmse_reduction_fraction_min: 0.2
+  coordinate_or_diversity_collapse: false
+statistics:
+  bootstrap_unit: development_identity
+  bootstrap_replicates: 10000
+  seed: 41042
+  paired_changes: true
+  confidence_level: 0.95
+collapse_indicators:
+  coordinate_collapse_if: any_identity_predicted_radius_gyration_below_1_angstrom_or_below_50_percent_of_target
+  diversity_collapse_if: any_stratum_predicted_radius_gyration_sd_below_50_percent_of_target_radius_gyration_sd
+  radius_gyration: sqrt(mean squared coordinate distance from per-structure centroid)
+resume:
+  update: 0
+  require_model_optimizer_sampler_and_all_rng_states: true
+  approximate_resume: false
+  training_started: false
+restrictions:
+  prospective_split_accessed: false
+  held_out_data: false
+  geometry_priors: false
+  geometry_losses: false
+  fixed_bonds: false
+  identity_embeddings: false
+  sequence_features: false
+  production_sampler_integration: false
+  supervised_training_executed: false
+  phase4b_prepared: false

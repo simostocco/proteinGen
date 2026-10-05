@@ -1,0 +1,43 @@
+audit: E006_rich_geometry_sources_phase0
+schema_version: e006_rich_geometry_source_audit_v6
+seed: 6006
+output_dir: reports/experiments/E006_rich_geometry_codesign/source_audit_v6
+
+pairing_dataset: /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_geometry_pairing_v1
+processed_manifest: data/full/processed_recovery/merged_manifest.parquet
+audit_provenance: /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_data_readiness_raw_full_compact_v1
+
+scientific_input_roots:
+  - /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_geometry_pairing_v1
+  - /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_data_readiness_raw_full_compact_v1
+  - data/full
+allowed_matrix_roots:
+  - data/full
+  - /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_geometry_pairing_v1
+allowed_structure_roots:
+  - data/full/raw/mmcif
+
+panel_size: 512
+maximum_selected_structures: 512
+maximum_failure_examples: 100
+maximum_rss_mib: 2048
+peptide_bond_threshold_angstrom: 2.0
+pseudo_cb_maximum_distance_angstrom: 0.5
+pseudo_cb_maximum_angle_degrees: 20.0
+npz_internal_matrix_tolerance_angstrom: 0.0001
+npz_calpha_anchor_tolerance_angstrom: 0.0001
+residue_mappings:
+  MSE: MET
+
+phase1_authorization:
+  minimum_verified_source_fraction: 0.95
+  minimum_mapped_identity_fraction: 0.98
+  minimum_complete_frame_fraction: 0.90
+  minimum_phi_psi_fraction: 0.85
+  maximum_matrix_rmse_angstrom: 0.05
+  maximum_unexplained_contradictions: 0
+
+storage_estimation:
+  pair_channels: 16
+  residue_channels: 32
+  compression_ratio: 0.45

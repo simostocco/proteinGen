@@ -1,0 +1,42 @@
+evaluation: E005_large_paper_diagnostic
+schema_version: e005_large_diagnostic_v1
+seed: 55005
+device: cuda
+output_dir: reports/experiments/E005_sequence_geometry_codesign/large_diagnostic_v2
+
+dataset_directory: /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_geometry_pairing_v1
+checkpoint_path: outputs/e005_large_sequence_geometry_codesign/checkpoints/best.pt
+training_summary_path: outputs/e005_large_sequence_geometry_codesign/summary.json
+training_validation_journal: outputs/e005_large_sequence_geometry_codesign/validation.jsonl
+training_configuration_path: configs/e005_sequence_geometry_codesign_large.yaml
+
+panel_size: 1024
+stochastic_seeds_per_sample: 3
+mask_fractions: [0.15, 0.30, 0.50, 1.00]
+noise_levels: [0.0, 0.25, 0.50, 0.75, 1.0]
+geometry_conditions: [clean, configured_corrupted]
+geometry_corruption:
+  type: additive_symmetric_noise
+  standard_deviation: 1.0
+
+gate_conditions:
+  - all_learned
+  - all_disabled
+  - sequence_to_geometry_disabled
+  - incoming_geometry_to_sequence_disabled
+  - returned_geometry_to_sequence_disabled
+  - both_geometry_to_sequence_disabled
+  - all_forced_one
+primary_mask_fraction: 0.15
+primary_noise_level: 0.50
+
+bootstrap_iterations: 10000
+bootstrap_seed: 550050
+geometry_diagnostic_sample_count: 64
+geometry_triangle_samples: 10000
+max_rss_mib: 6144
+max_cuda_memory_mib: 8192
+
+trajectory:
+  plateau_relative_threshold: 0.01
+  degradation_relative_threshold: 0.02

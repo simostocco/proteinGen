@@ -1,0 +1,97 @@
+version: e007_coordinate_synthetic_polymer_smoke_v2
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v2
+device: cuda
+seeds: [7301, 7302, 7303]
+lengths: [16, 24, 31, 48]
+families: [helix, hairpin, open_ring, compact_smooth]
+train_replicates_per_family_length: 2
+heldout_replicates_per_family_length: 1
+train_parameter_seed_offset: 100000
+heldout_parameter_seed_offset: 900000
+bond_length_angstrom: 3.8
+coordinate_scale_angstrom: 10.0
+
+optimizer_updates_per_seed: 1000
+evaluation_updates: [0, 100, 300, 600, 1000]
+learning_rate: 0.0003
+gradient_clip_norm: 1.0
+diffusion_steps: 32
+batch_size: 1
+sampling_lengths: [16, 31, 48]
+sampling_seed: 7319
+metrics_frequency: 10
+timestep_evaluation_bins:
+  - {name: very_low_noise, fraction: 0.0}
+  - {name: low_noise, fraction: 0.25}
+  - {name: intermediate_noise, fraction: 0.5}
+  - {name: high_noise, fraction: 0.75}
+  - {name: very_high_noise, fraction: 1.0}
+
+phase3a:
+  generator_config_path: configs/e007_coordinate_generator_v1.yaml
+  generator_config_sha256: a437bd8dad29b12bb67f0da97f9529e9abd82b19534d957afc5b2c6f23800b74
+  architecture_contract_path: reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json
+  architecture_contract_sha256: 2768f037cd12e00f399dd8b4773ddb926b25e2cf72f0d437cb972914fc9b996d
+  e004_checkpoint_path: outputs/recovered_full_b2_v_axial_edm_triangle_e004/checkpoints/final_validation_selected.pt
+  e004_checkpoint_sha256: 59db27a3dbecbc199cb20065e1263ad0cec12b3553cca1a263429f890b38ea86
+
+phase3b_v1:
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v1/report.json
+  report_sha256: 36fb44327151b43a5864865a6c908c4e5d3d154966f7a01d1179e1cf532f29b3
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v1/protocol.json
+  protocol_sha256: 734ed38a6549cc4cb5cc1533fbb7325ef99a1c80f9bfcdd68dadf8abb0c2c018
+  expected_panel_hashes:
+    sample_id_sha256:
+      train: 7dea3ad3c54aeddf0d4d1b79b1d26e72a7dc25eb8e93668628f720237a04b143
+      heldout: a45f54bb08f7437af70ba209509d4c91d583a617038a255a0576d89da3054ab5
+    coordinate_sha256:
+      train: 488e90464647170cdb2ae28c8353b92294b689783bb700bae209caa5b0ff11dd
+      heldout: 4c9848eedc2f084861d66b918266044cdd662c5c8a25983c3bd1629405a268c7
+    target_sha256:
+      train: 0310488cc721c0d69fabbd120ad8ca67a93e6752b27ebacb8057ab6a62408dec
+      heldout: b69eef6becf3a8874bf3e8cc61eff9179fbfe370c0f3931a644b4d6967d4742c
+
+smoke_model:
+  rbf_bins: 8
+  rbf_min_distance: 0.0
+  rbf_max_distance: 5.0
+  lifting_epsilon: 1.0e-6
+  base_channels: 8
+  channel_multipliers: [1, 2, 4]
+  residual_blocks_per_level: 2
+  dropout: 0.0
+  group_norm_groups: 4
+  attention_heads: 2
+  use_bottleneck_attention: true
+  use_pre_bottleneck_axial_attention: true
+  axial_attention_heads: 2
+  axial_attention_dropout: 0.0
+  axial_attention_chunk_size: 32
+  use_pre_bottleneck_triangle_multiplication: true
+  triangle_hidden_channels: 8
+  triangle_dropout: 0.0
+  triangle_chunk_size: 4
+  time_embedding_dim: 64
+  length_embedding_dim: 64
+  max_length: 500
+
+loss:
+  adjacent_weight: 0.02
+  stratified_pair_weight: 0.02
+  soft_contact_weight: 0.01
+  steric_clash_weight: 0.005
+  adjacent_huber_beta_angstrom: 0.25
+  steric_clash_distance_angstrom: 3.0
+
+decision_thresholds:
+  minimum_train_v_mse_relative_improvement: 0.25
+  minimum_heldout_v_mse_relative_improvement_per_seed: 0.10
+  minimum_heldout_pair_rmse_relative_improvement_per_seed: 0.05
+  maximum_target_normalized_adjacent_error: 0.50
+  maximum_target_normalized_radius_error: 0.40
+  maximum_clash_fraction_excess: 0.10
+  maximum_joint_polymer_quality_error: 0.30
+  equivariance_atol: 0.00005
+  euclidean_scaled_tolerance: 0.00005
+  oracle_sampler_tolerance: 0.00002
+  maximum_optimizer_updates_per_seed: 1000

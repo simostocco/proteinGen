@@ -1,0 +1,99 @@
+experiment: E005_sequence_geometry_codesign_synthetic_dry_run
+architecture_version: e005_sequence_geometry_codesign_v1
+seed: 5005
+device: cpu
+
+dataset:
+  schema_version: sequence_geometry_pairing_v1
+  immutable: true
+
+normalization_scale_angstrom: 50.0
+masked_token_probability: 0.20
+learning_rate: 0.001
+
+conditioning:
+  mode: learned_geometry_gating
+  dropout_probability: 0.25
+
+diffusion:
+  steps: 32
+  prediction_parameterization: v
+
+loss:
+  sequence_weight: 1.0
+  geometry_weight: 1.0
+  consistency_weight: 0.01
+
+model:
+  vocabulary_size: 22
+  pad_token_id: 0
+  mask_token_id: 1
+  sequence_hidden_dim: 32
+  sequence_layers: 1
+  sequence_heads: 4
+  sequence_feedforward_dim: 64
+  sequence_dropout: 0.0
+  max_length: 64
+  geometry_model:
+    input_channels: 3
+    output_channels: 1
+    base_channels: 8
+    channel_multipliers: [1, 2]
+    residual_blocks_per_level: 2
+    dropout: 0.0
+    group_norm_groups: 4
+    attention_heads: 2
+    use_bottleneck_attention: true
+    use_pre_bottleneck_axial_attention: true
+    axial_attention_heads: 2
+    axial_attention_dropout: 0.0
+    axial_attention_chunk_size: 16
+    use_pre_bottleneck_triangle_multiplication: true
+    triangle_hidden_channels: 8
+    triangle_dropout: 0.0
+    triangle_chunk_size: 4
+    time_embedding_dim: 32
+    length_embedding_dim: 32
+    max_length: 64
+
+dry_run:
+  steps: 4
+  activation_checkpointing: true
+  repeat_fixed_batch: true
+  sample_count: 2
+  synthetic_lengths: [12, 15]
+  maximum_length: 32
+  max_memory_mib: 2048
+
+tiny_overfit:
+  steps: 8
+  sample_count: 1
+  synthetic_lengths: [12]
+  maximum_length: 16
+  max_memory_mib: 2048
+  activation_checkpointing: true
+  required_relative_loss_reduction: 0.01
+  maximum_gate_saturated_fraction: 0.95
+  geometry_corruption:
+    type: additive_symmetric_noise
+    standard_deviation: 0.10
+
+pilot:
+  physical_batch_size: 1
+  activation_checkpointing: true
+  max_rss_mib: 4096
+  max_cuda_memory_mib: 8192
+  checkpoint_frequency: 1
+  maximum_optimizer_updates: 3
+  validation_panel_size: 2
+  synthetic_lengths: [8, 12]
+  curriculum:
+    - maximum_length: 16
+      optimizer_updates: 1
+    - maximum_length: 32
+      optimizer_updates: 1
+    - maximum_length: 64
+      optimizer_updates: 1
+  pair_budget_accumulation:
+    - maximum_padded_length: 64
+      microbatches: 1

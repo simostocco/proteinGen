@@ -1,0 +1,146 @@
+version: e007_phase3i5_sampler_unroll_v4_reviewed
+checkpoint: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt
+checkpoint_sha256: 2553ce18b5644aaf1e2d512b85664dfff2eaf5488f9536accbfb3e8ec18c2add
+source_config: configs/e007_coordinate_real_pilot_v1.yaml
+source_config_sha256: f2d66f8b8aef9470251edc7213f0ad1e7063f4939f0e97a051e8476fac1d3f90
+phase3i4_protocol: configs/e007_phase3i4_protocol_v2.json
+phase3i4_protocol_sha256: 8c54dfd1417d93a90471c06ab961e4c4972f1bec728baa3a56fa9a724590ad41
+phase3i4_v2_config: configs/e007_phase3i4_sampler_correction_v2.yaml
+phase3i4_v2_config_sha256: 2c714de4fad4f701d881ffb1b7f5b03963e51e4cbf3af75b981131343543d2e6
+phase3i4_calibration_report: reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_calibration_v2/report.json
+phase3i4_calibration_report_sha256: e3c7e293641860b96202d4a40192c35ccb7770990c5520e3506a63873d7c0f7e
+phase3i4_performance_report: reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_performance_correction_v2/performance_report.json
+phase3i4_performance_report_sha256: c02b7c1b8ee38cade77acc0dba123d7af1515cd7384406cebfcc7898ae8b31a8
+phase3i3_report: reports/experiments/E007_matrix_sequence_cogeneration/denoiser_sampler_trajectory_audit_v1/report.json
+phase3i3_report_sha256: 7a653ec269230e4a71e05b94802058fa13d5c4d6efd15bde0d6adbc264036fb2
+development_panel: configs/e007_phase3i5_development_panel_v1.json
+development_panel_sha256: 8eb97deb009c5a9c5a36dd026fb21816628b26b2098756d557dae79eda210de8
+phase3i4_holdout_identity_sha256: fb601312a7ad40e6649cb0197231d36e3019126f7a6db1092eeaf784ad5beaf8
+phase3i4_calibration_panel: reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_calibration_v2/active_panel.json
+phase3i4_calibration_panel_sha256: ed5793396154834f9e5a6e9b943c9d8805591aa72bdf6c2b031c3f252f8ba8b4
+phase3i4_holdout_hash_record: reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_calibration_v2/holdout_identity_hash.json
+phase3i4_holdout_hash_record_sha256: 4f999a5e83bcab8b9af7e954c26c5eb091d12a2369f20e799d1b0e1419db878d
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/phase3i5_sampler_unroll_v4_reviewed
+staging_dir: reports/experiments/E007_matrix_sequence_cogeneration/.phase3i5_sampler_unroll_v4_reviewed.inprogress
+smoke_output_dir: reports/experiments/E007_matrix_sequence_cogeneration/phase3i5_cuda_smoke_v2_reviewed
+updates: 25
+evaluation_boundaries:
+- 0
+- 10
+- 25
+sampling_boundaries:
+- 0
+- 25
+arms:
+- continued_v_only
+- v_plus_sampler_unroll
+unroll_transitions: 2
+batch_size: 1
+seed: 3916505
+timesteps: 500
+coordinate_scale_angstrom: 12.22820347644835
+longest_structure: 500
+conservative_pre_smoke_runtime_bound_seconds: 72000
+maximum_wall_seconds: 72000
+post_smoke_empirical_runtime_projection_seconds: 1973.3958336542128
+runtime_basis: measured v2 smoke projection; no automatic extension beyond 25 updates
+data_relocation:
+  recorded_root: /home/simostocco/proteinGen/data
+  verification_root: /home/simostocco/proteinGen.pre-relocation-20260922T064202Z/data
+target_device: RTX 5060 8-GB
+memory_limit_mib:
+  allocated: 6144
+  reserved: 7680
+  rss: 6144
+timestep_strata:
+- low_noise
+- middle_noise
+- high_noise
+geometry_coefficient: 0.02
+geometry_coefficient_policy: existing Phase 3C protected adjacent coefficient; unchanged
+decision:
+  meaningful_adjacent_rmse_improvement_angstrom: 0.1
+  desirable_improvement_angstrom: 0.2
+  required_validity_improvement: several percentage points
+  validity_improvement_target_fraction: 0.03
+  statistical_subthreshold_label: technically_positive_scientifically_negligible
+  paired_bootstrap_replicates: 2000
+  paired_bootstrap_seed: 3916505
+  safeguards:
+  - global_geometry
+  - diversity
+  - v_mse
+  - numerical_stability
+safeguard_tolerances:
+  v_mse_relative_degradation: 0.05
+  radius_of_gyration_error_degradation_angstrom: 0.25
+  contact_density_absolute_degradation: 0.03
+  diversity_relative_degradation: 0.05
+  i_plus_2_rmse_degradation_angstrom: 0.1
+  i_plus_3_rmse_degradation_angstrom: 0.1
+  discontinuity_fraction_degradation: 0.02
+  validity_fraction_material_regression: 0.02
+panel:
+  training_identity_namespace: e007_phase3i5_train
+  development_identity_namespace: e007_phase3i5_development
+  matched_production_sample_count_per_stratum: 2
+  disjoint_from_training: true
+  disjoint_from_phase3i4_holdout: true
+  source: identity-30 clean-validation pool, deterministic hash-ranked selection;
+    must exclude train overlap before execution
+resume_contract:
+- model
+- optimizer
+- scheduler
+- scaler
+- cpu_rng
+- cuda_rng
+- data_cursor
+- update_identity
+- protected_artifact_hashes
+numerics:
+  deterministic_algorithms: true
+  amp_enabled: true
+  amp_preference:
+  - bfloat16
+  - float16
+  fp16_grad_scaler: true
+  activation_checkpointing: true
+  checkpoint_use_reentrant: false
+  checkpoint_preserve_rng_state: true
+  loss_aggregation_dtype: float32
+authorization:
+  authorizes_training: false
+  authorizes_real_data_training: false
+  authorizes_phase3j: false
+  authorizes_production: false
+  authorizes_additional_training: false
+  authorizes_joint_training: false
+  authorizes_sequence_conditioning: false
+  authorizes_downstream_generation: false
+  authorizes_sampler_correction: false
+  authorizes_larger_sampler_aware_experiment: false
+memory_policy:
+  fail_closed_allocated_mib: 6144
+  fail_closed_current_rss_mib: 6144
+  rss_monotonic_growth_tolerance_mib: 256
+  rss_comparison_boundaries: [0, 10, 25]
+  detect_unexpected_tensor_or_trajectory_accumulation: true
+  reserved_limit_mib: 7680
+  capacity_headroom_mib: 512
+  do_not_reduce_structure_length: true
+  do_not_reduce_unroll_transitions: true
+source_v2_config: configs/e007_phase3i5_sampler_unroll_v2.yaml
+source_v2_config_sha256: 6a2ebb517c31ea11f121765aac135948443a058ef302d66ff1d145481680c998
+reviewed_smoke_report: reports/experiments/E007_matrix_sequence_cogeneration/phase3i5_cuda_smoke_v2_reviewed/report.json
+reviewed_smoke_report_sha256: 5bc3b75a2682e0323f4a8149b326aa1ec5911d2727eae766949866564136767e
+reviewed_smoke_log: reports/experiments/E007_matrix_sequence_cogeneration/phase3i5_cuda_smoke_v2_reviewed/execution.log
+reviewed_smoke_log_sha256: dcffcf80b3df28cff2f52c19b7ed36186511a5faed2961a7f0681179d2c26b57
+reviewed_smoke_decision: reports/experiments/E007_matrix_sequence_cogeneration/phase3i5_reviewed_smoke_decision_v1.json
+reviewed_smoke_decision_sha256: c64c1d91e219bf4eb46a2417c35229a67910ad7d9d9fc9e2f8b62b6e0e8b0252
+maximum_updates: null
+
+source_v3_config: configs/e007_phase3i5_sampler_unroll_v3_reviewed.yaml
+source_v3_config_sha256: a5fa158cb4f38678efe491271fbea08b74f96a6ad7ee87dde103841c2668d882
+incident_record: reports/experiments/E007_matrix_sequence_cogeneration/phase3i5_incidents/v3_rss_failure_preserved/incident_record.json
+incident_record_sha256: 0db9edb93758ee6f9180a2bd7b429360a784bd27367d09144f3641c978579c6c

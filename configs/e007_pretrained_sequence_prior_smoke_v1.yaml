@@ -1,0 +1,157 @@
+version: e007_pretrained_sequence_prior_smoke_v1
+phase4a:
+  config_path: configs/e007_pretrained_sequence_prior_audit_v1.yaml
+  config_sha256: 0b8b221b71844a73caa6a43869378dbde58c828c48192e15241612454f0b0cb0
+  contract_path: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json
+  contract_sha256: f07dca705637b91c127c2fa0dd49a5cc63b95350edd242eeabf464d32cd55f5f
+environment_lock:
+  path: environment/e007_phase4b_environment_lock.yaml
+  sha256: f888925ab36ad9c6784b837fad22566644db1febf8d39c6818da537906e7a12f
+loader_readiness:
+  path: configs/e007_phase4b_loader_readiness_v1.yaml
+  sha256: 0424271e049e82397ba38b10a4fbc57e511b569350de25b56a87e51cd0c94347
+artifact_cache_root: external_models/e007_phase4b_v1
+artifact_lock_output: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_artifacts_v1
+smoke_output: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v1
+sources:
+  esm2_150m:
+    role: primary
+    source_repository: https://github.com/facebookresearch/esm
+    source_commit: 2b369911bb5b4b0dda914521b9475cad1656b2ac
+    model_repository: https://huggingface.co/facebook/esm2_t30_150M_UR50D
+    phase4a_config_commit: 93c7cee08fcc7779d4e33ad3f070a7675cac7d76
+    model_commit: a695f6045e2e32885fa60af20c13cb35398ce30c
+    license: MIT
+    loader: transformers_builtin_esm
+    trust_remote_code: false
+    artifacts:
+      - path: esm2_150m/config.json
+        url: https://huggingface.co/facebook/esm2_t30_150M_UR50D/resolve/a695f6045e2e32885fa60af20c13cb35398ce30c/config.json
+        sha256: null
+      - path: esm2_150m/model.safetensors
+        url: https://huggingface.co/facebook/esm2_t30_150M_UR50D/resolve/a695f6045e2e32885fa60af20c13cb35398ce30c/model.safetensors
+        sha256: null
+      - path: esm2_150m/special_tokens_map.json
+        url: https://huggingface.co/facebook/esm2_t30_150M_UR50D/resolve/a695f6045e2e32885fa60af20c13cb35398ce30c/special_tokens_map.json
+        sha256: null
+      - path: esm2_150m/tokenizer_config.json
+        url: https://huggingface.co/facebook/esm2_t30_150M_UR50D/resolve/a695f6045e2e32885fa60af20c13cb35398ce30c/tokenizer_config.json
+        sha256: null
+      - path: esm2_150m/vocab.txt
+        url: https://huggingface.co/facebook/esm2_t30_150M_UR50D/resolve/a695f6045e2e32885fa60af20c13cb35398ce30c/vocab.txt
+        sha256: null
+      - path: esm2_150m/LICENSE
+        url: https://raw.githubusercontent.com/facebookresearch/esm/2b369911bb5b4b0dda914521b9475cad1656b2ac/LICENSE
+        sha256: null
+  progen2_151m:
+    role: primary
+    source_repository: https://github.com/enijkamp/progen2
+    source_commit: 9b4d4fb5ec19c9e55c4bb06305c0e613e46c1cf5
+    checkpoint_url: https://storage.googleapis.com/sfr-progen-research/checkpoints/progen2-small.tar.gz
+    license: BSD-3-Clause
+    loader: transformers_builtin_progen
+    trust_remote_code: false
+    artifacts:
+      - path: progen2_151m/source/tokenizer.json
+        url: https://raw.githubusercontent.com/enijkamp/progen2/9b4d4fb5ec19c9e55c4bb06305c0e613e46c1cf5/tokenizer.json
+        sha256: null
+      - path: progen2_151m/source/LICENSE.txt
+        url: https://raw.githubusercontent.com/enijkamp/progen2/9b4d4fb5ec19c9e55c4bb06305c0e613e46c1cf5/LICENSE.txt
+        sha256: null
+      - path: progen2_151m/source/README.md
+        url: https://raw.githubusercontent.com/enijkamp/progen2/9b4d4fb5ec19c9e55c4bb06305c0e613e46c1cf5/README.md
+        sha256: null
+      - path: progen2_151m/progen2-small.tar.gz
+        url: https://storage.googleapis.com/sfr-progen-research/checkpoints/progen2-small.tar.gz
+        sha256: null
+        archive: tar_gz
+        extract_to: progen2_151m/checkpoint
+        expected_members:
+          - config.json
+          - pytorch_model.bin
+  proteinmpnn_ca_only:
+    role: baseline
+    source_repository: https://github.com/dauparas/ProteinMPNN
+    source_commit: 8907e6671bfbfc92303b5f79c4b5e6ce47cdef57
+    checkpoint_path: ca_model_weights/v_48_020.pt
+    license: MIT
+    loader: reviewed_local_proteinmpnn_ca
+    trust_remote_code: false
+    full_backbone_checkpoint_forbidden: true
+    artifacts:
+      - path: proteinmpnn_ca_only/ca_model_weights/v_48_020.pt
+        url: https://raw.githubusercontent.com/dauparas/ProteinMPNN/8907e6671bfbfc92303b5f79c4b5e6ce47cdef57/ca_model_weights/v_48_020.pt
+        sha256: null
+      - path: proteinmpnn_ca_only/LICENSE
+        url: https://raw.githubusercontent.com/dauparas/ProteinMPNN/8907e6671bfbfc92303b5f79c4b5e6ce47cdef57/LICENSE
+        sha256: null
+      - path: proteinmpnn_ca_only/README.md
+        url: https://raw.githubusercontent.com/dauparas/ProteinMPNN/8907e6671bfbfc92303b5f79c4b5e6ce47cdef57/README.md
+        sha256: null
+      - path: proteinmpnn_ca_only/source/protein_mpnn_utils.py
+        url: https://raw.githubusercontent.com/dauparas/ProteinMPNN/8907e6671bfbfc92303b5f79c4b5e6ce47cdef57/protein_mpnn_utils.py
+        sha256: null
+        execute: false
+acquisition:
+  connect_timeout_seconds: 30
+  read_chunk_bytes: 1048576
+  maximum_artifact_bytes: 2147483648
+  archive_maximum_members: 16
+  archive_maximum_file_bytes: 1073741824
+  archive_maximum_total_bytes: 1073741824
+  atomic_temporary_suffix: .download.inprogress
+  maximum_redirects: 5
+  redirect_policies:
+    huggingface:
+      source_hosts: [huggingface.co]
+      destination_hosts: [huggingface.co]
+      destination_host_suffixes: [hf.co]
+    github_raw:
+      source_hosts: [raw.githubusercontent.com]
+      destination_hosts: [raw.githubusercontent.com]
+      destination_host_suffixes: []
+    google_storage:
+      source_hosts: [storage.googleapis.com]
+      destination_hosts: [storage.googleapis.com]
+      destination_host_suffixes: []
+  reject_archive_links: true
+  reject_duplicate_archive_members: true
+  reject_unexpected_archive_members: true
+  overwrite_existing_cache: false
+smoke:
+  lengths: [64, 128, 256, 384, 500]
+  seed: 7401
+  candidates: [esm2_150m, progen2_151m, proteinmpnn_ca_only]
+  tests:
+    - tokenizer_round_trip
+    - frozen_fp32_forward
+    - geometry_adapter_backward
+    - deterministic_logits_replay
+  process_isolation: spawn_one_candidate_per_process
+  optimizer_updates: 0
+  parameter_mutation_tolerance: 0.0
+  precision:
+    required: float32
+    descriptive_after_fp32: float16
+  memory:
+    maximum_rss_mib: 6144
+    maximum_cuda_allocated_mib: 7168
+    maximum_cuda_reserved_mib: 7800
+  geometry_adapter:
+    input_features: 4
+    feature_definition: [normalized_position, sin_position, cos_position, continuity]
+    target_identity_inputs: false
+  tokenizer:
+    canonical_residues: ACDEFGHIKLMNPQRSTVWY
+    ambiguous_residues: [B, J, O, U, X, Z]
+    require_length_500: true
+  lower_precision_is_descriptive_only: true
+  full_phase4c_conditioning_forbidden: true
+decision_outcomes:
+  - esm2_and_progen2_advance
+  - esm2_only_advances
+  - progen2_only_advances
+  - neither_primary_candidate_advances
+  - proteinmpnn_ca_baseline_unavailable
+  - environment_or_artifact_review_required
+  - inconclusive_requires_scientific_review

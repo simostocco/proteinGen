@@ -1,0 +1,71 @@
+{
+  "version": "e007_phase3i4_sampler_correction_v1",
+  "status": "prospective_non_authorizing_protocol",
+  "external_execution_log": {"path": "logs/e007_denoiser_sampler_trajectory_audit_v1.log", "sha256": "6a13dff5c8c3291b4030bf1aa9bb8ec22154f9c6cd57dafe7fe25aa0629439e1"},
+  "protected_phase3i3_artifacts": {
+    "report.json": "7a653ec269230e4a71e05b94802058fa13d5c4d6efd15bde0d6adbc264036fb2",
+    "paired_comparisons.json": "b57f2bb433715644b937cdd14d45774cdb3a6606924889eabe25919fd4828ff7",
+    "per_sample_trajectories.json": "5f4874c24ad76898e6da6da5e6217155dc178ff0eeeac01a26585479a29d4954",
+    "protocol.json": "9680f9c21e5fd99a7b166ef2b12743dc8d08a2375d415ecf90ccf36e74d47e7e",
+    "contract.json": "834eb3e21251330eea56278996f195e3912841de75c9f5f81c62d824e37ea17d",
+    "heartbeat.json": "8cfb44b5b9674a23a5c2522a76f6a0c62620a72f54db5b8e5fea7ddd6a8e4533",
+    "artifact_inventory.json": "10b3d5b9169139a9c7207523c8427af381c62123f7d02a135cfa4520be46da38",
+    "journal.jsonl": "ea6c228dac688cc1e0b579d763909f1f9330a2855045f5ab11f2035486f361e2",
+    "logs/e007_denoiser_sampler_trajectory_audit_v1.log": "6a13dff5c8c3291b4030bf1aa9bb8ec22154f9c6cd57dafe7fe25aa0629439e1"
+  },
+  "primary_checkpoint": {
+    "arm": "v_only",
+    "update": 500,
+    "sha256": "2553ce18b5644aaf1e2d512b85664dfff2eaf5488f9536accbfb3e8ec18c2add"
+  },
+  "panels": {
+    "calibration": {"identities": 10, "per_length": 2, "lengths": [64, 128, 256, 384, 500]},
+    "prospective_holdout": {"identities": 20, "per_length": 4, "lengths": [64, 128, 256, 384, 500]},
+    "pairing": "same initial noise for corrected and control trajectories",
+    "disjointness": "identities and seeds must be disjoint"
+  },
+  "candidate_grid": {
+    "control": 1,
+    "bond_only_start_timesteps": [425, 250, 150],
+    "composite_start_timesteps": [425, 250, 150],
+    "displacement_cap_angstrom": 0.15,
+    "projection_iterations": 2,
+    "lambda_max_signal_fraction": 0.25,
+    "expand_after_results": false
+  },
+  "selection": {
+    "method": "predeclared lexicographic gates; no scalar composite score",
+    "order": ["100_percent_finite_completion", "primary_local_improvements", "safeguard_noninferiority", "improvement_in_every_length_stratum", "exactly_one_passing_candidate"],
+    "bootstrap": {"replicates": 2000, "seed": 3916499, "paired": true},
+    "holdout_access_during_selection": false,
+    "ambiguous_or_no_pass": "fail_closed"
+  },
+  "baseline_derived_material_tolerances": {
+    "evidence_file": "configs/e007_phase3i4_baseline_tolerances_v1.json",
+    "evidence_sha256": "349221fd5c23b58a81374ded1ab7ba857b0c04d3c549feb36a47df11adf10d87",
+    "derivation": "Frozen empirical paired-bootstrap and per-sample diversity margins from protected Phase 3I.3 only; the evidence file records formulas and exact inputs."
+  },
+  "runtime": {
+    "calibration_forward_count": 35000,
+    "holdout_forward_count": 20000,
+    "planned_forward_count": 55000,
+    "maximum_wall_seconds": 7200,
+    "memory_mib": {"rss": 4096, "cuda_allocated": 6144, "cuda_reserved": 7680}
+  },
+  "authorization": {
+    "authorizes_training": false,
+    "authorizes_real_data_training": false,
+    "authorizes_production_training": false,
+    "authorizes_additional_training": false,
+    "authorizes_joint_training": false,
+    "authorizes_sequence_conditioning": false,
+    "authorizes_downstream_generation": false,
+    "authorizes_sampler_correction": false,
+    "authorizes_pilot_execution": false,
+    "authorizes_phase3j": false,
+    "authorizes_larger_validation": false,
+    "optimizer_created": false,
+    "backward_performed": false,
+    "parameter_mutation": false
+  }
+}

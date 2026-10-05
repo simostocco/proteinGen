@@ -1,0 +1,57 @@
+schema: e010_phase3_shared_capacity_v1
+authorizes_downstream: false
+output_dir: reports/experiments/E010_global_equivariant_expressivity/phase3_shared_capacity_v1
+source_phase2_config: configs/e010_global_equivariant_phase2_v2.yaml
+source_phase2_protocol: reports/experiments/E010_global_equivariant_expressivity/phase2_v1_prepared/protocol.json
+source_phase2_baseline: reports/experiments/E010_global_equivariant_expressivity/phase2_v2_continuation/continuation_result.json
+source_phase2_manifest: reports/experiments/E010_global_equivariant_expressivity/phase2_v2_continuation/checkpoint_manifest.json
+source_phase2_update6400_checkpoint: reports/experiments/E010_global_equivariant_expressivity/phase2_v2_continuation/checkpoint_update_6400.pt
+source_model: src/protein_distance_diffusion/models/e010_global_equivariant.py
+source_result_sha256: d0a73ec846930f145697f0afc568a3738a07cc51d77448215825e7905b4391d7
+seed: 8015
+variants:
+  medium:
+    model: {width: 320, layers: 4, heads: 8, vector_channels: 48, max_length: 500, sigma_distance: 2.0}
+    approximate_parameters: 5100000
+  large:
+    model: {width: 416, layers: 6, heads: 8, vector_channels: 64, max_length: 500, sigma_distance: 2.0}
+    approximate_parameters: 12800000
+training:
+  updates: 6400
+  evaluation_updates: [0, 2000, 3200, 4800, 6400]
+  schedule: deterministic random.Random(seed=8015) permutation of 32 identities per 32-update epoch
+  exposures_per_identity: 200
+  objective: masked xyz coordinate MSE + 1e-5 masked residual L2
+  optimizer: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.0
+  scheduler: none
+  gradient_clip_max_norm: 5.0
+  evaluation_function: scripts.run_e010_phase2._metrics (unchanged)
+smoke:
+  length: 500
+  memory_allocated_limit_mib: 6144
+  memory_reserved_limit_mib: 7680
+  require_finite_outputs: true
+  require_finite_gradients: true
+acceptance:
+  mean_aligned_rmse_angstrom_max: 0.20
+  median_aligned_rmse_angstrom_max: 0.15
+  maximum_aligned_rmse_angstrom_max: 0.50
+  error_vs_length_slope_angstrom_per_residue_max: 0.0005
+  non_finite_outputs: 0
+reporting:
+  improvement_per_million_parameters: mean_rmse_improvement_vs_phase2_v2_update6400_per_million_added_parameters
+restrictions:
+  coordinate_only: true
+  geometry_priors: false
+  geometry_losses: false
+  fixed_bonds: false
+  identity_embeddings: false
+  mixture_of_experts: false
+  sequence_features: false
+  altered_corruption: false
+  length_weighted_sampling: false
+  held_out_data: false
+  sampling: false
+  supervised_pilot_prepared_or_run: false

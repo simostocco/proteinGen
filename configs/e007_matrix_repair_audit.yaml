@@ -1,0 +1,102 @@
+version: e007_matrix_repair_audit_plan_v1
+experiment_id: E007_uncertainty_aware_matrix_sequence_cogeneration
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/matrix_repair_audit_v1
+
+source_audit:
+  directory: reports/experiments/E007_matrix_sequence_cogeneration/matrix_generator_audit_v1
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/matrix_generator_audit_v1/report.json
+  report_sha256: 1746aa4503cb7fcf5129967a0a27419c33ab933ad02e874995959653f256440c
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/matrix_generator_audit_v1/protocol.json
+  protocol_sha256: 081d59392c811a718dc7f17849a03369571dc332bc8b8e4b99fed1a60142312b
+  candidate_manifest_path: reports/experiments/E007_matrix_sequence_cogeneration/matrix_generator_audit_v1/candidate_manifest.jsonl
+  candidate_manifest_sha256: dcfb53574d7c001f588efaf44835a5f5a27d6a71926bf2ea64e1fa8ab637bbc7
+  matrix_metrics_path: reports/experiments/E007_matrix_sequence_cogeneration/matrix_generator_audit_v1/matrix_metrics.jsonl
+  matrix_metrics_sha256: 65ea73d3cc4b62d5d8aec6fb6e4e5b374b13ba35a13387f90d46b29ac6c8e18c
+  required_status: completed
+  required_candidate_count: 48
+  required_lengths: [64, 128, 256, 384, 500]
+
+protected_inputs:
+  e004_checkpoint:
+    path: outputs/recovered_full_b2_v_axial_edm_triangle_e004/checkpoints/final_validation_selected.pt
+    sha256: 59db27a3dbecbc199cb20065e1263ad0cec12b3553cca1a263429f890b38ea86
+  e006_postmortem:
+    path: reports/experiments/E006_rich_geometry_codesign/STAGE_A_SEQUENCE_ONLY_POSTMORTEM_V1.json
+    sha256: 8c8fdcfa900f4bee850c622c1da3b876b6bfd5ac676185cfe3ad958d53aec6d9
+  phase2_configuration:
+    path: configs/e007_matrix_generator_audit.yaml
+    sha256: 096fc512c0d3fbd4285ef8110e39a95bef67de259b0d9615a8fc13f2d073052f
+
+rank3_psd_projection:
+  symmetrize_input: true
+  zero_diagonal_before_projection: true
+  retained_dimensions: 3
+  eigenvalue_tolerance: 1.0e-6
+
+constrained_coordinate_repair:
+  maximum_iterations: 300
+  maximum_seconds_per_candidate: 120
+  learning_rate: 0.025
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+  gradient_clip_norm: 100.0
+  convergence_relative_tolerance: 1.0e-7
+  convergence_patience: 25
+  gradient_norm_tolerance: 1.0e-8
+  huber_delta_angstrom: 1.0
+  distance_fit_weight: 1.0
+  adjacent_penalty_weight: 4.0
+  clash_penalty_weight: 2.0
+  centering_regularization_weight: 1.0e-6
+  adjacent_target_angstrom: 3.8
+  adjacent_plausibility_tolerance_angstrom: 0.5
+  clash_threshold_angstrom: 3.0
+  pair_weighting:
+    adjacent: 4.0
+    local_sequence_separation_2_to_4: 2.0
+    raw_contact_at_or_below_10_angstrom: 2.0
+    other_pairs: 1.0
+    normalize_to_mean_one: true
+
+topology_evaluation:
+  contact_thresholds_angstrom: [6.0, 8.0, 10.0]
+  neighbourhood_size: 8
+  non_neighbour_minimum_sequence_separation: 2
+
+decision_policy:
+  version: e007_matrix_repair_decision_v1
+  minimum_candidate_pass_fraction_per_length: 0.75
+  hard_physical_requirements:
+    require_finite: true
+    maximum_symmetry_error_angstrom: 1.0e-5
+    maximum_diagonal_error_angstrom: 1.0e-5
+    maximum_negative_distance_count: 0
+    maximum_triangle_violation_fraction: 0.0
+    maximum_negative_eigenmass_fraction: 1.0e-6
+    maximum_rank3_residual_energy_fraction: 1.0e-6
+    maximum_adjacent_rmse_angstrom: 0.5
+    minimum_adjacent_plausible_fraction: 0.9
+    maximum_non_neighbour_clash_fraction: 0.01
+  topology_preservation_requirements:
+    maximum_pairwise_rmse_angstrom: 2.0
+    maximum_relative_frobenius_distortion: 0.15
+    minimum_distance_spearman_correlation: 0.9
+    minimum_contact_f1_at_8_angstrom: 0.8
+    minimum_neighbourhood_retention_mean: 0.7
+  rationale:
+    adjacent_geometry: adjacent C-alpha distances are tightly centred near 3.8 angstrom
+    contact_scale: 8 angstrom is the established project contact threshold
+    distortion: 2 angstrom RMSE and 0.15 relative distortion bound topology-changing repairs
+    rank3: repaired matrices are constructed exactly from three-dimensional coordinates
+
+aggregation:
+  bootstrap_iterations: 500
+  bootstrap_seed: 7207
+  quantiles: [0.05, 0.25, 0.75, 0.95]
+
+bounds:
+  maximum_rss_mib: 4096
+  maximum_candidate_count: 48
+  process_candidates_individually: true
+  retain_raw_matrices_in_output: false

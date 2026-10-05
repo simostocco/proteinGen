@@ -1,0 +1,23 @@
+version: e007_split_homology_publication_correction_v1
+source_output_dir: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1
+source_audit_config_path: configs/e007_split_homology_audit_v1.yaml
+source_audit_config_sha256: d458387cfa3a2c13fb65740f83b4a5538a45db786fb194c39b3b8dc22bb02167
+
+source_publication:
+  report_sha256: c49ad7819d1b2ff328c4a123d74565e86e88bdfaa8ec66bed8503f37bf9dc3de
+  protocol_sha256: c49ad7819d1b2ff328c4a123d74565e86e88bdfaa8ec66bed8503f37bf9dc3de
+  configuration_sha256: d458387cfa3a2c13fb65740f83b4a5538a45db786fb194c39b3b8dc22bb02167
+
+thresholds: [identity_90, identity_70, identity_50, identity_30]
+expected_population_counts:
+  accepted: {train: 230132, validation: 23161, combined: 253293}
+  rejected: {train: 1611, validation: 146, combined: 1757}
+expected_exact_clean_sha256: 75afb0fd0f862cfc2c44f29402c1ae742dfaaeb0a63c0b28137b1a8f436098fd
+expected_same_pdb_clean_sha256: 75afb0fd0f862cfc2c44f29402c1ae742dfaaeb0a63c0b28137b1a8f436098fd
+
+expected_threshold_summaries:
+  identity_90: {cross_split_clusters: 7, affected_validation_samples: 9, clean_validation_count: 23152}
+  identity_70: {cross_split_clusters: 10, affected_validation_samples: 28, clean_validation_count: 23133}
+  identity_50: {cross_split_clusters: 28, affected_validation_samples: 107, clean_validation_count: 23054}
+  identity_30: {cross_split_clusters: 280, affected_validation_samples: 1578, clean_validation_count: 21583}

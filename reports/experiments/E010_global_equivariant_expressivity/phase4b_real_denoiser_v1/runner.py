@@ -231,6 +231,8 @@ def _metrics(records: list[dict[str, Any]], output_key: str) -> dict[str, Any]:
             "length": int(r["length"]), "rmse": float(np.sqrt(np.mean(err ** 2))),
             "mean_error": float(err.mean()), "max_error": float(err.max()),
             "local_distance_rmse": local, "chirality_inversion_rate": float(np.mean(chirality)) if chirality else 0.0,
+            "chirality_eligible_tetrahedra": len(chirality),
+            "chirality_assessable": bool(chirality),
             "prediction_radius_gyration": rg_pred, "target_radius_gyration": rg_target,
             "finite": bool(np.isfinite(pred).all()), "prediction": pred})
     identities = sorted({r["sample_id"] for r in rows})
@@ -264,6 +266,8 @@ def _metrics(records: list[dict[str, Any]], output_key: str) -> dict[str, Any]:
         "per_identity": per_identity, "per_condition": [{k: v for k, v in r.items() if k != "prediction"} for r in rows],
         "local_distance_rmse_i_plus_1_2_3": {str(i): float(np.mean([r["local_distance_rmse"][str(i)] for r in rows if str(i) in r["local_distance_rmse"]])) for i in (1, 2, 3)},
         "chirality_inversion_rate": float(np.mean([r["chirality_inversion_rate"] for r in rows])),
+        "chirality_eligible_tetrahedra": sum(r["chirality_eligible_tetrahedra"] for r in rows),
+        "chirality_assessable": all(r["chirality_assessable"] for r in rows),
         "error_vs_length_slope": float(np.polyfit([r["length"] for r in rows], [r["rmse"] for r in rows], 1)[0]),
         "diversity_by_stratum": {s: {"radius_gyration_sd_prediction": float(np.std([r["prediction_radius_gyration"] for r in rows if r["stratum"] == s])),
             "radius_gyration_sd_target": float(np.std([r["target_radius_gyration"] for r in rows if r["stratum"] == s])),
@@ -396,7 +400,9 @@ def adjudicate(baseline: dict[str, Any], candidate: dict[str, Any], paired: dict
     no_collapse = all(not candidate["diversity_by_stratum"][s]["collapse"] for s in pc.STRATA)
     diversity_ok = all(candidate["diversity_by_stratum"][s]["radius_gyration_sd_prediction"] >=
         0.05 * max(candidate["diversity_by_stratum"][s]["radius_gyration_sd_target"], 1e-12) for s in pc.STRATA)
-    safe = (candidate["finite_output_rate"] == 1.0 and no_collapse and diversity_ok
+    chirality_assessable = (candidate.get("chirality_assessable", True)
+        and baseline.get("chirality_assessable", True))
+    safe = (candidate["finite_output_rate"] == 1.0 and no_collapse and diversity_ok and chirality_assessable
         and candidate["chirality_inversion_rate"] <= baseline["chirality_inversion_rate"]
         and candidate["error_vs_length_slope"] <= baseline["error_vs_length_slope"])
     ci = paired["bootstrap_ci95"]
@@ -411,6 +417,7 @@ def adjudicate(baseline: dict[str, Any], candidate: dict[str, Any], paired: dict
         "local_distance_improvement_i_plus_1_2_3": local_improvements,
         "mean_local_distance_improvement": local_reduction,
         "safety_gates": {"finite_outputs": candidate["finite_output_rate"] == 1.0,
+            "chirality_assessable": chirality_assessable,
             "coordinate_noncollapse": no_collapse, "diversity_noncollapse": diversity_ok,
             "chirality_not_increased": candidate["chirality_inversion_rate"] <= baseline["chirality_inversion_rate"],
             "length_slope_not_increased": candidate["error_vs_length_slope"] <= baseline["error_vs_length_slope"]}}
@@ -518,7 +525,8 @@ def execute(*, resume: bool = False) -> dict[str, Any]:
                 "paired_vs_frozen_denoiser": _paired(dev_baseline, adapted),
                 "paired_vs_zero_shot_e010": _paired(synthetic, adapted),
                 "training_mean_objective_loss_through_boundary": float(np.mean([e["mean_loss"] for e in events])),
-                "training_development_squared_error_gap": float(np.mean([e["mean_loss"] for e in events]) - adapted["mean_rmse"] ** 2)}
+                "legacy_incomparable_error_difference": float(np.mean([e["mean_loss"] for e in events]) - adapted["mean_rmse"] ** 2),
+                "legacy_error_difference_interpretation": "Not a generalization gap: historical unaligned component MSE minus squared mean aligned RMSD has incompatible reductions and coordinate frames."}
             boundaries[str(global_update)]["adjudication"] = adjudicate(dev_baseline, adapted, boundaries[str(global_update)]["paired_vs_frozen_denoiser"])
         state = {"schema": "e010_phase4b_exact_state_v1", "global_update": global_update,
             "model": model.state_dict(), "optimizer": optimizer.state_dict(), "scheduler": None, "scaler": scaler.state_dict(),

@@ -1,0 +1,49 @@
+schema: e010_global_equivariant_expressivity_config_v1
+version: v1
+authorizes_downstream: false
+initialization_seed: 8015
+repeats: 1
+inputs:
+  fixed_corruption_cache: reports/experiments/E009_bayesian_geometry_refiner/length_64_execution_v4_corruption/fixed_overfit_corruptions.npz
+  cache_sha256: b5d8916336ad9c23d881f350dd9d1444f47a1e7d2d3c17b87d02b15cfaf10fe2
+  sample_id: 10px_18
+  length: 64
+  target_sha256: 5ee4e084ee343eda0b0d0891333ac47d36f5ae81ce2cc7ed6a8db26dce23be35
+  corruption_sha256: cd17422a389aa316015d163fe63ca16d160158af72d757b73a4a65f6fbe7b4eb
+  mask_sha256: 7c8975e1e60a5c8337f28edf8c33c3b180360b7279644a9bc1af3c51e6220bf5
+  evaluator_path: scripts/run_e009_bayesian_refiner.py
+  evaluator_sha256: 98dbfad12e403e7f5b60b3df23a208317a62c910aadef9a22462b274e3a3d867
+output_dir: reports/experiments/E010_global_equivariant_expressivity/v1
+oracle:
+  max_updates: 1000
+  evaluation_schedule: [0, 1, 10, 50, 100, 250, 500, 1000]
+  aligned_rmse_gate_angstrom: 0.01
+  optimizer: Adam
+  learning_rate: 0.1
+  reduction: mean over eligible coordinate scalars
+model_stage:
+  max_updates: 1000
+  evaluation_schedule: [0, 10, 50, 100, 250, 500, 1000]
+  aligned_rmse_gate_angstrom: 0.10
+  optimizer: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.0
+  coordinate_mse_reduction: mean over eligible coordinate scalars
+  residual_l2_coefficient: 0.00001
+  residual_l2_reduction: mean over eligible coordinate scalars
+  gradient_clip_max_norm: 5.0
+  clipping_policy: clip the normalized total objective gradient only when its L2 norm exceeds 5.0
+  geometry_telemetry_thresholds:
+    maximum_i_plus_1_i_plus_2_i_plus_3_distance_rmse_angstrom: 1.0
+    maximum_chirality_inversions: 0
+  model:
+    width: 192
+    layers: 4
+    heads: 4
+    vector_channels: 32
+    max_length: 500
+    sigma_distance: 2.0
+cuda_smoke:
+  optimizer_steps: 1
+  maximum_length: 64
+  maximum_batch_size: 1

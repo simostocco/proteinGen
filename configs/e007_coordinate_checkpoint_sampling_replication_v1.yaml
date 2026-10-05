@@ -1,0 +1,90 @@
+version: e007_coordinate_checkpoint_sampling_replication_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1
+device: cuda
+continuation:
+  source_dir: outputs/e007_coordinate_real_continuation_to_10000_v1
+  report_sha256: 71042c9d4b0c5e600b344bbc664ea067446cfd77153e43b96f657a1cf66a71ee
+  protocol_sha256: f9219f2092c2ceb3976cd68f6066586b78df79591fba2f1f8a560f3938d3672c
+  aggregate_fingerprint: f3d8f4a66bcdafa1a9c7d7dfadc73bb3f028ca6b185c4771f57120a6cc5dd97b
+  config_path: configs/e007_coordinate_real_continuation_to_10000_v1.yaml
+  config_sha256: 54c01d0690611ab14e605a11a8211097135248b702916dd9f93fc34c49c79cb0
+phase3f:
+  source_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1
+  report_sha256: 5a6411bb5c7fb9249d78bbfa8e55c4e1f6a82a01e16adb82100f02f147a9084c
+  protocol_sha256: 985bcd10dc8aeda8b0cfa2fdd1ec3613ba9d9bc820e2395d51e6479087546ac0
+  aggregate_fingerprint: e323dec7a75b70bf4e3d345d349cdde8b2579d4a38e68850dfbcd5bfa54f0341
+  config_path: configs/e007_coordinate_real_pilot_v1.yaml
+  config_sha256: f2d66f8b8aef9470251edc7213f0ad1e7063f4939f0e97a051e8476fac1d3f90
+phase3g:
+  source_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_sampling_replication_v1
+  report_sha256: 170e8a9c6a0efb9f575bdb1d0afe560434e272c7944b0df34dfc88c7cf3b1844
+  protocol_sha256: edc8c9befccbe3b93df46d916b234507cf2a1fe3ac2a705c465922d31da94eb9
+  aggregate_fingerprint: 73b4a3cbb8615bad4d453700308260bf565d1d858810c388aded400c4b508d48
+  fingerprint_algorithm: relative_path_nul_size_nul_sha256_newline_v1
+  completed_file_count: 503
+  artifact_inventory_sha256: d3892748ea9dcbddbb974694a84370bda894e0a0df4cdd1dcaf96e65c012727c
+  artifact_inventory_aggregate_sha256: 33e2ff88b7587e745830a83cf0d0ec84bf76d3fa0541db8222c5e9c5a7f9f8fe
+  artifact_inventory_entry_count: 499
+  config_path: configs/e007_coordinate_sampling_replication_v1.yaml
+  config_sha256: b7ea941b7bac4b74978b83bb24a65f471369b4dccfdd128a50ab5e63976b1d23
+checkpoints:
+  - optimizer_update: 7500
+    path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-07500.pt
+    sha256: c3b97599d38b2d739d702fda44e4597ce6a0893296b4fc8233f77e54dcbd4608
+    metadata_path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-07500.json
+    metadata_sha256: 1473d7ab157659ee3b6d26642de5fa65eecf4f0caaa395228cf43f4a0cf8db8a
+  - optimizer_update: 9000
+    path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+    sha256: eb445f0b39067b8a00a47db27f966a6db97dc0e30bf81078b34ea54f111c7d82
+    metadata_path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.json
+    metadata_sha256: bdc0c9f74766f3e7103847950e39c2e708c76863cdbc950e93ccc2cee16d5234
+  - optimizer_update: 10000
+    path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-10000.pt
+    sha256: acbb8250a09a45bf79a48e017d5b278e748cb630c275a6860f2b1ccf635eb65f
+    metadata_path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-10000.json
+    metadata_sha256: be11ad43924d0bbd6b328413e0cff73238357f0b124b2e0f8eb0e9e0360e7bb6
+lengths: [64, 128, 256, 384, 500]
+samples_per_length: 32
+sampling_seed_base: 8300001
+sampling_seed_namespace: e007_phase3h_checkpoint_sampling_replication_v1
+known_prior_sampling_seed_ranges:
+  - namespace: e007_phase3g_sampling_replication_v1
+    minimum: 3700001
+    maximum: 4100032
+  - namespace: e007_continuation_sampling_monitor
+    minimum: 107391
+    maximum: 107792
+diffusion_steps: 500
+coordinate_scale_angstrom: 12.22820347644835
+expected_parameter_count: 7586505
+expected_downsample_factor: 8
+numerics:
+  allow_matmul_tf32: false
+  allow_cudnn_tf32: false
+  deterministic_algorithms: true
+  autocast_enabled: false
+  equivariance_policy: strict_o3_v1
+memory:
+  maximum_cuda_allocated_mib: 6144
+  maximum_cuda_reserved_mib: 7680
+metrics:
+  adjacent_error_limit_angstrom: 1.0
+  maximum_radius_of_gyration_relative_error: 0.35
+  maximum_non_neighbor_clash_fraction: 0.10
+  contact_thresholds_angstrom: [6.0, 8.0, 10.0]
+  long_range_minimum_sequence_separation: 24
+  neighborhood_threshold_angstrom: 8.0
+  duplicate_coordinate_tolerance_angstrom: 1.0e-6
+  duplicate_rigid_distance_tolerance_angstrom: 1.0e-3
+  centroid_max_abs_tolerance_angstrom: 6.114101738224175e-4
+  distance_symmetry_tolerance_angstrom: 1.0e-8
+  triangle_tolerance_angstrom: 1.0e-8
+  triangle_diagnostic_triplets: 8192
+  gram_negative_eigenmass_tolerance: 1.0e-8
+aggregation:
+  bootstrap_replicates: 2000
+  bootstrap_seed: 8309001
+  quantiles: [0.05, 0.25, 0.75, 0.95]
+publication:
+  parquet_compression: zstd
+  maximum_failure_examples: 20

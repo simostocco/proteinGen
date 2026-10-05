@@ -1,0 +1,69 @@
+version: e007_phase4b_loader_readiness_v2
+artifact_lock:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_artifacts_v1
+  artifact_lock_sha256: 6c2b514b58d69a8fe3be550925a91d5f8e7003775a69b81dbb902d577e048881
+  source_inventory_sha256: 1fa5c65390756941093522f2cacdce4e6a3590280327d3a978c1b97eccb427ca
+  source_inventory_aggregate_sha256: ece27d97cf156437c69ca4dc32d4dd74ae5f810b30827b88120afd42efdb0537
+  acquisition_configuration_sha256: 7fc0b05afdb863c2c92c0c51c7300b2b2a47a407c4d58cff3af5b83a2b91d722
+source_environment_contract:
+  path: environment/e007_phase4b_environment_lock.yaml
+  sha256: f888925ab36ad9c6784b837fad22566644db1febf8d39c6818da537906e7a12f
+  classification: metadata_contract_not_installable_environment_file
+installable_environment:
+  path: environment/e007_phase4b_environment.yaml
+  sha256: 64d5dbc3b7a595869e092bc86705e4159b445c510105888912f30221571a03b6
+  name: proteingen-e007-phase4b
+  fingerprint: 4c3c8496b4798a59ded9299279fd5417db57f6cd50e1f85750086c3a3fea2ba8
+  transformers_version: 4.56.2
+  cuda_build: "13.0"
+offline_contract:
+  HF_HUB_OFFLINE: "1"
+  TRANSFORMERS_OFFLINE: "1"
+  socket_access: forbidden
+  local_files_only: true
+  trust_remote_code: false
+  mutable_remote_dependencies: 0
+loaders:
+  esm2_150m:
+    status: reviewed_ready
+    implementation: transformers_native_esm_rotary_normalized_v2
+    provenance: facebookresearch/esm@2b369911bb5b4b0dda914521b9475cad1656b2ac
+    normalization_version: esm2_rotary_tied_safetensors_normalization_v1
+    raw_state_tensor_count: 522
+    raw_state_element_count: 148798300
+    raw_logical_inventory_sha256: 5411a490efa9cfc4d92dbd293f4fc89713244bf0f1b084c5d49d1a705a7c3ec3
+    word_embedding_sha256: a50803002202dd997d10a9a01be0d91325ed5728a2aab4c5c1724b41f2e678c8
+    position_ids_sha256: 83feaebcce7360fc37a88ff2740a6e275fb39b28f1341ec9bb1bdc0da2d6068f
+    position_embeddings_sha256: 4c95935821cd2d27dbddd195c559e1d19747d6875ee9dec92dc1d250b8560637
+    exact_removed_keys:
+      - esm.embeddings.position_ids
+      - esm.embeddings.position_embeddings.weight
+    exact_tied_alias:
+      lm_head.decoder.weight: esm.embeddings.word_embeddings.weight
+    project_owned_sources:
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders_v2.py
+        sha256: ad2219764c27540fee79c3e720ec00683bc8f4d73c1a26aebd639d880c9ace8a
+  progen2_151m:
+    status: reviewed_ready
+    implementation: reviewed_project_owned_progen2_v1
+    provenance: enijkamp/progen2@9b4d4fb5ec19c9e55c4bb06305c0e613e46c1cf5
+    transformers_4_56_2_support: module_absent
+    source_mapping:
+      retained: [causal_attention, rotary_positions, parallel_residual_block, causal_lm_forward]
+      excluded: [sampling, generation_helpers, networking, training, command_entrypoints]
+      local_validation_and_loading: e007_pretrained_loaders_v2.py
+    project_owned_sources:
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders_v2.py
+        sha256: ad2219764c27540fee79c3e720ec00683bc8f4d73c1a26aebd639d880c9ace8a
+      - path: src/protein_distance_diffusion/models/e007_progen2.py
+        sha256: f28bca6bc7565bb3d9c9a8f818a633f1b3b9a00f26752ec07cb0c96b74925de2
+  proteinmpnn_ca_only:
+    status: reviewed_ready
+    implementation: reviewed_project_owned_proteinmpnn_ca_v1
+    provenance: dauparas/ProteinMPNN@8907e6671bfbfc92303b5f79c4b5e6ce47cdef57
+    evidence_mode: rerun_identically_with_v1_result_hash_verified
+    project_owned_sources:
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders.py
+        sha256: 1fc14f16dc296a35227c939b88707ebea3172259f727b372a547f472c4c3b925
+      - path: src/protein_distance_diffusion/models/e007_proteinmpnn_ca.py
+        sha256: 15e72f30d56e9c580cab6e38090badee08e50646baae941a71f229ba9ec0670f

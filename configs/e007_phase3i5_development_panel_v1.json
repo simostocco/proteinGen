@@ -1,0 +1,128 @@
+{
+  "calibration_exclusion": {
+    "identities": [
+      "cal-n128-00",
+      "cal-n128-01",
+      "cal-n256-00",
+      "cal-n256-01",
+      "cal-n384-00",
+      "cal-n384-01",
+      "cal-n500-00",
+      "cal-n500-01",
+      "cal-n64-00",
+      "cal-n64-01"
+    ],
+    "seeds": [
+      3922800,
+      3922801,
+      3929200,
+      3929201,
+      3942000,
+      3942001,
+      3954800,
+      3954801,
+      3966400,
+      3966401
+    ],
+    "sha256": "ed5793396154834f9e5a6e9b943c9d8805591aa72bdf6c2b031c3f252f8ba8b4",
+    "source": "reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_calibration_v2/active_panel.json"
+  },
+  "holdout_exclusion": {
+    "canonical_identity_sha256": "fb601312a7ad40e6649cb0197231d36e3019126f7a6db1092eeaf784ad5beaf8",
+    "excluded_namespace": "holdout-n",
+    "identity_hash_record": "reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_calibration_v2/holdout_identity_hash.json",
+    "identity_hash_record_sha256": "4f999a5e83bcab8b9af7e954c26c5eb091d12a2369f20e799d1b0e1419db878d",
+    "policy": "never read holdout identities/outcomes; dev sample IDs come only from clean validation split; sampler seeds use disjoint 24-million namespace"
+  },
+  "records": [
+    {
+      "identity": "2rol_A",
+      "observed_length": 64,
+      "sample_id": "2rol_A",
+      "seed": 24006400,
+      "split": "validation",
+      "target_length": 64
+    },
+    {
+      "identity": "1aoj_A",
+      "observed_length": 60,
+      "sample_id": "1aoj_A",
+      "seed": 24006401,
+      "split": "validation",
+      "target_length": 64
+    },
+    {
+      "identity": "9z7x_G",
+      "observed_length": 131,
+      "sample_id": "9z7x_G",
+      "seed": 24012800,
+      "split": "validation",
+      "target_length": 128
+    },
+    {
+      "identity": "7kpz_A",
+      "observed_length": 125,
+      "sample_id": "7kpz_A",
+      "seed": 24012801,
+      "split": "validation",
+      "target_length": 128
+    },
+    {
+      "identity": "2p3q_A",
+      "observed_length": 258,
+      "sample_id": "2p3q_A",
+      "seed": 24025600,
+      "split": "validation",
+      "target_length": 256
+    },
+    {
+      "identity": "5ip1_B",
+      "observed_length": 257,
+      "sample_id": "5ip1_B",
+      "seed": 24025601,
+      "split": "validation",
+      "target_length": 256
+    },
+    {
+      "identity": "8iaz_A",
+      "observed_length": 384,
+      "sample_id": "8iaz_A",
+      "seed": 24038400,
+      "split": "validation",
+      "target_length": 384
+    },
+    {
+      "identity": "7s4l_A",
+      "observed_length": 382,
+      "sample_id": "7s4l_A",
+      "seed": 24038401,
+      "split": "validation",
+      "target_length": 384
+    },
+    {
+      "identity": "1ur9_B",
+      "observed_length": 498,
+      "sample_id": "1ur9_B",
+      "seed": 24050000,
+      "split": "validation",
+      "target_length": 500
+    },
+    {
+      "identity": "1ur9_A",
+      "observed_length": 497,
+      "sample_id": "1ur9_A",
+      "seed": 24050001,
+      "split": "validation",
+      "target_length": 500
+    }
+  ],
+  "selection": "sha256-rank clean identity-30 validation within +/-4 residues of each target length",
+  "source_manifest": "reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/mmseqs/identity_30/clean_validation_manifest.parquet",
+  "source_manifest_sha256": "a847fbf36497df7a015dd4cb3c683f47ec6c2d3217b1b6eaebdddcf7af0adb11",
+  "training_exclusion": {
+    "development_split": "validation",
+    "disjoint_by_split": true,
+    "source_split": "train"
+  },
+  "version": "e007_phase3i5_development_panel_v1"
+}

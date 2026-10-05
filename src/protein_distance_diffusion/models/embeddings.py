@@ -36,10 +36,9 @@ class SinusoidalTimeEmbedding(nn.Module):
             Embedding tensor [B, dim].
         """
         half = self.dim // 2
-        freqs = torch.exp(
-            torch.arange(half, device=t.device, dtype=torch.float32) * -(math.log(10000.0) / max(half - 1, 1))
-        )
-        args = t.float()[:, None] * freqs[None]
+        dtype = self.mlp[0].weight.dtype
+        freqs = torch.exp(torch.arange(half, device=t.device, dtype=dtype) * -(math.log(10000.0) / max(half - 1, 1)))
+        args = t.to(dtype=dtype)[:, None] * freqs[None]
         emb = torch.cat([args.sin(), args.cos()], dim=-1)
         if emb.shape[-1] < self.dim:
             emb = torch.nn.functional.pad(emb, (0, 1))
@@ -74,5 +73,6 @@ class LengthEmbedding(nn.Module):
         Returns:
             Embedding tensor [B, dim].
         """
-        x = torch.log(lengths.float().clamp_min(1.0)) / math.log(float(self.max_length))
+        dtype = self.net[0].weight.dtype
+        x = torch.log(lengths.to(dtype=dtype).clamp_min(1.0)) / math.log(float(self.max_length))
         return self.net(x[:, None])

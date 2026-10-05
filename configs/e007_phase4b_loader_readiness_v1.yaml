@@ -1,0 +1,57 @@
+version: e007_phase4b_loader_readiness_v1
+artifact_lock:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_artifacts_v1
+  artifact_lock_sha256: 6c2b514b58d69a8fe3be550925a91d5f8e7003775a69b81dbb902d577e048881
+  source_inventory_sha256: 1fa5c65390756941093522f2cacdce4e6a3590280327d3a978c1b97eccb427ca
+  source_inventory_aggregate_sha256: ece27d97cf156437c69ca4dc32d4dd74ae5f810b30827b88120afd42efdb0537
+  acquisition_configuration_sha256: 7fc0b05afdb863c2c92c0c51c7300b2b2a47a407c4d58cff3af5b83a2b91d722
+source_environment_contract:
+  path: environment/e007_phase4b_environment_lock.yaml
+  sha256: f888925ab36ad9c6784b837fad22566644db1febf8d39c6818da537906e7a12f
+  classification: metadata_contract_not_installable_environment_file
+installable_environment:
+  path: environment/e007_phase4b_environment.yaml
+  sha256: 64d5dbc3b7a595869e092bc86705e4159b445c510105888912f30221571a03b6
+  name: proteingen-e007-phase4b
+  fingerprint: 4c3c8496b4798a59ded9299279fd5417db57f6cd50e1f85750086c3a3fea2ba8
+  cuda_build: "13.0"
+offline_contract:
+  HF_HUB_OFFLINE: "1"
+  TRANSFORMERS_OFFLINE: "1"
+  socket_access: forbidden
+  local_files_only: true
+  trust_remote_code: false
+  mutable_remote_dependencies: 0
+loaders:
+  esm2_150m:
+    status: reviewed_ready
+    implementation: transformers_native_esm_local_v1
+    provenance: facebookresearch/esm@2b369911bb5b4b0dda914521b9475cad1656b2ac
+    project_owned_sources:
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders.py
+        sha256: 1fc14f16dc296a35227c939b88707ebea3172259f727b372a547f472c4c3b925
+  progen2_151m:
+    status: reviewed_ready
+    implementation: transformers_native_progen_local_v1
+    provenance: enijkamp/progen2@9b4d4fb5ec19c9e55c4bb06305c0e613e46c1cf5
+    source_mapping:
+      official_model_entrypoint: transformers.ProGenForCausalLM
+      official_tokenizer_artifact: progen2_151m/source/tokenizer.json
+      local_validation_and_loading: e007_pretrained_loaders.py
+    excluded_source: [sampling_scripts, network_helpers, training_entrypoints]
+    project_owned_sources:
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders.py
+        sha256: 1fc14f16dc296a35227c939b88707ebea3172259f727b372a547f472c4c3b925
+  proteinmpnn_ca_only:
+    status: reviewed_ready
+    implementation: reviewed_project_owned_proteinmpnn_ca_v1
+    provenance: dauparas/ProteinMPNN@8907e6671bfbfc92303b5f79c4b5e6ce47cdef57
+    source_mapping:
+      official_source: proteinmpnn_ca_only/source/protein_mpnn_utils.py
+      retained: [tensor_gathers, encoder_decoder_layers, ca_features, deterministic_forward]
+      excluded: [parsers, full_backbone_features, sampling, training, command_entrypoints]
+    project_owned_sources:
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders.py
+        sha256: 1fc14f16dc296a35227c939b88707ebea3172259f727b372a547f472c4c3b925
+      - path: src/protein_distance_diffusion/models/e007_proteinmpnn_ca.py
+        sha256: 15e72f30d56e9c580cab6e38090badee08e50646baae941a71f229ba9ec0670f

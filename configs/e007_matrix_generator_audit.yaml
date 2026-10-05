@@ -1,0 +1,126 @@
+version: e007_matrix_generator_audit_plan_v1
+experiment_id: E007_uncertainty_aware_matrix_sequence_cogeneration
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/matrix_generator_audit_v1
+
+generator:
+  experiment: E004_symmetric_triangle_multiplication
+  implementation: protein_distance_diffusion.models.unet.DistanceUNet
+  checkpoint_path: outputs/recovered_full_b2_v_axial_edm_triangle_e004/checkpoints/final_validation_selected.pt
+  checkpoint_sha256: 59db27a3dbecbc199cb20065e1263ad0cec12b3553cca1a263429f890b38ea86
+  selected_weights: ema
+  training_config_path: configs/train_recovered_full_v_axial_edm_triangle_e004_full.yaml
+  training_config_sha256: 4c90e59054d200a92aaa430fda5291f3899ff7a496e7d9ae0953e5bfb2a57f6f
+  normalization_path: data/full/processed_recovery/normalization_train.json
+  normalization_sha256: a02e9dc9de4f25f0119b3851dcc43e6963d57b6548ec1b4f20d942dc50773ee8
+  diffusion_steps: 500
+  prediction_parameterization: v
+
+dataset:
+  train_manifest_path: data/full/splits_recovered_all_structures/train.parquet
+  train_manifest_sha256: 326343ccdaeec43dcc2d4dd1451b0c23199464768d94a11d380314cef6e2ccc2
+  validation_manifest_path: data/full/splits_recovered_all_structures/validation.parquet
+  validation_manifest_sha256: db82f974e86cb8353fb0601fc821609417115428f92d7b9d3f5a527c91266c81
+
+matrix_representation:
+  physical_unit: angstrom
+  stored_model_space: physical_distance_angstrom / scale_angstrom
+  normalization:
+    mode: scale
+    scale_angstrom: 53.775000000000006
+  model_channels:
+    - noisy_or_clean_normalized_distance
+    - relative_sequence_separation_abs_i_minus_j_over_max_N_minus_1_1
+    - biological_pair_mask
+  padding:
+    dynamic_square_padding_factor: 8
+    padded_values: 0
+    padded_pairs_excluded_by_mask: true
+  sampling_projection: symmetric_zero_diagonal_and_pair_masked_at_every_step
+  supported_training_length_range: [20, 500]
+
+audit:
+  generated_master_seed: 7047
+  panel_selection_seed: 7007
+  corruption_seed: 7017
+  bootstrap_seed: 7027
+  bootstrap_iterations: 500
+  reference_warning_quantiles: [0.01, 0.99]
+  scientific_threshold_policy: reference_quantile_warnings_only
+  lengths: [64, 128, 256, 384, 500]
+  generated_counts_by_length:
+    64: 16
+    128: 16
+    256: 8
+    384: 4
+    500: 4
+  real_counts_by_length:
+    64: 16
+    128: 16
+    256: 8
+    384: 4
+    500: 4
+  panels:
+    - real_validation_matrices
+    - reconstructed_real_matrices_where_supported
+    - independently_generated_candidate_matrices
+    - intentionally_corrupted_controls
+    - shuffled_or_invalid_controls
+  corruption_controls:
+    asymmetry:
+      delta_angstrom: 2.0
+    nonzero_diagonal:
+      value_angstrom: 1.0
+    negative_distance:
+      value_angstrom: -1.0
+    local_chain_disruption:
+      adjacent_delta_angstrom: 8.0
+    triangle_violation:
+      excess_angstrom: 2.0
+    non_euclidean_four_point:
+      scale_angstrom: 4.0
+  missing_valid_pair_control_supported: false
+
+fatal_contract_thresholds:
+  maximum_symmetry_error_angstrom: 0.00001
+  maximum_diagonal_error_angstrom: 0.00001
+  maximum_negative_distance_count: 0
+  require_finite: true
+  require_square_complete_pair_mask: true
+
+bounds:
+  maximum_rss_mib: 4096
+  maximum_cuda_allocated_mib: 7168
+  maximum_cuda_reserved_mib: 8192
+  maximum_batch_size: 2
+  triangle_exact_max_length: 64
+  triangle_sample_count: 4096
+  eigen_exact_max_length: 500
+  process_candidates_individually: true
+  prohibit_cross_candidate_averaging: true
+  runtime_device: cuda
+
+protected_inputs:
+  generator_protocol:
+    path: reports/experiments/E004_symmetric_triangle_multiplication/protocol.json
+    sha256: c678f8a8c1af3432d1aebebba08a597a58fcaacd17f7d336609f369b9206d2c0
+  generator_checkpoint:
+    path: outputs/recovered_full_b2_v_axial_edm_triangle_e004/checkpoints/final_validation_selected.pt
+    sha256: 59db27a3dbecbc199cb20065e1263ad0cec12b3553cca1a263429f890b38ea86
+  generator_training_config:
+    path: configs/train_recovered_full_v_axial_edm_triangle_e004_full.yaml
+    sha256: 4c90e59054d200a92aaa430fda5291f3899ff7a496e7d9ae0953e5bfb2a57f6f
+  normalization:
+    path: data/full/processed_recovery/normalization_train.json
+    sha256: a02e9dc9de4f25f0119b3851dcc43e6963d57b6548ec1b4f20d942dc50773ee8
+  train_manifest:
+    path: data/full/splits_recovered_all_structures/train.parquet
+    sha256: 326343ccdaeec43dcc2d4dd1451b0c23199464768d94a11d380314cef6e2ccc2
+  validation_manifest:
+    path: data/full/splits_recovered_all_structures/validation.parquet
+    sha256: db82f974e86cb8353fb0601fc821609417115428f92d7b9d3f5a527c91266c81
+  e006_postmortem_markdown:
+    path: reports/experiments/E006_rich_geometry_codesign/STAGE_A_SEQUENCE_ONLY_POSTMORTEM_V1.md
+    sha256: 7191885d8683c12fcc09299c0681c917635214dc16d5e58c7671b9867909a003
+  e006_postmortem_json:
+    path: reports/experiments/E006_rich_geometry_codesign/STAGE_A_SEQUENCE_ONLY_POSTMORTEM_V1.json
+    sha256: 8c8fdcfa900f4bee850c622c1da3b876b6bfd5ac676185cfe3ad958d53aec6d9

@@ -1,0 +1,112 @@
+version: e007_coordinate_objective_correction_pilot_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_objective_correction_pilot_v1
+device: cuda
+arms:
+  - uniform_v_control
+  - high_noise_balanced_v
+  - high_noise_balanced_v_plus_x0_geometry
+seeds: [7301, 7302, 7303]
+lengths: [16, 24, 31, 48]
+families: [helix, hairpin, open_ring, compact_smooth]
+train_replicates_per_family_length: 2
+heldout_replicates_per_family_length: 1
+train_parameter_seed_offset: 100000
+heldout_parameter_seed_offset: 900000
+bond_length_angstrom: 3.8
+coordinate_scale_angstrom: 10.0
+
+optimizer_updates_per_arm_seed: 1000
+evaluation_updates: [0, 100, 300, 600, 1000]
+learning_rate: 0.0003
+weight_decay: 0.01
+gradient_clip_norm: 1.0
+diffusion_steps: 32
+batch_size: 1
+sampling_lengths: [16, 31, 48]
+sampling_seed: 7319
+metrics_frequency: 10
+calibration_draw_offset: 0
+bootstrap_seed: 7031
+bootstrap_replicates: 5000
+
+timestep_evaluation_bins:
+  - {name: very_low_noise, fraction: 0.0}
+  - {name: low_noise, fraction: 0.25}
+  - {name: intermediate_noise, fraction: 0.5}
+  - {name: high_noise, fraction: 0.75}
+  - {name: very_high_noise, fraction: 1.0}
+
+# Contiguous five-bin schedule over t=0..31. Expansion is normalized so the
+# exact mean over all 32 discrete timesteps is one.
+timestep_weight_bins:
+  - {name: very_low_noise, start: 0, end: 6, unnormalized_weight: 0.50}
+  - {name: low_noise, start: 7, end: 12, unnormalized_weight: 0.75}
+  - {name: intermediate_noise, start: 13, end: 19, unnormalized_weight: 1.00}
+  - {name: high_noise, start: 20, end: 25, unnormalized_weight: 1.50}
+  - {name: very_high_noise, start: 26, end: 31, unnormalized_weight: 2.00}
+
+x0_geometry_auxiliary_coefficients:
+  pair_distance: 0.02
+  adjacent_distance: 0.02
+  radius_of_gyration: 0.01
+  steric_clash: 0.005
+steric_clash_distance_angstrom: 3.0
+auxiliary_scale_bounds:
+  maximum_each_to_primary_ratio: 0.10
+  maximum_total_to_primary_ratio: 0.25
+
+control_regression_tolerances:
+  maximum_relative_regression: 0.10
+
+phase3b_v2:
+  config_path: configs/e007_coordinate_smoke_v2.yaml
+  config_sha256: caee3f7fa17168a5a65a482eaf53281c987a4eb223d018bd7fbb25338402da8f
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v2/report.json
+  report_sha256: 7341a7efdb387af97a0be9e0cdd2ca97394c76ed7d3c02f5cbe122acf042ada4
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v2/protocol.json
+  protocol_sha256: 90283a77094f652b6a2226d990da36c6c0220639158248d464df98165b119420
+  coordinate_model_contract_path: reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json
+  coordinate_model_contract_sha256: 2768f037cd12e00f399dd8b4773ddb926b25e2cf72f0d437cb972914fc9b996d
+
+phase3a:
+  generator_config_path: configs/e007_coordinate_generator_v1.yaml
+  e004_checkpoint_path: outputs/recovered_full_b2_v_axial_edm_triangle_e004/checkpoints/final_validation_selected.pt
+
+expected_model_parameter_count: 224697
+smoke_model:
+  rbf_bins: 8
+  rbf_min_distance: 0.0
+  rbf_max_distance: 5.0
+  lifting_epsilon: 1.0e-6
+  base_channels: 8
+  channel_multipliers: [1, 2, 4]
+  residual_blocks_per_level: 2
+  dropout: 0.0
+  group_norm_groups: 4
+  attention_heads: 2
+  use_bottleneck_attention: true
+  use_pre_bottleneck_axial_attention: true
+  axial_attention_heads: 2
+  axial_attention_dropout: 0.0
+  axial_attention_chunk_size: 32
+  use_pre_bottleneck_triangle_multiplication: true
+  triangle_hidden_channels: 8
+  triangle_dropout: 0.0
+  triangle_chunk_size: 4
+  time_embedding_dim: 64
+  length_embedding_dim: 64
+  max_length: 500
+
+# These are copied verbatim from the completed Phase-3B-v2 report.
+decision_thresholds:
+  minimum_train_v_mse_relative_improvement: 0.25
+  minimum_heldout_v_mse_relative_improvement_per_seed: 0.10
+  minimum_heldout_pair_rmse_relative_improvement_per_seed: 0.05
+  maximum_target_normalized_adjacent_error: 0.50
+  maximum_target_normalized_radius_error: 0.40
+  maximum_clash_fraction_excess: 0.10
+  maximum_joint_polymer_quality_error: 0.30
+  equivariance_atol: 0.00005
+  euclidean_scaled_tolerance: 0.00005
+  oracle_sampler_tolerance: 0.00002
+  maximum_optimizer_updates_per_seed: 1000

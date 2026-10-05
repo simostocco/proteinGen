@@ -58,16 +58,22 @@ def test_actual_e007_v_target_roundtrip_at_pinned_timesteps_with_padding():
     from protein_distance_diffusion.training.coordinate_diffusion import CoordinateVPDiffusion, center_coordinates
 
     diffusion = CoordinateVPDiffusion(500)
-    clean = torch.tensor([
-        [[1.0, 2.0, -1.0], [2.5, -1.0, 0.5], [-0.5, 3.0, 1.0], [0, 0, 0], [0, 0, 0]],
-        [[-1.0, 0.5, 2.0], [1.0, -0.5, -2.0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-    ], dtype=torch.float32)
+    clean = torch.tensor(
+        [
+            [[1.0, 2.0, -1.0], [2.5, -1.0, 0.5], [-0.5, 3.0, 1.0], [0, 0, 0], [0, 0, 0]],
+            [[-1.0, 0.5, 2.0], [1.0, -0.5, -2.0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        ],
+        dtype=torch.float32,
+    )
     mask = torch.tensor([[1, 1, 1, 0, 0], [1, 1, 0, 0, 0]], dtype=torch.bool)
     clean = center_coordinates(clean, mask)
-    epsilon = torch.tensor([
-        [[0.5, -0.2, 0.7], [-0.1, 0.8, -0.4], [-0.4, -0.6, -0.3], [0, 0, 0], [0, 0, 0]],
-        [[0.3, 0.7, -0.2], [-0.3, -0.7, 0.2], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-    ], dtype=torch.float32)
+    epsilon = torch.tensor(
+        [
+            [[0.5, -0.2, 0.7], [-0.1, 0.8, -0.4], [-0.4, -0.6, -0.3], [0, 0, 0], [0, 0, 0]],
+            [[0.3, 0.7, -0.2], [-0.3, -0.7, 0.2], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        ],
+        dtype=torch.float32,
+    )
     epsilon = center_coordinates(epsilon, mask)
     for timestep in (50, 250, 450):
         times = torch.full((2,), timestep, dtype=torch.long)
@@ -87,6 +93,7 @@ def test_frozen_imperfect_prediction_is_accepted_and_reports_rmse():
     mask = torch.tensor([[True, True, False]])
     x0 = torch.tensor([[[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0], [0, 0, 0]]])
     x0_hat = torch.tensor([[[0.75, 0.0, 0.0], [-0.75, 0.0, 0.0], [0, 0, 0]]])
+
     class DeterministicFrozenMock(torch.nn.Module):
         def forward(self, noisy, _times, _lengths, _mask, _continuity):
             return {"v_prediction": torch.zeros_like(noisy)}
@@ -103,13 +110,18 @@ def test_frozen_imperfect_prediction_is_accepted_and_reports_rmse():
 
 
 def test_e007_parameterization_fails_closed_on_checkpoint_or_config_contradiction():
-    assert pc.validate_diffusion_parameterization(
-        {"prediction_parameterization": "centered_coordinate_v"}, {"arm": "v_only"}
-    ) == "centered_coordinate_v"
+    assert (
+        pc.validate_diffusion_parameterization(
+            {"prediction_parameterization": "centered_coordinate_v"}, {"arm": "v_only"}
+        )
+        == "centered_coordinate_v"
+    )
     with pytest.raises(ValueError, match="parameterization mismatch"):
         pc.validate_diffusion_parameterization({"prediction_parameterization": "epsilon"}, {"arm": "v_only"})
     with pytest.raises(ValueError, match="arm is not v_only"):
-        pc.validate_diffusion_parameterization({"prediction_parameterization": "centered_coordinate_v"}, {"arm": "epsilon_only"})
+        pc.validate_diffusion_parameterization(
+            {"prediction_parameterization": "centered_coordinate_v"}, {"arm": "epsilon_only"}
+        )
 
 
 def test_real_schedule_reuses_exact_identities_and_is_timestep_balanced():
@@ -121,12 +133,18 @@ def test_real_schedule_reuses_exact_identities_and_is_timestep_balanced():
     assert not ({row["sample_id"] for row in train} & {row["sample_id"] for row in dev})
     config = pc.config()
     for stratum in pc.STRATA:
-        counts = [sum(row["timestep"] == t and row["stratum"] == stratum for row in train)
-                  for t in config["diffusion"]["timesteps"]]
+        counts = [
+            sum(row["timestep"] == t and row["stratum"] == stratum for row in train)
+            for t in config["diffusion"]["timesteps"]
+        ]
         assert counts == [6552, 6552, 6552]
     train2, dev2 = pc.build_records()
-    assert [(r["sample_id"], r["seed"], r["timestep"]) for r in train] == [(r["sample_id"], r["seed"], r["timestep"]) for r in train2]
-    assert [(r["sample_id"], r["seed"], r["timestep"]) for r in dev] == [(r["sample_id"], r["seed"], r["timestep"]) for r in dev2]
+    assert [(r["sample_id"], r["seed"], r["timestep"]) for r in train] == [
+        (r["sample_id"], r["seed"], r["timestep"]) for r in train2
+    ]
+    assert [(r["sample_id"], r["seed"], r["timestep"]) for r in dev] == [
+        (r["sample_id"], r["seed"], r["timestep"]) for r in dev2
+    ]
 
 
 def test_cache_writer_schema_reader_monitor_and_fail_closed(tmp_path: Path, monkeypatch):
@@ -134,9 +152,11 @@ def test_cache_writer_schema_reader_monitor_and_fail_closed(tmp_path: Path, monk
     cache = tmp_path / "cache.final"
     cache.mkdir()
     contract = {"training_schedule_sha256": "schedule"}
-    cfg = {"cache": {"final_dir": cache.name},
-           "diffusion": {"checkpoint_sha256": "checkpoint", "timesteps": [50, 250, 450]},
-           "data": {"train_example_count": 2, "development_example_count": 1}}
+    cfg = {
+        "cache": {"final_dir": cache.name},
+        "diffusion": {"checkpoint_sha256": "checkpoint", "timesteps": [50, 250, 450]},
+        "data": {"train_example_count": 2, "development_example_count": 1},
+    }
     monkeypatch.setattr(pc, "config", lambda: cfg)
     monkeypatch.setattr(pc, "validate_contract", lambda: contract)
     monkeypatch.setattr(runner.pc, "config", lambda: cfg)
@@ -149,14 +169,23 @@ def test_cache_writer_schema_reader_monitor_and_fail_closed(tmp_path: Path, monk
     for i, (split, timestep) in enumerate((("train", 50), ("train", 250), ("development", 450))):
         target = (np.arange(60, dtype=np.float32).reshape(20, 3) + i).copy()
         prediction = target + np.float32(0.25)
-        row = {"split": split, "sample_id": f"identity_{i}", "length": 20,
-               "stratum": "20-64", "source_path": f"source_{i}.npz",
-               "source_sha256": "a" * 64, "seed": i + 100,
-               "condition_index": i, "timestep": timestep,
-               "target_sha256": pc.digest(np.ascontiguousarray(target, dtype="<f4").tobytes()),
-               "prediction_sha256": pc.digest(np.ascontiguousarray(prediction, dtype="<f4").tobytes()),
-               "mask_all_valid": True, "mask_sha256": pc.digest(np.ones(20, dtype=np.uint8).tobytes()),
-               "denoiser_error_rmse": 0.25, "normalized_x0_hat_rmse": 0.25}
+        row = {
+            "split": split,
+            "sample_id": f"identity_{i}",
+            "length": 20,
+            "stratum": "20-64",
+            "source_path": f"source_{i}.npz",
+            "source_sha256": "a" * 64,
+            "seed": i + 100,
+            "condition_index": i,
+            "timestep": timestep,
+            "target_sha256": pc.digest(np.ascontiguousarray(target, dtype="<f4").tobytes()),
+            "prediction_sha256": pc.digest(np.ascontiguousarray(prediction, dtype="<f4").tobytes()),
+            "mask_all_valid": True,
+            "mask_sha256": pc.digest(np.ones(20, dtype=np.uint8).tobytes()),
+            "denoiser_error_rmse": 0.25,
+            "normalized_x0_hat_rmse": 0.25,
+        }
         if split == "train":
             row.update(schedule_index=i, schedule_update=1, microbatch_position=i)
         rows.append(row)
@@ -164,24 +193,46 @@ def test_cache_writer_schema_reader_monitor_and_fail_closed(tmp_path: Path, monk
         predictions.append(prediction)
     archive = cache / "shard_00000.npz"
     with archive.open("wb") as handle:
-        np.savez_compressed(handle, target=np.concatenate(targets), prediction=np.concatenate(predictions),
+        np.savez_compressed(
+            handle,
+            target=np.concatenate(targets),
+            prediction=np.concatenate(predictions),
             offsets=np.array([0, 20, 40, 60], dtype=np.int64),
-            records_json=np.frombuffer(json.dumps(rows, sort_keys=True).encode(), dtype=np.uint8))
-    entry = {"shard": archive.name, "archive_sha256": pc.sha256(archive),
-             "record_count": 3, "first_record": 0, "records": rows}
+            records_json=np.frombuffer(json.dumps(rows, sort_keys=True).encode(), dtype=np.uint8),
+        )
+    entry = {
+        "shard": archive.name,
+        "archive_sha256": pc.sha256(archive),
+        "record_count": 3,
+        "first_record": 0,
+        "records": rows,
+    }
     pc.atomic_json(archive.with_suffix(".json"), entry)
-    summary = {stratum: {str(t): {"count": int(stratum == "20-64"),
-        "mean_rmse": 0.25 if stratum == "20-64" else None,
-        "median_rmse": 0.25 if stratum == "20-64" else None,
-        "max_rmse": 0.25 if stratum == "20-64" else None}
-        for t in cfg["diffusion"]["timesteps"]} for stratum in pc.STRATA}
-    manifest = {"schema": "e010_phase4b_real_denoiser_cache_v1",
-                "contract_sha256": pc.digest(pc.canonical(contract)),
-                "diffusion_checkpoint_sha256": "checkpoint", "record_count": 3,
-                "training_schedule_sha256": "schedule", "training_record_count": 2,
-                "development_record_count": 1, "shards": [entry],
-                "error_summary_by_stratum_timestep": summary, "authorization": pc.AUTH,
-                "prospective_accessed": False}
+    summary = {
+        stratum: {
+            str(t): {
+                "count": int(stratum == "20-64"),
+                "mean_rmse": 0.25 if stratum == "20-64" else None,
+                "median_rmse": 0.25 if stratum == "20-64" else None,
+                "max_rmse": 0.25 if stratum == "20-64" else None,
+            }
+            for t in cfg["diffusion"]["timesteps"]
+        }
+        for stratum in pc.STRATA
+    }
+    manifest = {
+        "schema": "e010_phase4b_real_denoiser_cache_v1",
+        "contract_sha256": pc.digest(pc.canonical(contract)),
+        "diffusion_checkpoint_sha256": "checkpoint",
+        "record_count": 3,
+        "training_schedule_sha256": "schedule",
+        "training_record_count": 2,
+        "development_record_count": 1,
+        "shards": [entry],
+        "error_summary_by_stratum_timestep": summary,
+        "authorization": pc.AUTH,
+        "prospective_accessed": False,
+    }
     pc.atomic_json(cache / "manifest.json", manifest)
 
     loaded, actual = runner._load_cache()
@@ -195,20 +246,33 @@ def test_cache_writer_schema_reader_monitor_and_fail_closed(tmp_path: Path, monk
     runner.STAGE.mkdir()
     zero_archive = runner.STAGE / "zero_shot_predictions.npz"
     with zero_archive.open("wb") as handle:
-        np.savez_compressed(handle, prediction=predictions[-1],
+        np.savez_compressed(
+            handle,
+            prediction=predictions[-1],
             offsets=np.array([0, 20], dtype=np.int64),
-            records_json=np.frombuffer(json.dumps([{"sample_id": "identity_2"}]).encode(), dtype=np.uint8))
+            records_json=np.frombuffer(json.dumps([{"sample_id": "identity_2"}]).encode(), dtype=np.uint8),
+        )
     cache_sha256 = pc.digest(pc.canonical(manifest))
-    zero_report = {"schema": "e010_phase4b_zero_shot_v1", "cache_sha256": cache_sha256,
-                   "prediction_archive_sha256": pc.sha256(zero_archive),
-                   "training_started": False, "authorization": pc.AUTH}
-    pc.atomic_json(runner.STAGE / "zero_shot.json", zero_report)
-    pc.atomic_json(runner.STAGE / "zero_shot_complete.json", {
-        "schema": "e010_phase4b_zero_shot_commit_v1",
-        "report_sha256": pc.sha256(runner.STAGE / "zero_shot.json"),
+    zero_report = {
+        "schema": "e010_phase4b_zero_shot_v1",
+        "cache_sha256": cache_sha256,
         "prediction_archive_sha256": pc.sha256(zero_archive),
-        "cache_sha256": cache_sha256, "development_condition_count": 1,
-        "training_started": False, "authorization": pc.AUTH})
+        "training_started": False,
+        "authorization": pc.AUTH,
+    }
+    pc.atomic_json(runner.STAGE / "zero_shot.json", zero_report)
+    pc.atomic_json(
+        runner.STAGE / "zero_shot_complete.json",
+        {
+            "schema": "e010_phase4b_zero_shot_commit_v1",
+            "report_sha256": pc.sha256(runner.STAGE / "zero_shot.json"),
+            "prediction_archive_sha256": pc.sha256(zero_archive),
+            "cache_sha256": cache_sha256,
+            "development_condition_count": 1,
+            "training_started": False,
+            "authorization": pc.AUTH,
+        },
+    )
     assert runner.monitor()["status"] == "zero_shot_complete_awaiting_execution"
     runner.FINAL.mkdir()
     with pytest.raises(ValueError, match="lacks results.json"):
@@ -248,15 +312,25 @@ def test_zero_shot_is_immutable_and_json_scalars_are_native():
     torch.testing.assert_close(out, torch.full((1, 4, 3), 2.0))
     torch.testing.assert_close(model.weight, before)
     assert model.weight.grad is None
-    native = runner._native({"count": np.int64(2), "rate": np.float32(.25), "ok": np.bool_(True)})
-    assert native == {"count": 2, "rate": .25, "ok": True}
+    native = runner._native({"count": np.int64(2), "rate": np.float32(0.25), "ok": np.bool_(True)})
+    assert native == {"count": 2, "rate": 0.25, "ok": True}
 
 
 def test_resume_requires_full_journal_matched_state():
     journal = b'{"global_update":1}\n'
-    state = {"global_update": 1, "journal_prefix_sha256": __import__("hashlib").sha256(journal).hexdigest(),
-        "cache_manifest_sha256": "cache", "model": {}, "optimizer": {}, "scheduler": None,
-        "scaler": {}, "python_rng": 1, "numpy_rng": 2, "torch_rng": 3, "cuda_rng": []}
+    state = {
+        "global_update": 1,
+        "journal_prefix_sha256": __import__("hashlib").sha256(journal).hexdigest(),
+        "cache_manifest_sha256": "cache",
+        "model": {},
+        "optimizer": {},
+        "scheduler": None,
+        "scaler": {},
+        "python_rng": 1,
+        "numpy_rng": 2,
+        "torch_rng": 3,
+        "cuda_rng": [],
+    }
     assert runner.resume_identity_valid(state, journal, "cache")
     assert not runner.resume_identity_valid(state, journal, "wrong-cache")
     assert not runner.resume_identity_valid(state, journal + b"{}\n", "cache")
@@ -279,12 +353,22 @@ def _mock_state(update, cache="cache"):
     import random
 
     import torch
-    return {"schema": "e010_phase4b_exact_state_v1", "global_update": update,
-            "cache_manifest_sha256": cache, "model": {"weight": torch.tensor([float(update)])},
-            "optimizer": {"step": update}, "scheduler": None, "scaler": {},
-            "python_rng": random.getstate(), "numpy_rng": np.random.get_state(),
-            "torch_rng": torch.get_rng_state(), "cuda_rng": [], "boundaries": {},
-            "authorization": pc.AUTH}
+
+    return {
+        "schema": "e010_phase4b_exact_state_v1",
+        "global_update": update,
+        "cache_manifest_sha256": cache,
+        "model": {"weight": torch.tensor([float(update)])},
+        "optimizer": {"step": update},
+        "scheduler": None,
+        "scaler": {},
+        "python_rng": random.getstate(),
+        "numpy_rng": np.random.get_state(),
+        "torch_rng": torch.get_rng_state(),
+        "cuda_rng": [],
+        "boundaries": {},
+        "authorization": pc.AUTH,
+    }
 
 
 def _mock_event(update):
@@ -309,7 +393,10 @@ def test_first_commit_and_exact_second_update_rng_continuation(tmp_path):
     import random
 
     import torch
-    random.seed(11); np.random.seed(12); torch.manual_seed(13)
+
+    random.seed(11)
+    np.random.seed(12)
+    torch.manual_seed(13)
     event1 = _mock_event(1)
     runner._commit_update(tmp_path, _mock_state(1), event1, "cache")
     one_row = pc.canonical(event1) + b"\n"
@@ -318,7 +405,9 @@ def test_first_commit_and_exact_second_update_rng_continuation(tmp_path):
     assert raw == one_row and status == "consistent"
     assert state["journal_prefix_sha256"] == pc.digest(one_row)
     expected = (random.random(), np.random.random(), torch.rand(3))
-    random.setstate(state["python_rng"]); np.random.set_state(state["numpy_rng"]); torch.set_rng_state(state["torch_rng"])
+    random.setstate(state["python_rng"])
+    np.random.set_state(state["numpy_rng"])
+    torch.set_rng_state(state["torch_rng"])
     actual = (random.random(), np.random.random(), torch.rand(3))
     assert actual[:2] == expected[:2]
     torch.testing.assert_close(actual[2], expected[2], rtol=0, atol=0)
@@ -338,11 +427,13 @@ def test_transaction_crashes_are_detected_and_recovered(tmp_path, monkeypatch, u
     if update == 2:
         runner._commit_update(tmp_path, _mock_state(1), _mock_event(1), "cache")
     replace = runner.os.replace
+
     def crash(source, target):
         names = {"checkpoint": "pending.pt", "journal": "journal.jsonl", "latest": "latest.pt"}
         if Path(target).name == names[crash_at]:
             raise OSError("simulated crash")
         replace(source, target)
+
     with monkeypatch.context() as patch:
         patch.setattr(runner.os, "replace", crash)
         with pytest.raises(OSError, match="simulated crash"):
@@ -357,7 +448,9 @@ def test_transaction_crashes_are_detected_and_recovered(tmp_path, monkeypatch, u
         runner._prepare_execution(tmp_path, "cache", resume=False)
     else:
         if crash_at != "checkpoint":
-            assert status == ("checkpoint_committed_journal_pending" if crash_at == "journal" else "journal_committed_latest_pending")
+            assert status == (
+                "checkpoint_committed_journal_pending" if crash_at == "journal" else "journal_committed_latest_pending"
+            )
         restored, published, _ = runner._prepare_execution(tmp_path, "cache", resume=True, recover=True)
         assert restored["global_update"] == committed
         assert (tmp_path / "journal.jsonl").read_bytes() == published == raw
@@ -367,6 +460,7 @@ def test_transaction_crashes_are_detected_and_recovered(tmp_path, monkeypatch, u
         again, _, _ = runner._prepare_execution(tmp_path, "cache", resume=True, recover=True)
         assert again["optimizer"] == restored["optimizer"]
         import torch
+
         torch.testing.assert_close(again["model"]["weight"], restored["model"]["weight"])
         torch.testing.assert_close(again["torch_rng"], restored["torch_rng"])
 
@@ -380,7 +474,8 @@ def test_recovery_fails_closed_on_disagreement(tmp_path):
 
 def test_monitor_zero_and_pending_transactions(tmp_path, monkeypatch):
     cache = tmp_path / "cache"
-    cache.mkdir(); (cache / "manifest.json").write_text('{}\n')
+    cache.mkdir()
+    (cache / "manifest.json").write_text("{}\n")
     manifest = {"record_count": 3, "development_record_count": 1}
     cache_sha = pc.digest(pc.canonical(manifest))
     monkeypatch.setattr(runner, "HERE", tmp_path)
@@ -412,11 +507,13 @@ def test_monitor_zero_and_pending_transactions(tmp_path, monkeypatch):
 
 def test_zero_shot_byte_pin_is_explicit_and_fail_closed():
     runner._validate_manifest_byte_pin({"cache_sha256": "canonical"}, {}, "raw")
-    runner._validate_manifest_byte_pin({"cache_manifest_file_sha256": "raw"},
-                                      {"cache_manifest_file_sha256": "raw"}, "raw")
+    runner._validate_manifest_byte_pin(
+        {"cache_manifest_file_sha256": "raw"}, {"cache_manifest_file_sha256": "raw"}, "raw"
+    )
     with pytest.raises(ValueError, match="byte pin mismatch"):
-        runner._validate_manifest_byte_pin({"cache_manifest_file_sha256": "other"},
-                                          {"cache_manifest_file_sha256": "other"}, "raw")
+        runner._validate_manifest_byte_pin(
+            {"cache_manifest_file_sha256": "other"}, {"cache_manifest_file_sha256": "other"}, "raw"
+        )
     with pytest.raises(ValueError, match="byte pin mismatch"):
         runner._validate_manifest_byte_pin({"cache_manifest_file_sha256": "raw"}, {}, "raw")
 
@@ -425,17 +522,27 @@ def test_zero_shot_byte_pin_is_explicit_and_fail_closed():
 def test_execute_restart_guard_runs_before_any_cuda_or_model_work(tmp_path, monkeypatch, committed):
     import torch
 
-    stage = tmp_path / "stage"; stage.mkdir()
-    cache = tmp_path / "cache"; cache.mkdir()
+    stage = tmp_path / "stage"
+    stage.mkdir()
+    cache = tmp_path / "cache"
+    cache.mkdir()
     manifest = {"test": "manifest"}
     (cache / "manifest.json").write_bytes(pc.canonical(manifest))
     cache_sha = pc.digest(pc.canonical(manifest))
     zero = {"cache_sha256": cache_sha, "prediction_archive_sha256": "prediction"}
     pc.atomic_json(stage / "zero_shot.json", zero)
-    pc.atomic_json(stage / "zero_shot_complete.json", {
-        "schema": "e010_phase4b_zero_shot_commit_v1", "report_sha256": pc.sha256(stage / "zero_shot.json"),
-        "prediction_archive_sha256": "prediction", "development_condition_count": 960,
-        "training_started": False, "authorization": pc.AUTH, "cache_sha256": cache_sha})
+    pc.atomic_json(
+        stage / "zero_shot_complete.json",
+        {
+            "schema": "e010_phase4b_zero_shot_commit_v1",
+            "report_sha256": pc.sha256(stage / "zero_shot.json"),
+            "prediction_archive_sha256": "prediction",
+            "development_condition_count": 960,
+            "training_started": False,
+            "authorization": pc.AUTH,
+            "cache_sha256": cache_sha,
+        },
+    )
     monkeypatch.setattr(runner, "STAGE", stage)
     monkeypatch.setattr(runner, "HERE", tmp_path)
     monkeypatch.setattr(runner, "FINAL", tmp_path / "final")
@@ -445,8 +552,9 @@ def test_execute_restart_guard_runs_before_any_cuda_or_model_work(tmp_path, monk
     monkeypatch.setattr(runner.pc, "verify_cache", lambda *_a: None)
     monkeypatch.setattr(runner, "_model", lambda *_a, **_kw: pytest.fail("must not construct a model"))
     if committed:
-        runner._commit_update(stage, _mock_state(1, cache_sha),
-                              {**_mock_event(1), "cache_manifest_sha256": cache_sha}, cache_sha)
+        runner._commit_update(
+            stage, _mock_state(1, cache_sha), {**_mock_event(1), "cache_manifest_sha256": cache_sha}, cache_sha
+        )
         monkeypatch.setattr(torch.cuda, "is_available", lambda: pytest.fail("must reject execute before CUDA"))
         with pytest.raises(ValueError, match="use --resume"):
             runner.execute(resume=False)
@@ -458,3 +566,57 @@ def test_execute_restart_guard_runs_before_any_cuda_or_model_work(tmp_path, monk
             runner.execute(resume=True)
         assert not (stage / "journal.jsonl").exists()
         assert not torch.cuda.is_initialized()
+
+
+def _geometry_metric_records(transform):
+    records = []
+    for stratum in pc.STRATA:
+        n = int(stratum.split("-")[0])
+        t = np.arange(n, dtype=np.float64)
+        target = np.column_stack((np.cos(t), np.sin(t), 0.2 * t))
+        records.append(
+            {
+                "sample_id": stratum,
+                "split": "development",
+                "stratum": stratum,
+                "timestep": 50,
+                "condition_index": 0,
+                "length": n,
+                "target": target,
+                "prediction": transform(target),
+            }
+        )
+    return records
+
+
+def test_evaluator_local_offsets_match_unaligned_distance_errors():
+    rows = _geometry_metric_records(lambda x: 1.1 * x + np.array([7.0, -2.0, 3.0]))
+    report = runner._metrics(rows, "prediction")
+    for row, measured in zip(rows, report["per_condition"], strict=True):
+        for k in (1, 2, 3):
+            p = np.linalg.norm(row["prediction"][k:] - row["prediction"][:-k], axis=1)
+            q = np.linalg.norm(row["target"][k:] - row["target"][:-k], axis=1)
+            assert measured["local_distance_rmse"][str(k)] == pytest.approx(np.sqrt(np.mean((p - q) ** 2)))
+
+
+def test_chirality_rotation_translation_and_reflection():
+    rotation = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+    proper = runner._metrics(_geometry_metric_records(lambda x: x @ rotation + 3.0), "prediction")
+    mirror = runner._metrics(_geometry_metric_records(lambda x: x * [-1, 1, 1]), "prediction")
+    assert proper["chirality_assessable"] and mirror["chirality_assessable"]
+    assert proper["chirality_inversion_rate"] == 0.0
+    assert mirror["chirality_inversion_rate"] == 1.0
+
+
+def test_degenerate_chirality_is_explicit_and_cannot_authorize():
+    candidate = runner._metrics(
+        _geometry_metric_records(lambda x: np.column_stack((x[:, :2], np.zeros(len(x))))), "prediction"
+    )
+    assert candidate["chirality_eligible_tetrahedra"] == 0
+    assert candidate["chirality_assessable"] is False
+    baseline = runner._metrics(_geometry_metric_records(lambda x: x), "prediction")
+    verdict = runner.adjudicate(
+        baseline, candidate, {"mean_paired_percentage_improvement": 0.25, "bootstrap_ci95": [0.2, 0.3]}
+    )
+    assert verdict["safety_gates"]["chirality_assessable"] is False
+    assert verdict["classification"] == "insufficient_real_domain_gain"

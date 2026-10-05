@@ -1,0 +1,28 @@
+version: e007_pretrained_sequence_prior_smoke_v2
+base_configuration: configs/e007_pretrained_sequence_prior_smoke_v1.yaml
+base_configuration_sha256: 0cf8c5394d3dc935c865f8b24a0b44b58bdf089d684b69395196b2cbd3bdd941
+loader_readiness:
+  path: configs/e007_phase4b_loader_readiness_v2.yaml
+  sha256: 8f17204ae02672f7d965d77d53d30b1674ea6d7074078edaef9ec0d6343d0f79
+smoke_output: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v2
+predecessor_v1:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v1
+  hashes:
+    report.json: 539fdf552bdae48250454f418aae0ff1b61f6989656ba75a757b2a29c0eb3bdf
+    protocol.json: c802df1aa97b2d76d9039fc145e48b194dd30f2dc77c140ade2b4684f91e7940
+    esm2_150m.json: 1805ed9316d546c883291f1a85b97f7af08cb6a5402dd50ff4a712f1c4601246
+    progen2_151m.json: d350daff81b6ade3559971b94d0e6176d1665f43c5f416e388680af565c662db
+    proteinmpnn_ca_only.json: 20d93c233c53b88c40849d1034b8c3257574dd4e355bac5f798c8627a6e9fbf2
+evidence_policy:
+  esm2_150m: newly_executed_v2
+  progen2_151m: newly_executed_v2
+  proteinmpnn_ca_only: rerun_identically_with_v1_result_hash_verified
+  v1_primary_decision: loader_implementation_failure_not_scientific_evidence
+  supersedes_v1_scope: primary_candidate_feasibility_only
+decision_outcomes:
+  - esm2_and_progen2_advance
+  - esm2_only_advances
+  - progen2_only_advances
+  - neither_primary_candidate_advances_after_completed_smoke
+  - candidate_loader_review_required
+  - inconclusive_requires_scientific_review

@@ -1,0 +1,48 @@
+version: e007_split_homology_audit_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1
+batch_size: 4096
+maximum_examples_per_group: 100
+minimum_clean_validation_per_length_stratum: 4
+
+expected_population_counts:
+  train: {candidate: 231743, accepted: 230132, rejected: 1611}
+  validation: {candidate: 23307, accepted: 23161, rejected: 146}
+
+identity_thresholds: [0.9, 0.7, 0.5, 0.3]
+coverage: 0.8
+coverage_mode: 0
+sensitivity: 7.5
+threads: 1
+mmseqs_executable: mmseqs
+
+length_strata:
+  - {name: 20-64, minimum: 20, maximum: 64}
+  - {name: 65-128, minimum: 65, maximum: 128}
+  - {name: 129-256, minimum: 129, maximum: 256}
+  - {name: 257-384, minimum: 257, maximum: 384}
+  - {name: 385-500, minimum: 385, maximum: 500}
+
+dataset:
+  root: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+  protocol_sha256: 653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b
+  schema_sha256: 8d522a7c198c8b35317be41bb8f55ef7a52de118f015c88a374e221844afd329
+  vocabulary_sha256: b6e87d56aa6023679c7249e04ba709576c26038fef4588e1b83763c395d4e1db
+  normalization_sha256: a54d862d756ca59a78503801a7ea1488ba5e701116db66545ce22e9af91b30fe
+  shard_inventory_sha256: a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0
+  required_schema_version: e006_rich_geometry_sidecar_v2
+
+phase3e_b:
+  directory: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_forward_backward_smoke_v1
+  report_sha256: 97fea13e87774a35d6dc74401205e83c7a290ae6b5392ef521f828680d2720e8
+  protocol_sha256: 9419f9f0ae6ce4e046a561511fe211f6e0bbb4d3d6a373b4a48a61f957557db4
+  manifest_sha256: 2d06745398ba2accd432046042e4541a65cd19c6b97e834fa59a99cfd9809619
+  detailed_metrics_sha256: 985e060016a2715b4c067a082bac1b21df530d2e4033d49129a93373de9d65e4
+
+phase3e_a:
+  directory: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1
+  normalization_sha256: 1be9ef05c82110861482eb46e61ef433045fa9678b9cdfffd921f0defebb03cd
+  report_sha256: af86478741bc1a58ea0dfafdfd23ad6030eb00e406dbade0fa19b13c68ddc1e2
+  protocol_sha256: 20104f54a671140b6e897caa1945c345cf5f95ff12fcd18c481a2188d153a546
+  length_statistics_sha256: 7454535acc9830672edb97da8328bdfaf07f0585a831c3a2a20d8729176e6a31
+  per_sample_audit_sha256: d05690ed7041d131d5441b1a344b908884330672ca85069754ba11029608d7a7
+  required_version: e007_global_rms_coordinate_radius_v1

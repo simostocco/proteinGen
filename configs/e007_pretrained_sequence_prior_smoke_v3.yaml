@@ -1,0 +1,69 @@
+version: e007_pretrained_sequence_prior_smoke_v3
+base_configuration: configs/e007_pretrained_sequence_prior_smoke_v2.yaml
+base_configuration_sha256: c2434827fa47c7046dd33bbea43c4ffa0276c0d5c8445576c22d3d0d2dd2e93e
+loader_readiness:
+  path: configs/e007_phase4b_loader_readiness_v3.yaml
+  sha256: ee8aea4e51d2c2f13c8c3d6a9b1b5253ece9242b7440cec97eb5d5e6dabe0a30
+smoke_output: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v3
+predecessor_v2:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v2
+  hashes:
+    report.json: abdb26840405203a84adcdebbb14a9a3dbd2c1bfaf4e33d5202a1bbb0d511367
+    protocol.json: f4d76200b840651dd58bc46d01fefa2eee1c013069bb9a420481384397613ae1
+    esm2_150m.json: e9684c088bd492dc0cef457b3c4247cee00f2b66a39e8df6263b718890683cd0
+    progen2_151m.json: faf612c6a03da11d9cf63820ccc7d212b43a62f78c9492ffc1582e879916fae3
+    proteinmpnn_ca_only.json: 9e9730210686c9612469ddc2490c6190f0b910ddb2519b40a56ff889efc00b0c
+cpu_diagnostic:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_cpu_diagnostic_v1
+  hashes:
+    report.json: 4dd71e39d85ae17e5fbe3a5b05c5484046c89cf9a7fdc91b6b68057fd3be6e4f
+    protocol.json: b19e540ff1c90571943fa027675e6ed2fe444ad4d82bb6bd5f1001c51f1c4e96
+    esm2_150m.json: 6983c19cf0660a00f790663c9f4a484a75d64cf1ffba6bfa712fc823bdaf624f
+    progen2_151m.json: 543c3b15e4734c8d4c1d5793ed0a578b19d56c596b9e0e54d4457a305cb5b944
+reused_evidence:
+  proteinmpnn_ca_only:
+    source: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v2/proteinmpnn_ca_only.json
+    sha256: 9e9730210686c9612469ddc2490c6190f0b910ddb2519b40a56ff889efc00b0c
+    interpretation: immutable_completed_v2_evidence_not_rerun
+smoke:
+  lengths: [64, 128, 256, 384, 500]
+  seed: 7401
+  candidates: [esm2_150m, progen2_151m]
+  tests:
+    - tokenizer_round_trip
+    - frozen_fp32_forward
+    - geometry_adapter_backward
+    - deterministic_logits_replay
+  process_isolation: spawn_one_candidate_per_process
+  optimizer_updates: 0
+  parameter_mutation_tolerance: 0.0
+  precision:
+    required: float32
+    descriptive_after_fp32: float16
+  memory:
+    maximum_rss_mib: 6144
+    maximum_cuda_allocated_mib: 7168
+    maximum_cuda_reserved_mib: 7800
+  geometry_adapter:
+    input_features: 4
+    feature_definition: [normalized_position, sin_position, cos_position, continuity]
+    target_identity_inputs: false
+  tokenizer:
+    canonical_residues: ACDEFGHIKLMNPQRSTVWY
+    ambiguous_residues: [B, J, O, U, X, Z]
+    require_length_500: true
+  lower_precision_is_descriptive_only: true
+  full_phase4c_conditioning_forbidden: true
+evidence_policy:
+  esm2_150m: newly_executed_v3_after_measured_cpu_diagnostic
+  progen2_151m: newly_executed_v3_after_measured_cpu_diagnostic
+  proteinmpnn_ca_only: immutable_v2_evidence_reused_by_exact_hash
+  v2_primary_decision: loader_contract_failure_not_scientific_evidence
+  supersedes_v2_scope: primary_candidate_feasibility_only
+decision_outcomes:
+  - esm2_and_progen2_advance
+  - esm2_only_advances_after_completed_smoke
+  - progen2_only_advances_after_completed_smoke
+  - neither_primary_candidate_advances_after_completed_smoke
+  - candidate_loader_review_required
+  - inconclusive_requires_scientific_review

@@ -1,0 +1,67 @@
+version: e007_coordinate_sampling_replication_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_sampling_replication_v1
+device: cuda
+phase3f:
+  source_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1
+  report_sha256: 5a6411bb5c7fb9249d78bbfa8e55c4e1f6a82a01e16adb82100f02f147a9084c
+  protocol_sha256: 985bcd10dc8aeda8b0cfa2fdd1ec3613ba9d9bc820e2395d51e6479087546ac0
+  aggregate_fingerprint: e323dec7a75b70bf4e3d345d349cdde8b2579d4a38e68850dfbcd5bfa54f0341
+  config_path: configs/e007_coordinate_real_pilot_v1.yaml
+  config_sha256: f2d66f8b8aef9470251edc7213f0ad1e7063f4939f0e97a051e8476fac1d3f90
+  decision_correction_report_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1_decision_correction_v1/report.json
+  decision_correction_report_sha256: e061645881bdcf5bd01859637ebfa4276df4f44424d74f718f7973267cf0b105
+  decision_correction_protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1_decision_correction_v1/protocol.json
+  decision_correction_protocol_sha256: 4db589ba527f78d80573f6c1925116e009bf58c8eb69e1e3df138d5494b2e86e
+checkpoints:
+  - optimizer_update: 250
+    path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/checkpoints/step-0250.pt
+    sha256: 3e0cc40fb3500a88499cd7aa426251bd72a8e02e858051df03e57b24dfd6630a
+  - optimizer_update: 750
+    path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/checkpoints/step-0750.pt
+    sha256: 6cee981a7dc7db83ddf775676b24ccb927b905b4eb783f086b0f02330b501079
+  - optimizer_update: 1000
+    path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/checkpoints/step-1000.pt
+    sha256: c67788d4df5b3a0c155e030dc8f231f26765a3a727016615ad86ef9ac6cdf522
+lengths: [64, 128, 256, 384, 500]
+samples_per_length: 32
+sampling_seed_base: 3700001
+sampling_seed_namespace: e007_phase3g_sampling_replication_v1
+known_prior_sampling_seeds: [7319, 7391, 17319]
+diffusion_steps: 500
+coordinate_scale_angstrom: 12.22820347644835
+expected_parameter_count: 7586505
+expected_downsample_factor: 8
+numerics:
+  allow_matmul_tf32: false
+  allow_cudnn_tf32: false
+  deterministic_algorithms: true
+  autocast_enabled: false
+  equivariance_policy: strict_o3_v1
+memory:
+  maximum_cuda_allocated_mib: 6144
+  maximum_cuda_reserved_mib: 7680
+metrics:
+  adjacent_error_limit_angstrom: 1.0
+  maximum_radius_of_gyration_relative_error: 0.35
+  maximum_non_neighbor_clash_fraction: 0.10
+  contact_thresholds_angstrom: [6.0, 8.0, 10.0]
+  long_range_minimum_sequence_separation: 24
+  neighborhood_threshold_angstrom: 8.0
+  duplicate_coordinate_tolerance_angstrom: 1.0e-6
+  duplicate_rigid_distance_tolerance_angstrom: 1.0e-3
+  centroid_max_abs_tolerance_angstrom: 6.114101738224175e-4
+  distance_symmetry_tolerance_angstrom: 1.0e-8
+  triangle_tolerance_angstrom: 1.0e-8
+  triangle_diagnostic_triplets: 8192
+  gram_negative_eigenmass_tolerance: 1.0e-8
+aggregation:
+  bootstrap_replicates: 2000
+  bootstrap_seed: 3709001
+  quantiles: [0.05, 0.25, 0.75, 0.95]
+decision:
+  isolated_tail_max_total_failures: 3
+  isolated_tail_max_failures_per_block: 1
+  systematic_failure_fraction: 0.10
+publication:
+  parquet_compression: zstd
+  maximum_failure_examples: 20

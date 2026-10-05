@@ -633,4 +633,8 @@ ruff format --check .
 
 ## Limitations
 
-The baseline does not model sequences or coordinates. The 3D trace in visualization is a plot of input C-alpha coordinates only. Topology-plus-trajectory support is intentionally only prepared at the backend interface level; a molecular-dynamics dataset pipeline is not implemented in this stage.
+The original distance-map baseline does not model sequences or coordinates; its visualization plots input C-alpha coordinates. The repository now also contains separate coordinate generators/refiners (E007–E010), sequence generation, and experimental sequence/geometry co-design. These research implementations do not establish a validated production structure-to-sequence system. Topology-plus-trajectory support remains a backend interface; a molecular-dynamics dataset pipeline is not implemented.
+
+## Scientific baseline closeout
+
+See [E010 Phase 4B forensic closeout](docs/e010_phase4b_forensic_closeout.md) for verified objective-conflict evidence and the next controlled diagnostic, and [baseline consolidation](docs/recovery/baseline_consolidation_20261004.md) for repairs and quality commands. Historical data corruption was excluded from Phase 4B; successful optimization did not yield sufficient geometric improvement.

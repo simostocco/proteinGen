@@ -1,0 +1,25 @@
+version: e009_bayesian_geometry_refiner_v1
+seed: 8015
+device: cuda
+e008_config: configs/e008_geometry_native_decoder_restart_v2.yaml
+e008_config_sha256: 4591299f2590c3ad25c735e446958998f7eab1e95155f42e0505eea05bb8d95e
+published_manifest: reports/experiments/E008_geometry_native/e008_prototype_manifest_v1.csv
+published_split_record: reports/experiments/E008_geometry_native/e008_manifest_validation_v1.json
+published_manifest_sha256: b1036010e9b03158d09a6e770e52bbf01b713717fba6850a63de0de096480deb
+published_split_sha256: 72dda3acdf0452b6c1443ec32e7682ab0c4bed1eedaa753db3ed49f37f443b19
+output_dir: reports/experiments/E009_bayesian_geometry_refiner
+prior_artifact: reports/experiments/E009_bayesian_geometry_refiner/prior_v1/prior.json
+cuda_smoke_dir: reports/experiments/E009_bayesian_geometry_refiner/cuda_smoke_v1
+overfit64_dir: reports/experiments/E009_bayesian_geometry_refiner/overfit_length_64_v1
+model: {width: 128, layers: 7, max_length: 500, sigma_min_angstrom: 0.03, sigma_max_angstrom: 3.0}
+prior: {bond_components: 3, angle_components: 4, torsion_components: 6, max_em_iterations: 300, tolerance: 1.0e-7, chunk_size: 4096}
+optimizer: {learning_rate: 0.0002, weight_decay: 0.01, gradient_clip_norm: 1.0}
+stages:
+  cuda_smoke: {length: 500, optimizer_steps: 1}
+  overfit_length_64: {length: 64, max_updates: 1000, evaluations: [0, 10, 50, 100, 250, 500, 1000], rmse_gate_angstrom: 0.10, max_abs_error_slope_angstrom_per_residue: 0.02}
+loss_weights: {coordinate_nll: 1.0, geometry_nll: 0.1, long_range_pair_nll: 0.2, contact_nll: 0.2, radius_of_gyration_nll: 0.2, chirality_nll: 0.1, posterior_kl: 0.01}
+corruption:
+  calibration_summary: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/evaluations.json
+  calibration_sha256: db9445ef441adc8db7be02c933ceae4bb2ce729d5a20d288256194a2fb7ebc79
+  fixed_cache: reports/experiments/E009_bayesian_geometry_refiner/fixed_overfit_corruptions.npz
+authorization: {run_fitting: true, run_cuda: true, run_overfits: true, run_pilot: false}

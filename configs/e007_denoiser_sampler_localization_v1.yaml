@@ -1,0 +1,112 @@
+version: e007_denoiser_sampler_localization_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/denoiser_sampler_localization_v1
+device: cuda
+
+selected_checkpoint:
+  path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+  sha256: eb445f0b39067b8a00a47db27f966a6db97dc0e30bf81078b34ea54f111c7d82
+  optimizer_update: 9000
+
+model_source:
+  phase3f_config_path: configs/e007_coordinate_real_pilot_v1.yaml
+  phase3f_config_sha256: f2d66f8b8aef9470251edc7213f0ad1e7063f4939f0e97a051e8476fac1d3f90
+  continuation_config_path: configs/e007_coordinate_real_continuation_to_10000_v1.yaml
+  continuation_config_sha256: 54c01d0690611ab14e605a11a8211097135248b702916dd9f93fc34c49c79cb0
+  expected_parameter_count: 7586505
+
+phase3i:
+  root: reports/experiments/E007_matrix_sequence_cogeneration/geometry_generator_capability_audit_v1
+  configuration_path: configs/e007_geometry_generator_capability_audit_v1.yaml
+  configuration_sha256: 47f21c622b0ddc91783b81822d943b1f77b276bfc185ee43317a350b3fb87170
+  report_sha256: 629ee5ea04d17322c90426e4da7a53674987d47e9fff401215fd3a8a156af302
+  protocol_sha256: 627563d12ef4c6ee84fdc6b6035f99a378b647cb936828e0d6b142290d84b536
+  per_sample_metrics_sha256: bd3db11675da25e9ec0a3f18386d135b008abe12556f318d71c6bc7fff890cd7
+  reference_manifest_sha256: edeb30926c1891fe27b3d3d6ad7e54a45a3ee03991f4d972d7cfd2b664f3c6d6
+  reference_selection_sha256: c6015b4d1bb43d36d27f1f2a5f69c26448ae4567b809b8c08b20cac04d8f63cb
+  local_geometry_summary_sha256: c2c73b09824fabe46a21b4fd61d444ec3c40cb55a0098357ecbe5796061c869c
+  global_geometry_summary_sha256: 6c3dc7b7527184d52a7a91877ce4f1bcded05d94462f68b6de37a969a54dde98
+  chirality_summary_sha256: c99cf9e1d0b3c6703c4b1eccb049779e7ea4f6c7ddbfaed691cad4ade4d76997
+  artifact_inventory_sha256: 77262109332debe40931de86d9aeb0533bc16ba21703637bf8d1fe954bf38ea3
+  artifact_inventory_aggregate_sha256: 2e2e9491900e9b95e07768fe88bd95c1499dd3cf7087982c5214575913e61db7
+
+panel:
+  lengths: [64, 128, 256, 384, 500]
+  samples_per_length: 8
+  reverse_seeds_per_length: 4
+  selection_seed: 3911001
+  selection_version: e007_phase3i1_exact_then_same_stratum_nearest_length_v1
+  maximum_reference_length_mismatch: 4
+  length_strata:
+    - {name: 1-64, minimum: 1, maximum: 64}
+    - {name: 65-128, minimum: 65, maximum: 128}
+    - {name: 129-256, minimum: 129, maximum: 256}
+    - {name: 257-384, minimum: 257, maximum: 384}
+    - {name: 385-500, minimum: 385, maximum: 500}
+  observed_exact_available_counts: {64: 54, 128: 76, 256: 40, 384: 29, 500: 4}
+  observed_nearby_counts_within_maximum_mismatch:
+    64: {63: 52, 62: 58, 61: 58, 60: 52}
+    128: {127: 68, 126: 52, 125: 64, 124: 75}
+    256: {255: 46, 254: 48, 253: 41, 252: 36}
+    384: {383: 25, 382: 36, 381: 30, 380: 36}
+    500: {499: 1, 498: 5, 497: 15, 496: 11}
+
+one_step:
+  timesteps:
+    - {name: low, timestep: 25}
+    - {name: medium, timestep: 250}
+    - {name: high, timestep: 425}
+    - {name: very_high, timestep: 499}
+  noise_seed_base: 3912001
+  reflection_matrix: [[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+
+reverse_trajectory:
+  seed_base: 3913001
+  seed_namespace: e007_phase3i1_reverse_localization_v1
+  milestones: [499, 450, 400, 300, 200, 100, 50, 0]
+  physical_batch_size_by_maximum_length: {64: 4, 128: 2, 256: 1, 384: 1, 500: 1}
+  save_full_coordinate_tensors: false
+
+diffusion_steps: 500
+coordinate_scale_angstrom: 12.22820347644835
+expected_downsample_factor: 8
+numerics:
+  allow_matmul_tf32: false
+  allow_cudnn_tf32: false
+  deterministic_algorithms: true
+  autocast_enabled: false
+  equivariance_policy: strict_o3_v1
+memory:
+  maximum_rss_mib: 4096
+  maximum_cuda_allocated_mib: 6144
+  maximum_cuda_reserved_mib: 7680
+runtime:
+  maximum_wall_seconds: 28800
+  estimated_model_forward_batches: 10320
+  estimated_one_step_records: 800
+  estimated_reverse_milestone_records: 320
+
+recovery:
+  journal_version: e007_phase3i1_block_journal_v1
+  expected_one_step_units: 320
+  expected_reverse_trajectory_units: 20
+  expected_total_units: 340
+  expected_total_forwards: 10320
+  one_step_native_rows_per_unit: 3
+  one_step_reflected_rows_per_unit: 2
+  reverse_rows_per_unit: 16
+  append_and_fsync_journal: true
+  incomplete_trajectory_replay: whole_trajectory
+
+metrics:
+  local_distance_offsets: [1, 2, 3]
+  contact_thresholds_angstrom: [6.0, 8.0, 10.0, 12.0]
+  long_range_minimum_separation: 24
+  clash_distance_angstrom: 3.0
+  discontinuity_distance_angstrom: 4.5
+  native_envelope_quantiles: [0.025, 0.975]
+  correlation_minimum_records: 8
+  length_slope_failure_threshold: 0.0
+
+publication:
+  parquet_compression: zstd
+  maximum_examples: 20

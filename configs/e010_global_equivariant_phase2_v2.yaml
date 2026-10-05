@@ -1,0 +1,47 @@
+schema: e010_global_equivariant_phase2_continuation_v2
+version: phase2_v2
+authorizes_downstream: false
+seed: 8015
+source_config: configs/e010_global_equivariant_phase2_v1.yaml
+source_result: reports/experiments/E010_global_equivariant_expressivity/phase2_v1_prepared/training_result.json
+source_model_checkpoint: reports/experiments/E010_global_equivariant_expressivity/phase2_v2_source_update2000_weights_only.pt
+source_protocol: reports/experiments/E010_global_equivariant_expressivity/phase2_v1_prepared/protocol.json
+output_dir: reports/experiments/E010_global_equivariant_expressivity/phase2_v2_continuation
+model:
+  width: 192
+  layers: 4
+  heads: 4
+  vector_channels: 32
+  max_length: 500
+  sigma_distance: 2.0
+optimizer:
+  name: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.0
+  scheduler: none
+  scheduler_semantics: constant learning rate throughout updates 1-6400
+  gradient_clip_max_norm: 5.0
+training:
+  objective: masked xyz-coordinate MSE plus 1e-5 masked residual L2
+  original_max_update: 2000
+  continuation_end_update: 6400
+  evaluation_updates: [2000, 3200, 4800, 6400]
+  schedule: deterministic Python random.Random(seed=8015) permutation of the 32 identities once per 32-update epoch; carry exact RNG and order state across continuation
+  schedule_uniformity: every identity is trained exactly 100 times at update 3200, 150 times at 4800, and 200 times at 6400
+  no_geometry_losses: true
+  no_priors: true
+  no_sequence_features: true
+  no_architecture_changes: true
+  no_sampling: true
+  no_held_out_data: true
+acceptance:
+  mean_aligned_rmse_angstrom_max: 0.20
+  median_aligned_rmse_angstrom_max: 0.15
+  maximum_aligned_rmse_angstrom_max: 0.50
+  error_vs_length_slope_angstrom_per_residue_max: 0.0005
+  non_finite_outputs: 0
+resume_policy:
+  require_exact_replay_match_to_saved_update_2000_model: true
+  require_optimizer_rng_schedule_state: true
+  approximate_resume: false
+  fail_closed_on_any_hash_or_tensor_mismatch: true

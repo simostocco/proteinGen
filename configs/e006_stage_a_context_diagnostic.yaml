@@ -1,0 +1,126 @@
+version: e006_stage_a_context_diagnostic_v1
+architecture_version: e006_rich_geometry_codesign_v1
+seed: 6106
+training_seed: 6006
+device: cuda
+output_dir: reports/experiments/E006_rich_geometry_codesign/phase3_stage_a_context_diagnostic_v1
+
+dataset:
+  directory: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+  protocol_sha256: 653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b
+  schema_sha256: 8d522a7c198c8b35317be41bb8f55ef7a52de118f015c88a374e221844afd329
+  vocabulary_sha256: b6e87d56aa6023679c7249e04ba709576c26038fef4588e1b83763c395d4e1db
+  normalization_sha256: a54d862d756ca59a78503801a7ea1488ba5e701116db66545ce22e9af91b30fe
+  shard_inventory_sha256: a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0
+
+checkpoint:
+  path: outputs/e006_phase3_sequence_pretrain_v4_continuation/checkpoints/best.pt
+  sha256: eb20183cc73f14a3099136b9f85a0789c26f0093f92ff772bd911c4dbb1ee653
+  optimizer_step: 35000
+  validation_sequence_cross_entropy: 2.871012938208878
+  calibration_sha256: 47c9d9548ccdc037df15e5e12879b09e1a45ec9ed9dcf987192ccee5d6cf2c2a
+  production_selection_sha256: eee314b655cb0614635dd8f152964bf2732876b921483c51e6a1000a8f5a6e31
+
+# Preserved recovery-only checkpoint from the failed pre-training initialization.
+# This is diagnostic input only and remains non-authorizing.
+step0_checkpoint:
+  path: outputs/e006_phase3_sequence_pretrain/checkpoints/latest.pt
+  sha256: 24f60acefa43ea7456814c1b3afeb2c035d506d4de8afff00ac945b84bf930e7
+
+model:
+  vocabulary_size: 22
+  pad_token_id: 0
+  sequence_hidden_dim: 256
+  sequence_layers: 8
+  sequence_heads: 8
+  sequence_feedforward_dim: 1024
+  sequence_dropout: 0.1
+  max_length: 500
+  rich_hidden_dim: 256
+  fusion_layers: [1, 3, 5, 7]
+  minimum_fusion_capacity_ratio: 0.05
+  minimum_fusion_parameters: 100000
+  geometry_model:
+    input_channels: 3
+    output_channels: 1
+    base_channels: 24
+    channel_multipliers: [1, 2, 4, 8]
+    residual_blocks_per_level: 2
+    dropout: 0.0
+    group_norm_groups: 8
+    attention_heads: 4
+    use_bottleneck_attention: true
+    use_pre_bottleneck_axial_attention: true
+    axial_attention_heads: 4
+    axial_attention_dropout: 0.0
+    axial_attention_chunk_size: 128
+    use_pre_bottleneck_triangle_multiplication: true
+    triangle_hidden_channels: 32
+    triangle_dropout: 0.0
+    triangle_chunk_size: 16
+    time_embedding_dim: 256
+    length_embedding_dim: 256
+    max_length: 500
+
+panels:
+  original_size: 256
+  independent_size: 2048
+  minimum_per_nonempty_bucket: 64
+  maximum_length: 500
+  expected_original_sample_id_sha256: b15a85dd7ded8f08b1c252ad979d894a64839f27644e4e471c3a238e6f28ebc0
+
+corruption:
+  mask_fractions: [0.15, 0.30, 0.50]
+  diffusion_timestep_distribution: disabled
+
+baselines:
+  smoothing: 1.0
+  length_bucketed_unigram: true
+
+bootstrap:
+  iterations: 2000
+  seed: 6206
+
+interpretation_gate:
+  unigram_improvement_nats: 0.05
+  context_degradation_nats: 0.05
+  minimum_passing_strata_fraction: 0.50
+  sensitivity_thresholds_nats: [0.025, 0.05, 0.10]
+
+evaluation:
+  batch_size: 16
+
+memory:
+  maximum_rss_mib: 4096
+
+training_history:
+  rolling_window_records: 1000
+  files:
+    - kind: metrics
+      path: outputs/e006_phase3_sequence_pretrain_v2/metrics.jsonl
+      sha256: da79974e90969a356e8b17c905782e63aff8969eeada2065f785e0317f06f3d3
+      maximum_optimizer_step: 6000
+    - kind: metrics
+      path: outputs/e006_phase3_sequence_pretrain_v4_continuation/metrics.jsonl
+      sha256: 78df7d6ac228a853d48ae08dd8796fff9f9764031c90f52bd76f213f77a8c07b
+      minimum_optimizer_step: 6001
+    - kind: validation
+      path: outputs/e006_phase3_sequence_pretrain_v2/validation_journal.jsonl
+      sha256: b234e5a3fcb31fe23a176afa88a7a10232ce721739a60beea9e525ebcce25933
+      maximum_optimizer_step: 5000
+    - kind: validation
+      path: outputs/e006_phase3_sequence_pretrain_v4_continuation/validation_journal.jsonl
+      sha256: 16bb544b4cd86e9084ea54179cc27b078bd289d4c3ffa4d1f106bc7347d12abf
+      minimum_optimizer_step: 7500
+
+protected_stage_a_inputs:
+  - path: outputs/e006_phase3_sequence_pretrain/checkpoints/latest.pt
+    sha256: 24f60acefa43ea7456814c1b3afeb2c035d506d4de8afff00ac945b84bf930e7
+  - path: outputs/e006_phase3_sequence_pretrain_v4_continuation/checkpoints/best.pt
+    sha256: eb20183cc73f14a3099136b9f85a0789c26f0093f92ff772bd911c4dbb1ee653
+  - path: outputs/e006_phase3_sequence_pretrain_v4_continuation/protocol.json
+    sha256: 09d0c1d36c4a677bb258e76681212a8d6f216ca1a41012ee044916d8c633b8c9
+  - path: outputs/e006_phase3_sequence_pretrain_v4_continuation/metrics.jsonl
+    sha256: 78df7d6ac228a853d48ae08dd8796fff9f9764031c90f52bd76f213f77a8c07b
+  - path: outputs/e006_phase3_sequence_pretrain_v4_continuation/validation_journal.jsonl
+    sha256: 16bb544b4cd86e9084ea54179cc27b078bd289d4c3ffa4d1f106bc7347d12abf

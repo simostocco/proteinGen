@@ -1,0 +1,23 @@
+# Dry-run scaffold only. This config must not execute external Distance-AF jobs.
+output_root: reports/experiments/E004_symmetric_triangle_multiplication/distance_af
+sample_manifest: null
+synthetic_smoke: false
+
+execute_distance_af: false
+distance_af_root: /path/to/Distance-AF
+distance_af_python: python
+external_command_template: null
+
+restraint_budgets: [32, 64, 128, 256]
+restraint_strategies:
+  - uniform_long_range
+  - contact_enriched
+  - projection_consistent
+  - random_control
+heldout_multiplier: 1
+min_sequence_separation: 12
+seed: 4004
+
+# Primary generated E002/E004 cohorts intentionally remain blocked until an
+# explicit sequence source is supplied.
+generated_primary_requires_explicit_sequence: true

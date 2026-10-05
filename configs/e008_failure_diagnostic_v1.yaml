@@ -1,0 +1,21 @@
+version: e008_failure_diagnostic_v1
+source_config: configs/e008_geometry_native_decoder_restart_v2.yaml
+source_run_dir: reports/experiments/E008_geometry_native/decoder_pilot_v2
+source_config_sha256: 4591299f2590c3ad25c735e446958998f7eab1e95155f42e0505eea05bb8d95e
+source_checkpoint_sha256: fa88f9a30f028545eb08be3f96e60efa85e4474a8cfe80f138abdae9d05e3cad
+source_metrics_sha256: ff5e36473983d6b39e3ca6c2174ca4b3d2b656b81946bf63ca2977b217ac823d
+source_tiny_overfit_sha256: 1acd164c012d8a5041699cf816e2a03e7b48225c8f305c66cc3e3198598debc1
+source_panel_sha256: 76ead783c0ae637543c8049b61fb0e5442bf496aa9ce19069cff6444addb3d7c
+source_run_manifest_sha256: 0bbe80f319dc1bf8705e2dc035d22be09218368f44ae993b618e0b7469c623fa
+source_class_manifest_sha256: b1036010e9b03158d09a6e770e52bbf01b713717fba6850a63de0de096480deb
+output_dir: reports/experiments/E008_geometry_native/failure_diagnostic_v1
+lengths: [64, 500]
+seed: 8015
+updates: 1000
+evaluation_updates: [0, 10, 50, 100, 250, 500, 1000]
+gate:
+  aligned_coordinate_rmse_angstrom_max: 0.10
+  adjacent_bond_rmse_angstrom_max: 0.01
+authorization:
+  authorizes_training: false
+  authorizes_2000_update_pilot: false

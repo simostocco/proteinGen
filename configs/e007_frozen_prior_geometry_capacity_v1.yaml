@@ -1,0 +1,112 @@
+version: e007_frozen_prior_geometry_capacity_v1
+seed: 7601
+device: cuda
+artifact_cache_root: external_models/e007_phase4b_v1
+smoke_output_dir: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_smoke_v1
+pilot_output_dir: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1
+candidate: progen2_151m
+capacities: [small, medium]
+arms: [correct_geometry, shuffled_geometry, null_geometry]
+
+prerequisites:
+  phase4c_config:
+    path: configs/e007_frozen_prior_geometry_conditioning_v1.yaml
+    sha256: bdf97dedfffa3a9b1813af21698c6263c3832e8c236e2c4b8686b509fdb0f62f
+  phase4c_smoke_report:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_smoke_v1/report.json
+    sha256: ffcbac8ce2eea35756091f3b065346f1caf18460f9118db079e95ded5355dcef
+  phase4c_smoke_protocol:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_smoke_v1/protocol.json
+    sha256: a1475059a3e2e8f34cc26dfa6b27c0596dcb95d589fffe20fd0bcbc681c4d96f
+  phase4b_v3_report:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v3/report.json
+    sha256: add9986f9370fd825725e66e44a94297797d8ea8892dd1fe0fb7884c3e0b0321
+  phase4b_v3_protocol:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v3/protocol.json
+    sha256: eacca0b45c2d78d4296b6ad6adeed90b54c44613e02d2d738928d809a3f9b463
+  phase4b_v3_progen:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v3/progen2_151m.json
+    sha256: e49e4db7639a64af4ab7407329dce8880fb5aab332717664de6e75834c137b16
+  phase4b_artifact_lock:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_artifacts_v1/artifact_lock.json
+    sha256: 6c2b514b58d69a8fe3be550925a91d5f8e7003775a69b81dbb902d577e048881
+  coordinate_selection_report:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_selection_v1/report.json
+    sha256: 561e2475d783204f517ffd921c9d1c452df95c87c24bc44f0d2c3b5cc4f1d7b6
+  coordinate_checkpoint:
+    path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+    sha256: eb445f0b39067b8a00a47db27f966a6db97dc0e30bf81078b34ea54f111c7d82
+
+dataset:
+  root: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+  protocol_sha256: 653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b
+  schema_sha256: 8d522a7c198c8b35317be41bb8f55ef7a52de118f015c88a374e221844afd329
+  vocabulary_sha256: b6e87d56aa6023679c7249e04ba709576c26038fef4588e1b83763c395d4e1db
+  normalization_sha256: a54d862d756ca59a78503801a7ea1488ba5e701116db66545ce22e9af91b30fe
+  shard_inventory_sha256: a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0
+  accepted_train_count: 230132
+  protected_input_relocations:
+    - recorded_root: /home/simostocco/proteinGen/data
+      verification_root: /home/simostocco/proteinGen.pre-relocation-20260922T064202Z/data
+clean_validation:
+  manifest_path: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/mmseqs/identity_30/clean_validation_manifest.parquet
+  manifest_sha256: a847fbf36497df7a015dd4cb3c683f47ec6c2d3217b1b6eaebdddcf7af0adb11
+  accepted_validation_count: 21583
+
+length_strata:
+  - {name: 20-64, minimum: 20, maximum: 64}
+  - {name: 65-128, minimum: 65, maximum: 128}
+  - {name: 129-256, minimum: 129, maximum: 256}
+  - {name: 257-384, minimum: 257, maximum: 384}
+  - {name: 385-500, minimum: 385, maximum: 500}
+
+capacity_initialization_namespaces:
+  small: e007_phase4c1_small_v1
+  medium: e007_phase4c1_medium_v1
+conditioners:
+  small:
+    rbf_bins: 32
+    hidden_width: 256
+    shared_output_width: 1024
+    maximum_distance: 32.0
+  medium:
+    rbf_bins: 32
+    separation_bins: 65
+    separation_width: 32
+    pair_width: 192
+    residue_width: 384
+    shared_output_width: 1024
+    message_blocks: 4
+    maximum_distance: 32.0
+    initial_gate_logit: -4.0
+    injection_depths: [0, 5, 11]
+
+optimizer:
+  lr: 0.0003
+  weight_decay: 0.01
+  betas: [0.9, 0.999]
+scheduler:
+  type: cosine
+  minimum_lr: 0.00003
+gradient_clip_norm: 1.0
+
+smoke:
+  train_panel_size: 20
+  validation_panel_size: 20
+  optimizer_updates_performed_by_smoke: 0
+pilot:
+  train_panel_size: 500
+  validation_panel_size: 100
+  successful_optimizer_updates: 1000
+  evaluation_updates: [0, 100, 250, 500, 750, 1000]
+  recovery_checkpoint_frequency: 50
+evaluation:
+  bootstrap_seed: 7602
+  bootstrap_replicates: 2000
+decision:
+  minimum_fraction_improved: 0.5
+  material_effect_difference: 0.02
+memory:
+  maximum_rss_mib: 6144
+  maximum_cuda_allocated_mib: 7800
+  maximum_cuda_reserved_mib: 8000

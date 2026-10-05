@@ -1,0 +1,28 @@
+name: proteingen-e007-phase4b
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12.14
+  - pip=26.2.1
+  - pip:
+      - --extra-index-url=https://download.pytorch.org/whl/cu130
+      - torch==2.13.0
+      - transformers==4.56.2
+      - tokenizers==0.22.0
+      - safetensors==0.6.2
+      - huggingface-hub==0.34.4
+      - accelerate==1.10.1
+      - numpy==2.3.3
+      - pandas==3.0.5
+      - pyarrow==25.0.1
+      - PyYAML==6.0.2
+      - gemmi==0.7.5
+      - MDAnalysis==2.10.0
+      - matplotlib==3.11.1
+      - seaborn==0.13.2
+      - tqdm==4.70.0
+      - tensorboard==2.21.0
+      - scipy==1.18.1
+      - pytest==9.1.1
+      - ruff==0.16.4

@@ -539,7 +539,23 @@ def worker_process_source(record: SourceRecord, worker_cfg: WorkerConfig) -> dic
         status = DETERMINISTIC_REJECTION_STATUS
     else:
         status = SUCCESS_STATUS
-    rows = [save_processed_sample(sample, worker_cfg.samples_dir) for sample in samples_to_write]
+    from protein_distance_diffusion.data.preprocess import SamplePublicationError
+
+    rows = []
+    for sample in samples_to_write:
+        try:
+            rows.append(save_processed_sample(sample, worker_cfg.samples_dir))
+        except SamplePublicationError as exc:
+            rejections.append(
+                {
+                    "source_file": record.path,
+                    "sample_id": sample.sample_id,
+                    "reason": exc.reason,
+                    "message": str(exc),
+                }
+            )
+    if samples_to_write and not rows and not baseline_reused:
+        status = DETERMINISTIC_REJECTION_STATUS
     return {
         "source_path": record.path,
         "source_size": record.size,

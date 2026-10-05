@@ -1,0 +1,101 @@
+version: e007_pretrained_sequence_prior_audit_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_audit_v1
+contract:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json
+  sha256: f07dca705637b91c127c2fa0dd49a5cc63b95350edd242eeabf464d32cd55f5f
+coordinate_selection:
+  directory: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_selection_v1
+  report_sha256: 561e2475d783204f517ffd921c9d1c452df95c87c24bc44f0d2c3b5cc4f1d7b6
+  protocol_sha256: a38db32c6b7de500818afea4084e0d945e48d8833c214968bd437dccfd045824
+  selected_checkpoint_record_sha256: a5bfb0de98cfbab93b9ff1ba61b4c10218ea12cca1ef005322e531ba89029ca5
+  artifact_inventory_sha256: 86464e8ffa4fadab568c71036363779cee5d44487dc9a58168467398835f91d3
+coordinate_checkpoint:
+  path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+  sha256: eb445f0b39067b8a00a47db27f966a6db97dc0e30bf81078b34ea54f111c7d82
+rich_geometry_dataset:
+  directory: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+  protocol_sha256: 653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b
+  schema_sha256: 8d522a7c198c8b35317be41bb8f55ef7a52de118f015c88a374e221844afd329
+  vocabulary_sha256: b6e87d56aa6023679c7249e04ba709576c26038fef4588e1b83763c395d4e1db
+  normalization_sha256: a54d862d756ca59a78503801a7ea1488ba5e701116db66545ce22e9af91b30fe
+  shard_inventory_sha256: a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0
+clean_validation:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/mmseqs/identity_30/clean_validation_manifest.parquet
+  sha256: a847fbf36497df7a015dd4cb3c683f47ec6c2d3217b1b6eaebdddcf7af0adb11
+  sample_count: 21583
+  maximum_identity: 0.30
+  minimum_coverage: 0.80
+repository_audit:
+  search_terms:
+    - ESM
+    - ProGen
+    - ProteinMPNN
+    - pretrained
+    - latent
+  candidate_packages:
+    - transformers
+    - fair-esm
+    - esm
+    - huggingface-hub
+    - tokenizers
+    - safetensors
+    - accelerate
+  bounded_cache_roots:
+    - ~/.cache/torch/hub/checkpoints
+    - ~/.cache/huggingface/hub
+decision:
+  phase4a_outcome: both_candidates_require_bounded_weight_smoke
+  shortlisted_candidates:
+    - esm2_150m
+    - progen2_151m
+  baseline_candidate: proteinmpnn_ca_only
+  deferred_candidate: esm3_open_small
+phase4b:
+  version: e007_pretrained_sequence_prior_weight_smoke_plan_v1
+  execution_authorized: false
+  model_cache_dir: /mnt/d/Users/Simone Stocco/proteinGen_model_cache/e007_phase4b_v1
+  output_dir: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_weight_smoke_v1
+  staging_dir: reports/experiments/E007_matrix_sequence_cogeneration/.pretrained_sequence_prior_weight_smoke_v1.inprogress
+  lengths: [64, 128, 256, 384, 500]
+  batch_size: 1
+  precision_modes:
+    required: fp32
+    descriptive_only: [float16]
+  maximum_rss_mib: 6144
+  maximum_cuda_allocated_mib: 7168
+  maximum_cuda_reserved_mib: 7800
+  optimizer_updates: 0
+  candidates:
+    esm2_150m:
+      permitted: true
+      source: facebook/esm2_t30_150M_UR50D
+      revision: null
+      revision_status: unresolved_must_be_immutable_before_execution
+    progen2_151m:
+      permitted: true
+      source: https://storage.googleapis.com/sfr-progen-research/checkpoints/progen2-small.tar.gz
+      revision: null
+      revision_status: unresolved_tarball_sha256_required_before_execution
+    proteinmpnn_ca_only:
+      permitted: true
+      source: dauparas/ProteinMPNN:ca_model_weights/v_48_020.pt
+      revision: null
+      revision_status: unresolved_repository_commit_and_weight_sha256_required
+    esm3_open_small:
+      permitted: false
+      source: EvolutionaryScale/esm3-sm-open-v1
+      revision: null
+      revision_status: deferred_requires_separate_memory_and_license_authorization
+  cases:
+    - tokenizer_round_trip
+    - frozen_fp32_forward
+    - frozen_backbone_adapter_backward
+    - descriptive_lower_precision_forward
+  isolation: one_candidate_case_per_child_process
+  atomic_publication: true
+  immutable_revision_required: true
+  file_hash_inventory_required: true
+  license_record_required: true
+  cache_deletion_forbidden: true
+  protected_artifact_mutation_forbidden: true
+  non_authorizing: true

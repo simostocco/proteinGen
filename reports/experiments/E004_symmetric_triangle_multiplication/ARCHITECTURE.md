@@ -374,3 +374,119 @@ PYTHONPATH=src /home/simostocco/miniforge3/envs/proteingen/bin/python scripts/co
   --candidate-dir reports/experiments/E004_symmetric_triangle_multiplication/step2000_screening \
   --output-dir reports/experiments/E004_symmetric_triangle_multiplication/comparison_to_E002_step2000
 ```
+
+## Repairability Audit
+
+The definitive analysis-only repairability audit completed under
+`reports/experiments/E004_symmetric_triangle_multiplication/repairability_analysis`
+using checkpoint SHA-256
+`59db27a3dbecbc199cb20065e1263ad0cec12b3553cca1a263429f890b38ea86`.
+It contains 375 E002 samples, 375 E004 samples, 320 real controls, and 25
+length-by-noise corruption aggregate cells. The protocol records
+`raw_inputs_unchanged=true`.
+
+The projection method is rank-3 classical MDS:
+
+```text
+G = -0.5 J D^2 J
+```
+
+The three largest positive eigenvalues are retained to recover C-alpha
+coordinates and a projected distance matrix. This is a deterministic projection
+diagnostic, not a mathematically nearest Euclidean-distance-matrix repair. It
+does not infer side chains, chirality, Ramachandran feasibility, energetic
+stability, or full-atom validity. Reflected traces have identical distance
+matrices, so coordinate RMSD diagnostics allow reflection where appropriate.
+
+Completed outputs include per-sample repairability, summaries by length,
+projected C-alpha trace metrics, real-corruption calibration, a ranked candidate
+table retained under the compatibility filename `pareto_candidates.csv`,
+representative C-alpha-only PDB files, figures, and a protocol JSON.
+Short-range distance errors use `3 <= |i-j| < 24`; long-range errors use
+`|i-j| >= 24`.
+
+Real controls must be selected independently within the ensemble evaluator's
+`requested_length` cohorts; their actual structure length is retained
+separately. Representative `best`, `median`, and `worst` labels are positions in
+a deterministic lexicographic repairability ranking: off-diagonal projection
+RMSE first and negative-eigenvalue mass second. They are not minimum projection
+stress labels or a formal Pareto frontier. With two samples, the middle-index
+and worst positions legitimately identify the same sample.
+
+Mean E002-to-E004 off-diagonal projection-RMSE improvements are 0.0571,
+0.4206, 0.7665, 1.2687, and 1.3476 Angstrom at N=64, 128, 256, 384, and 500.
+At N=64, contact F1 improves by 0.00984 while negative Gram-matrix eigenvalue
+mass worsens. Under the permissive 4 Angstrom corrupted-real joint envelope,
+81% of N=128, 1% of N=256, and 0% of N=384 and N=500 E004 samples pass. This
+envelope is a calibration device, not proof of validity or foldability.
+
+Projected E004 traces retain compressed local geometry: mean adjacent C-alpha
+distances are approximately 3.21-3.39 Angstrom and median adjacent RMSE is
+approximately 0.79-0.91 Angstrom. Low positive rank-3 residual is distinct from
+remaining negative Gram-matrix eigenvalue mass. E004 is therefore retained as
+an imperfect-geometry proposal model, not a directly valid backbone generator.
+The definitive interpretation is recorded in `E004_FINAL_REPORT.md`.
+
+Historical bounded pilot command:
+
+```bash
+PYTHONPATH=src /home/simostocco/miniforge3/envs/proteingen/bin/python scripts/analyze_distance_map_repairability.py \
+  --candidate-dir reports/experiments/E004_symmetric_triangle_multiplication \
+  --baseline-dir reports/experiments/E002_stochastic_edm_spectral_loss \
+  --real-manifest reports/experiments/E004_symmetric_triangle_multiplication/metrics/real_control_metrics.parquet \
+  --output-dir reports/experiments/E004_symmetric_triangle_multiplication/repairability_analysis_pilot \
+  --expected-candidate-checkpoint-sha256 59db27a3dbecbc199cb20065e1263ad0cec12b3553cca1a263429f890b38ea86 \
+  --limit-per-length 2 \
+  --restart
+```
+
+Historical definitive analysis command:
+
+```bash
+PYTHONPATH=src /home/simostocco/miniforge3/envs/proteingen/bin/python scripts/analyze_distance_map_repairability.py \
+  --candidate-dir reports/experiments/E004_symmetric_triangle_multiplication \
+  --baseline-dir reports/experiments/E002_stochastic_edm_spectral_loss \
+  --real-manifest reports/experiments/E004_symmetric_triangle_multiplication/metrics/real_control_metrics.parquet \
+  --output-dir reports/experiments/E004_symmetric_triangle_multiplication/repairability_analysis \
+  --expected-candidate-checkpoint-sha256 59db27a3dbecbc199cb20065e1263ad0cec12b3553cca1a263429f890b38ea86 \
+  --restart
+```
+
+## Distance-AF Dry-Run Benchmark
+
+A dry-run Distance-AF benchmark interface is implemented for later restrained
+structure experiments. It prepares FASTA files, one-based comma-separated
+CA-distance restraint files, held-out restraint tables, job manifests, command
+JSON files, metric definitions, and positive-control documentation without
+launching external inference.
+
+Primary generated E002/E004 jobs are intentionally blocked until an explicit
+sequence source is supplied. A distance map alone is not a Distance-AF target.
+Allowed sequence provenance labels are native PDB sequence, model-generated
+sequence, external inverse-folded sequence, sequence-only baseline, shuffled
+negative control, and mismatched negative control. Generated primary cohorts
+must use a model-generated or external inverse-folded sequence.
+
+Distance-AF supplied-restraint satisfaction is not independent validation
+because the external method optimizes toward the supplied CA-distance
+constraints. The benchmark therefore separates guidance restraints from held-out
+restraints and includes positive controls, corrupted-restraint controls,
+sequence-only baselines, and optional negative controls. The dry-run command
+builder emits a list of subprocess arguments and never uses `shell=True`.
+
+Dry-run preparation command:
+
+```bash
+PYTHONPATH=src /home/simostocco/miniforge3/envs/proteingen/bin/python scripts/prepare_distance_af_benchmark.py \
+  --config configs/evaluate_distance_af_repairability.yaml
+```
+
+Synthetic dry-run smoke command:
+
+```bash
+PYTHONPATH=src /home/simostocco/miniforge3/envs/proteingen/bin/python scripts/prepare_distance_af_benchmark.py \
+  --config /tmp/proteingen_distance_af_smoke.yaml
+```
+
+External execution remains a separate manual step after Distance-AF licensing,
+environment, sequence-source, and resource questions are resolved.

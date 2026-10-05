@@ -1,0 +1,29 @@
+version: e007_pretrained_sequence_prior_cpu_diagnostic_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_cpu_diagnostic_v1
+artifact_cache_root: external_models/e007_phase4b_v1
+artifact_lock:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_artifacts_v1/artifact_lock.json
+  sha256: 6c2b514b58d69a8fe3be550925a91d5f8e7003775a69b81dbb902d577e048881
+artifact_verification_config:
+  path: configs/e007_pretrained_sequence_prior_smoke_v2.yaml
+  sha256: c2434827fa47c7046dd33bbea43c4ffa0276c0d5c8445576c22d3d0d2dd2e93e
+loader_source:
+  path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders_v3.py
+  sha256: 7942db56cb7f5ab8214c8f0f5182a21080ede508553ea4994cb7cb3df5f4adee
+protected_outputs:
+  v1:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v1
+    hashes:
+      report.json: 539fdf552bdae48250454f418aae0ff1b61f6989656ba75a757b2a29c0eb3bdf
+      protocol.json: c802df1aa97b2d76d9039fc145e48b194dd30f2dc77c140ade2b4684f91e7940
+      esm2_150m.json: 1805ed9316d546c883291f1a85b97f7af08cb6a5402dd50ff4a712f1c4601246
+      progen2_151m.json: d350daff81b6ade3559971b94d0e6176d1665f43c5f416e388680af565c662db
+      proteinmpnn_ca_only.json: 20d93c233c53b88c40849d1034b8c3257574dd4e355bac5f798c8627a6e9fbf2
+  v2:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v2
+    hashes:
+      report.json: abdb26840405203a84adcdebbb14a9a3dbd2c1bfaf4e33d5202a1bbb0d511367
+      protocol.json: f4d76200b840651dd58bc46d01fefa2eee1c013069bb9a420481384397613ae1
+      esm2_150m.json: e9684c088bd492dc0cef457b3c4247cee00f2b66a39e8df6263b718890683cd0
+      progen2_151m.json: faf612c6a03da11d9cf63820ccc7d212b43a62f78c9492ffc1582e879916fae3
+      proteinmpnn_ca_only.json: 9e9730210686c9612469ddc2490c6190f0b910ddb2519b40a56ff889efc00b0c

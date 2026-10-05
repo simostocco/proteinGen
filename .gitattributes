@@ -1,0 +1,7 @@
+# Preserve the exact historical E007 configuration bytes pinned by completed
+# experiment manifests; its existing terminal blank line is scientifically inert.
+configs/e007_coordinate_generator_v1.yaml whitespace=-blank-at-eof
+configs/e006_stage_a_v5_objective_parity_audit.yaml whitespace=-blank-at-eof
+
+# Non-executed, exact-byte source evidence for historical lineage tests.
+tests/fixtures/e010_phase4a_v3_reporting_repair.py.txt -text

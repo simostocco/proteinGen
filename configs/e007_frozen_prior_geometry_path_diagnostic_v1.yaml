@@ -1,0 +1,91 @@
+version: e007_frozen_prior_geometry_path_diagnostic_v1
+seed: 7701
+device: cuda
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_path_diagnostic_v1
+artifact_cache_root: external_models/e007_phase4b_v1
+
+prerequisites:
+  phase4c1_config:
+    path: configs/e007_frozen_prior_geometry_capacity_v1.yaml
+    sha256: a2cbc09192bc2038d14e116d3c2d3fcd416f702b3cfd92404ea77dd40206a1d0
+  phase4c1_report:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/report.json
+    sha256: 31c2b560385d1a46182da6b642bac0713fd7815f925e99b10eff4bdf5fa16361
+  phase4c1_protocol:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/protocol.json
+    sha256: a3ca81a848d5c6900ceb67c82d5cebbe0774a07499f89d642d8ce595626cdfab
+  phase4c1_journal:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/journal.json
+    sha256: 84eaab2e86a5bdda36fa7f48acccbae5a2c2a1a5ccaeb5ae3cb47488a35c9a9f
+  phase4b_artifact_lock:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_artifacts_v1/artifact_lock.json
+    sha256: 6c2b514b58d69a8fe3be550925a91d5f8e7003775a69b81dbb902d577e048881
+  phase4b_v3_report:
+    path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v3/report.json
+    sha256: add9986f9370fd825725e66e44a94297797d8ea8892dd1fe0fb7884c3e0b0321
+  coordinate_checkpoint:
+    path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+    sha256: eb445f0b39067b8a00a47db27f966a6db97dc0e30bf81078b34ea54f111c7d82
+
+conditioner_checkpoints:
+  small:
+    correct_geometry:
+      update_0: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/small__correct_geometry/step-0000.pt, sha256: 6faf58c018ea7d1727050ddc9e48410c50c7f3cc443668046d55412b1fb6382d}
+      update_1000: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/small__correct_geometry/step-1000.pt, sha256: 4f5f7a26f6a5f350184daa634a53642f946569680df3e38bbdfd09f83fb23588}
+    shuffled_geometry:
+      update_0: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/small__shuffled_geometry/step-0000.pt, sha256: fc745e8ab51d16fb2a7391148ec2a551088bee6df5124f54e703222c907592f5}
+      update_1000: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/small__shuffled_geometry/step-1000.pt, sha256: 7ef3eee6b32a1bc8c099e4ef8a9cf2998b36938591f8737b4ee4e941f9c6661c}
+    null_geometry:
+      update_0: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/small__null_geometry/step-0000.pt, sha256: 965b400a0c6c4f427a300852d991c4eeed6311c2d26f081026a690c80d1df39c}
+      update_1000: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/small__null_geometry/step-1000.pt, sha256: ad72c23bbdffcce0978c4c0b52f6aac591271a11237402819c01f5dc2fd01215}
+  medium:
+    correct_geometry:
+      update_0: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/medium__correct_geometry/step-0000.pt, sha256: a7756de661fc507af2a0cd78e724f8440523e2924201b758c0d1c803e4e5dd5e}
+      update_1000: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/medium__correct_geometry/step-1000.pt, sha256: 1c4f276dcc5fe8df19414c59cafe32431a394a58667ec426a1697eb4492b1aa8}
+    shuffled_geometry:
+      update_0: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/medium__shuffled_geometry/step-0000.pt, sha256: 759c492149ee6c3541f07e34e0b720ac4522d56fc5bb798ccb2a80297631d0ef}
+      update_1000: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/medium__shuffled_geometry/step-1000.pt, sha256: 11de972092506fabe91b1bd2cf79c62900ce0758bf49fa88208f0951da1deb68}
+    null_geometry:
+      update_0: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/medium__null_geometry/step-0000.pt, sha256: edaf613fc7ca320f344881c657ea75290c7f545737af2263f17c6cb36029528e}
+      update_1000: {path: reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_capacity_pilot_v1/checkpoints/medium__null_geometry/step-1000.pt, sha256: 4d7e34f3568f29b4d31c65b0c2f8f6d47e17a7363767291cb7d39e9b5b1aed8b}
+
+representation:
+  validation_panel_size: 20
+  updates: [0, 1000]
+  arms: [correct_geometry, shuffled_geometry, null_geometry]
+gate_sweep:
+  effective_gate_values: [0.0, 0.018, 0.05, 0.25, 0.5, 1.0]
+  bootstrap_replicates: 2000
+  bootstrap_seed: 7702
+  mutate_checkpoint_files: false
+geometry_sensitivity:
+  pair_distance_perturbation: 0.25
+  coordinate_perturbation: 0.05
+  minimum_logit_rms_response: 1.0e-10
+  o3_atol: 2.0e-5
+  o3_rtol: 1.0e-5
+optimization_diagnostic:
+  capacities: [small, medium]
+  arms: [correct_geometry, shuffled_geometry, null_geometry]
+  policies: [existing_learned_gate, gate_logit_zero]
+  train_panel_size: 20
+  validation_panel_size: 20
+  maximum_updates: 200
+  evaluation_updates: [0, 25, 50, 100, 200]
+  learning_rate: 0.0003
+  gate_learning_rate: 0.0003
+  weight_decay: 0.01
+  gradient_clip_norm: 1.0
+  minimum_samples_per_exact_length: 2
+memory:
+  maximum_rss_mib: 6144
+  maximum_cuda_allocated_mib: 7800
+  maximum_cuda_reserved_mib: 8000
+
+decision_categories:
+  - conditioning_path_defect
+  - gate_suppression_supported
+  - optimization_insufficient
+  - representation_not_discriminative
+  - architecture_not_using_matching_geometry
+  - bounded_diagnostic_inconclusive

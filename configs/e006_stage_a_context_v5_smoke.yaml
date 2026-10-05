@@ -1,0 +1,15 @@
+version: e006_stage_a_context_v5_smoke_v1
+base_training_config: configs/e006_rich_geometry_sequence_pretrain_v5.yaml
+output_dir: reports/experiments/E006_rich_geometry_codesign/stage_a_context_v5_smoke_v1
+device: cpu
+seed: 6006
+maximum_optimizer_updates: 50
+maximum_rss_mib: 4096
+synthetic_lengths: [8, 12, 16, 20]
+requirements:
+  canonical_corrupted_only_loss: true
+  ordered_context_contrast: true
+  no_rich_geometry_features: true
+  total_ce_reduction_fraction: 0.80
+  final_ce_below_unigram_nats: 0.50
+  authorizes_training: false

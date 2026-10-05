@@ -1,0 +1,57 @@
+schema_version: e006_rich_geometry_sidecar_v2
+seed: 6006
+
+phase0_protocol: reports/experiments/E006_rich_geometry_codesign/source_audit_v6/protocol.json
+phase0_protocol_sha256: f0bb8827f7f83573bb9adde0083cc0e08004460d7bb017b6096168036ec4200a
+pairing_dataset: /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_geometry_pairing_v1
+processed_manifest: data/full/processed_recovery/merged_manifest.parquet
+audit_provenance: /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_data_readiness_raw_full_compact_v1
+normalization_source: data/full/processed_recovery/normalization_train.json
+
+output_dir: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+pilot_output_dir: reports/experiments/E006_rich_geometry_codesign/sidecar_pilot_v5
+pilot_sample_count: 512
+
+allowed_matrix_roots:
+  - data/full
+  - /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_geometry_pairing_v1
+allowed_structure_roots:
+  - data/full/raw/mmcif
+
+shard_size: 4096
+row_group_size: 64
+maximum_failure_examples: 100
+maximum_rss_mib: 2048
+heartbeat_frequency_samples: 25
+worker_count: 1
+worker_queue_size: 2
+maximum_stage_latency_samples: 8192
+feature_backend: cpu
+mmcif_parse_mode: single_parse
+cuda_residue_token_budget: 8192
+maximum_cuda_allocated_mib: 6144
+peptide_bond_threshold_angstrom: 2.0
+pseudo_cb_maximum_distance_angstrom: 0.5
+pseudo_cb_maximum_angle_degrees: 20.0
+npz_internal_matrix_tolerance_angstrom: 0.0001
+npz_calpha_anchor_tolerance_angstrom: 0.0001
+residue_mappings:
+  MSE: MET
+
+performance_benchmark:
+  version: 2
+  output_root: reports/experiments/E006_rich_geometry_codesign/sidecar_performance_benchmark_v2
+  panel_sample_count: 512
+  projected_full_sample_count: 293405
+  maximum_rss_mib: 4096
+  worker_queue_multiplier: 2
+  minimum_end_to_end_speedup_fraction: 0.20
+  minimum_cuda_feature_stage_fraction: 0.20
+
+phase1_authorization:
+  minimum_verified_source_fraction: 0.95
+  minimum_mapped_identity_fraction: 0.98
+  minimum_complete_frame_fraction: 0.90
+  minimum_phi_psi_fraction: 0.85
+  maximum_matrix_rmse_angstrom: 0.05
+  maximum_unexplained_contradictions: 0

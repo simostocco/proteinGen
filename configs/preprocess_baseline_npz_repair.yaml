@@ -1,0 +1,18 @@
+# Full filtered PDB mmCIF preprocessing defaults for RCSB-query-based datasets.
+source_dir: data/baseline_npz_repair/raw/mmcif
+samples_dir: data/baseline_npz_repair/processed/samples
+manifest_path: data/baseline_npz_repair/processed/manifest.parquet
+summary_path: data/baseline_npz_repair/processed/preprocess_summary.json
+state_db_path: data/baseline_npz_repair/processed/preprocess_state.sqlite
+backend: auto
+min_length: 20
+max_length: 500
+strict_contiguous_ca: true
+allowed_methods:
+  - X-RAY DIFFRACTION
+  - ELECTRON MICROSCOPY
+  - SOLUTION NMR
+max_xray_resolution_angstrom: 3.0
+max_cryoem_resolution_angstrom: 4.0
+residue_mappings:
+  MSE: MET

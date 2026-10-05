@@ -1,0 +1,35 @@
+version: e007_global_rms_coordinate_radius_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1
+dataset:
+  root: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+  protocol_sha256: 653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b
+  schema_sha256: 8d522a7c198c8b35317be41bb8f55ef7a52de118f015c88a374e221844afd329
+  vocabulary_sha256: b6e87d56aa6023679c7249e04ba709576c26038fef4588e1b83763c395d4e1db
+  normalization_sha256: a54d862d756ca59a78503801a7ea1488ba5e701116db66545ce22e9af91b30fe
+  shard_inventory_sha256: a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0
+  required_schema_version: e006_rich_geometry_sidecar_v2
+split: train
+selection_policy: contiguous_single_chain_complete_calpha_v1
+coordinate_units: angstrom
+formula: sqrt(sum(||x_i - protein_centroid||^2) / (3 * total_valid_training_residues))
+length_strata:
+  - {name: 20-64, minimum: 20, maximum: 64}
+  - {name: 65-128, minimum: 65, maximum: 128}
+  - {name: 129-256, minimum: 129, maximum: 256}
+  - {name: 257-384, minimum: 257, maximum: 384}
+  - {name: 385-500, minimum: 385, maximum: 500}
+robust_percentiles: [0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99]
+maximum_streaming_values: 1000000
+clash_distance_angstrom: 2.0
+write_per_sample_audit: true
+phase3d:
+  config_path: configs/e007_coordinate_capacity_pilot_v1.yaml
+  config_sha256: e18f09732439fd66ff8e4d767361578e61b97f5d6e3e4fbbde143f2258aa332f
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_capacity_pilot_v1/report.json
+  report_sha256: 4279747f2e2ec482fb344e85a490a91a7e60818cfe255f5c1a77e21fcdb29d65
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_capacity_pilot_v1/protocol.json
+  protocol_sha256: 00eb287c364a2b38aa624a1b0b0dc7f3986cc5efba208f10b69b6f43d436fa9f
+coordinate_model_contract:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json
+  sha256: 2768f037cd12e00f399dd8b4773ddb926b25e2cf72f0d437cb972914fc9b996d
+authorizes_training: false

@@ -1,0 +1,46 @@
+{
+  "version": "e007_phase3i4_baseline_tolerances_v1",
+  "source_artifact_sha256": {
+    "paired_comparisons.json": "b57f2bb433715644b937cdd14d45774cdb3a6606924889eabe25919fd4828ff7",
+    "per_sample_trajectories.json": "5f4874c24ad76898e6da6da5e6217155dc178ff0eeeac01a26585479a29d4954"
+  },
+  "derivation": "For local losses and fractions, take the maximum across five length strata of max(abs(CI95 low), abs(CI95 high)) for the protected v_only_minus_original paired comparison at timestep 0, next_state. For global descriptors, use the same bound divided by the absolute v_only per-sample mean, with the protected paired comparison. For signed chirality descriptors use the absolute CI bound. Diversity tolerance is the maximum across lengths of the relative gap between the protected v_only mean pairwise RMS distance-matrix diversity over six sample pairs and its deterministic 2.5th percentile bootstrap mean (10,000 draws; seed 20260926 + length). These values are frozen before Phase 3I.4 execution.",
+  "bootstrap": {"replicates": 10000, "seed_rule": "20260926 + requested length"},
+  "tolerances": {
+    "adjacent_distance_rmse_to_3_8_angstrom": 0.60077617013458,
+    "adjacent_distance_violation_fraction": 0.5961923847695391,
+    "locally_valid_residue_fraction": 0.498,
+    "locally_valid_bond_fraction": 0.5961923847695392,
+    "i_plus_2_distance_error_to_6_2": 0.8803923281323067,
+    "i_plus_3_distance_error_to_8_0": 0.9213614910745055,
+    "bond_angle_error_to_110_degrees": 4.519849642423788,
+    "clash_fraction": 0.0030407191961924905,
+    "discontinuity_fraction": 0.21736292428198434,
+    "global_geometry_relative_by_metric": {
+      "radius_of_gyration_angstrom": 0.24758876014631317,
+      "asphericity": 0.3447187168737431,
+      "contact_order_8a": 0.26918934527821875,
+      "contact_graph_largest_component_fraction_8a": 0.27380952380952384,
+      "end_to_end_distance_angstrom": 0.26079317333623714,
+      "contact_density_6a": 0.6745294210692808,
+      "contact_density_8a": 0.647503680899478,
+      "contact_density_10a": 0.5807317161608472,
+      "contact_density_12a": 0.543225422409451,
+      "long_range_contact_density_6a": 0.7543859649122807,
+      "long_range_contact_density_8a": 0.7561374795417349,
+      "long_range_contact_density_10a": 0.6511363636363637,
+      "long_range_contact_density_12a": 0.6169217830109336,
+      "contact_graph_component_count_8a": 27.0,
+      "contact_graph_degree_mean_8a": 0.6475036808994781,
+      "contact_graph_degree_std_8a": 0.5616358089229445,
+      "principal_axis_ratio_2_to_1": 0.11607307642327498,
+      "principal_axis_ratio_3_to_1": 0.16541126816501475
+    },
+    "chirality_absolute_by_metric": {
+      "signed_pseudo_dihedral_mean": 0.18619696417843812,
+      "signed_pseudo_dihedral_positive_fraction": 0.04461942257217845,
+      "signed_tetrahedral_volume_mean": 4.125363895665611
+    },
+    "diversity_relative": 0.17103144401233467
+  }
+}

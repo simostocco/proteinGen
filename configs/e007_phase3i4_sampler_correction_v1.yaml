@@ -1,0 +1,72 @@
+version: e007_phase3i4_sampler_correction_v1
+execution_log: logs/e007_denoiser_sampler_trajectory_audit_v1.log
+protocol_file: configs/e007_phase3i4_protocol_v1.json
+protocol_sha256: 93c969d8dcef998e11a8f7b695785ee1f27b4618b1b35b5f16e707bb110a5ebe
+panel_candidate_manifest: configs/e007_phase3i4_panels_candidates_v1.json
+panel_candidate_sha256: 4552bb8df044acf124fd85ad02361971b3c0ec4858778beb3e3d0f7020e80f17
+phase3i3_dir: reports/experiments/E007_matrix_sequence_cogeneration/denoiser_sampler_trajectory_audit_v1
+checkpoint: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt
+checkpoint_sha256: 2553ce18b5644aaf1e2d512b85664dfff2eaf5488f9536accbfb3e8ec18c2add
+source_config: configs/e007_coordinate_real_pilot_v1.yaml
+source_config_sha256: f2d66f8b8aef9470251edc7213f0ad1e7063f4939f0e97a051e8476fac1d3f90
+coordinate_scale_angstrom: 12.22820347644835
+timesteps: 500
+lengths: [64, 128, 256, 384, 500]
+panel:
+  seed_base: 3916400
+  holdout_seed_offset: 10000000
+  identity_namespace: e007_phase3i4_sampler_correction
+grid:
+  displacement_cap_angstrom: 0.15
+  iterations: 2
+  signal_fraction: 0.25
+  composite_offsets: [2, 3]
+  composite_targets_angstrom: [6.2, 8.0]
+milestones: [499, 425, 375, 250, 150, 75, 25, 0]
+selection_gates:
+  primary_metrics: [adjacent_distance_rmse_to_3_8_angstrom, adjacent_distance_violation_fraction, locally_valid_residue_fraction, locally_valid_bond_fraction]
+  safeguard_metrics: [i_plus_2_distance_error_to_6_2, i_plus_3_distance_error_to_8_0, bond_angle_error_to_110_degrees, discontinuity_fraction, clash_fraction, radius_of_gyration, asphericity, contact_topology, chirality, end_to_end_distance, diversity]
+  material_tolerances_from_phase3i3_baseline:
+    evidence_file: configs/e007_phase3i4_baseline_tolerances_v1.json
+    evidence_sha256: 349221fd5c23b58a81374ded1ab7ba857b0c04d3c549feb36a47df11adf10d87
+  required_per_length_improvement: true
+  bootstrap_replicates: 2000
+  bootstrap_seed: 3916499
+runtime:
+  maximum_wall_seconds: 7200
+  calibration_max_wall_seconds: 5400
+  holdout_max_wall_seconds: 1800
+  estimate_basis: "Phase 3I.3 measured 30000 forwards/2400 seconds scaled by planned 55000 forwards, cold-start allowance, and metric publication margin"
+numerics:
+  allow_matmul_tf32: false
+  allow_cudnn_tf32: false
+  deterministic_algorithms: true
+  autocast_enabled: false
+  equivariance_policy: strict_o3_v1
+metrics:
+  adjacent_tolerance_angstrom: 0.5
+  clash_distance_angstrom: 3.0
+  discontinuity_distance_angstrom: 4.5
+  local_distance_offsets: [1, 2, 3]
+  contact_thresholds_angstrom: [6.0, 8.0, 10.0, 12.0]
+  long_range_minimum_separation: 24
+memory_mib: {rss: 4096, cuda_allocated: 6144, cuda_reserved: 7680}
+calibration_output_dir: reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_calibration_v1
+calibration_staging_dir: reports/experiments/E007_matrix_sequence_cogeneration/.phase3i4_calibration_v1.inprogress
+holdout_output_dir: reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_holdout_v1
+holdout_staging_dir: reports/experiments/E007_matrix_sequence_cogeneration/.phase3i4_holdout_v1.inprogress
+authorization:
+  authorizes_training: false
+  authorizes_real_data_training: false
+  authorizes_production_training: false
+  authorizes_additional_training: false
+  authorizes_joint_training: false
+  authorizes_sequence_conditioning: false
+  authorizes_downstream_generation: false
+  authorizes_sampler_correction: false
+  authorizes_pilot_execution: false
+  authorizes_phase3j: false
+  authorizes_larger_validation: false
+  optimizer_created: false
+  backward_performed: false
+  parameter_mutation: false

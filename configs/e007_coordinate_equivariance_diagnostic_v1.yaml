@@ -1,0 +1,29 @@
+version: e007_coordinate_equivariance_diagnostic_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_equivariance_diagnostic_v1
+seed: 7307
+timestep: 173
+absolute_tolerance: 0.00005
+relative_l2_tolerance: 0.00005
+coefficient_tolerance: 0.00005
+expected_parameter_count: 7586505
+loader_smoke:
+  directory: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_loader_smoke_v1
+  report_sha256: 6a7eb8af72b05a64a291ccf521964e1fc87e2dcc38fb802c2ae873ebd43fbe5f
+  protocol_sha256: 2aa55905d4686b8f7c071a145a2332dc4981598d464c4bf6d0c9deecb7ce3f6d
+  selected_panel_manifest_sha256: 2d06745398ba2accd432046042e4541a65cd19c6b97e834fa59a99cfd9809619
+failed_attempt:
+  log_path: logs/e007_coordinate_real_forward_backward_smoke_v1.log
+  log_sha256: 6d5494fbede9fc72cc0573eaeac8f2e8ed411114bdd2427a69beab5ed6ff54ea
+samples:
+  - {sample_id: 8jtn_A, split: train, dataset_index: 175079, length: 57, roles: [short_nonmultiple, original_failure]}
+  - {sample_id: 4kxr_B, split: train, dataset_index: 56499, length: 174, roles: [intermediate]}
+  - {sample_id: 8c69_A, split: train, dataset_index: 162357, length: 500, roles: [maximum_length]}
+conditions:
+  - {name: cpu_float64, device: cpu, dtype: float64, matmul_tf32: false, cudnn_tf32: false, deterministic: true, samples: [8jtn_A]}
+  - {name: cpu_float32, device: cpu, dtype: float32, matmul_tf32: false, cudnn_tf32: false, deterministic: true, samples: [8jtn_A]}
+  - {name: cuda_float64, device: cuda, dtype: float64, matmul_tf32: false, cudnn_tf32: false, deterministic: true, samples: [8jtn_A]}
+  - {name: cuda_float32_autocast_off, device: cuda, dtype: float32, matmul_tf32: false, cudnn_tf32: true, deterministic: false, samples: [8jtn_A, 4kxr_B, 8c69_A]}
+  - {name: cuda_float32_tf32_off, device: cuda, dtype: float32, matmul_tf32: false, cudnn_tf32: false, deterministic: false, samples: [8jtn_A, 4kxr_B, 8c69_A]}
+  - {name: cuda_float32_deterministic, device: cuda, dtype: float32, matmul_tf32: false, cudnn_tf32: false, deterministic: true, samples: [8jtn_A, 4kxr_B, 8c69_A]}
+transformations: [identity, axis_rotation, proper_rotation_1, proper_rotation_2, reflection]
+base_smoke_config: configs/e007_coordinate_real_loader_smoke_v1.yaml

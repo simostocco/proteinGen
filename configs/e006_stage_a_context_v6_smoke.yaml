@@ -1,0 +1,16 @@
+version: e006_stage_a_context_v6_synthetic_smoke_v1
+output_dir: reports/experiments/E006_rich_geometry_codesign/stage_a_context_v6_smoke_v1
+seeds: [6006, 6007, 6008]
+optimizer_updates_per_seed: 100
+learning_rate: 0.02
+mask_fraction: 0.30
+context_contrast_weight: 0.25
+context_contrast_margin_nats: 0.05
+minimum_unigram_improvement_nats: 0.50
+minimum_counterfactual_margin_nats: 0.10
+parity_audit:
+  path: reports/experiments/E006_rich_geometry_codesign/stage_a_v5_objective_parity_audit_v1/report.json
+  sha256: 9772572dd5a1ff115fc198277680ad7d57cd9ae829c4a496de3921f35ddab8bc
+authorization:
+  authorizes_training: false
+  authorizes_joint_training: false

@@ -1,0 +1,148 @@
+version: e007_coordinate_real_pilot_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1
+seed: 7361
+device: cuda
+successful_optimizer_updates: 1000
+evaluation_updates: [0, 100, 250, 500, 750, 1000]
+sampling_updates: [0, 250, 500, 750, 1000]
+checkpoint_updates: [250, 500, 750, 1000]
+diffusion_steps: 500
+prediction_parameterization: centered_coordinate_v
+coordinate_scale_angstrom: 12.22820347644835
+expected_parameter_count: 7586505
+expected_downsample_factor: 8
+
+numerics:
+  allow_matmul_tf32: false
+  allow_cudnn_tf32: false
+  deterministic_algorithms: true
+  autocast_enabled: false
+  equivariance_policy: strict_o3_v1
+
+optimizer:
+  source_contract: e007_phase3c_uniform_v_control
+  family: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  betas: [0.9, 0.999]
+  gradient_clip_norm: 1.0
+  scheduler: constant
+
+objective:
+  name: uniform_valid_coordinate_v_mse
+  timestep_sampling: uniform_discrete
+  timestep_weighting: none
+  auxiliary_losses: []
+sampling:
+  sampler: deterministic_ddim
+  reverse_steps: 500
+
+length_strata:
+  - {name: 20-64, minimum: 20, maximum: 64}
+  - {name: 65-128, minimum: 65, maximum: 128}
+  - {name: 129-256, minimum: 129, maximum: 256}
+  - {name: 257-384, minimum: 257, maximum: 384}
+  - {name: 385-500, minimum: 385, maximum: 500}
+batch_regimes:
+  - {maximum_length: 64, physical_batch_size: 4, accumulation_steps: 1}
+  - {maximum_length: 128, physical_batch_size: 2, accumulation_steps: 1}
+  - {maximum_length: 256, physical_batch_size: 1, accumulation_steps: 1}
+  - {maximum_length: 384, physical_batch_size: 1, accumulation_steps: 1}
+  - {maximum_length: 500, physical_batch_size: 1, accumulation_steps: 1}
+validation_samples_per_stratum: 16
+train_evaluation_samples_per_stratum: 8
+sampling_samples_per_stratum: 2
+sampling_seed: 7391
+
+timestep_evaluation_bins:
+  - {name: very_low_noise, timestep: 0}
+  - {name: low_noise, timestep: 125}
+  - {name: intermediate_noise, timestep: 250}
+  - {name: high_noise, timestep: 375}
+  - {name: very_high_noise, timestep: 499}
+
+memory:
+  smoke_peak_cuda_allocated_mib: 5050
+  smoke_peak_cuda_reserved_mib: 6910
+  maximum_cuda_allocated_mib: 6144
+  maximum_cuda_reserved_mib: 7680
+
+classification_thresholds:
+  minimum_validation_v_mse_relative_improvement: 0.05
+  minimum_high_noise_relative_improvement: 0.02
+  minimum_very_high_noise_relative_improvement: 0.02
+  maximum_length_stratum_relative_regression: 0.05
+  minimum_sampling_quality_relative_improvement: 0.02
+  maximum_adjacent_distance_error_angstrom: 1.0
+  maximum_radius_of_gyration_relative_error: 0.35
+  maximum_non_neighbor_clash_fraction: 0.10
+
+dataset:
+  root: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+  protocol_sha256: 653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b
+  schema_sha256: 8d522a7c198c8b35317be41bb8f55ef7a52de118f015c88a374e221844afd329
+  vocabulary_sha256: b6e87d56aa6023679c7249e04ba709576c26038fef4588e1b83763c395d4e1db
+  normalization_sha256: a54d862d756ca59a78503801a7ea1488ba5e701116db66545ce22e9af91b30fe
+  shard_inventory_sha256: a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0
+  required_schema_version: e006_rich_geometry_sidecar_v2
+  acceptance_policy: contiguous_single_chain_complete_calpha_v1
+  accepted_train_count: 230132
+
+clean_validation:
+  manifest_path: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/mmseqs/identity_30/clean_validation_manifest.parquet
+  manifest_sha256: a847fbf36497df7a015dd4cb3c683f47ec6c2d3217b1b6eaebdddcf7af0adb11
+  accepted_validation_count: 21583
+  identity_threshold: 0.30
+  coverage_threshold: 0.80
+
+phase3e_c1:
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/report.json
+  report_sha256: 5f789a5e8b1014282533641efdf9f928c6f75132522b4f5b203e5578f605fb07
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/protocol.json
+  protocol_sha256: 5a6ac6c08ac6385afe848c8671a060015d09521b047ee597854a09bd9e8ce176
+  artifact_inventory_path: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/artifact_inventory.json
+  artifact_inventory_sha256: 5495e0f7229daedd054c40722317f8fc059f0e7b43b57da70e6229fe760b0309
+
+phase3e_b:
+  config_path: configs/e007_coordinate_real_loader_smoke_v1.yaml
+  config_sha256: 03e4a7fa38c8cd74a84d03502e44a01113755d9c5dac18c770188489ae2f2a6e
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_forward_backward_smoke_v1/report.json
+  report_sha256: 97fea13e87774a35d6dc74401205e83c7a290ae6b5392ef521f828680d2720e8
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_forward_backward_smoke_v1/protocol.json
+  protocol_sha256: 9419f9f0ae6ce4e046a561511fe211f6e0bbb4d3d6a373b4a48a61f957557db4
+
+coordinate_normalization:
+  artifact_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1/normalization.json
+  artifact_sha256: 1be9ef05c82110861482eb46e61ef433045fa9678b9cdfffd921f0defebb03cd
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1/report.json
+  report_sha256: af86478741bc1a58ea0dfafdfd23ad6030eb00e406dbade0fa19b13c68ddc1e2
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1/protocol.json
+  protocol_sha256: 20104f54a671140b6e897caa1945c345cf5f95ff12fcd18c481a2188d153a546
+
+production_generator:
+  config_path: configs/e007_coordinate_generator_v1.yaml
+  config_sha256: a437bd8dad29b12bb67f0da97f9529e9abd82b19534d957afc5b2c6f23800b74
+
+model:
+  rbf_bins: 16
+  rbf_min_distance: 0.0
+  rbf_max_distance: 5.0
+  lifting_epsilon: 1.0e-6
+  base_channels: 24
+  channel_multipliers: [1, 2, 4, 8]
+  residual_blocks_per_level: 2
+  dropout: 0.0
+  group_norm_groups: 8
+  attention_heads: 4
+  use_bottleneck_attention: true
+  use_pre_bottleneck_axial_attention: true
+  axial_attention_heads: 4
+  axial_attention_dropout: 0.0
+  axial_attention_chunk_size: 128
+  use_pre_bottleneck_triangle_multiplication: true
+  triangle_hidden_channels: 32
+  triangle_dropout: 0.0
+  triangle_chunk_size: 16
+  time_embedding_dim: 256
+  length_embedding_dim: 256
+  max_length: 500

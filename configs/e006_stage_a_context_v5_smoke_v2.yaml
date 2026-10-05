@@ -1,0 +1,13 @@
+version: e006_stage_a_context_v5_synthetic_smoke_v2
+base_training_config: configs/e006_rich_geometry_sequence_pretrain_v5.yaml
+output_dir: reports/experiments/E006_rich_geometry_codesign/stage_a_context_v5_smoke_v2
+seeds: [6006, 6007, 6008]
+optimizer_updates_per_seed: 100
+learning_rate: 0.02
+context_contrast_weight: 0.25
+required_context_margin_nats: 0.10
+minimum_unigram_improvement_nats: 0.50
+padding_tolerance: 0.00001
+authorization:
+  authorizes_training: false
+  authorizes_joint_training: false

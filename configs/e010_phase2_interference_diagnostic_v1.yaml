@@ -1,0 +1,40 @@
+schema: e010_phase2_interference_diagnostic_v1
+authorizes_downstream: false
+output_dir: reports/experiments/E010_global_equivariant_expressivity/phase2_interference_diagnostic_v1
+source_config: configs/e010_global_equivariant_phase2_v2.yaml
+source_protocol: reports/experiments/E010_global_equivariant_expressivity/phase2_v1_prepared/protocol.json
+source_v2_manifest: reports/experiments/E010_global_equivariant_expressivity/phase2_v2_continuation/checkpoint_manifest.json
+source_checkpoint: reports/experiments/E010_global_equivariant_expressivity/phase2_v2_continuation/checkpoint_update_6400.pt
+source_v2_result: reports/experiments/E010_global_equivariant_expressivity/phase2_v2_continuation/continuation_result.json
+source_v2_adjudication: reports/experiments/E010_global_equivariant_expressivity/phase2_v2_continuation/continuation_adjudication.json
+source_model: src/protein_distance_diffusion/models/e010_global_equivariant.py
+seed: 8015
+selection:
+  namespace: e010_phase2_interference_diagnostic_v1
+  method: minimum sha256(namespace|sample_id) within each length stratum among the fixed training-only panel; metadata only
+  strata:
+    - {name: 20-64, min: 20, max: 64}
+    - {name: 65-128, min: 65, max: 128}
+    - {name: 129-256, min: 129, max: 256}
+    - {name: 257-384, min: 257, max: 384}
+    - {name: 385-500, min: 385, max: 500}
+arms:
+  objective: masked xyz coordinate MSE + 1e-5 masked residual L2
+  optimizer: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.0
+  gradient_clip_max_norm: 5.0
+  fresh_isolated_max_updates: 1000
+  checkpoint_specialization_max_updates: 200
+  early_success_aligned_rmse_angstrom: 0.10
+  quick_specialization_updates: 50
+  telemetry_updates: [0, 1, 10, 25, 50, 100, 200, 500, 1000]
+audit:
+  loss_component: masked_xyz_coordinate_mse_only
+  optimizer_steps: 0
+acceptance_context:
+  mean_aligned_rmse_angstrom_max: 0.20
+  median_aligned_rmse_angstrom_max: 0.15
+  maximum_aligned_rmse_angstrom_max: 0.50
+  error_vs_length_slope_angstrom_per_residue_max: 0.0005
+  non_finite_outputs: 0

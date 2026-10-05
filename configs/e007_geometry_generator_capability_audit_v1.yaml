@@ -1,0 +1,96 @@
+version: e007_geometry_generator_capability_audit_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/geometry_generator_capability_audit_v1
+
+selected_checkpoint:
+  path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+  sha256: eb445f0b39067b8a00a47db27f966a6db97dc0e30bf81078b34ea54f111c7d82
+  optimizer_update: 9000
+
+phase3h:
+  root: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1
+  report_sha256: aea9a2fb3aa671afa70470cb0f8819b8cd38c3dc05214c33ca42a55f224e6e35
+  protocol_sha256: 23f98eb29de9704e5058a2f79528e38f94398e436ea367fdc465fdfb952bd833
+  sample_metrics_sha256: 28215f0fec2777d3294e68b9206bf94eb90ea4f67978eec86bd125454efaf3de
+  artifact_inventory_sha256: b88f1990e3d4ec0d3ba1abe2cc16fab21edd93da3546601c5b91058a34af09d7
+  artifact_inventory_aggregate_sha256: 58daa2968a5f8cfe76c2e7072ce11d907d95e0c8f79a8dc2ee73e9f54be63710
+  block_inventory_sha256: 5ddace62d0e7f30787cc0b1d40df08f3c02085782f95abfda3cd6d2a819b63e6
+  checkpoint_pareto_sha256: c49e301148e4906373c9a27f8ea9bf5429ecbff6e1a67d5188d142a7f1084d5e
+  paired_comparisons_sha256: f8edce76fa92ac2bf752bd44679547777d649e1417c3403167c2544b184c2afa
+  expected_inventory_entries: 500
+  expected_step9000_samples: 160
+
+selection_record:
+  root: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_selection_v1
+  selected_checkpoint_sha256: a5bfb0de98cfbab93b9ff1ba61b4c10218ea12cca1ef005322e531ba89029ca5
+  protocol_sha256: a38db32c6b7de500818afea4084e0d945e48d8833c214968bd437dccfd045824
+
+dataset:
+  root: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+  protocol_sha256: 653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b
+  schema_sha256: 8d522a7c198c8b35317be41bb8f55ef7a52de118f015c88a374e221844afd329
+  vocabulary_sha256: b6e87d56aa6023679c7249e04ba709576c26038fef4588e1b83763c395d4e1db
+  normalization_sha256: a54d862d756ca59a78503801a7ea1488ba5e701116db66545ce22e9af91b30fe
+  shard_inventory_sha256: a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0
+  protected_input_relocations:
+    - recorded_root: /home/simostocco/proteinGen/data
+      verification_root: /home/simostocco/proteinGen.pre-relocation-20260922T064202Z/data
+
+clean_validation:
+  manifest_path: reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/mmseqs/identity_30/clean_validation_manifest.parquet
+  manifest_sha256: a847fbf36497df7a015dd4cb3c683f47ec6c2d3217b1b6eaebdddcf7af0adb11
+  expected_rows: 21583
+  identity_threshold: 0.30
+  coverage_threshold: 0.80
+
+panel:
+  lengths: [64, 128, 256, 384, 500]
+  samples_per_length: 32
+  selection_seed: 3901001
+  selection_version: e007_phase3i_exact_then_same_stratum_nearest_length_v2
+  maximum_reference_length_mismatch: 4
+  length_strata:
+    - {name: 1-64, minimum: 1, maximum: 64}
+    - {name: 65-128, minimum: 65, maximum: 128}
+    - {name: 129-256, minimum: 129, maximum: 256}
+    - {name: 257-384, minimum: 257, maximum: 384}
+    - {name: 385-500, minimum: 385, maximum: 500}
+  observed_exact_available_counts:
+    64: 54
+    128: 76
+    256: 40
+    384: 29
+    500: 4
+  observed_nearby_counts_within_maximum_mismatch:
+    64: {63: 52, 62: 58, 61: 58, 60: 52}
+    128: {127: 68, 126: 52, 125: 64, 124: 75}
+    256: {255: 46, 254: 48, 253: 41, 252: 36}
+    384: {383: 25, 382: 36, 381: 30, 380: 36}
+    500: {499: 1, 498: 5, 497: 15, 496: 11}
+
+metrics:
+  local_distance_offsets: [1, 2, 3]
+  contact_thresholds_angstrom: [6.0, 8.0, 10.0, 12.0]
+  long_range_minimum_separation: 24
+  clash_distance_angstrom: 3.0
+  discontinuity_distance_angstrom: 4.5
+  near_duplicate_rmsd_angstrom: 0.25
+  descriptor_cluster_distance: 1.0
+
+aggregation:
+  bootstrap_replicates: 2000
+  bootstrap_seed: 3902001
+  confidence_level: 0.95
+  maximum_failure_examples: 20
+  parquet_compression: zstd
+
+prospective_phase3j:
+  selected_checkpoint_path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+  selected_checkpoint_sha256: eb445f0b39067b8a00a47db27f966a6db97dc0e30bf81078b34ea54f111c7d82
+  lengths: [64, 128, 256, 384, 500]
+  samples_per_length: 100
+  total_samples: 500
+  seed_namespace: e007_phase3j_prospective_sampling_v1
+  seeds_independent_of_prior_e007_experiments: true
+  phase3i_metrics_and_thresholds_frozen: true
+  original_all_record_adjacent_error_limit_angstrom: 1.0
+  checkpoint_reselection_permitted: false

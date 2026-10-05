@@ -1,0 +1,66 @@
+version: e007_coordinate_checkpoint_selection_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_selection_v1
+classification: selected_research_checkpoint_with_documented_tail_limitation
+selected_checkpoint:
+  optimizer_update: 9000
+  path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+  sha256: eb445f0b39067b8a00a47db27f966a6db97dc0e30bf81078b34ea54f111c7d82
+  metadata_path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.json
+  metadata_sha256: bdc0c9f74766f3e7103847950e39c2e708c76863cdbc950e93ccc2cee16d5234
+  criterion: minimum_validation_coordinate_v_mse
+  validation_coordinate_v_mse: 0.4709909982886165
+phase3h:
+  config_path: configs/e007_coordinate_checkpoint_sampling_replication_v1.yaml
+  config_sha256: b2cd42f52e674cfce23d0731438c13b534f8c1b9f483e5d10723e591855a7cb6
+  source_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1
+  report_sha256: aea9a2fb3aa671afa70470cb0f8819b8cd38c3dc05214c33ca42a55f224e6e35
+  protocol_sha256: 23f98eb29de9704e5058a2f79528e38f94398e436ea367fdc465fdfb952bd833
+  sample_metrics_sha256: 28215f0fec2777d3294e68b9206bf94eb90ea4f67978eec86bd125454efaf3de
+  paired_comparisons_sha256: f8edce76fa92ac2bf752bd44679547777d649e1417c3403167c2544b184c2afa
+  checkpoint_pareto_sha256: c49e301148e4906373c9a27f8ea9bf5429ecbff6e1a67d5188d142a7f1084d5e
+  artifact_inventory_sha256: b88f1990e3d4ec0d3ba1abe2cc16fab21edd93da3546601c5b91058a34af09d7
+  artifact_inventory_aggregate_sha256: 58daa2968a5f8cfe76c2e7072ce11d907d95e0c8f79a8dc2ee73e9f54be63710
+  artifact_inventory_entry_count: 500
+continuation:
+  config_path: configs/e007_coordinate_real_continuation_to_10000_v1.yaml
+  config_sha256: 54c01d0690611ab14e605a11a8211097135248b702916dd9f93fc34c49c79cb0
+  source_dir: outputs/e007_coordinate_real_continuation_to_10000_v1
+  report_sha256: 71042c9d4b0c5e600b344bbc664ea067446cfd77153e43b96f657a1cf66a71ee
+  protocol_sha256: f9219f2092c2ceb3976cd68f6066586b78df79591fba2f1f8a560f3938d3672c
+phase3f:
+  source_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1
+  config_path: configs/e007_coordinate_real_pilot_v1.yaml
+  config_sha256: f2d66f8b8aef9470251edc7213f0ad1e7063f4939f0e97a051e8476fac1d3f90
+  report_sha256: 5a6411bb5c7fb9249d78bbfa8e55c4e1f6a82a01e16adb82100f02f147a9084c
+  protocol_sha256: 985bcd10dc8aeda8b0cfa2fdd1ec3613ba9d9bc820e2395d51e6479087546ac0
+phase3g:
+  source_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_sampling_replication_v1
+  config_path: configs/e007_coordinate_sampling_replication_v1.yaml
+  config_sha256: b7ea941b7bac4b74978b83bb24a65f471369b4dccfdd128a50ab5e63976b1d23
+  report_sha256: 170e8a9c6a0efb9f575bdb1d0afe560434e272c7944b0df34dfc88c7cf3b1844
+  protocol_sha256: edc8c9befccbe3b93df46d916b234507cf2a1fe3ac2a705c465922d31da94eb9
+  artifact_inventory_sha256: d3892748ea9dcbddbb974694a84370bda894e0a0df4cdd1dcaf96e65c012727c
+expected_evidence:
+  total_samples: 160
+  pass_count: 158
+  failure_count: 2
+  original_adjacent_error_limit_angstrom: 1.0
+  per_length_pass_counts:
+    64: 31
+    128: 32
+    256: 32
+    384: 31
+    500: 32
+  failures:
+    - length: 384
+      sample_index: 7
+      seed: 8600008
+      adjacent_reference_error_angstrom: 1.0706711252252576
+    - length: 64
+      sample_index: 18
+      seed: 8300019
+      adjacent_reference_error_angstrom: 1.0460878764214092
+      radius_of_gyration_relative_reference_error: 0.327660697796258
+      contact_density_6a_reference_error: 0.027630942050711538
+      contact_density_8a_reference_error: 0.05260726294915584
+      contact_density_10a_reference_error: 0.10212983814785712

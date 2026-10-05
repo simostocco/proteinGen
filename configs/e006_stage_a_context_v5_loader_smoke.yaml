@@ -1,0 +1,14 @@
+version: e006_stage_a_context_v5_loader_smoke_v1
+output_dir: reports/experiments/E006_rich_geometry_codesign/stage_a_context_v5_loader_smoke_v1
+seed: 6006
+base_training_config: configs/e006_rich_geometry_sequence_pretrain_v5.yaml
+base_training_config_sha256: 9b37c4a0278630ae1aece35ae3995f7a5b8f8d6df38ca1d2732f5e7a0da80abe
+checkpoint_path: outputs/e006_phase3_sequence_pretrain_v4_continuation/checkpoints/best.pt
+checkpoint_sha256: eb20183cc73f14a3099136b9f85a0789c26f0093f92ff772bd911c4dbb1ee653
+train_sample_count: 8
+validation_sample_count: 8
+maximum_length: 128
+maximum_rss_mib: 4096
+authorization:
+  authorizes_training: false
+  authorizes_joint_training: false

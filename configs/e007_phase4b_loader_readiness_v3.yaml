@@ -1,0 +1,65 @@
+version: e007_phase4b_loader_readiness_v3
+artifact_lock:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_artifacts_v1
+  artifact_lock_sha256: 6c2b514b58d69a8fe3be550925a91d5f8e7003775a69b81dbb902d577e048881
+  source_inventory_sha256: 1fa5c65390756941093522f2cacdce4e6a3590280327d3a978c1b97eccb427ca
+  source_inventory_aggregate_sha256: ece27d97cf156437c69ca4dc32d4dd74ae5f810b30827b88120afd42efdb0537
+  acquisition_configuration_sha256: 7fc0b05afdb863c2c92c0c51c7300b2b2a47a407c4d58cff3af5b83a2b91d722
+source_environment_contract:
+  path: environment/e007_phase4b_environment_lock.yaml
+  sha256: f888925ab36ad9c6784b837fad22566644db1febf8d39c6818da537906e7a12f
+  classification: metadata_contract_not_installable_environment_file
+installable_environment:
+  path: environment/e007_phase4b_environment.yaml
+  sha256: 64d5dbc3b7a595869e092bc86705e4159b445c510105888912f30221571a03b6
+  name: proteingen-e007-phase4b
+  fingerprint: 4c3c8496b4798a59ded9299279fd5417db57f6cd50e1f85750086c3a3fea2ba8
+  transformers_version: 4.56.2
+  cuda_build: "13.0"
+offline_contract:
+  HF_HUB_OFFLINE: "1"
+  TRANSFORMERS_OFFLINE: "1"
+  socket_access: forbidden
+  local_files_only: true
+  trust_remote_code: false
+  mutable_remote_dependencies: 0
+cpu_diagnostic:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_cpu_diagnostic_v1
+  report_sha256: 4dd71e39d85ae17e5fbe3a5b05c5484046c89cf9a7fdc91b6b68057fd3be6e4f
+  protocol_sha256: b19e540ff1c90571943fa027675e6ed2fe444ad4d82bb6bd5f1001c51f1c4e96
+  esm_result_sha256: 6983c19cf0660a00f790663c9f4a484a75d64cf1ffba6bfa712fc823bdaf624f
+  progen2_result_sha256: 543c3b15e4734c8d4c1d5793ed0a578b19d56c596b9e0e54d4457a305cb5b944
+loaders:
+  esm2_150m:
+    status: reviewed_ready
+    implementation: transformers_native_esm_measured_accounting_v3
+    provenance: facebookresearch/esm@2b369911bb5b4b0dda914521b9475cad1656b2ac
+    normalization_version: esm2_rotary_tied_safetensors_normalization_v1
+    parameter_definition: unique_parameter_object_elements_remove_duplicate_true
+    unique_parameter_elements: 148140154
+    named_parameter_elements_including_tied_alias: 148161274
+    raw_checkpoint_elements: 148798300
+    ignored_compatibility_elements: 657666
+    retained_serialized_buffer_elements: 480
+    tied_alias_elements: 21120
+    project_owned_sources:
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders_v3.py
+        sha256: 7942db56cb7f5ab8214c8f0f5182a21080ede508553ea4994cb7cb3df5f4adee
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders_v2.py
+        sha256: ad2219764c27540fee79c3e720ec00683bc8f4d73c1a26aebd639d880c9ace8a
+  progen2_151m:
+    status: reviewed_ready
+    implementation: reviewed_project_owned_progen2_framed_v2
+    provenance: enijkamp/progen2@9b4d4fb5ec19c9e55c4bb06305c0e613e46c1cf5
+    framing_version: progen2_literal_1_prefix_2_suffix_v1
+    biological_length_500: 500
+    framed_token_length_500: 502
+    maximum_biological_length: 1022
+    control_tokens_are_amino_acids: false
+    project_owned_sources:
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders_v3.py
+        sha256: 7942db56cb7f5ab8214c8f0f5182a21080ede508553ea4994cb7cb3df5f4adee
+      - path: src/protein_distance_diffusion/evaluation/e007_pretrained_loaders_v2.py
+        sha256: ad2219764c27540fee79c3e720ec00683bc8f4d73c1a26aebd639d880c9ace8a
+      - path: src/protein_distance_diffusion/models/e007_progen2.py
+        sha256: f28bca6bc7565bb3d9c9a8f818a633f1b3b9a00f26752ec07cb0c96b74925de2

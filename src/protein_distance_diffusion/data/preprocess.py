@@ -47,6 +47,14 @@ class StructureRejection:
         }
 
 
+class SamplePublicationError(ValueError):
+    """A source sample cannot safely be published; retain an auditable reason."""
+
+    def __init__(self, reason: str, message: str) -> None:
+        super().__init__(message)
+        self.reason = reason
+
+
 def compute_distance_matrix(ca_coordinates: np.ndarray) -> np.ndarray:
     """Return a symmetric C-alpha distance matrix in Angstrom."""
     coords = np.asarray(ca_coordinates, dtype=np.float32)
@@ -80,7 +88,24 @@ def save_processed_sample(sample: ProteinSample, samples_dir: str | Path) -> dic
     sample_path = samples_path / f"{sample.sample_id}.npz"
     coords = np.asarray(sample.ca_coordinates, dtype=np.float32)
     if coords.shape != (len(sample.sequence), 3):
-        raise ValueError("sample coordinates must have shape (len(sequence), 3)")
+        raise SamplePublicationError("coordinate_length_mismatch", "coordinates must have shape (len(sequence), 3)")
+    if not len(sample.sequence) or len(sample.residue_ids) != len(sample.sequence):
+        raise SamplePublicationError(
+            "residue_count_mismatch", "sequence and residue IDs must have equal nonzero length"
+        )
+    if not np.isfinite(coords).all():
+        raise SamplePublicationError("nonfinite_coordinates", "sample coordinates must be finite")
+    # On case-insensitive filesystems, chains M and m can resolve to the same
+    # destination. Inspect existing identity before atomic replacement so a
+    # distinct chain is never silently overwritten. Preserve the existing file.
+    if sample_path.exists():
+        with np.load(sample_path, allow_pickle=False) as existing:
+            stored_id = str(existing["sample_id"].item())
+        if stored_id != sample.sample_id:
+            raise SamplePublicationError(
+                "publication_identity_collision",
+                f"destination contains {stored_id!r}, cannot publish {sample.sample_id!r}",
+            )
     distance = compute_distance_matrix(coords)
     residue_mask = np.ones(len(sample.sequence), dtype=np.bool_)
     metadata = dict(sample.metadata)

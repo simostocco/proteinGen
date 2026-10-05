@@ -1,0 +1,28 @@
+version: e006_stage_a_context_v6_correction_pilot_v1
+base_training_config: configs/e006_rich_geometry_sequence_pretrain_v6.yaml
+base_training_config_sha256: c5552b6bf2555a14e1fcddbcda03acba63b80d485c46b30498a9a6173872788e
+output_dir: reports/experiments/E006_rich_geometry_codesign/stage_a_context_v6_comparison_pilot_v1
+seed: 6006
+device: cuda
+sample_count: 512
+validation_sample_count: 256
+optimizer_updates: 250
+physical_batch_size: 32
+evaluation_batch_size: 32
+maximum_length: 128
+maximum_rss_mib: 6144
+maximum_cuda_allocated_mib: 7168
+maximum_cuda_reserved_mib: 8192
+parity_audit:
+  path: reports/experiments/E006_rich_geometry_codesign/stage_a_v5_objective_parity_audit_v1/report.json
+  sha256: 9772572dd5a1ff115fc198277680ad7d57cd9ae829c4a496de3921f35ddab8bc
+synthetic_smoke:
+  path: reports/experiments/E006_rich_geometry_codesign/stage_a_context_v6_smoke_v1/report.json
+  sha256: 4613d9958b68d46746500bb2541a63f94731d8495c673edad821e21dd3d6736e
+initialization:
+  initialization: checkpoint_weights_only
+  checkpoint_path: outputs/e006_phase3_sequence_pretrain_v4_continuation/checkpoints/best.pt
+  checkpoint_sha256: eb20183cc73f14a3099136b9f85a0789c26f0093f92ff772bd911c4dbb1ee653
+authorization:
+  authorizes_training: false
+  authorizes_joint_training: false

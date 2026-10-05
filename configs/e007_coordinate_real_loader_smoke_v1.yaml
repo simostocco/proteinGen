@@ -1,0 +1,99 @@
+version: e007_coordinate_real_loader_smoke_v1
+loader_output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_loader_smoke_v1
+forward_backward_output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_forward_backward_smoke_v1
+completed_loader_output:
+  report_sha256: 6a7eb8af72b05a64a291ccf521964e1fc87e2dcc38fb802c2ae873ebd43fbe5f
+  protocol_sha256: 2aa55905d4686b8f7c071a145a2332dc4981598d464c4bf6d0c9deecb7ce3f6d
+  heartbeat_sha256: 2cee2d705d22926af1fab5129c15bf84731a4953b581988e883a4bac99c80074
+  selected_panel_manifest_sha256: 2d06745398ba2accd432046042e4541a65cd19c6b97e834fa59a99cfd9809619
+  detailed_metrics_sha256: f62d6628354f2dcac01d053215040b8fc70f5b49c4085e781f3217dd88411c52
+seed: 7307
+device: cuda
+diffusion_steps: 500
+coordinate_scale_angstrom: 12.22820347644835
+samples_per_split_stratum: 4
+selection_version: e007_real_coordinate_stratified_hash_v1
+length_strata:
+  - {name: 20-64, minimum: 20, maximum: 64}
+  - {name: 65-128, minimum: 65, maximum: 128}
+  - {name: 129-256, minimum: 129, maximum: 256}
+  - {name: 257-384, minimum: 257, maximum: 384}
+  - {name: 385-500, minimum: 385, maximum: 500}
+batch_regimes:
+  - {name: short, maximum_length: 64, physical_batch_size: 4}
+  - {name: medium, maximum_length: 128, physical_batch_size: 2}
+  - {name: long, maximum_length: 256, physical_batch_size: 1}
+  - {name: very_long, maximum_length: 384, physical_batch_size: 1}
+  - {name: maximum, maximum_length: 500, physical_batch_size: 1}
+gradient_clip_norm: 1.0
+equivariance_atol: 0.00005
+equivariance_relative_l2_tolerance: 0.00005
+equivariance_coefficient_tolerance: 0.00005
+padding_atol: 0.0
+distance_geometry_tolerance: 0.00005
+expected_parameter_count: 7586505
+expected_downsample_factor: 8
+mixed_precision: false
+numerics:
+  allow_matmul_tf32: false
+  allow_cudnn_tf32: false
+  deterministic_algorithms: true
+  autocast_enabled: false
+  equivariance_policy: strict_o3_v1
+
+dataset:
+  root: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+  protocol_sha256: 653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b
+  schema_sha256: 8d522a7c198c8b35317be41bb8f55ef7a52de118f015c88a374e221844afd329
+  vocabulary_sha256: b6e87d56aa6023679c7249e04ba709576c26038fef4588e1b83763c395d4e1db
+  normalization_sha256: a54d862d756ca59a78503801a7ea1488ba5e701116db66545ce22e9af91b30fe
+  shard_inventory_sha256: a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0
+  required_schema_version: e006_rich_geometry_sidecar_v2
+  policy: contiguous_single_chain_complete_calpha_v1
+
+phase3e_a:
+  directory: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1
+  normalization_sha256: 1be9ef05c82110861482eb46e61ef433045fa9678b9cdfffd921f0defebb03cd
+  report_sha256: af86478741bc1a58ea0dfafdfd23ad6030eb00e406dbade0fa19b13c68ddc1e2
+  protocol_sha256: 20104f54a671140b6e897caa1945c345cf5f95ff12fcd18c481a2188d153a546
+  length_statistics_sha256: 7454535acc9830672edb97da8328bdfaf07f0585a831c3a2a20d8729176e6a31
+  per_sample_audit_sha256: d05690ed7041d131d5441b1a344b908884330672ca85069754ba11029608d7a7
+  required_version: e007_global_rms_coordinate_radius_v1
+
+phase3d:
+  config_path: configs/e007_coordinate_capacity_pilot_v1.yaml
+  config_sha256: e18f09732439fd66ff8e4d767361578e61b97f5d6e3e4fbbde143f2258aa332f
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_capacity_pilot_v1/report.json
+  report_sha256: 4279747f2e2ec482fb344e85a490a91a7e60818cfe255f5c1a77e21fcdb29d65
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_capacity_pilot_v1/protocol.json
+  protocol_sha256: 00eb287c364a2b38aa624a1b0b0dc7f3986cc5efba208f10b69b6f43d436fa9f
+
+coordinate_model_contract:
+  path: reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json
+  sha256: 2768f037cd12e00f399dd8b4773ddb926b25e2cf72f0d437cb972914fc9b996d
+
+group_identifier_columns: [cluster_id, split_group_id, sequence_hash]
+
+model:
+  rbf_bins: 16
+  rbf_min_distance: 0.0
+  rbf_max_distance: 5.0
+  lifting_epsilon: 1.0e-6
+  base_channels: 24
+  channel_multipliers: [1, 2, 4, 8]
+  residual_blocks_per_level: 2
+  dropout: 0.0
+  group_norm_groups: 8
+  attention_heads: 4
+  use_bottleneck_attention: true
+  use_pre_bottleneck_axial_attention: true
+  axial_attention_heads: 4
+  axial_attention_dropout: 0.0
+  axial_attention_chunk_size: 128
+  use_pre_bottleneck_triangle_multiplication: true
+  triangle_hidden_channels: 32
+  triangle_dropout: 0.0
+  triangle_chunk_size: 16
+  time_embedding_dim: 256
+  length_embedding_dim: 256
+  max_length: 500

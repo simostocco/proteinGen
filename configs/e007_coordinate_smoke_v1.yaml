@@ -1,0 +1,72 @@
+version: e007_coordinate_synthetic_polymer_smoke_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v1
+device: cuda
+seeds: [7301, 7302, 7303]
+lengths: [16, 24, 31, 48]
+families: [helix, hairpin, open_ring, compact_smooth]
+train_replicates_per_family_length: 2
+heldout_replicates_per_family_length: 1
+train_parameter_seed_offset: 100000
+heldout_parameter_seed_offset: 900000
+bond_length_angstrom: 3.8
+coordinate_scale_angstrom: 10.0
+
+optimizer_updates_per_seed: 300
+evaluation_updates: [0, 100, 200, 300]
+learning_rate: 0.0003
+gradient_clip_norm: 1.0
+diffusion_steps: 32
+batch_size: 1
+sampling_lengths: [16, 31, 48]
+sampling_seed: 7319
+metrics_frequency: 10
+
+phase3a:
+  generator_config_path: configs/e007_coordinate_generator_v1.yaml
+  generator_config_sha256: a437bd8dad29b12bb67f0da97f9529e9abd82b19534d957afc5b2c6f23800b74
+  architecture_contract_path: reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json
+  architecture_contract_sha256: 2768f037cd12e00f399dd8b4773ddb926b25e2cf72f0d437cb972914fc9b996d
+  e004_checkpoint_path: outputs/recovered_full_b2_v_axial_edm_triangle_e004/checkpoints/final_validation_selected.pt
+  e004_checkpoint_sha256: 59db27a3dbecbc199cb20065e1263ad0cec12b3553cca1a263429f890b38ea86
+
+smoke_model:
+  rbf_bins: 8
+  rbf_min_distance: 0.0
+  rbf_max_distance: 5.0
+  lifting_epsilon: 1.0e-6
+  base_channels: 8
+  channel_multipliers: [1, 2, 4]
+  residual_blocks_per_level: 2
+  dropout: 0.0
+  group_norm_groups: 4
+  attention_heads: 2
+  use_bottleneck_attention: true
+  use_pre_bottleneck_axial_attention: true
+  axial_attention_heads: 2
+  axial_attention_dropout: 0.0
+  axial_attention_chunk_size: 32
+  use_pre_bottleneck_triangle_multiplication: true
+  triangle_hidden_channels: 8
+  triangle_dropout: 0.0
+  triangle_chunk_size: 4
+  time_embedding_dim: 64
+  length_embedding_dim: 64
+  max_length: 500
+
+loss:
+  adjacent_weight: 0.02
+  stratified_pair_weight: 0.02
+  soft_contact_weight: 0.01
+  steric_clash_weight: 0.005
+  adjacent_huber_beta_angstrom: 0.25
+  steric_clash_distance_angstrom: 3.0
+
+decision_thresholds:
+  minimum_train_v_mse_relative_improvement: 0.25
+  minimum_heldout_v_mse_relative_improvement_per_seed: 0.10
+  minimum_heldout_pair_rmse_relative_improvement_per_seed: 0.05
+  minimum_sampling_adjacent_distribution_improvement: 0.01
+  minimum_sampling_radius_distribution_improvement: 0.01
+  equivariance_atol: 0.00005
+  euclidean_scaled_tolerance: 0.00005
+  maximum_optimizer_updates_per_seed: 300

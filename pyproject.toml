@@ -29,10 +29,11 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["external_models"]
 target-version = "py311"
 
 [tool.ruff.lint]

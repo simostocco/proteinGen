@@ -1,0 +1,48 @@
+version: e007_coordinate_real_continuation_to_10000_v1
+output_dir: outputs/e007_coordinate_real_continuation_to_10000_v1
+device: cuda
+
+source:
+  config_path: configs/e007_coordinate_real_pilot_v1.yaml
+  config_sha256: f2d66f8b8aef9470251edc7213f0ad1e7063f4939f0e97a051e8476fac1d3f90
+  output_dir: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1
+  report_sha256: 5a6411bb5c7fb9249d78bbfa8e55c4e1f6a82a01e16adb82100f02f147a9084c
+  protocol_sha256: 985bcd10dc8aeda8b0cfa2fdd1ec3613ba9d9bc820e2395d51e6479087546ac0
+  panel_manifest_sha256: bdc02322a0144feb3c09b40fd8fb472c0316c1dc99b737fe275a1b5cc1a9d3b9
+  evaluations_sha256: 05de0f7feca618fd100b4b8d396f100434592592efd1936cc6b68fa370092535
+  checkpoint_path: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/checkpoints/step-1000.pt
+  checkpoint_sha256: c67788d4df5b3a0c155e030dc8f231f26765a3a727016615ad86ef9ac6cdf522
+  start_global_step: 1000
+  samples_processed: 1800
+  valid_residues_processed: 263579
+
+stop_global_step: 10000
+additional_successful_updates: 9000
+recovery_checkpoint_frequency: 500
+immutable_checkpoint_frequency: 1000
+validation_frequency: 1000
+sampling_monitor_updates: [2500, 5000, 7500, 10000]
+sampling_monitor:
+  lengths: [64, 128, 256, 384, 500]
+  samples_per_length: 2
+  seed: 107391
+  descriptive_only: true
+
+memory:
+  maximum_cuda_allocated_mib: 6144
+  maximum_cuda_reserved_mib: 7680
+
+failure_policy:
+  maximum_failed_updates: 3
+  stop_on_nonfinite_loss_or_gradients: true
+  stop_on_protected_input_mutation: true
+  stop_on_backend_violation: true
+  sampling_quality_is_not_an_automatic_stop: true
+
+mandatory_scientific_review_at_global_step: 10000
+authorization:
+  authorizes_training: false
+  authorizes_real_data_training: false
+  authorizes_production_training: false
+  authorizes_sequence_conditioning: false
+  authorizes_joint_training: false

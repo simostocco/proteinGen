@@ -1,0 +1,106 @@
+schema: e010_phase4a_multicorruption_v1
+experiment_name: e010_fresh_seed_multicorruption_generalization
+authorizes_downstream: false
+global_seed: 41043
+output_dir: reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v1
+plan:
+  source_phase4a_v2: reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v2
+  source_phase4a_v3: reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3
+  candidate_pool_from_v2_plan: true
+  ranking: sha256(namespace|train|sample_id), then sample_id
+  namespace: e010_phase4a_multicorruption_v1
+  training_counts:
+    20-64: 3697
+    65-128: 3697
+    129-256: 3697
+    257-384: 3696
+    385-500: 1597
+  development_panel: reuse_phase4a_v2_320_identity_panel_exactly
+  identity_allocation_description: capped identity allocation with exactly length-balanced training-example exposure
+  training_identity_count: 16384
+  development_identity_count: 320
+strata:
+  - {name: 20-64, min: 20, max: 64, training_identities: 3697, examples: 19656, extra_corruption_identities: 1171}
+  - {name: 65-128, min: 65, max: 128, training_identities: 3697, examples: 19656, extra_corruption_identities: 1171}
+  - {name: 129-256, min: 129, max: 256, training_identities: 3697, examples: 19656, extra_corruption_identities: 1171}
+  - {name: 257-384, min: 257, max: 384, training_identities: 3696, examples: 19656, extra_corruption_identities: 1176}
+  - {name: 385-500, min: 385, max: 500, training_identities: 1597, examples: 19656, extra_corruption_identities: 492}
+corruption:
+  generator: e009_centered_gaussian_plus_centered_cumulative_drift
+  global_seed: 41043
+  seed_derivation: first_63_bits_of_sha256(schema|global_seed|role|sample_id|corruption_index)
+  training_corruption_multiplicities:
+    ordinary: 5
+    extra: 6
+    capped_stratum_ordinary: 12
+    capped_stratum_extra: 13
+  extra_corruption_selection: hash-ranked sample_id within stratum
+  on_demand: true
+  tensor_archives_written: false
+  primary_development: original_phase4a_fixed_corruption_baseline
+  secondary_development_corruption_indices: [1, 2]
+  secondary_panels_affect_selection_or_gates: false
+model:
+  architecture: GlobalEquivariantResidual
+  variant: Large
+  width: 416
+  layers: 6
+  heads: 8
+  vector_channels: 64
+  max_length: 500
+  sigma_distance: 2.0
+  parameter_count: 12844352
+  initialization: fresh deterministic initialization; never load Phase 4A weights
+  seed: 41043
+training:
+  total_examples: 98280
+  optimizer_updates: 1092
+  optimizer: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.0
+  scheduler: none
+  scaler: disabled_but_exactly_snapshotted
+  gradient_clip_max_norm: 5.0
+  microbatch_per_stratum: 18
+  stratum_count_per_update: 5
+  effective_batch_size: 90
+  objective: mean over structures of masked xyz coordinate MSE plus 1e-5 masked Cartesian residual L2
+  coordinate_only: true
+  length_balanced_batches: true
+  evaluation_boundaries:
+    - {updates: 364, examples: 32760, per_stratum_examples: 6552}
+    - {updates: 728, examples: 65520, per_stratum_examples: 13104}
+    - {updates: 1092, examples: 98280, per_stratum_examples: 19656}
+  checkpoint_selection: development mean aligned RMSE only; earliest boundary wins exact ties
+acceptance:
+  overall_development_rmse_reduction_fraction_min: 0.30
+  every_stratum_rmse_reduction_fraction_min: 0.20
+  no_stratum_mean_rmse_worsening: true
+  error_vs_length_slope_not_increased: true
+  finite_outputs: true
+  chirality_inversion_rate_not_increased: true
+  mean_i_plus_1_i_plus_2_i_plus_3_distance_rmse_reduction_fraction_min: 0.20
+  coordinate_or_diversity_collapse: false
+statistics:
+  bootstrap_unit: development_identity
+  bootstrap_replicates: 10000
+  seed: 41044
+  confidence_level: 0.95
+restrictions:
+  fixed_bonds: false
+  geometry_priors: false
+  geometry_losses: false
+  sequence_features: false
+  prospective_accessed: false
+  phase4b_prepared: false
+  downstream_authorized: false
+  authorizes_downstream: false
+  supervised_training_executed: false
+lifecycle:
+  staging_path: phase4a_multicorruption_v1.staging
+  final_path: phase4a_multicorruption_v1.final
+  review_path: phase4a_multicorruption_v1_scientific_review_v1
+  journal: journal.jsonl
+  checkpoint_each_optimizer_update: true
+  atomic_boundary_commits: true
+  json_first_reporting: true

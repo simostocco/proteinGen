@@ -1,0 +1,90 @@
+experiment: E005_sequence_geometry_codesign_bounded_pilot
+architecture_version: e005_sequence_geometry_codesign_v1
+seed: 5005
+device: cuda
+output_dir: outputs/e005_sequence_geometry_codesign_bounded_pilot
+mixed_precision: true
+amp_dtype: float16
+
+dataset:
+  directory: /mnt/d/Users/Simone Stocco/proteinGen_audits/sequence_geometry_pairing_v1
+  schema_version: sequence_geometry_pairing_v1
+  train_dataset: eligible_train.parquet
+  validation_dataset: eligible_validation.parquet
+  immutable: true
+
+normalization_file: data/full/processed_recovery/normalization_train.json
+masked_token_probability: 0.15
+learning_rate: 0.0001
+
+conditioning:
+  dropout_probability: 0.10
+
+diffusion:
+  steps: 500
+  prediction_parameterization: v
+
+loss:
+  sequence_weight: 1.0
+  geometry_weight: 1.0
+  consistency_weight: 0.01
+
+model:
+  vocabulary_size: 22
+  pad_token_id: 0
+  mask_token_id: 1
+  sequence_hidden_dim: 128
+  sequence_layers: 4
+  sequence_heads: 8
+  sequence_feedforward_dim: 512
+  sequence_dropout: 0.1
+  max_length: 500
+  geometry_model:
+    input_channels: 3
+    output_channels: 1
+    base_channels: 24
+    channel_multipliers: [1, 2, 4, 8]
+    residual_blocks_per_level: 2
+    dropout: 0.0
+    group_norm_groups: 8
+    attention_heads: 4
+    use_bottleneck_attention: true
+    use_pre_bottleneck_axial_attention: true
+    axial_attention_heads: 4
+    axial_attention_dropout: 0.0
+    axial_attention_chunk_size: 128
+    use_pre_bottleneck_triangle_multiplication: true
+    triangle_hidden_channels: 32
+    triangle_dropout: 0.0
+    triangle_chunk_size: 16
+    time_embedding_dim: 256
+    length_embedding_dim: 256
+    max_length: 500
+
+pilot:
+  physical_batch_size: 1
+  activation_checkpointing: true
+  max_rss_mib: 4096
+  max_cuda_memory_mib: 8192
+  checkpoint_frequency: 10
+  maximum_consecutive_skipped_updates: 8
+  maximum_selected_rows: 2048
+  validation_panel_size: 48
+  curriculum:
+    - maximum_length: 128
+      optimizer_updates: 200
+    - maximum_length: 256
+      optimizer_updates: 200
+    - maximum_length: 500
+      optimizer_updates: 100
+  pair_budget_accumulation:
+    - maximum_padded_length: 64
+      microbatches: 16
+    - maximum_padded_length: 128
+      microbatches: 4
+    - maximum_padded_length: 256
+      microbatches: 1
+    - maximum_padded_length: 384
+      microbatches: 1
+    - maximum_padded_length: 500
+      microbatches: 1

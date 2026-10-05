@@ -1,0 +1,24 @@
+version: e007_phase4b_environment_lock_v1
+strategy: single_isolated_environment_with_builtin_transformers_esm_and_progen
+environment_name: proteingen-e007-phase4b
+base_project_environment_mutated: false
+python: "3.12"
+packages:
+  torch: 2.13.0
+  transformers: 4.56.2
+  tokenizers: 0.22.0
+  safetensors: 0.6.2
+  huggingface-hub: 0.34.4
+  accelerate: 1.10.1
+  numpy: 2.3.3
+  pyyaml: 6.0.2
+constraints:
+  cuda_build: "13.0"
+  trust_remote_code: false
+  package_installation_during_plan: false
+  project_torch_downgrade_forbidden: true
+  downloaded_repository_code_execution_forbidden: true
+notes:
+  - ESM-2 and ProGen are loaded through reviewed built-in Transformers implementations.
+  - ProteinMPNN CA-only requires the reviewed local baseline adapter; downloaded source is provenance-only.
+  - Exact package artifacts and hashes must be captured when the isolated environment is created.

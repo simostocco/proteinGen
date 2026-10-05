@@ -1,0 +1,49 @@
+version: e007_phase3i3_trajectory_audit_v1
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/denoiser_sampler_trajectory_audit_v1
+staging_dir: reports/experiments/E007_matrix_sequence_cogeneration/.denoiser_sampler_trajectory_audit_v1.inprogress
+protected_inventory: configs/e007_phase3i3/protected_inventory_v1.json
+protected_inventory_sha256: fcde0575a0f3dc713fd41d01e924877a5249f32af5dd1abd9eea115226196219
+source_config: configs/e007_coordinate_real_pilot_v1.yaml
+source_config_sha256: f2d66f8b8aef9470251edc7213f0ad1e7063f4939f0e97a051e8476fac1d3f90
+relocation_config: configs/e007_local_backbone_repair_pilot_phase3i2_final_v1.yaml
+relocation_config_sha256: f94fae55db2d5ed6c883e5127b5fe1feb0c2fea4ac4b8565e2eec35b5f275be9
+coordinate_scale_angstrom: 12.22820347644835
+diffusion_steps: 500
+checkpoints:
+  original: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+  v_only: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt
+  v_plus_local: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_plus_local/step-00500.pt
+panel:
+  lengths: [64, 128, 256, 384, 500]
+  samples_per_length: 4
+  seed_base: 3915001
+  milestones: [499, 425, 375, 250, 150, 75, 25, 0]
+numerics:
+  allow_matmul_tf32: false
+  allow_cudnn_tf32: false
+  deterministic_algorithms: true
+  autocast_enabled: false
+  equivariance_policy: strict_o3_v1
+memory:
+  maximum_rss_mib: 4096
+  maximum_cuda_allocated_mib: 6144
+  maximum_cuda_reserved_mib: 7680
+runtime:
+  estimate_basis: phase3i1_observed_10320_forwards_in_550_seconds_plus_metric_margin
+  observed_reference_forwards: 10320
+  observed_reference_elapsed_seconds: 550.044915633
+  estimated_model_forwards: 30000
+  estimated_wall_seconds: 2400
+  maximum_wall_seconds: 7200
+metrics:
+  adjacent_tolerance_angstrom: 0.5
+  clash_distance_angstrom: 3.0
+  discontinuity_distance_angstrom: 4.5
+  local_distance_offsets: [1, 2, 3]
+  contact_thresholds_angstrom: [6.0, 8.0, 10.0, 12.0]
+  long_range_minimum_separation: 24
+publication:
+  bootstrap_replicates: 2000
+  bootstrap_seed: 3915999
+  maximum_failure_examples: 20
+  all_authorization_fields_false: true

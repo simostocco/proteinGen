@@ -1,0 +1,81 @@
+version: e007_local_backbone_repair_calibration_v3
+output_dir: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_v3
+calibration_output_dir: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_calibration_v3
+device: cuda
+selected_checkpoint:
+  path: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt
+  sha256: eb445f0b39067b8a00a47db27f966a6db97dc0e30bf81078b34ea54f111c7d82
+  optimizer_update: 9000
+protected_v2:
+  report_path: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_calibration_v2/report.json
+  report_sha256: 8e95fc94bad1633ca2e5af7880f6a1b1aa7b49af670ae10795f5e50965078b70
+  protocol_path: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_calibration_v2/protocol.json
+  protocol_sha256: d27acf93b9378435113b82d95139a017b5222ddaacf90ffe517f8bcbfa3e164a
+dataset_source_config: configs/e007_denoiser_sampler_localization_v1.yaml
+coordinate_scale_angstrom: 12.22820347644835
+diffusion_steps: 500
+lengths: [64, 128, 256, 384, 500]
+timesteps: [25, 250, 425, 499]
+local_objective:
+  convention: e007_masked_per_structure_local_backbone_v1
+  distance_normalizer_angstrom: 3.8
+  discontinuity_threshold_angstrom: 4.5
+  clash_threshold_angstrom: 3.0
+  clash_minimum_sequence_separation: 3
+  maximum_clash_pairs_per_structure: 4096
+  smooth_tail_beta: 4.0
+calibration:
+  structures_per_length: 4
+  selection_seed: 3911001
+  maximum_samples_per_cell: 4
+  selection_rule: strongest ordered budget satisfying all upper and lower gates; ties or incomparable candidates fail closed
+# Target p95 per-term ||g_term||/||g_v|| budgets; tail terms receive smaller budgets,
+# while their V2 p95 evidence is used to raise them above numerical inactivity.
+budgets:
+  budget_low: {adjacent: 0.025, i_plus_2: 0.025, i_plus_3: 0.025, bond_angle_cosine: 0.020, discontinuity: 0.008, clash: 0.008}
+  budget_medium: {adjacent: 0.045, i_plus_2: 0.045, i_plus_3: 0.045, bond_angle_cosine: 0.035, discontinuity: 0.015, clash: 0.015}
+hard_maximum_caps: {adjacent: 0.16, i_plus_2: 0.16, i_plus_3: 0.16, bond_angle_cosine: 0.16, discontinuity: 0.05, clash: 0.05}
+upper_gates:
+  exact_finite: true
+  individual_weighted_term_to_v_max: 0.20
+  combined_auxiliary_to_v_max: 0.20
+  total_to_v_min: 0.80
+  total_to_v_max: 1.30
+lower_activity_gates:
+  applies_timesteps: [25, 250, 425]
+  core_terms: [adjacent, i_plus_2, i_plus_3, bond_angle_cosine]
+  core_median_or_p90_minimum: 0.002
+  tail_terms: [clash, discontinuity]
+  tail_median_or_p90_minimum: 0.0001
+  combined_auxiliary_to_v_median_minimum: 0.005
+  timestep_499_exempt: true
+  fail_if_identically_or_effectively_zero: true
+selection_rule:
+  ordering: [budget_low, budget_medium]
+  strongest: highest declared target-budget tier satisfying every upper and lower gate
+  ambiguity: fail_closed
+  pilot_authorized: false
+identity:
+  deterministic_panel_seed: 3911001
+  same_v2_canonical_panel: true
+  same_checkpoint: true
+reporting:
+  auxiliary_pairwise_cosine_matrix_per_cell: true
+  individual_term_v_cosines: true
+  combined_auxiliary_v_cosine: true
+  individual_and_combined_ratios: true
+  exact_finite_counts_per_gradient: [finite_count, total_count, non_finite_count, all_finite]
+  worst_cell_identities: all_upper_gate_extrema
+  aggregate_axes: [length, timestep]
+runtime:
+  estimated_calibration_model_forwards: 80
+  estimated_calibration_cells: 80
+  maximum_calibration_wall_seconds: 7200
+numerics:
+  allow_matmul_tf32: false
+  allow_cudnn_tf32: false
+  deterministic_algorithms: true
+  autocast_enabled: false
+authorization:
+  calibration_authorizes_pilot: false
+  pilot_authorized: false

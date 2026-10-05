@@ -1,0 +1,243 @@
+{
+  "calibration_panel": [
+    {
+      "identity": "cal-n64-00",
+      "index": 0,
+      "length": 64,
+      "seed": 3922800
+    },
+    {
+      "identity": "cal-n64-01",
+      "index": 1,
+      "length": 64,
+      "seed": 3922801
+    },
+    {
+      "identity": "cal-n128-00",
+      "index": 0,
+      "length": 128,
+      "seed": 3929200
+    },
+    {
+      "identity": "cal-n128-01",
+      "index": 1,
+      "length": 128,
+      "seed": 3929201
+    },
+    {
+      "identity": "cal-n256-00",
+      "index": 0,
+      "length": 256,
+      "seed": 3942000
+    },
+    {
+      "identity": "cal-n256-01",
+      "index": 1,
+      "length": 256,
+      "seed": 3942001
+    },
+    {
+      "identity": "cal-n384-00",
+      "index": 0,
+      "length": 384,
+      "seed": 3954800
+    },
+    {
+      "identity": "cal-n384-01",
+      "index": 1,
+      "length": 384,
+      "seed": 3954801
+    },
+    {
+      "identity": "cal-n500-00",
+      "index": 0,
+      "length": 500,
+      "seed": 3966400
+    },
+    {
+      "identity": "cal-n500-01",
+      "index": 1,
+      "length": 500,
+      "seed": 3966401
+    }
+  ],
+  "candidates": [
+    {
+      "cap_angstrom": 0.0,
+      "family": "control",
+      "iterations": 0,
+      "name": "control",
+      "start_timestep": null
+    },
+    {
+      "cap_angstrom": 0.15,
+      "family": "bond",
+      "iterations": 2,
+      "name": "bond_t425",
+      "start_timestep": 425
+    },
+    {
+      "cap_angstrom": 0.15,
+      "family": "bond",
+      "iterations": 2,
+      "name": "bond_t250",
+      "start_timestep": 250
+    },
+    {
+      "cap_angstrom": 0.15,
+      "family": "bond",
+      "iterations": 2,
+      "name": "bond_t150",
+      "start_timestep": 150
+    },
+    {
+      "cap_angstrom": 0.15,
+      "family": "composite",
+      "iterations": 2,
+      "name": "composite_t425",
+      "start_timestep": 425
+    },
+    {
+      "cap_angstrom": 0.15,
+      "family": "composite",
+      "iterations": 2,
+      "name": "composite_t250",
+      "start_timestep": 250
+    },
+    {
+      "cap_angstrom": 0.15,
+      "family": "composite",
+      "iterations": 2,
+      "name": "composite_t150",
+      "start_timestep": 150
+    }
+  ],
+  "canonical_sha256": {
+    "calibration_panel": "6ce660d461f651bec33b78137af45f07b19115a17eb39cf5b919e74090771dad",
+    "candidates": "af6bb429cf5b98837b9d26c3050c600a4934b59a9952e64bf239bdf99c774514",
+    "prospective_holdout_panel": "fb601312a7ad40e6649cb0197231d36e3019126f7a6db1092eeaf784ad5beaf8"
+  },
+  "prospective_holdout_panel": [
+    {
+      "identity": "holdout-n64-00",
+      "index": 0,
+      "length": 64,
+      "seed": 13922800
+    },
+    {
+      "identity": "holdout-n64-01",
+      "index": 1,
+      "length": 64,
+      "seed": 13922801
+    },
+    {
+      "identity": "holdout-n64-02",
+      "index": 2,
+      "length": 64,
+      "seed": 13922802
+    },
+    {
+      "identity": "holdout-n64-03",
+      "index": 3,
+      "length": 64,
+      "seed": 13922803
+    },
+    {
+      "identity": "holdout-n128-00",
+      "index": 0,
+      "length": 128,
+      "seed": 13929200
+    },
+    {
+      "identity": "holdout-n128-01",
+      "index": 1,
+      "length": 128,
+      "seed": 13929201
+    },
+    {
+      "identity": "holdout-n128-02",
+      "index": 2,
+      "length": 128,
+      "seed": 13929202
+    },
+    {
+      "identity": "holdout-n128-03",
+      "index": 3,
+      "length": 128,
+      "seed": 13929203
+    },
+    {
+      "identity": "holdout-n256-00",
+      "index": 0,
+      "length": 256,
+      "seed": 13942000
+    },
+    {
+      "identity": "holdout-n256-01",
+      "index": 1,
+      "length": 256,
+      "seed": 13942001
+    },
+    {
+      "identity": "holdout-n256-02",
+      "index": 2,
+      "length": 256,
+      "seed": 13942002
+    },
+    {
+      "identity": "holdout-n256-03",
+      "index": 3,
+      "length": 256,
+      "seed": 13942003
+    },
+    {
+      "identity": "holdout-n384-00",
+      "index": 0,
+      "length": 384,
+      "seed": 13954800
+    },
+    {
+      "identity": "holdout-n384-01",
+      "index": 1,
+      "length": 384,
+      "seed": 13954801
+    },
+    {
+      "identity": "holdout-n384-02",
+      "index": 2,
+      "length": 384,
+      "seed": 13954802
+    },
+    {
+      "identity": "holdout-n384-03",
+      "index": 3,
+      "length": 384,
+      "seed": 13954803
+    },
+    {
+      "identity": "holdout-n500-00",
+      "index": 0,
+      "length": 500,
+      "seed": 13966400
+    },
+    {
+      "identity": "holdout-n500-01",
+      "index": 1,
+      "length": 500,
+      "seed": 13966401
+    },
+    {
+      "identity": "holdout-n500-02",
+      "index": 2,
+      "length": 500,
+      "seed": 13966402
+    },
+    {
+      "identity": "holdout-n500-03",
+      "index": 3,
+      "length": 500,
+      "seed": 13966403
+    }
+  ],
+  "version": "e007_phase3i4_sampler_correction_v1"
+}
