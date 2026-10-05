@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "model_parameters": 15533952,
+  "length": 500,
+  "positions": [
+    2,
+    127,
+    449
+  ],
+  "all_normal_shuffle_window_conditions_finite": true,
+  "metrics": {
+    "smoke-500": {
+      "prefix_normal": 3.1167166233062744,
+      "shuffle": 3.2232042948404946,
+      "last1": 2.7667473951975503,
+      "last4": 3.0777769088745117,
+      "last8": 3.009871482849121,
+      "last16": 3.113124370574951,
+      "last32": 3.1648525396982827,
+      "last64": 3.13673996925354,
+      "kl": 0.018876424059271812,
+      "js": 0.004740317662556966,
+      "top1_change": 0.6666666666666666,
+      "top3_change": 1.0
+    }
+  }
+}

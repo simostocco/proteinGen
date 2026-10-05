@@ -1,0 +1,36 @@
+seed: 12012
+model:
+  vocabulary_size: 24
+  d_model: 384
+  num_layers: 8
+  num_attention_heads: 6
+  feedforward_dimension: 1536
+  dropout: 0.10
+  attention_dropout: 0.10
+  max_length: 500
+  activation: gelu
+updates: 2000
+boundaries: [0, 250, 500, 1000, 1500, 2000]
+batch_size: 8
+gradient_accumulation_steps: 8
+learning_rate: 0.0003
+betas: [0.9, 0.95]
+weight_decay: 0.01
+warmup_steps: 100
+scheduler: cosine
+gradient_clip: 1.0
+precision_preference: bfloat16
+loss_reduction: sequence_mean
+baseline_alpha: 1.0
+bootstrap_resamples: 10000
+bootstrap_seed: 12112
+evaluation_batch_size: 16
+prefix_batch_size: 16
+prefix_target_count: 16
+prefix_windows: [1, 4, 8, 16, 32, 64, full]
+normal_evaluation_boundaries: [0, 250, 500, 1000, 1500, 2000]
+complete_prefix_diagnostics_boundaries: [2000]
+major_shuffle_stratum_failure_nats: 0.02
+data:
+  train: outputs/e012_causal_rope_sequence/pilot_v1/train.parquet
+  validation: outputs/e012_causal_rope_sequence/pilot_v1/validation.parquet

@@ -1,0 +1,24 @@
+{
+  "existing_model": "ProteinSequenceTransformer, reused byte-identically",
+  "decoder_only": true,
+  "strict_future_mask": true,
+  "RoPE_q_k": true,
+  "length_conditioning": "Continuous log(N)/log(500) MLP, projected in every block",
+  "teacher_forcing": "BOS+a[0:N-1] => a[0:N]",
+  "padding_key_mask_and_hidden_state_mask": true,
+  "output_vocabulary": 24,
+  "canonical_sampling_mask": true,
+  "sequence_mean": "Mean valid token CE within protein, then mean over proteins",
+  "RoPE_autocast": "FP32 cached sin/cos can promote q/k intermediate arithmetic; supported SDPA autocast handles dtype consistently; complete bf16 production smoke passed",
+  "correctness_defects_requiring_source_change": null,
+  "historical_standalone_causal_checkpoints_found": false,
+  "historical_search_scope": [
+    "Existing structural outputs/reports",
+    "E011 outputs",
+    "outputs/sequence_baseline (absent)"
+  ],
+  "other_sequence_only_checkpoints": "E005 co-design sequence-only comparators exist, not this causal architecture; not used",
+  "fresh_initialization_verified": true,
+  "seed": 12012,
+  "parameter_count": 15533952
+}

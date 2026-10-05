@@ -1,0 +1,76 @@
+{
+  "status": "passed",
+  "full_suite_tests": 1678,
+  "full_suite_passed": 1665,
+  "full_suite_conditional_skips": [
+    {
+      "test": "tests.test_axial_attention::test_axial_block_cuda_float16_autocast_regression[None]",
+      "reason": "CUDA is unavailable"
+    },
+    {
+      "test": "tests.test_axial_attention::test_axial_block_cuda_float16_autocast_regression[128]",
+      "reason": "CUDA is unavailable"
+    },
+    {
+      "test": "tests.test_e007_coordinate_equivariance::test_production_capacity_cuda_strict_equivariance",
+      "reason": "CUDA is unavailable"
+    },
+    {
+      "test": "tests.test_e007_coordinate_objective_pilot::test_quantiles_match_cuda_input_dtype_and_device[dtype0]",
+      "reason": "CUDA is unavailable"
+    },
+    {
+      "test": "tests.test_e007_coordinate_objective_pilot::test_quantiles_match_cuda_input_dtype_and_device[dtype1]",
+      "reason": "CUDA is unavailable"
+    },
+    {
+      "test": "tests.test_physical_auxiliary_loss::test_cuda_float16_autocast",
+      "reason": "CUDA is unavailable"
+    },
+    {
+      "test": "tests.test_physical_auxiliary_loss::test_adjacent_loss_cuda_float16_autocast",
+      "reason": "CUDA is unavailable"
+    },
+    {
+      "test": "tests.test_preprocess_state::test_real_pilot_resume_smoke_when_local_files_exist",
+      "reason": "Local pilot mmCIF files are not available"
+    },
+    {
+      "test": "tests.test_query_rcsb::test_real_rcsb_smoke_query_candidate_limit_10",
+      "reason": "Set RUN_RCSB_INTEGRATION_TESTS=1 to query the real RCSB Search API"
+    },
+    {
+      "test": "tests.test_rich_geometry_sidecars::test_cuda_feature_backend_matches_canonical_cpu_when_available",
+      "reason": "CUDA is unavailable"
+    },
+    {
+      "test": "tests.test_training_step::test_cuda_resume_rng_restore_when_cuda_available",
+      "reason": "CUDA is not available"
+    },
+    {
+      "test": "tests.test_training_step::test_optional_cuda_amp_smoke",
+      "reason": "CUDA is not available"
+    },
+    {
+      "test": "tests.test_triangle_multiplication::test_triangle_block_cuda_float16_autocast_dtype_safety",
+      "reason": "CUDA is unavailable"
+    }
+  ],
+  "previously_cuda_skipped_cases_passed": 11,
+  "additional_final_evaluator_and_safety_cases_passed": 3,
+  "combined_passed": 1679,
+  "combined_skipped": 2,
+  "focused_sequence_tests_passed": 50,
+  "no_tests_weakened": true,
+  "ruff_lint": "passed",
+  "ruff_format": "passed",
+  "syntax": "passed",
+  "whitespace": "passed",
+  "fixture_policy": "E012 sources in E011-established read-only historical fixture mirror; five byte-identical contained NPZ fixtures. Three evaluator/safety cases were added afterward and passed in the focused rerun.",
+  "full_suite_log_sha256": "894b1a7946e6bd0bfe6f6d2e9ca9e20c2cc2df6706c6a8fe3564c94d34c57cd7",
+  "junit_evidence_sha256": {
+    "full_tests.xml": "250b9d2413e447437be18c4693155ebde5d2dc4ca26cb4e5f9e81fae7509b0f9",
+    "cuda_tests.xml": "d2300e4b843929b922e5e1d2339af81a02e5d654e853c85898f11a3297bb8b46",
+    "focused_tests.xml": "cb0ac5e227e0303b28a88d2a257729e0144c5e343b872e9fe056561e442b5f03"
+  }
+}

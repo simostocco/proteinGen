@@ -1,0 +1,24 @@
+{
+  "bf16_supported": true,
+  "checkpoint_exact_resume": true,
+  "checkpoint_sha256": "3f8b4609d614426eb3a14cee11c04fca50ae911d134bd2e3be6c5589a5af540b",
+  "effective_proteins": 64,
+  "exact_length_canonical_sampling": {
+    "passed": true,
+    "requested_length": 20,
+    "sequences": 2
+  },
+  "finite_gradients": true,
+  "gpu": "NVIDIA GeForce RTX 5060",
+  "gradient_accumulation": 8,
+  "longest_length": 500,
+  "loss": 3.2386837005615234,
+  "optimizer_mutation": true,
+  "peak_allocated_mib": 1022.64111328125,
+  "peak_reserved_mib": 1120.0,
+  "physical_batch": 8,
+  "scaler": null,
+  "selected_precision": "bfloat16",
+  "status": "passed",
+  "torch_version": "2.13.0+cu130"
+}
