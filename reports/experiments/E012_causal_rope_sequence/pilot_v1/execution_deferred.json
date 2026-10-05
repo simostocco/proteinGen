@@ -1,0 +1,52 @@
+{
+  "CUDA_smokes_finished_before_conflicting_workload_observed": true,
+  "Phase4D_owner_progress": "Observed independent advance from 5eaa96c30d7b18ef712aeb5a84c412ba8db5ab97 to 34ed55ee832637f7533b8127ddba3b6471d851f4; no E012 writes",
+  "biological_generation_launched": false,
+  "classification": "CSEQ-E",
+  "conflicting_process": {
+    "command": "python -u scripts/run_e010_phase4d_recurrent_capacity_v3.py train",
+    "observed_GPU_used_mib": 1960,
+    "observed_GPU_utilization_percent": 13,
+    "observed_pid": 319802
+  },
+  "contract_sha256": "1a56b8958bb9a81c7dc269bce7c3efa79f19fc6dc85498beb09cfb10f346e612",
+  "execution_status": "deferred_due_to_active_phase4d_gpu_workload",
+  "preparation_commit": "76814fd071a20f1bcc1e381533bfe195381aa1ca",
+  "protected_worktrees": {
+    "E010_phase4c": {
+      "E012_modified_worktree": false,
+      "branch": "e010-phase4c-local-auxiliary",
+      "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+      "status": ""
+    },
+    "E010_phase4d": {
+      "E012_modified_worktree": false,
+      "branch": "e010-phase4d-hybrid-local-global",
+      "head": "34ed55ee832637f7533b8127ddba3b6471d851f4",
+      "status": ""
+    },
+    "E011": {
+      "E012_modified_worktree": false,
+      "branch": "e011-sequence-context-only",
+      "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "status": ""
+    }
+  },
+  "scientific_adjudication": "not performed; no pilot likelihood or diagnostic results",
+  "statistical_baseline_CE": {
+    "independent": {
+      "bigram": 2.896606403039183,
+      "bucket_unigram": 2.9013141131537616,
+      "global_unigram": 2.901697255276755,
+      "trigram": 2.9095626972106974
+    },
+    "primary": {
+      "bigram": 2.894704009202998,
+      "bucket_unigram": 2.8990428178142844,
+      "global_unigram": 2.900035213585893,
+      "trigram": 2.906179593444026
+    }
+  },
+  "training_launched": false,
+  "updates_completed": 0
+}
