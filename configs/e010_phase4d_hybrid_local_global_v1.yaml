@@ -1,0 +1,58 @@
+schema: e010_phase4d_hybrid_local_global_v1
+preparation_only: true
+training_authorized: false
+seed: 41047
+global:
+  architecture: GlobalEquivariantResidual
+  width: 416
+  layers: 6
+  heads: 8
+  vector_channels: 64
+  max_length: 500
+  sigma_distance: 2.0
+  parameter_count: 12844352
+  frozen: true
+  checkpoint: /home/simostocco/proteinGen/reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/phase4b_training_v1.final/latest.pt
+  checkpoint_sha256: f5211cbc1be5092175ce15b9761a4efba761d242310287cd6b1e04df6a6744ef
+local:
+  width: 128
+  blocks: 4
+  offsets: [-3, -2, -1, 1, 2, 3]
+  feature_dim: 41
+  parameter_count: 927875
+  normalization: LayerNorm
+  activation: SiLU
+  head_init: zero
+  frame_epsilon: 0.000001
+objective_candidate:
+  beta: 1.0
+  rho: 0.01
+  delta_cart: 0.01
+  chirality_loss: false
+  status: proposed_for_review_not_execution
+panel:
+  namespace: e010_phase4d_hybrid_local_global_v1
+  ranking: sha256(namespace|train|sample_id), then sample_id
+  eligibility: training identities with cached training records at all three conditions, without metric filtering
+  identities_per_stratum: 4
+  conditions: [50, 250, 450]
+  corruption_selection: minimum (seed, schedule_index) in historical training cache per identity-condition
+later_tiny_overfit_candidate:
+  updates: 500
+  boundaries: [0, 50, 100, 250, 500]
+  optimizer: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.0
+  gradient_clip_norm: 5.0
+  effective_batch: all_60_examples_equal_weight_via_accumulation
+  gates:
+    mean_local_rmse_improvement_min: 0.20
+    every_offset_improves: true
+    aligned_rmsd_degradation_max: 0.01
+    every_condition_local_non_harmful: true
+    aggregate_chirality_non_worsening: true
+    chirality_assessability_non_decreasing: true
+    all_finite: true
+    no_collapse: true
+    displacement_rms_max_angstrom: 1.0
+    displacement_max_angstrom: 3.0
