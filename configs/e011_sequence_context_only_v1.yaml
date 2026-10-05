@@ -1,0 +1,89 @@
+experiment: E011_sequence_context_only
+contract_version: s1_sequence_context_v1
+base_main_sha: 3b200ffb0389be87cc928c391117ce96bd8b5eb2
+stage: preparation_only
+launch_definitive_training: false
+seed: 6011
+device: cpu
+output_dir: outputs/e011_sequence_context_only
+model:
+  class: protein_sequence_generation.context.SequenceContextTransformer
+  d_model: 256
+  layers: 8
+  heads: 8
+  ffn: 1024
+  dropout: 0.1
+  max_length: 500
+  vocabulary: [PAD, MASK, A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y]
+  output_classes: 20
+  parameter_count: 6457364
+  learned_length_embedding: false
+  initialization: scratch
+inputs: [visible_canonical_tokens, MASK, PAD, residue_position, validity_attention_mask]
+excluded: [coordinates, distances, pair_features, contacts, secondary_structure, geometry_labels,
+           E004_outputs, E007_outputs, E010_outputs, diffusion_timestep, pdb_metadata]
+dataset:
+  directory: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+  reader_columns: [sample_id, split, sequence, token_ids]
+  train_count: 231743
+  validation_count: 23307
+  geometry_columns_loaded: false
+  metadata_hashes: reports/experiments/E011_sequence_context_only/data_audit.json
+  split_policy: preserve_historical_membership_no_resplitting
+  homology_policy: historical_mmseqs_30_percent_identity_80_percent_coverage_cov_mode_0
+  require_zero_overlap: [sample_id, canonical_sequence_hash, cluster_id, pdb_id, split_group_id]
+  train_duplicates: retained_equal_weight_per_sample
+objective:
+  mask_fractions: [0.15, 0.30, 0.50]
+  fraction_schedule: deterministic_round_robin_by_optimizer_update
+  mask_draw: rounded_exact_count_minimum_one_without_replacement_keyed_by_seed_epoch_sample_id_fraction
+  loss: canonical_20_way_cross_entropy_masked_valid_canonical_only
+  reduction: mean_per_protein_then_mean_proteins
+  context_contrast_weight: 0.25
+  context_margin_nats: 0.05
+  context_hinge: mean_proteins_relu_normal_ce_minus_detached_shuffle_ce_plus_margin
+  shuffled_branch: no_grad_and_detached_ce
+  dropout_pairing: cpu_and_active_device_rng_restored_global_advance_once
+optimizer:
+  name: AdamW
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  gradient_clip_norm: 1.0
+  warmup_updates: 1000
+training_budget: unapproved_not_launched
+diagnostics:
+  fractions: [0.15, 0.30, 0.50]
+  conditions: [normal, visible_shuffle, null_context, permuted_context]
+  panel_count: 2048
+  panel_seed: 6111
+  frozen_panel: reports/experiments/E011_sequence_context_only/diagnostic_panel.json
+  targets: identical_hidden_in_every_condition
+  donors: distinct_sample_and_sequence_same_length_stratum_relative_position_mapping
+  panel_reserved_from_training: true
+  minimum_per_stratum: 64
+  length_strata: [[20, 64], [65, 128], [129, 256], [257, 384], [385, 500]]
+baselines:
+  source: TRAIN_only
+  smoothing_per_residue: 1.0
+  types: [uniform_20, global_unigram, length_bucketed_unigram]
+  frozen: reports/experiments/E011_sequence_context_only/train_baselines.json
+gates:
+  paired_unit: protein
+  delta_maximum_nats_per_token: -0.05
+  bootstrap_iterations: 2000
+  bootstrap_seed: 6211
+  confidence_interval: percentile_95
+  confidence_upper_bound: strictly_less_than_zero
+  A: normal_minus_both_global_and_length_bucketed_train_unigrams
+  B: normal_minus_visible_shuffle
+  C: normal_minus_null_context
+  D: normal_minus_permuted_context
+  report_overall_and_all_length_strata: true
+classification:
+  S1-A: all_A_D_pass_at_every_fraction_and_every_stratum
+  S1-B: uniform_improvement_all_fractions_A_fails_all_fractions_context_gates_fail_no_passing_stratum
+  S1-C: A_passes_all_fractions_context_gates_fail_no_passing_stratum
+  S1-D: some_fraction_or_stratum_passes_all_A_D_but_not_everywhere
+  S1-E: missing_infrastructure_or_evidence_or_other_mixed_result
+current_classification: S1-E
+cuda_validation: deferred_due_to_active_phase4c_gpu_workload

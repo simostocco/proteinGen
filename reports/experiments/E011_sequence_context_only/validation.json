@@ -1,0 +1,28 @@
+{
+  "base_main_sha": "3b200ffb0389be87cc928c391117ce96bd8b5eb2",
+  "blockers": [
+    "No real-data S1 training or trained-model gate evaluation yet",
+    "CUDA and unrestricted full-suite checks deferred during active GPU workload",
+    "Complete raw shard-byte rehash not repeated; metadata/inventory pinned and projected rows audited"
+  ],
+  "command": "CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python -m pytest -q tests/test_e011_sequence_context.py tests/test_e006_stage_a_context.py tests/test_e006_stage_a_context_objective.py tests/test_e006_stage_a_context_v6.py tests/test_e006_stage_a_objective_parity.py tests/sequence",
+  "cuda": "deferred_due_to_active_phase4c_gpu_workload",
+  "current_classification": "S1-E",
+  "definitive_training_launched": false,
+  "e011_branch": "e011-sequence-context-only",
+  "e011_worktree": "/home/simostocco/proteinGen-sequence-context",
+  "focused_tests": "83 passed in 5.86s",
+  "full_repository_suite": "deferred_due_to_active_phase4c_gpu_workload",
+  "gpu_observed": {
+    "memory_used_mib": 7645,
+    "utilization_percent": 100
+  },
+  "lint": "ruff check: passed",
+  "origin_main_after_fetch": "3b200ffb0389be87cc928c391117ce96bd8b5eb2",
+  "phase4c_branch": "e010-phase4c-local-auxiliary",
+  "phase4c_files_modified_by_e011": [],
+  "phase4c_git_status_before_and_after": "clean",
+  "phase4c_head": "a91d3432ec461f334ca5d9dd27fec9efd19b61d4",
+  "phase4c_worktree": "/mnt/d/Simone/proteinGen",
+  "recommended_next_action": "Review the sealed S1 contract and set a bounded real-data pilot budget after Phase 4C releases the GPU."
+}

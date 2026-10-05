@@ -1,0 +1,21 @@
+{
+  "changes_require": "explicit_review_and_new_version",
+  "definitive_training_launched": false,
+  "immutable": true,
+  "sha256": {
+    "configs/e011_sequence_context_only_v1.yaml": "0fd912642332a9d6331309e965ee89d5d6e296c2255b3c66a5e124119225b1e6",
+    "docs/e011_sequence_context_only.md": "18e20907b89f12fc77448fd062c2e6f6cfa5c77a03d3cbb86e434c8d8c448899",
+    "reports/experiments/E011_sequence_context_only/data_audit.json": "7e4ab17bc5d14014803a38421f51ed6a54e99c76cbaa0edd4d924b1b04db9b6f",
+    "reports/experiments/E011_sequence_context_only/diagnostic_panel.json": "e7c68e412d1aa3efb0251089e6de568fe4579a3668107f58f81d58f456063004",
+    "reports/experiments/E011_sequence_context_only/historical_audit.json": "9016c8e61e0ac6a477291442a17d4ba7de84d9b9cf1468f0a744d3e375b59b6e",
+    "reports/experiments/E011_sequence_context_only/real_cpu_smoke.json": "69c899fae2cee0bca98703d7b7a6c9dd657ec461d06f714d5e735172e67fc37b",
+    "reports/experiments/E011_sequence_context_only/synthetic_cpu_proof.json": "58e51018031e0e0af87dd8bfe4398e3f2a187ec168b2f2178ab3fd13123f8ad8",
+    "reports/experiments/E011_sequence_context_only/train_baselines.json": "ed1f2b9c94b5cbbb569f38f94038cc7aa84f14b8f1cfcece6d3621b76aa9c5eb",
+    "reports/experiments/E011_sequence_context_only/validation.json": "a902cdb0c5beb1511680c22a30f1b6ab2914a9d605d26a491436dc698952ab48",
+    "scripts/prepare_e011_sequence_context.py": "e8f2668d468daf70f82a59e4ff1b13debb49cdecc4765a85032522a2f4572d86",
+    "src/protein_sequence_generation/context.py": "468c4578a0db28c429612e294365e858aefe6d4ed44c4af6b8f240efc1433970",
+    "tests/test_e011_sequence_context.py": "d747713e97235d2e3ddb55655612e6a571a0ce6afb232d701ae517b13d591688"
+  },
+  "stage": "preparation_only",
+  "version": "s1_sequence_context_v1"
+}

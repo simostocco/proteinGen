@@ -1,0 +1,83 @@
+{
+  "cluster_metadata": {
+    "completed": true,
+    "completed_utc": "2026-08-26T19:32:50.167660+00:00",
+    "cov_mode": 0,
+    "coverage": 0.8,
+    "fasta_sha256": "7f2f761c4501c8010966302dafd0f2e30ee3d2fbc564e4cfa4c73727008e6ab3",
+    "input_manifest_sha256": "6fc2628104714e32782a4b7606b22b8113c0e088ed3befd4a1f5f7029e8c3052",
+    "min_seq_id": 0.3,
+    "minimum_sequence_length": 20,
+    "mmseqs_command": [
+      "mmseqs",
+      "easy-cluster",
+      "data/full/processed/retained_sequences.fasta",
+      "data/full/processed/mmseqs_clusters",
+      "data/full/processed/mmseqs_tmp",
+      "--min-seq-id",
+      "0.3",
+      "-c",
+      "0.8",
+      "--cov-mode",
+      "0",
+      "--threads",
+      "4",
+      "--split-memory-limit",
+      "4G"
+    ],
+    "mmseqs_executable": "mmseqs",
+    "mmseqs_version": "15-6f452+ds-2",
+    "retained_fasta_path": "data/full/processed/retained_sequences.fasta",
+    "retained_sequence_count": 37630,
+    "schema_version": 1,
+    "split_memory_limit": "4G",
+    "threads": 4
+  },
+  "counts": {
+    "train": 231743,
+    "validation": 23307
+  },
+  "cross_split_overlap": {
+    "canonical_sequence_hash": 0,
+    "sample_id": 0
+  },
+  "directory": "/mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2",
+  "geometry_column_reads": 0,
+  "homology": {
+    "cluster_id_overlap": 0,
+    "pdb_id_overlap": 0,
+    "split_group_id_overlap": 0,
+    "train_missing_membership": 0,
+    "validation_missing_membership": 0
+  },
+  "input_hashes": {
+    "/mnt/d/Simone/proteinGen/data/full/splits_recovered_all_structures/train.parquet": "326343ccdaeec43dcc2d4dd1451b0c23199464768d94a11d380314cef6e2ccc2",
+    "/mnt/d/Simone/proteinGen/data/full/splits_recovered_all_structures/validation.parquet": "db82f974e86cb8353fb0601fc821609417115428f92d7b9d3f5a527c91266c81",
+    "/mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2/normalization.json": "a54d862d756ca59a78503801a7ea1488ba5e701116db66545ce22e9af91b30fe",
+    "/mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2/protocol.json": "653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b",
+    "/mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2/schema.json": "8d522a7c198c8b35317be41bb8f55ef7a52de118f015c88a374e221844afd329",
+    "/mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2/shard_hashes.sha256": "a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0",
+    "/mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2/vocabulary.json": "b6e87d56aa6023679c7249e04ba709576c26038fef4588e1b83763c395d4e1db"
+  },
+  "limitation": "E006 geometry-eligible cohort is reused; selection bias persists though no structural features are loaded.",
+  "strata_counts": {
+    "train": [
+      21466,
+      66946,
+      90706,
+      38882,
+      13743
+    ],
+    "validation": [
+      2016,
+      5005,
+      8459,
+      5915,
+      1912
+    ]
+  },
+  "unique_sequence_counts": {
+    "train": 87930,
+    "validation": 23307
+  }
+}
