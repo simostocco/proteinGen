@@ -1,0 +1,54 @@
+{
+  "deterministic_algorithms": true,
+  "device": "NVIDIA GeForce RTX 5060",
+  "mixed_precision_enabled": false,
+  "precision": "float32",
+  "regimes": [
+    {
+      "accumulation": 1,
+      "gradient_norm": 3.7673189640045166,
+      "loss": 3.144766092300415,
+      "maximum_length": 128,
+      "optimizer_mutated": true,
+      "paired_rng_verified": true,
+      "peak_allocated_mib": 1311.08935546875,
+      "peak_reserved_mib": 1438.0,
+      "physical_batch": 32
+    },
+    {
+      "accumulation": 1,
+      "gradient_norm": 2.7972068786621094,
+      "loss": 3.086320638656616,
+      "maximum_length": 256,
+      "optimizer_mutated": true,
+      "paired_rng_verified": true,
+      "peak_allocated_mib": 1392.359375,
+      "peak_reserved_mib": 1440.0,
+      "physical_batch": 16
+    },
+    {
+      "accumulation": 1,
+      "gradient_norm": 3.157790184020996,
+      "loss": 3.0763096809387207,
+      "maximum_length": 384,
+      "optimizer_mutated": true,
+      "paired_rng_verified": true,
+      "peak_allocated_mib": 1078.75390625,
+      "peak_reserved_mib": 1170.0,
+      "physical_batch": 8
+    },
+    {
+      "accumulation": 1,
+      "gradient_norm": 2.205644369125366,
+      "loss": 3.066847801208496,
+      "maximum_length": 500,
+      "optimizer_mutated": true,
+      "paired_rng_verified": true,
+      "peak_allocated_mib": 1391.74072265625,
+      "peak_reserved_mib": 1440.0,
+      "physical_batch": 8
+    }
+  ],
+  "status": "passed",
+  "torch": "2.13.0+cu130"
+}
