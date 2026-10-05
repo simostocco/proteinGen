@@ -1,0 +1,46 @@
+schema: e010_phase4d_recurrent_capacity_v3
+base_commit: 05073f4b5c9eefcc10de5d3c3440b12834036714
+seed: 41047
+seed_namespace: e010_phase4d_recurrent_capacity_v3
+variants:
+  S: {width: 128, blocks: 4, parameters: 927875}
+  M: {width: 192, blocks: 6, parameters: 3115587}
+  L: {width: 256, blocks: 8, parameters: 7369987}
+recurrence: {steps: 4, shared_weights: true, recompute_geometry: true, detach_between_steps: false}
+bound: {s_max_angstrom: 0.04, per_step_numerical_tolerance: 0.000001, cumulative_max_angstrom: 0.160001, pair_distance_max_angstrom: 0.320002}
+objective: {beta: 16.8, gamma: 2.0, final_state_only: true, chiral_reduction: pooled_frozen_eligible_quartets, local_cartesian_reduction: equal_example}
+training:
+  updates: 500
+  boundaries: [0, 25, 50, 100, 250, 500]
+  optimizer: AdamW
+  learning_rate: 0.0003
+  betas: [0.9, 0.999]
+  epsilon: 0.00000001
+  weight_decay: 0.0
+  gradient_clip_norm: 5.0
+  precision: float32
+  tf32: false
+  amp: false
+  effective_batch: 60
+  microbatch: 60
+  activation_checkpoint: true
+  order: ascending_sample_id_then_condition_50_250_450_repeated_every_update
+  augmentation: none
+preflight: {length: 500, microbatch: 60, max_reserved_fraction_total: 0.80, optimizer_steps: 0}
+gates:
+  mean_local_improvement_min: 0.05
+  every_offset_improves: true
+  every_condition_improves: true
+  aligned_rmsd_degradation_max: 0.01
+  continuous_chiral_loss_non_worsening: true
+  inversion_count_non_increasing: true
+  chirality_assessability_preserved: true
+  finite: true
+  no_collapse: true
+  frame_assessability_preserved: true
+  every_stratum_local_improves: true
+  every_stratum_aligned_degradation_max: 0.01
+selection: smallest_S_then_M_then_L_passing_all_seven_gates_after_all_feasible_arms_finish
+capacity_monotonic_material_tolerance_percentage_points: 0.10
+held_out_authorized: false
+old_500_update_contract_authorized: false

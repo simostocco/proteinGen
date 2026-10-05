@@ -1,0 +1,45 @@
+{
+  "compute_ownership_checked": true,
+  "config_sha256": "f9fe825172d617fce1d97eb530cc7ee8ad2374a9a1c786adeeb7cadae7ed25f2",
+  "variants": {
+    "L": {
+      "K": 4,
+      "allocated_bytes": 1957855232,
+      "batch": 60,
+      "device": "NVIDIA GeForce RTX 5060",
+      "feasible": true,
+      "finite_outputs_gradients": true,
+      "latency_seconds": 1.4491296969354153,
+      "length": 500,
+      "model_mutated": false,
+      "optimizer_state_mutated": false,
+      "reserved_bytes": 2166358016
+    },
+    "M": {
+      "K": 4,
+      "allocated_bytes": 1297882112,
+      "batch": 60,
+      "device": "NVIDIA GeForce RTX 5060",
+      "feasible": true,
+      "finite_outputs_gradients": true,
+      "latency_seconds": 0.8076876047998667,
+      "length": 500,
+      "model_mutated": false,
+      "optimizer_state_mutated": false,
+      "reserved_bytes": 1451229184
+    },
+    "S": {
+      "K": 4,
+      "allocated_bytes": 754856960,
+      "batch": 60,
+      "device": "NVIDIA GeForce RTX 5060",
+      "feasible": true,
+      "finite_outputs_gradients": true,
+      "latency_seconds": 1.6950129638426006,
+      "length": 500,
+      "model_mutated": false,
+      "optimizer_state_mutated": false,
+      "reserved_bytes": 866123776
+    }
+  }
+}
