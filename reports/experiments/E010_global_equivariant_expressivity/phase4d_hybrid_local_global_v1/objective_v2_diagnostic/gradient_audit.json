@@ -1,0 +1,353 @@
+{
+  "beta": 16.8,
+  "correction_rms_per_alpha_angstrom": 92.77989023612047,
+  "cosines": {
+    "cartesian": {
+      "cartesian": 0.9999999999999999,
+      "chiral": 0.49783459155940524,
+      "local": -0.8477993190081703
+    },
+    "chiral": {
+      "cartesian": 0.49783459155940524,
+      "chiral": 1.0000000000000002,
+      "local": -0.5715065999685259
+    },
+    "local": {
+      "cartesian": -0.8477993190081703,
+      "chiral": -0.5715065999685259,
+      "local": 0.9999999999999999
+    }
+  },
+  "dot_products": {
+    "cartesian": {
+      "cartesian": 3.4127384103901006,
+      "chiral": 1.2639766470513187,
+      "local": -48.60433039161819
+    },
+    "chiral": {
+      "cartesian": 1.2639766470513187,
+      "chiral": 1.88888257393707,
+      "local": -24.37553356362481
+    },
+    "local": {
+      "cartesian": -48.60433039161819,
+      "chiral": -24.37553356362481,
+      "local": 963.0765347606858
+    }
+  },
+  "feasible_gamma_interval": {
+    "constraints": {
+      "cartesian": {
+        "inequality": "intercept + slope*gamma > 0",
+        "intercept": 8.729672310973223,
+        "slope": 1.2639766470513187
+      },
+      "chiral": {
+        "inequality": "intercept + slope*gamma > 0",
+        "intercept": -3.140726920281888,
+        "slope": 1.88888257393707
+      },
+      "local": {
+        "inequality": "intercept + slope*gamma > 0",
+        "intercept": 146.5238217496424,
+        "slope": -24.37553356362481
+      }
+    },
+    "feasible": true,
+    "lower": 1.6627433402255127,
+    "lower_open": true,
+    "upper": 6.011102131044113,
+    "upper_open": true,
+    "zero_feasible": false
+  },
+  "local_cartesian_without_chirality_derivatives": {
+    "cartesian": -8.729672310973223,
+    "chiral": 3.140726920281888,
+    "local": -146.5238217496424
+  },
+  "norms": {
+    "cartesian": 1.8473598486461973,
+    "chiral": 1.3743662444694535,
+    "local": 31.033474422962794
+  },
+  "per_module": {
+    "cartesian": {
+      "blocks.0": 0.0,
+      "blocks.1": 0.0,
+      "blocks.2": 0.0,
+      "blocks.3": 0.0,
+      "head": 1.8473598486461973,
+      "input": 0.0
+    },
+    "chiral": {
+      "blocks.0": 0.0,
+      "blocks.1": 0.0,
+      "blocks.2": 0.0,
+      "blocks.3": 0.0,
+      "head": 1.3743662444694535,
+      "input": 0.0
+    },
+    "local": {
+      "blocks.0": 0.0,
+      "blocks.1": 0.0,
+      "blocks.2": 0.0,
+      "blocks.3": 0.0,
+      "head": 31.033474422962794,
+      "input": 0.0
+    }
+  },
+  "per_module_dot_products": {
+    "blocks.0": {
+      "cosines": {
+        "cartesian": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "chiral": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "local": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        }
+      },
+      "dot_products": {
+        "cartesian": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "chiral": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "local": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        }
+      },
+      "norms": {
+        "cartesian": 0.0,
+        "chiral": 0.0,
+        "local": 0.0
+      }
+    },
+    "blocks.1": {
+      "cosines": {
+        "cartesian": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "chiral": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "local": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        }
+      },
+      "dot_products": {
+        "cartesian": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "chiral": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "local": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        }
+      },
+      "norms": {
+        "cartesian": 0.0,
+        "chiral": 0.0,
+        "local": 0.0
+      }
+    },
+    "blocks.2": {
+      "cosines": {
+        "cartesian": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "chiral": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "local": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        }
+      },
+      "dot_products": {
+        "cartesian": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "chiral": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "local": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        }
+      },
+      "norms": {
+        "cartesian": 0.0,
+        "chiral": 0.0,
+        "local": 0.0
+      }
+    },
+    "blocks.3": {
+      "cosines": {
+        "cartesian": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "chiral": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "local": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        }
+      },
+      "dot_products": {
+        "cartesian": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "chiral": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "local": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        }
+      },
+      "norms": {
+        "cartesian": 0.0,
+        "chiral": 0.0,
+        "local": 0.0
+      }
+    },
+    "head": {
+      "cosines": {
+        "cartesian": {
+          "cartesian": 0.9999999999999999,
+          "chiral": 0.49783459155940524,
+          "local": -0.8477993190081703
+        },
+        "chiral": {
+          "cartesian": 0.49783459155940524,
+          "chiral": 1.0000000000000002,
+          "local": -0.5715065999685259
+        },
+        "local": {
+          "cartesian": -0.8477993190081703,
+          "chiral": -0.5715065999685259,
+          "local": 0.9999999999999999
+        }
+      },
+      "dot_products": {
+        "cartesian": {
+          "cartesian": 3.4127384103901006,
+          "chiral": 1.2639766470513187,
+          "local": -48.60433039161819
+        },
+        "chiral": {
+          "cartesian": 1.2639766470513187,
+          "chiral": 1.88888257393707,
+          "local": -24.37553356362481
+        },
+        "local": {
+          "cartesian": -48.60433039161819,
+          "chiral": -24.37553356362481,
+          "local": 963.0765347606858
+        }
+      },
+      "norms": {
+        "cartesian": 1.8473598486461973,
+        "chiral": 1.3743662444694535,
+        "local": 31.033474422962794
+      }
+    },
+    "input": {
+      "cosines": {
+        "cartesian": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "chiral": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        },
+        "local": {
+          "cartesian": null,
+          "chiral": null,
+          "local": null
+        }
+      },
+      "dot_products": {
+        "cartesian": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "chiral": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        },
+        "local": {
+          "cartesian": 0.0,
+          "chiral": 0.0,
+          "local": 0.0
+        }
+      },
+      "norms": {
+        "cartesian": 0.0,
+        "chiral": 0.0,
+        "local": 0.0
+      }
+    }
+  },
+  "predicted_derivatives": {
+    "cartesian": -11.257625642112146,
+    "chiral": -0.6370382448061084,
+    "local": -97.77275364387818
+  },
+  "selected_gamma": 2.0
+}

@@ -1,0 +1,23 @@
+{
+  "beta": 16.8,
+  "diagnostic_v1_commit": "5eaa96c30d7b18ef712aeb5a84c412ba8db5ab97",
+  "existing_500_update_contract_authorized": false,
+  "gamma": 2.0,
+  "interpretation": "common first-order descent exists with gamma=2, but finite signed loss/inversions limit useful amplitude. Only modest aggregate safe gains; no uniform orientation non-inferiority across conditions/strata and no evidence for the old 500-update run.",
+  "s_max_proposal_angstrom": [
+    0.04,
+    0.05
+  ],
+  "s_max_rationale": "conservative per-residue review range around maximum correction 0.040998 A at the 0.03 A RMS point, the only sampled point improving all continuous objectives and inversion count; bounded-response experiment still required",
+  "s_max_selected": null,
+  "safe_region_scope": "sampled aggregate points only; no guarantee between points or for every condition/stratum",
+  "sampled_aggregate_safe_rms_angstrom": [
+    0.03,
+    0.05
+  ],
+  "sampled_all_continuous_objectives_and_inversion_safe_rms_angstrom": [
+    0.03
+  ],
+  "saturation_activated": false,
+  "training_launched": false
+}

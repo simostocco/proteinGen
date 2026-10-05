@@ -1,0 +1,47 @@
+{
+  "architecture_unchanged": true,
+  "beta": 16.8,
+  "cuda_used": false,
+  "diagnostic_v1_commit": "5eaa96c30d7b18ef712aeb5a84c412ba8db5ab97",
+  "environment_modified": false,
+  "focused_cpu_tests": {
+    "failed": 0,
+    "new_v2_cases": 18,
+    "passed": 75,
+    "seconds": 5.0
+  },
+  "gamma": 2.0,
+  "gamma_from_initial_constraint_interval_only": true,
+  "global_gradient_isolation": true,
+  "global_state_unchanged": true,
+  "lint": "passed",
+  "local_baseline_unchanged": true,
+  "new_files_sha256": {
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/objective_v2_diagnostic/REPORT.md": "3c921bbb4b33158a4f4e11aec4606a9cb77a05fd8fd670c90b54f66237b029b8",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/objective_v2_diagnostic/gradient_audit.json": "8c5f57c17e39043028c1b44a3c42097d3e41dd380a72b98a844c40b68bdc3bfd",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/objective_v2_diagnostic/interpretation.json": "b8a9ac0fa1a479d44782472ae15c0cde3c337d878c5bbe4939d6916301ad9c8a",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/objective_v2_diagnostic/protocol.json": "6d1a7763cc0296ef46d3345a4df06324a1e369760df9bcb7629a88b9181b3c00",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/objective_v2_diagnostic/results.json": "e94eb1b0d3051eb4316ed7e6ceba7d6bdede15aaa5f01dbdcc651c07be0c0d09",
+    "scripts/diagnose_e010_phase4d_objective_v2.py": "d824ec1b4a1ec6766aceee1d32a5bb8047efe4b73d1e282c99abd7a05e929b46",
+    "src/protein_distance_diffusion/training/e010_phase4d_objective_v2.py": "a07cac109d1ccb18a68acdf73f727e487c6a0a383491481f9c340f0d220e3959",
+    "tests/test_e010_phase4d_objective_v2.py": "c13d51df11ce57ab044b5aaea469b78efdfda09ae30091217852acda8927d157"
+  },
+  "old_500_update_contract_authorized": false,
+  "optimizer_steps": 0,
+  "preparation_phase4b_phase4c_and_checkpoint_pins_unchanged": true,
+  "rms_mapping_verified_absolute_tolerance_angstrom": 1e-08,
+  "rms_targets": [
+    0.0,
+    0.03,
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.27
+  ],
+  "s_max_selected": null,
+  "smooth_bound_prepared_not_attached": true,
+  "training_launched": false,
+  "v1_byte_inventory_unchanged": true,
+  "v1_local_remote_sha_verified": true
+}

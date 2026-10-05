@@ -1,0 +1,23 @@
+{
+  "schema": "e010_phase4d_objective_v2_diagnostic",
+  "diagnostic_v1_commit": "5eaa96c30d7b18ef712aeb5a84c412ba8db5ab97",
+  "device": "cpu",
+  "threads": 2,
+  "seed": 41047,
+  "beta": 16.8,
+  "candidate": "L_local + 16.8 L_cart + gamma L_chiral; no guard or displacement penalty",
+  "chirality_quantity": "normalized dot(cross(a,b),c), a=i-1 to i, b=i to i+1, c=i+1 to i+2; same sign as existing evaluator",
+  "chirality_eligibility": "freeze exactly jointly assessable Pg/target quartets from existing evaluator at initialization; target geometry and eligibility detached; no dropping quartets after displacement",
+  "chirality_reduction": "pooled eligible-quartet mean squared q error over entire training panel; dimensionless",
+  "gamma_rule": "solve strict common-descent half-lines gamma>=0; choose 0 if feasible, else first 1-2-5 decade value strictly above lower bound with 1e-6 numerical margin; narrow interval fallback midpoint; lower=0 open uses 1% norm-matching anchor; no metric sweep; stop if empty",
+  "correction_rms_targets_angstrom": [0.0, 0.03, 0.05, 0.10, 0.15, 0.20, 0.27],
+  "scale_mapping": "initial head-only direction gives linear correction; derive exact RMS slope from frame and head directional output without taking a parameter step; alpha=target_RMS/slope",
+  "raw_cartesian_tolerance_fraction": 0.000001,
+  "aligned_rmsd_tolerance_fraction": 0.01,
+  "finite_success": "mean local strictly improves; all offsets non-harmful; raw Cartesian change <=1e-6 fraction; aligned degradation <=1%; inversion count non-increasing; assessability preserved; outputs finite",
+  "bounded_parameterization": "prepare standalone radial saturation u/(sqrt(1+||u||^2/s_max^2)); do not attach to architecture or activate; no s_max chosen before response",
+  "training_authorized": false,
+  "training_launched": false,
+  "cuda_used": false,
+  "optimizer_steps": 0
+}
