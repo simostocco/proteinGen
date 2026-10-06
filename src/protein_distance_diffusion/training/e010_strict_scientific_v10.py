@@ -189,7 +189,7 @@ def certificate(b, delta, mu, config, contract):
         certificate_direction_checks=additional,
         shadow_steps=shadows,
         projected_feasible_gradient_norm=float(np.linalg.norm(direction)),
-        maximum_linearized_cone_violation=float(np.max(a @ direction)),
+        maximum_linearized_cone_violation=float(np.max(a @ direction)) if len(a) else 0.0,
         active_inequality_indices=ids.tolist(),
         active_balls=len(balls),
         quartets=telemetry,
