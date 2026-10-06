@@ -1,0 +1,10 @@
+/home/simostocco/proteinGen-hybrid-local-global/src/protein_distance_diffusion/training/e010_no_new_inversion_v9.py:81: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:822.)
+  minimum_signed_quantity=float(signed.min()) if len(signed) else None,
+12 True True 39 {'assessable': 9, 'correct': 5, 'inverted': 4, 'active_signed': 0, 'minimum_signed_quantity': 0.0590750199448086, 'minimum_signed_margin': 0.0590740199448086, 'new_inversions': 0, 'repaired_inversions': 0, 'assessability_lost': 0, 'minimum_bond_margin': 1.6242182606192663, 'minimum_frame_margin': 0.294364662885998, 'minimum_absolute_q_margin': 0.036599533080663986, 'exact_extra_feasible': True, 'constraint_slices': {'signed': (0, 5), 'unsigned_assessability': (5, 9), 'frame_assessability': (9, 18), 'bond_assessability': (18, 29)}}
+32 False False 1000 {'assessable': 29, 'correct': 18, 'inverted': 11, 'active_signed': 1, 'minimum_signed_quantity': 1.083093953209607e-06, 'minimum_signed_margin': 8.309395320960707e-08, 'new_inversions': 0, 'repaired_inversions': 0, 'assessability_lost': 0, 'minimum_bond_margin': 1.6919778097315257, 'minimum_frame_margin': 0.1600245077888165, 'minimum_absolute_q_margin': 8.309395320960707e-08, 'exact_extra_feasible': True, 'constraint_slices': {'signed': (0, 18), 'unsigned_assessability': (18, 29), 'frame_assessability': (29, 58), 'bond_assessability': (58, 89)}}
+Traceback (most recent call last):
+  File "/home/simostocco/proteinGen-hybrid-local-global/scripts/preflight_e010_no_new_inversion_v9.py", line 23, in <module>
+    assert passed, "Numerical preflight blocks panel; no scientific optimization permitted"
+           ^^^^^^
+AssertionError: Numerical preflight blocks panel; no scientific optimization permitted

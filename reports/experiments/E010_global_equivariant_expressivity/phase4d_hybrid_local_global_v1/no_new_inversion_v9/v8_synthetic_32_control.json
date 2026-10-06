@@ -1,0 +1,192 @@
+{
+  "config": {
+    "classification_binary_gate": "preserve_V7_every_example",
+    "constraints": {
+      "active_tolerance": 1e-05,
+      "aligned_rmsd_ratio_limit": 1.01,
+      "assessability_gate": "every_example_preserves_all_baseline_assessable_quartets",
+      "continuous_chiral_ratio_limit": 1.0,
+      "inversion_gate": "every_example_final_count_at_most_Pg_count",
+      "normalized_feasibility_tolerance": 1e-08
+    },
+    "convergence": {
+      "boundary_relative_tolerance": 0.0001,
+      "complementarity_tolerance": 1e-06,
+      "dual_feasibility_tolerance": 1e-08,
+      "normalized_ball_kkt_max": 0.001,
+      "projected_ball_mapping_max": 0.001,
+      "strong_condition_450_min_per_arm": 18,
+      "strong_overall_min_per_arm": 48
+    },
+    "device": "cpu",
+    "full_result_reproduction_before_commit": true,
+    "gradient_validation": {
+      "absolute_tolerance": 1e-10,
+      "directions": [
+        "alternating_sign",
+        "sin_index",
+        "cos_index_times_1.7"
+      ],
+      "epsilons_angstrom": [
+        1e-06,
+        1e-05,
+        0.0001
+      ],
+      "pass_rule": "one_passing_epsilon_per_direction_for_every_baseline_panel_example",
+      "relative_tolerance": 1e-05
+    },
+    "history_interval": 10,
+    "initialization": "exact_zero_independently_for_every_example_and_arm",
+    "local_gain_threshold_pct": 5.0,
+    "material_gain_delta_percentage_points": 0.5,
+    "no_cuda": true,
+    "no_neural_training": true,
+    "no_restarts_or_setting_changes": true,
+    "objective": "local_mean_only",
+    "objective_normalization": "divide_by_frozen_baseline_local_mean_positive_constant",
+    "precision": "float64",
+    "primary_condition": 450,
+    "recurrence": {
+      "K": 8,
+      "eligibility": "historical_recomputed_each_step",
+      "s_max_angstrom": 0.04
+    },
+    "schema": "e010_phase4d_local_feasibility_v8",
+    "solver": {
+      "barrier_tol": 1e-12,
+      "constraint_hessian": "exact_autograd_matrix_free_HVP",
+      "gtol": 1e-12,
+      "initial_barrier_parameter": 1e-07,
+      "initial_barrier_tolerance": 1e-07,
+      "initial_constr_penalty": 1.0,
+      "initial_tr_radius": 1.0,
+      "maxiter": 1000,
+      "method": "trust-constr",
+      "objective_hessian": "exact_autograd_matrix_free_HVP",
+      "scipy_version": "1.18.1",
+      "sparse_jacobian": false,
+      "verbose": 0,
+      "xtol": 1e-12
+    },
+    "source_result_commit": "99c4b2393524059f3dbb757a8f1deee2f7517f57",
+    "threads_each": 1,
+    "workers": 4
+  },
+  "length": 32,
+  "optimizer": {
+    "active_constraints": [
+      false,
+      false
+    ],
+    "cg_iterations": 807,
+    "complementarity": 2.5601615133779693e-13,
+    "constraint_feasible": true,
+    "constraints": [
+      -0.1919782862420114,
+      -0.09825155856704693
+    ],
+    "converged": true,
+    "final_local": 0.17804009335221016,
+    "function_evaluations": 45,
+    "history": [
+      {
+        "barrier_parameter": 1e-07,
+        "constraint_violation": 0.0,
+        "constraints": [
+          -0.009900990099009799,
+          0.0
+        ],
+        "iteration": 1,
+        "local_objective": 0.5535752937050035,
+        "normalized_objective": 1.0,
+        "optimality": 0.0080764264842952,
+        "trust_radius": 1.0
+      },
+      {
+        "barrier_parameter": 1e-07,
+        "constraint_violation": 0.0,
+        "constraints": [
+          -0.19066663265640582,
+          -0.09776900019362922
+        ],
+        "iteration": 10,
+        "local_objective": 0.1798903699745155,
+        "normalized_objective": 0.32496098005121204,
+        "optimality": 5.882110803823778e-06,
+        "trust_radius": 144.23217228583042
+      },
+      {
+        "barrier_parameter": 1e-07,
+        "constraint_violation": 0.0,
+        "constraints": [
+          -0.19198040696792829,
+          -0.09826115097578803
+        ],
+        "iteration": 20,
+        "local_objective": 0.1780459704716396,
+        "normalized_objective": 0.321629184857587,
+        "optimality": 8.809817597175465e-09,
+        "trust_radius": 3352.4220610869734
+      },
+      {
+        "barrier_parameter": 1.6000000000000004e-10,
+        "constraint_violation": 0.0,
+        "constraints": [
+          -0.1919788040577295,
+          -0.09825113094223548
+        ],
+        "iteration": 30,
+        "local_objective": 0.17804112403682357,
+        "normalized_objective": 0.32162043006872426,
+        "optimality": 1.3500651717681844e-10,
+        "trust_radius": 2095263.7881793582
+      },
+      {
+        "barrier_parameter": 6.400000000000003e-12,
+        "constraint_violation": 0.0,
+        "constraints": [
+          -0.19197826214991653,
+          -0.09825138201681949
+        ],
+        "iteration": 40,
+        "local_objective": 0.17804017971056763,
+        "normalized_objective": 0.3216187242009468,
+        "optimality": 1.5279176966925113e-11,
+        "trust_radius": 52381594.704483956
+      },
+      {
+        "barrier_parameter": 2.560000000000001e-13,
+        "constraint_violation": 0.0,
+        "constraints": [
+          -0.1919782862420114,
+          -0.09825155856704693
+        ],
+        "iteration": 50,
+        "local_objective": 0.17804009335221016,
+        "normalized_objective": 0.32161856819984186,
+        "optimality": 4.73599689039639e-13,
+        "trust_radius": 1309539867.612099
+      }
+    ],
+    "initial_local": 0.5535752937050035,
+    "iterations": 50,
+    "message": "`gtol` termination condition is satisfied.",
+    "multipliers": [
+      1.3335682714401262e-12,
+      2.605568563815403e-12
+    ],
+    "optimality": 4.73599689039639e-13,
+    "runtime_seconds": 14.005985699826851,
+    "scipy_success": true,
+    "stationarity": {
+      "boundary_active_fraction": 0.9333333333333333,
+      "lagrangian_correction_gradient_norm": 0.8781281620061107,
+      "local_gradient_norm": 0.8781281620057932,
+      "maximum_feasible_radial_residual": 3.2085113840696894e-14,
+      "maximum_tangential_residual": 2.2308866984948968e-08,
+      "normalized_ball_kkt_max": 1.832591484414442e-07,
+      "projected_ball_mapping_max": 2.798473920249958e-07
+    },
+    "status": 1
+  }
+}

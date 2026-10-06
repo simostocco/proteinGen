@@ -1,0 +1,21 @@
+{
+  "index": 15,
+  "sparse_vs_direct_autograd_directional_max_abs": [
+    1.8041124150158794e-16,
+    1.249000902703301e-16,
+    1.1102230246251565e-16
+  ],
+  "scaled_fd_max_at_1e_5": [
+    1.4756539226415963,
+    1.3085762272700083,
+    2.385825680836848
+  ],
+  "scaled_fd_max_at_1e_4": [
+    0.08162712847357627,
+    0.1437462025792754,
+    0.3301966921721328
+  ],
+  "cause": "small-step floating-point cancellation; derivative arithmetic agrees",
+  "tolerances_changed": false,
+  "scientific_optimization_launched": false
+}

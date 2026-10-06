@@ -1,0 +1,105 @@
+{
+  "aligned_directions_validated": 180,
+  "baseline_assessable": 13029,
+  "baseline_constraint_jacobian_preflight_all_passed": true,
+  "baseline_correct": 7536,
+  "baseline_inverted": 5493,
+  "blockers": [
+    "length32 synthetic expanded constraint solve fails retained gtol at xtol despite cap2000"
+  ],
+  "classification": "INV-D",
+  "condition_baseline_inversions": {
+    "250": 2133,
+    "450": 2164,
+    "50": 1196
+  },
+  "condition_gains_pct": {
+    "250": null,
+    "450": null,
+    "50": null
+  },
+  "config": {
+    "classification_binary_gate": "preserve_V7_every_example",
+    "constraints": {
+      "active_tolerance": 1e-05,
+      "aligned_rmsd_ratio_limit": 1.01,
+      "assessability_gate": "every_example_preserves_all_baseline_assessable_quartets",
+      "continuous_chiral_ratio_limit": 1.0,
+      "inversion_gate": "every_example_final_count_at_most_Pg_count",
+      "normalized_feasibility_tolerance": 1e-08
+    },
+    "convergence": {
+      "boundary_relative_tolerance": 0.0001,
+      "complementarity_tolerance": 1e-06,
+      "dual_feasibility_tolerance": 1e-08,
+      "normalized_ball_kkt_max": 0.001,
+      "projected_ball_mapping_max": 0.001,
+      "strong_condition_450_min_per_arm": 18,
+      "strong_overall_min_per_arm": 48
+    },
+    "device": "cpu",
+    "full_result_reproduction_before_commit": true,
+    "gradient_validation": {
+      "absolute_tolerance": 1e-10,
+      "directions": [
+        "alternating_sign",
+        "sin_index",
+        "cos_index_times_1.7"
+      ],
+      "epsilons_angstrom": [
+        1e-06,
+        1e-05,
+        0.0001
+      ],
+      "pass_rule": "one_passing_epsilon_per_direction_for_every_baseline_panel_example",
+      "relative_tolerance": 1e-05
+    },
+    "history_interval": 10,
+    "initialization": "exact_zero_independently_for_every_example_and_arm",
+    "local_gain_threshold_pct": 5.0,
+    "material_gain_delta_percentage_points": 0.5,
+    "new_constraint_acceptance": "exact_nonpositive_no_tolerance_relaxation",
+    "no_cuda": true,
+    "no_neural_training": true,
+    "no_restarts_or_setting_changes": true,
+    "objective": "local_mean_only",
+    "objective_normalization": "divide_by_frozen_baseline_local_mean_positive_constant",
+    "precision": "float64",
+    "primary_condition": 450,
+    "recurrence": {
+      "K": 8,
+      "eligibility": "historical_recomputed_each_step",
+      "s_max_angstrom": 0.04
+    },
+    "schema": "e010_phase4d_no_new_inversion_v9",
+    "solver": {
+      "barrier_tol": 1e-12,
+      "constraint_hessian": "exact_autograd_matrix_free_HVP",
+      "gtol": 1e-12,
+      "initial_barrier_parameter": 1e-07,
+      "initial_barrier_tolerance": 1e-07,
+      "initial_constr_penalty": 1.0,
+      "initial_tr_radius": 1.0,
+      "maxiter": 2000,
+      "method": "trust-constr",
+      "objective_hessian": "exact_autograd_matrix_free_HVP",
+      "scipy_version": "1.18.1",
+      "sparse_jacobian": true,
+      "verbose": 0,
+      "xtol": 1e-12
+    },
+    "source_result_commit": "e293857953b064439645f1c2ae36fdd67b36fe2b",
+    "threads_each": 1,
+    "workers": 4
+  },
+  "constraint_directions_validated": 180,
+  "cuda_used": false,
+  "exact_synthetic_reproduction": true,
+  "historical_artifacts_unchanged": true,
+  "neural_training_launched": false,
+  "scientific_examples_optimized": 0,
+  "scientific_panel_optimized": false,
+  "synthetic_converged": 1,
+  "synthetic_total": 2,
+  "threshold": 1.0000000000000002e-06
+}

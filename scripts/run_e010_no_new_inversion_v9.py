@@ -1,0 +1,241 @@
+#!/usr/bin/env python3
+"""Frozen CPU float64 local-feasibility panel and exact result reproduction."""
+
+import argparse
+import hashlib
+import json
+import multiprocessing
+import subprocess
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
+import numpy as np
+import scipy
+import torch
+import yaml
+
+from protein_distance_diffusion.training import e010_no_new_inversion_v9 as v9
+from protein_distance_diffusion.training.e010_phase4d_diagnostic import assert_file_pins, file_hash
+from protein_distance_diffusion.training.e010_precision_kkt_v6 import directional_checks
+from protein_distance_diffusion.training.e010_recurrent_capacity import batch
+from scripts.run_e010_phase4d_recurrent_capacity_v3 import ROOT, load_cache, write
+
+OUT = (
+    ROOT / "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/no_new_inversion_v9"
+)
+CONFIG = ROOT / "configs/e010_phase4d_no_new_inversion_v9.yaml"
+CACHE = None
+CFG = None
+MODE = None
+
+
+def setup():
+    cfg = yaml.safe_load(CONFIG.read_text())
+    assert cfg["solver"]["scipy_version"] == scipy.__version__
+    assert cfg["recurrence"]["K"] == 8 and cfg["recurrence"]["s_max_angstrom"] == 0.04
+    assert cfg["objective"] == "local_mean_only"
+    torch.set_num_threads(1)
+    torch.use_deterministic_algorithms(True)
+    return cfg
+
+
+def load_example(i):
+    return {k: v.double() if v.is_floating_point() else v for k, v in batch(CACHE, [i], "cpu").items()}
+
+
+def register():
+    global CACHE, CFG
+    CFG = setup()
+    preflight = json.loads((OUT / "synthetic_preflight.json").read_text())
+    assert preflight["passed"]
+    CACHE, manifest = load_cache()
+    paths = subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True).splitlines()
+    pins = {str(ROOT / p): file_hash(ROOT / p) for p in paths}
+    for p in (
+        CONFIG,
+        ROOT / "scripts/preflight_e010_no_new_inversion_v9.py",
+        OUT / "synthetic_preflight.json",
+        ROOT / "docs/e010_phase4d_no_new_inversion_v9.md",
+        ROOT / "src/protein_distance_diffusion/training/e010_no_new_inversion_v9.py",
+        ROOT / "scripts/run_e010_no_new_inversion_v9.py",
+        ROOT / "tests/test_e010_no_new_inversion_v9.py",
+    ):
+        pins[str(p)] = file_hash(p)
+    write(
+        OUT / "execution_contract.json",
+        dict(
+            config=CFG,
+            protected_sha256=pins,
+            cache_sha256=manifest["cache_sha256"],
+            order=manifest["order"],
+            source_result_commit="e293857953b064439645f1c2ae36fdd67b36fe2b",
+        ),
+    )
+    checks = []
+    hessians = []
+    for i in range(60):
+        b = load_example(i)
+        p = b["pg"].clone().requires_grad_()
+
+        def fun(x, data=b):
+            return v9.v8.aligned_rmsd(x, data["target"], data["mask"])
+
+        g = torch.autograd.grad(fun(p), p)[0]
+        fd = directional_checks(fun, p.detach(), g, CFG["gradient_validation"]["epsilons_angstrom"])
+        failed = [j for j in range(3) if not any(r["passed"] for r in fd if r["direction"] == j)]
+        checks.append(dict(index=i, record=CACHE["records"][i], checks=fd, failed_directions=failed))
+        if failed:
+            write(OUT / "aligned_gradient_blocker.json", dict(index=i, checks=fd, failed_directions=failed))
+            raise RuntimeError("Aligned RMSD float64 gradient unreliable; STOP before any optimization")
+        oracle = v9.Oracle(b)
+        zero = np.zeros(np.prod(oracle.shape), dtype=np.float64)
+        direction = np.sin(np.arange(len(zero)) + 1)
+        assert np.isfinite(oracle.hess(zero) @ direction).all()
+        assert np.isfinite(oracle.chess(zero, np.full(len(oracle.cfun(zero)), 0.1)) @ direction).all()
+        assert (oracle.cfun(zero)[2:] <= 0).all(), "Pg not exactly feasible"
+        direct = oracle.quartets.telemetry(b["pg"], CFG["constraints"]["active_tolerance"])
+        assert direct["new_inversions"] == direct["assessability_lost"] == 0
+        j = oracle.cjac(zero)
+        errors = []
+        for phase in (0.0, 0.7, 1.3):
+            d = np.sin(np.arange(len(zero)) + 1 + phase)
+            d /= np.linalg.norm(d)
+            expected = j @ d
+            trials = []
+            for epsilon_angstrom in CFG["gradient_validation"]["epsilons_angstrom"]:
+                epsilon = epsilon_angstrom / 0.04
+                fd = (oracle.cfun(zero + epsilon * d) - oracle.cfun(zero - epsilon * d)) / (2 * epsilon)
+                scaled = np.abs(fd - expected) / (1e-8 + 1e-5 * np.abs(expected))
+                trials.append(
+                    dict(epsilon_angstrom=epsilon_angstrom, epsilon_z=epsilon, maximum_scaled_error=float(scaled.max()))
+                )
+            assert any(t["maximum_scaled_error"] <= 1 for t in trials), (
+                "Constraint directional Jacobian validation failed; STOP"
+            )
+            errors.append(trials)
+        hessians.append(
+            dict(
+                index=i,
+                zero_state_objective_and_constraint_hvp_finite=True,
+                baseline_quartets=direct,
+                constraint_directional_max_scaled_errors=errors,
+            )
+        )
+    assert_file_pins(pins)
+    write(
+        OUT / "aligned_gradient_preflight.json",
+        dict(examples=60, directions=180, all_passed=True, records=checks, zero_state_hessian_checks=hessians),
+    )
+    print("Registered and aligned gradients passed for all60 examples", flush=True)
+
+
+def digest(t):
+    return hashlib.sha256(t.detach().contiguous().numpy().tobytes()).hexdigest()
+
+
+def example(i, arm):
+    b = load_example(i)
+    record = CACHE["records"][i]
+    tr, log, z = v9.solve(b, CFG)
+    states = [v9.v8.metric_row(p, b, record, tr, t) for t, p in enumerate(tr["states"])]
+    assert all(
+        s["finite"]
+        and s["step_correction_max"] <= 0.04
+        and s["displacement_max"] <= 0.320001
+        and s["path_length_max"] <= 0.320001
+        for s in states
+    )
+    result = dict(
+        index=i,
+        arm=arm,
+        record=record,
+        baseline=states[0],
+        oracle=states[-1],
+        states=states,
+        optimizer=log,
+        correction_direction_telemetry=v9.v8.correction_telemetry(tr),
+        quartet_states=[
+            v9.QuartetConstraints(b).telemetry(p, CFG["constraints"]["active_tolerance"]) for p in tr["states"]
+        ],
+        variables_sha256=hashlib.sha256(z.tobytes()).hexdigest(),
+        state_coordinate_sha256=[digest(p) for p in tr["states"]],
+        temporary_assessability_losses=[s["chirality_assessability_lost"] for s in states],
+        frame_eligibility=[s["frame_eligible"] for s in states],
+    )
+    path = OUT / arm / f"example_{i:02d}.json"
+    if MODE == "reproduce":
+        expected = json.loads(path.read_text())
+        x, y = json.loads(json.dumps(result)), json.loads(json.dumps(expected))
+        for r in (x, y):
+            r["optimizer"].pop("runtime_seconds")
+        assert x == y, f"non-timing result reproduction mismatch {arm}/{i}"
+        write(
+            OUT / "reproduction" / arm / f"example_{i:02d}.json",
+            dict(
+                index=i,
+                arm=arm,
+                exact_non_timing_match=True,
+                scientific_record_sha256=hashlib.sha256(
+                    json.dumps(x, sort_keys=True, allow_nan=False).encode()
+                ).hexdigest(),
+            ),
+        )
+    else:
+        directory = OUT / "untracked_states" / arm
+        directory.mkdir(parents=True, exist_ok=True)
+        torch.save(
+            dict(z=torch.from_numpy(z.copy()), states=[p.detach() for p in tr["states"]]),
+            directory / f"example_{i:02d}.pt",
+        )
+        write(path, result)
+    return (
+        arm,
+        i,
+        log["converged"],
+        log["iterations"],
+        log["constraints"],
+        log["stationarity"]["normalized_ball_kkt_max"],
+    )
+
+
+def execute(mode):
+    global CACHE, CFG, MODE
+    CFG = setup()
+    MODE = mode
+    contract = json.loads((OUT / "execution_contract.json").read_text())
+    assert_file_pins(contract["protected_sha256"])
+    assert json.loads((OUT / "aligned_gradient_preflight.json").read_text())["all_passed"]
+    CACHE, manifest = load_cache()
+    pending = [
+        (i, arm)
+        for i in range(60)
+        for arm in ("B",)
+        if not (
+            OUT / "reproduction" / arm / f"example_{i:02d}.json"
+            if mode == "reproduce"
+            else OUT / arm / f"example_{i:02d}.json"
+        ).exists()
+    ]
+    with ProcessPoolExecutor(max_workers=4, mp_context=multiprocessing.get_context("fork")) as pool:
+        for future in as_completed([pool.submit(example, i, arm) for i, arm in pending]):
+            print(mode, *future.result(), flush=True)
+    assert_file_pins(contract["protected_sha256"])
+    assert_file_pins(manifest["protected_input_sha256"])
+    write(
+        OUT / ("reproduction_complete.json" if mode == "reproduce" else "execution_complete.json"),
+        dict(
+            examples=60,
+            arms=1,
+            results=60,
+            protected_hashes_verified=True,
+            exact_non_timing_reproduction=mode == "reproduce",
+            cuda_used=False,
+            neural_training_launched=False,
+        ),
+    )
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mode", choices=["register", "run", "reproduce"])
+    args = parser.parse_args()
+    register() if args.mode == "register" else execute(args.mode)

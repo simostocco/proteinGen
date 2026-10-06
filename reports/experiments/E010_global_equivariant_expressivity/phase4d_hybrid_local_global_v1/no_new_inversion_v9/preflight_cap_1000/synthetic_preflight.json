@@ -1,0 +1,1292 @@
+{
+  "config": {
+    "classification_binary_gate": "preserve_V7_every_example",
+    "constraints": {
+      "active_tolerance": 1e-05,
+      "aligned_rmsd_ratio_limit": 1.01,
+      "assessability_gate": "every_example_preserves_all_baseline_assessable_quartets",
+      "continuous_chiral_ratio_limit": 1.0,
+      "inversion_gate": "every_example_final_count_at_most_Pg_count",
+      "normalized_feasibility_tolerance": 1e-08
+    },
+    "convergence": {
+      "boundary_relative_tolerance": 0.0001,
+      "complementarity_tolerance": 1e-06,
+      "dual_feasibility_tolerance": 1e-08,
+      "normalized_ball_kkt_max": 0.001,
+      "projected_ball_mapping_max": 0.001,
+      "strong_condition_450_min_per_arm": 18,
+      "strong_overall_min_per_arm": 48
+    },
+    "device": "cpu",
+    "full_result_reproduction_before_commit": true,
+    "gradient_validation": {
+      "absolute_tolerance": 1e-10,
+      "directions": [
+        "alternating_sign",
+        "sin_index",
+        "cos_index_times_1.7"
+      ],
+      "epsilons_angstrom": [
+        1e-06,
+        1e-05,
+        0.0001
+      ],
+      "pass_rule": "one_passing_epsilon_per_direction_for_every_baseline_panel_example",
+      "relative_tolerance": 1e-05
+    },
+    "history_interval": 10,
+    "initialization": "exact_zero_independently_for_every_example_and_arm",
+    "local_gain_threshold_pct": 5.0,
+    "material_gain_delta_percentage_points": 0.5,
+    "new_constraint_acceptance": "exact_nonpositive_no_tolerance_relaxation",
+    "no_cuda": true,
+    "no_neural_training": true,
+    "no_restarts_or_setting_changes": true,
+    "objective": "local_mean_only",
+    "objective_normalization": "divide_by_frozen_baseline_local_mean_positive_constant",
+    "precision": "float64",
+    "primary_condition": 450,
+    "recurrence": {
+      "K": 8,
+      "eligibility": "historical_recomputed_each_step",
+      "s_max_angstrom": 0.04
+    },
+    "schema": "e010_phase4d_no_new_inversion_v9",
+    "solver": {
+      "barrier_tol": 1e-12,
+      "constraint_hessian": "exact_autograd_matrix_free_HVP",
+      "gtol": 1e-12,
+      "initial_barrier_parameter": 1e-07,
+      "initial_barrier_tolerance": 1e-07,
+      "initial_constr_penalty": 1.0,
+      "initial_tr_radius": 1.0,
+      "maxiter": 1000,
+      "method": "trust-constr",
+      "objective_hessian": "exact_autograd_matrix_free_HVP",
+      "scipy_version": "1.18.1",
+      "sparse_jacobian": true,
+      "verbose": 0,
+      "xtol": 1e-12
+    },
+    "source_result_commit": "e293857953b064439645f1c2ae36fdd67b36fe2b",
+    "threads_each": 1,
+    "workers": 4
+  },
+  "passed": false,
+  "records": [
+    {
+      "length": 12,
+      "optimizer": {
+        "cg_iterations": 219,
+        "complementarity": 2.572147836653069e-13,
+        "constraint_feasible": true,
+        "constraints": [
+          -0.22035580150836653,
+          -0.2628743013767856,
+          -2.448258042294146,
+          -1.207795161557696,
+          -1.3345971418463343,
+          -0.45309611325224786,
+          -1.0519774055265583,
+          -0.07880657339883221,
+          -0.2172525283090518,
+          -4.766507158236054,
+          -0.26256118647519383,
+          -1.2480869817062588,
+          -1.591071335042322,
+          -0.7328312726818499,
+          -0.7884335718059341,
+          -1.0776679391434323,
+          -1.609912067973706,
+          -0.7258944386255217,
+          -0.994729954689304,
+          -0.7801737373022412,
+          -1.1245168208092349,
+          -0.9590635656590533,
+          -0.8435578276471505,
+          -1.2624156947516996,
+          -0.9922049339150623,
+          -0.8009382578261862,
+          -0.9839307314814835,
+          -1.2561824723605277,
+          -0.9602568766257298,
+          -0.7322991398137784,
+          -1.1323697614767638
+        ],
+        "converged": true,
+        "final_local": 0.10713492609617209,
+        "function_evaluations": 56,
+        "history": [
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "iteration": 1,
+            "normalized_objective": 1.0,
+            "optimality": 0.02499396110929101,
+            "trust_radius": 1.0
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "iteration": 10,
+            "normalized_objective": 0.2395499589875659,
+            "optimality": 2.8978381494632426e-05,
+            "trust_radius": 26.304739369310532
+          },
+          {
+            "barrier_parameter": 2e-08,
+            "constraint_violation": 0.0,
+            "iteration": 20,
+            "normalized_objective": 0.23438618544660275,
+            "optimality": 1.2627799984811453e-08,
+            "trust_radius": 6057.276511466588
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 30,
+            "normalized_objective": 0.2343574573654833,
+            "optimality": 3.238310991347137e-11,
+            "trust_radius": 757159.5639333235
+          }
+        ],
+        "initial_local": 0.4571441938552759,
+        "iterations": 39,
+        "message": "`gtol` termination condition is satisfied.",
+        "multipliers": [
+          1.1619939438029398e-12,
+          9.742290921444213e-13,
+          1.0458213468689532e-13,
+          2.118330910131665e-13,
+          1.9193295021012458e-13,
+          5.647616010090769e-13,
+          2.433321638866325e-13,
+          3.2638747324232527e-12,
+          1.173757606204214e-12,
+          5.368398999217856e-14,
+          9.722828496795517e-13,
+          2.0517822151169257e-13,
+          1.6088377872609517e-13,
+          3.4936179206380794e-13,
+          3.2464895532106793e-13,
+          2.374619913092309e-13,
+          1.5903775346825654e-13,
+          3.527036306248847e-13,
+          2.5732896189222504e-13,
+          3.2803736657800696e-13,
+          2.276510233449737e-13,
+          2.6694106682903906e-13,
+          3.0346959334851336e-13,
+          2.0278460409115698e-13,
+          2.580093122162656e-13,
+          3.19632421901989e-13,
+          2.601826351442936e-13,
+          2.0378567162573852e-13,
+          2.6657495505328935e-13,
+          3.496080922554032e-13,
+          2.2607314147788807e-13
+        ],
+        "optimality": 4.448412835335301e-13,
+        "quartets": {
+          "active_signed": 0,
+          "assessability_lost": 0,
+          "assessable": 9,
+          "constraint_slices": {
+            "bond_assessability": [
+              18,
+              29
+            ],
+            "frame_assessability": [
+              9,
+              18
+            ],
+            "signed": [
+              0,
+              5
+            ],
+            "unsigned_assessability": [
+              5,
+              9
+            ]
+          },
+          "correct": 5,
+          "exact_extra_feasible": true,
+          "inverted": 4,
+          "minimum_absolute_q_margin": 0.036599533080663986,
+          "minimum_bond_margin": 1.6242182606192663,
+          "minimum_frame_margin": 0.294364662885998,
+          "minimum_signed_margin": 0.0590740199448086,
+          "minimum_signed_quantity": 0.0590750199448086,
+          "new_inversions": 0,
+          "repaired_inversions": 0
+        },
+        "runtime_seconds": 5.632874368922785,
+        "scipy_success": true,
+        "stationarity": {
+          "boundary_active_fraction": 1.0,
+          "lagrangian_correction_gradient_norm": 1.463401372442292,
+          "local_gradient_norm": 1.4634013724437835,
+          "normalized_ball_kkt_max": 7.035081776590858e-08,
+          "projected_ball_mapping_max": 1.829623374828234e-07
+        },
+        "status": 1
+      }
+    },
+    {
+      "length": 32,
+      "optimizer": {
+        "cg_iterations": 10534,
+        "complementarity": 8.829039161032728e-11,
+        "constraint_feasible": true,
+        "constraints": [
+          -0.19200191877763073,
+          -0.09817504909967345,
+          -2.459579063908401,
+          -1.1883455577247983,
+          -1.3220641934476256,
+          -0.4453737787519402,
+          -1.4083140658505746,
+          -0.5432905801830537,
+          -1.236229621431875,
+          -1.0000368780796327,
+          -2.285857279046787,
+          -0.38221635135881965,
+          -1.6339542422074753,
+          -2.172450252428033,
+          -1.5330712585747763,
+          -6.373283428013205e-07,
+          -1.6542243550344404,
+          -1.0149473248383594,
+          -1.0929776310095936,
+          -1.483129289428411,
+          -0.0876668939235312,
+          -0.21725680033050548,
+          -4.738451475468995,
+          -0.3635823312849745,
+          -0.057580263664872226,
+          -2.3496385899447363,
+          -0.8333546366250437,
+          -0.6637665238940619,
+          -2.0524447662127834,
+          -2.6350479619273663,
+          -0.6912415732433145,
+          -1.257675950426124,
+          -1.5847774044715295,
+          -0.7310467388321348,
+          -0.798992670915764,
+          -1.0791385273352545,
+          -1.6032401593643104,
+          -0.7328995384742939,
+          -1.0129367682897052,
+          -0.8038142569879511,
+          -1.3953879159611862,
+          -0.3946156413912879,
+          -1.229559960947102,
+          -1.0299923979839705,
+          -0.9632682192701418,
+          -1.2282406105343957,
+          -1.271512834139752,
+          -1.4331739650662452,
+          -0.8056198638741267,
+          -0.9951740264414817,
+          -1.4437901183795003,
+          -1.2919369858212462,
+          -1.0562342296810552,
+          -0.8224363150695401,
+          -1.445874720298012,
+          -0.9719366179046266,
+          -1.3225175210995763,
+          -1.0363457068090425,
+          -1.2805256819369697,
+          -0.9486506449296317,
+          -1.1249255817212114,
+          -0.9623492059463935,
+          -0.8406148409304389,
+          -1.2642193357954086,
+          -0.9915935784831025,
+          -0.8011111713616315,
+          -0.9829668889017986,
+          -1.2592480067910934,
+          -0.9414715422437732,
+          -0.7628493809557282,
+          -1.094746608604335,
+          -1.1474224210043846,
+          -0.810809663885313,
+          -0.9147110579021708,
+          -1.263690725975944,
+          -1.042491675777057,
+          -0.9105873087685246,
+          -0.9339262822874322,
+          -1.280633750694542,
+          -0.9868628473774795,
+          -0.8594146192767633,
+          -1.0265370713142496,
+          -1.267222756512356,
+          -0.8029401151194321,
+          -0.989086620485749,
+          -1.2499901016018804,
+          -1.0849215082249961,
+          -0.8145532562218691,
+          -1.0076067682803032,
+          -1.220344963095351,
+          -0.9898688247393547
+        ],
+        "converged": false,
+        "final_local": 0.1780411050621732,
+        "function_evaluations": 1927,
+        "history": [
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "iteration": 1,
+            "normalized_objective": 1.0,
+            "optimality": 0.007921472489307652,
+            "trust_radius": 1.0
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "iteration": 10,
+            "normalized_objective": 0.3250656073731646,
+            "optimality": 8.711996751597663e-06,
+            "trust_radius": 72.9565688009485
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "iteration": 20,
+            "normalized_objective": 0.321780990933274,
+            "optimality": 2.0791351311267126e-07,
+            "trust_radius": 11.219489381283166
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "iteration": 30,
+            "normalized_objective": 0.3217571155435286,
+            "optimality": 3.759114628226952e-07,
+            "trust_radius": 17.592159349852007
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "iteration": 40,
+            "normalized_objective": 0.3217418245126269,
+            "optimality": 2.6865212673638604e-07,
+            "trust_radius": 1.2068221313998484
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "iteration": 50,
+            "normalized_objective": 0.3217180272195242,
+            "optimality": 4.4442495063032906e-07,
+            "trust_radius": 231.80639499928282
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "iteration": 60,
+            "normalized_objective": 0.3217115177528821,
+            "optimality": 1.8383320450881124e-07,
+            "trust_radius": 16.736957061770873
+          },
+          {
+            "barrier_parameter": 2e-08,
+            "constraint_violation": 0.0,
+            "iteration": 70,
+            "normalized_objective": 0.321689047989318,
+            "optimality": 8.001113208424487e-08,
+            "trust_radius": 267.7913129883339
+          },
+          {
+            "barrier_parameter": 2e-08,
+            "constraint_violation": 0.0,
+            "iteration": 80,
+            "normalized_objective": 0.32168381033951887,
+            "optimality": 5.4282985111046306e-08,
+            "trust_radius": 36.74096814199941
+          },
+          {
+            "barrier_parameter": 2e-08,
+            "constraint_violation": 0.0,
+            "iteration": 90,
+            "normalized_objective": 0.3216768267487304,
+            "optimality": 3.928701142645401e-07,
+            "trust_radius": 28.80491902332755
+          },
+          {
+            "barrier_parameter": 2e-08,
+            "constraint_violation": 0.0,
+            "iteration": 100,
+            "normalized_objective": 0.32167037165329376,
+            "optimality": 1.2346103219708268e-07,
+            "trust_radius": 32.26150930612685
+          },
+          {
+            "barrier_parameter": 4e-09,
+            "constraint_violation": 0.0,
+            "iteration": 110,
+            "normalized_objective": 0.3216493736628786,
+            "optimality": 1.4247508795500465e-08,
+            "trust_radius": 2.25830565142888
+          },
+          {
+            "barrier_parameter": 4e-09,
+            "constraint_violation": 0.0,
+            "iteration": 120,
+            "normalized_objective": 0.321647397521532,
+            "optimality": 4.569319495529743e-07,
+            "trust_radius": 22.13139538400302
+          },
+          {
+            "barrier_parameter": 4e-09,
+            "constraint_violation": 0.0,
+            "iteration": 130,
+            "normalized_objective": 0.32164153283440206,
+            "optimality": 1.2436786041154667e-07,
+            "trust_radius": 177.0511630720242
+          },
+          {
+            "barrier_parameter": 4e-09,
+            "constraint_violation": 0.0,
+            "iteration": 140,
+            "normalized_objective": 0.32163825559241244,
+            "optimality": 3.329552804318343e-08,
+            "trust_radius": 70.82046522880968
+          },
+          {
+            "barrier_parameter": 4e-09,
+            "constraint_violation": 0.0,
+            "iteration": 150,
+            "normalized_objective": 0.3216375214932985,
+            "optimality": 1.923656190387341e-08,
+            "trust_radius": 39.65946052813344
+          },
+          {
+            "barrier_parameter": 4e-09,
+            "constraint_violation": 0.0,
+            "iteration": 160,
+            "normalized_objective": 0.32163393090484915,
+            "optimality": 5.404454976450447e-08,
+            "trust_radius": 111.04648947877364
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 170,
+            "normalized_objective": 0.32163310914876375,
+            "optimality": 1.7382340239169205e-08,
+            "trust_radius": 54.41277984459909
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 180,
+            "normalized_objective": 0.3216312846803897,
+            "optimality": 1.2808612475905646e-08,
+            "trust_radius": 152.35578356487747
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 190,
+            "normalized_objective": 0.32163074374170547,
+            "optimality": 2.771634503222062e-07,
+            "trust_radius": 0.012188462685190206
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 200,
+            "normalized_objective": 0.32163072640816004,
+            "optimality": 5.618322224272582e-08,
+            "trust_radius": 0.09555754745189123
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 210,
+            "normalized_objective": 0.3216306173403114,
+            "optimality": 4.6975055910164336e-09,
+            "trust_radius": 7.4917117202282775
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 220,
+            "normalized_objective": 0.3216296127828868,
+            "optimality": 1.4079175702567479e-07,
+            "trust_radius": 41.95358563327834
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 230,
+            "normalized_objective": 0.32162887392773976,
+            "optimality": 2.9577883461430543e-07,
+            "trust_radius": 58.73501988658968
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 240,
+            "normalized_objective": 0.3216287064879356,
+            "optimality": 6.4579558166779925e-09,
+            "trust_radius": 4.698801590927176
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 250,
+            "normalized_objective": 0.32162862066995657,
+            "optimality": 8.444861262137325e-09,
+            "trust_radius": 2.6313288909192183
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 260,
+            "normalized_objective": 0.32162853943443737,
+            "optimality": 2.6550739658503785e-07,
+            "trust_radius": 2.947088357829525
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 270,
+            "normalized_objective": 0.32162841462306774,
+            "optimality": 1.9427146636992637e-09,
+            "trust_radius": 57.76293181345871
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 280,
+            "normalized_objective": 0.32162817514656994,
+            "optimality": 9.203992397224299e-08,
+            "trust_radius": 32.34724181553687
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 290,
+            "normalized_objective": 0.3216279435772169,
+            "optimality": 4.502633373151623e-09,
+            "trust_radius": 12.938896726214747
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 300,
+            "normalized_objective": 0.32162770352802794,
+            "optimality": 7.244611103543434e-08,
+            "trust_radius": 10.3511173809718
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 310,
+            "normalized_objective": 0.3216275167714601,
+            "optimality": 1.9440293063225475e-07,
+            "trust_radius": 7.245782166680263
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 320,
+            "normalized_objective": 0.3216273148081768,
+            "optimality": 1.3130609271021054e-08,
+            "trust_radius": 7.245782166680263
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 330,
+            "normalized_objective": 0.3216270366574412,
+            "optimality": 2.2754707750786728e-09,
+            "trust_radius": 2.028819006670474
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 340,
+            "normalized_objective": 0.3216268478515014,
+            "optimality": 2.0039038237510335e-07,
+            "trust_radius": 8.115276026681896
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 350,
+            "normalized_objective": 0.32162663204656555,
+            "optimality": 9.661565028688977e-09,
+            "trust_radius": 32.461104106727575
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 360,
+            "normalized_objective": 0.3216264638196133,
+            "optimality": 3.0124026584865597e-09,
+            "trust_radius": 25.96888328538207
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 370,
+            "normalized_objective": 0.3216263570086098,
+            "optimality": 7.104850753169904e-09,
+            "trust_radius": 1.0387553314152829
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 380,
+            "normalized_objective": 0.3216262499912826,
+            "optimality": 1.9673686880993528e-07,
+            "trust_radius": 11.634059711851169
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 390,
+            "normalized_objective": 0.32162612678601776,
+            "optimality": 4.9379634343054035e-09,
+            "trust_radius": 16.287683596591638
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 400,
+            "normalized_objective": 0.32162597931787396,
+            "optimality": 1.3305816314898075e-08,
+            "trust_radius": 13.030146877273308
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 410,
+            "normalized_objective": 0.321625863265993,
+            "optimality": 4.421701832796655e-09,
+            "trust_radius": 10.424117501818648
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 420,
+            "normalized_objective": 0.32162551137776607,
+            "optimality": 1.3613962543588423e-08,
+            "trust_radius": 20.848235003637296
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 430,
+            "normalized_objective": 0.32162534108028756,
+            "optimality": 4.283992224224548e-09,
+            "trust_radius": 8.339294001454919
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 440,
+            "normalized_objective": 0.32162513496003725,
+            "optimality": 3.75248639476459e-09,
+            "trust_radius": 1.6678588002909842
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 450,
+            "normalized_objective": 0.32162496534349194,
+            "optimality": 2.3162376775593344e-09,
+            "trust_radius": 4.670004640814759
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 460,
+            "normalized_objective": 0.32162487535386886,
+            "optimality": 3.2469841301714834e-07,
+            "trust_radius": 13.076012994281335
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 470,
+            "normalized_objective": 0.3216247336272407,
+            "optimality": 6.491511801951626e-09,
+            "trust_radius": 20.921620790850138
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "iteration": 480,
+            "normalized_objective": 0.32162463443171563,
+            "optimality": 3.480856229767029e-08,
+            "trust_radius": 16.737296632680113
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 490,
+            "normalized_objective": 0.32162459949659267,
+            "optimality": 6.670536301150173e-10,
+            "trust_radius": 23.432215285752168
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 500,
+            "normalized_objective": 0.3216245093354953,
+            "optimality": 1.4718483447733913e-08,
+            "trust_radius": 11.264679030362831
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 510,
+            "normalized_objective": 0.32162439548684946,
+            "optimality": 7.860132662393084e-08,
+            "trust_radius": 21.39044080320172
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 520,
+            "normalized_objective": 0.3216241451776071,
+            "optimality": 1.7255327866725206e-09,
+            "trust_radius": 8.556176321280688
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 530,
+            "normalized_objective": 0.32162403987832844,
+            "optimality": 4.7818406674226595e-08,
+            "trust_radius": 27.379764228098203
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 540,
+            "normalized_objective": 0.32162388456368424,
+            "optimality": 7.437604860722715e-09,
+            "trust_radius": 21.903811382478565
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 550,
+            "normalized_objective": 0.321623823603465,
+            "optimality": 9.10099073111493e-09,
+            "trust_radius": 61.89753381398673
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 560,
+            "normalized_objective": 0.32162376542697096,
+            "optimality": 1.9521907102372888e-07,
+            "trust_radius": 17.331309467916284
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 570,
+            "normalized_objective": 0.32162359361860426,
+            "optimality": 1.4324094585911523e-09,
+            "trust_radius": 34.66261893583257
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 580,
+            "normalized_objective": 0.32162351296176156,
+            "optimality": 3.955731569399492e-07,
+            "trust_radius": 27.730095148666056
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 590,
+            "normalized_objective": 0.3216233983749576,
+            "optimality": 1.3468069283820872e-09,
+            "trust_radius": 11.092038059466423
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 600,
+            "normalized_objective": 0.3216232774074885,
+            "optimality": 1.0505727324569659e-08,
+            "trust_radius": 62.11541313301198
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 610,
+            "normalized_objective": 0.3216232273359788,
+            "optimality": 2.857948757846345e-09,
+            "trust_radius": 8.696157838621678
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 620,
+            "normalized_objective": 0.32162307039280924,
+            "optimality": 1.1869424608428605e-09,
+            "trust_radius": 34.784631354486706
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 630,
+            "normalized_objective": 0.32162301100782315,
+            "optimality": 2.1173599460476882e-09,
+            "trust_radius": 27.82770508358937
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 640,
+            "normalized_objective": 0.3216229229659577,
+            "optimality": 1.049729284261093e-09,
+            "trust_radius": 11.131082033435748
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 650,
+            "normalized_objective": 0.3216228213775856,
+            "optimality": 3.3358096952395266e-09,
+            "trust_radius": 17.809731253497187
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 660,
+            "normalized_objective": 0.32162276667932893,
+            "optimality": 3.587531641736359e-07,
+            "trust_radius": 28.495570005595507
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 670,
+            "normalized_objective": 0.32162263426801396,
+            "optimality": 1.0529873081148607e-09,
+            "trust_radius": 5.699114001119101
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 680,
+            "normalized_objective": 0.3216225964186612,
+            "optimality": 1.1590929447656372e-09,
+            "trust_radius": 7.978759601566743
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 690,
+            "normalized_objective": 0.32162248686800166,
+            "optimality": 2.017195340571252e-09,
+            "trust_radius": 31.91503840626697
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 700,
+            "normalized_objective": 0.32162240917392976,
+            "optimality": 9.56156188695128e-10,
+            "trust_radius": 12.766015362506787
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 710,
+            "normalized_objective": 0.3216223291967256,
+            "optimality": 1.8229452548274748e-09,
+            "trust_radius": 10.212812290005429
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 720,
+            "normalized_objective": 0.32162226882538647,
+            "optimality": 2.5676256729293283e-09,
+            "trust_radius": 8.17024983200434
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 730,
+            "normalized_objective": 0.32162216814909833,
+            "optimality": 1.2074760990514985e-09,
+            "trust_radius": 65.3619986560347
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 740,
+            "normalized_objective": 0.3216220870393339,
+            "optimality": 7.983808094728285e-08,
+            "trust_radius": 26.144799462413886
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 750,
+            "normalized_objective": 0.3216219487589924,
+            "optimality": 5.108868053998504e-10,
+            "trust_radius": 5.228959892482777
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 760,
+            "normalized_objective": 0.32162189424222826,
+            "optimality": 8.21387809643866e-10,
+            "trust_radius": 41.83167913986221
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 770,
+            "normalized_objective": 0.3216218207470757,
+            "optimality": 3.081633394747623e-08,
+            "trust_radius": 66.93068662377952
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 780,
+            "normalized_objective": 0.32162152149586043,
+            "optimality": 4.9170069435975887e-08,
+            "trust_radius": 267.7227464951181
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 790,
+            "normalized_objective": 0.3216213826662401,
+            "optimality": 1.8296051078509707e-09,
+            "trust_radius": 107.08909859804724
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 800,
+            "normalized_objective": 0.3216213740323316,
+            "optimality": 2.4826862871415064e-10,
+            "trust_radius": 10.494731662608629
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 810,
+            "normalized_objective": 0.3216213158961732,
+            "optimality": 9.649934801429556e-10,
+            "trust_radius": 58.77049731060831
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 820,
+            "normalized_objective": 0.32162127390507395,
+            "optimality": 1.2911510762364394e-09,
+            "trust_radius": 47.016397848486655
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 830,
+            "normalized_objective": 0.3216212066793213,
+            "optimality": 6.0773831837097e-09,
+            "trust_radius": 18.80655913939466
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 840,
+            "normalized_objective": 0.3216211694674929,
+            "optimality": 2.845970595826181e-09,
+            "trust_radius": 52.65836559030507
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 850,
+            "normalized_objective": 0.3216210915961412,
+            "optimality": 9.99390153060152e-09,
+            "trust_radius": 42.12669247224405
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 860,
+            "normalized_objective": 0.3216210621671098,
+            "optimality": 5.91106873653087e-10,
+            "trust_radius": 33.70135397779525
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "iteration": 870,
+            "normalized_objective": 0.32162099172689085,
+            "optimality": 5.001211473007702e-09,
+            "trust_radius": 13.480541591118097
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 880,
+            "normalized_objective": 0.32162088647626896,
+            "optimality": 1.7158292452216603e-10,
+            "trust_radius": 134.80541591118097
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 890,
+            "normalized_objective": 0.3216208478332447,
+            "optimality": 6.347970984385231e-10,
+            "trust_radius": 5.392216636447238
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 900,
+            "normalized_objective": 0.32162080045084457,
+            "optimality": 2.913185685652662e-09,
+            "trust_radius": 86.27546618315583
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 910,
+            "normalized_objective": 0.32162077443763754,
+            "optimality": 3.123576738864404e-10,
+            "trust_radius": 34.51018647326232
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 920,
+            "normalized_objective": 0.321620626176147,
+            "optimality": 5.293144262816455e-10,
+            "trust_radius": 276.0814917860986
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 930,
+            "normalized_objective": 0.32162061168960693,
+            "optimality": 2.1308397208960314e-08,
+            "trust_radius": 27.055986195037665
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 940,
+            "normalized_objective": 0.321620562587032,
+            "optimality": 3.168177713395631e-08,
+            "trust_radius": 21.644788956030133
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 950,
+            "normalized_objective": 0.3216205392883602,
+            "optimality": 1.3120368968213705e-09,
+            "trust_radius": 21.644788956030133
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 960,
+            "normalized_objective": 0.32162052813309344,
+            "optimality": 1.9400675939410569e-10,
+            "trust_radius": 3.03027045384422
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 970,
+            "normalized_objective": 0.32162050905218964,
+            "optimality": 6.363085963973623e-08,
+            "trust_radius": 48.48432726150751
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 980,
+            "normalized_objective": 0.32162048057626574,
+            "optimality": 1.7541575291866635e-10,
+            "trust_radius": 4.848432726150751
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 990,
+            "normalized_objective": 0.32162042290977266,
+            "optimality": 2.7395568807111885e-09,
+            "trust_radius": 135.75611633222104
+          },
+          {
+            "barrier_parameter": 3.200000000000001e-11,
+            "constraint_violation": 0.0,
+            "iteration": 1000,
+            "normalized_objective": 0.32162039579217583,
+            "optimality": 1.2386604336458555e-10,
+            "trust_radius": 54.302446532888425
+          }
+        ],
+        "initial_local": 0.5535752937050035,
+        "iterations": 1000,
+        "message": "The maximum number of function evaluations is exceeded.",
+        "multipliers": [
+          1.563245971130815e-10,
+          2.695728777772005e-11,
+          1.3005297863586566e-11,
+          2.695247253128103e-11,
+          2.420413110599049e-11,
+          7.626019995077927e-11,
+          2.048305799902632e-11,
+          6.229834186640889e-11,
+          1.7244382932738723e-11,
+          3.20571657540786e-11,
+          1.4008185579692635e-11,
+          8.306484292930773e-11,
+          1.962965169096549e-11,
+          1.4741611852663e-11,
+          2.0971264662686147e-11,
+          5.020276274154044e-05,
+          1.9434175115399735e-11,
+          3.172278503524292e-11,
+          2.91334174620779e-11,
+          2.1541055843489308e-11,
+          3.6414848057274997e-10,
+          1.4707462974569442e-10,
+          6.756389759345406e-12,
+          6.529365538979134e-11,
+          -6.392819872668746e-10,
+          3.757615830288346e-11,
+          5.847446153616317e-11,
+          4.7930208774820254e-11,
+          1.54429676916864e-11,
+          1.219656526126615e-11,
+          4.668748383497758e-11,
+          2.543783158303562e-11,
+          2.0185665809721872e-11,
+          4.3798560159761685e-11,
+          4.002883717639548e-11,
+          2.9659685258178776e-11,
+          1.9960242161449324e-11,
+          4.3660361136281285e-11,
+          3.224096829514972e-11,
+          3.566611597974371e-11,
+          2.3108630021431838e-11,
+          8.149063710252765e-11,
+          2.5987548952870705e-11,
+          5.2490031535392473e-11,
+          2.4472349092636813e-11,
+          2.600584343487724e-11,
+          2.5208663628486462e-11,
+          2.2307296125092448e-11,
+          3.9700705078799496e-11,
+          3.218082212750798e-11,
+          2.2164441471405978e-11,
+          2.480577182695483e-11,
+          3.036182611283565e-11,
+          3.877185189759031e-11,
+          2.2128142699716015e-11,
+          3.306019205506032e-11,
+          2.4189117754250066e-11,
+          3.08580137607547e-11,
+          2.5052571280808303e-11,
+          3.3702208172521686e-11,
+          2.844585846655789e-11,
+          3.3267001487476204e-11,
+          3.8044556358839776e-11,
+          2.5311285532043927e-11,
+          3.22712066230293e-11,
+          3.994481028417427e-11,
+          3.2554680104823236e-11,
+          2.5411845324449195e-11,
+          3.331471897007518e-11,
+          4.270199851086664e-11,
+          2.923365691864422e-11,
+          2.7887414504896835e-11,
+          3.244831348431891e-11,
+          4.274050955993644e-11,
+          2.5331469672156202e-11,
+          3.0673032464419076e-11,
+          3.5108230180318156e-11,
+          3.428954554322542e-11,
+          2.4982971074653777e-11,
+          3.2435871596795174e-11,
+          3.725890331155305e-11,
+          3.1172286955099114e-11,
+          2.5252736135274622e-11,
+          3.9858494983551826e-11,
+          3.2366217489737524e-11,
+          2.5588157630089126e-11,
+          2.951519816706521e-11,
+          3.933461008228584e-11,
+          3.174637153803627e-11,
+          2.6219133823261135e-11,
+          3.23313875678655e-11
+        ],
+        "optimality": 1.2386604336458555e-10,
+        "quartets": {
+          "active_signed": 1,
+          "assessability_lost": 0,
+          "assessable": 29,
+          "constraint_slices": {
+            "bond_assessability": [
+              58,
+              89
+            ],
+            "frame_assessability": [
+              29,
+              58
+            ],
+            "signed": [
+              0,
+              18
+            ],
+            "unsigned_assessability": [
+              18,
+              29
+            ]
+          },
+          "correct": 18,
+          "exact_extra_feasible": true,
+          "inverted": 11,
+          "minimum_absolute_q_margin": 8.309395320960707e-08,
+          "minimum_bond_margin": 1.6919778097315257,
+          "minimum_frame_margin": 0.1600245077888165,
+          "minimum_signed_margin": 8.309395320960707e-08,
+          "minimum_signed_quantity": 1.083093953209607e-06,
+          "new_inversions": 0,
+          "repaired_inversions": 0
+        },
+        "runtime_seconds": 234.4994234291371,
+        "scipy_success": false,
+        "stationarity": {
+          "boundary_active_fraction": 0.9333333333333333,
+          "lagrangian_correction_gradient_norm": 0.8779910988662009,
+          "local_gradient_norm": 0.878041732944455,
+          "normalized_ball_kkt_max": 1.1901442053341169e-05,
+          "projected_ball_mapping_max": 1.087804103720641e-05
+        },
+        "status": 0
+      }
+    }
+  ],
+  "scientific_panel_optimized": false
+}
