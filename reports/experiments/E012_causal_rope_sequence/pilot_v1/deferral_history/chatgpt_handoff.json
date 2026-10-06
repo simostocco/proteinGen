@@ -1,0 +1,211 @@
+{
+  "CE_context_1_4_8_16_32_64_full": null,
+  "CE_trajectory": {
+    "0": null,
+    "1000": null,
+    "1500": null,
+    "2000": null,
+    "250": null,
+    "500": null
+  },
+  "CSEQ_classification": "CSEQ-E",
+  "CUDA_precision": "bfloat16",
+  "E010_unchanged_by_E012": true,
+  "E011_unchanged": true,
+  "Gates_A_E": "frozen but not evaluated",
+  "base_E011_commit": "30b657be81cd7bd943918980812d68ecaa0778de",
+  "branch": "e012-causal-rope-sequence",
+  "checkpoint_verification": {
+    "fresh_initialization_independently_reproduced": true,
+    "pilot_checkpoints": 0,
+    "production_smoke_bitwise_resume": true
+  },
+  "definitive_biological_generation_launched": false,
+  "exact_length_sampling_smoke": {
+    "passed": true,
+    "requested_length": 20,
+    "sequences": 2
+  },
+  "excluded_features": [
+    "coordinates",
+    "distances",
+    "contacts",
+    "pair geometry",
+    "secondary structure",
+    "structure labels",
+    "PDB metadata as predictive features",
+    "diffusion timestep",
+    "E004/E007/E010 outputs",
+    "E011 hidden states"
+  ],
+  "full_minus_1_delta_CI": null,
+  "full_minus_8_delta_CI": null,
+  "homology_policy": {
+    "coverage": 0.8,
+    "identity": 0.3
+  },
+  "independent_panel": {
+    "count": 2048,
+    "identities": "exact E011 independent panel",
+    "sha256": "e7c68e412d1aa3efb0251089e6de568fe4579a3668107f58f81d58f456063004"
+  },
+  "independent_panel_confirmation": "not evaluated",
+  "initialization_seed": 12012,
+  "length_conditioning_ablation": null,
+  "length_stratum_results": null,
+  "model_inputs": [
+    "previous canonical amino-acid tokens",
+    "BOS",
+    "PAD",
+    "causal attention",
+    "RoPE",
+    "continuous requested-length embedding",
+    "valid-token/key mask"
+  ],
+  "model_minus_trigram": null,
+  "model_minus_unigram": null,
+  "model_parameter_count": 15533952,
+  "normal_minus_shuffled_prefix": null,
+  "normal_shuffled_KL_JS": null,
+  "optimizer_batch_regime": {
+    "accumulation": 8,
+    "betas": [
+      0.9,
+      0.95
+    ],
+    "effective_equal_protein": 64,
+    "gradient_clip": 1.0,
+    "learning_rate": 0.0003,
+    "optimizer": "AdamW",
+    "physical_batch": 8,
+    "scheduler": "existing LambdaLR cosine over 2000 updates",
+    "warmup_updates": 100,
+    "weight_decay": 0.01
+  },
+  "preparation_commit": "76814fd071a20f1bcc1e381533bfe195381aa1ca",
+  "primary_panel": {
+    "count": 2048,
+    "identities": "exact E011 primary panel",
+    "sha256": "f1c583d37811ca0024605b4c89f3516d4e6487447e5eedafc8f45491f4f3465a"
+  },
+  "protected_worktrees": {
+    "E010_phase4c": {
+      "E012_modified_worktree": false,
+      "branch": "e010-phase4c-local-auxiliary",
+      "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+      "status": ""
+    },
+    "E010_phase4d": {
+      "E012_modified_worktree": false,
+      "branch": "e010-phase4d-hybrid-local-global",
+      "head": "34ed55ee832637f7533b8127ddba3b6471d851f4",
+      "status": ""
+    },
+    "E011": {
+      "E012_modified_worktree": false,
+      "branch": "e011-sequence-context-only",
+      "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "status": ""
+    }
+  },
+  "recommended_next_experiment": "Execute the sealed 2,000-update E012 pilot after Phase 4D releases the GPU and a fresh ownership check passes.",
+  "result_commit": null,
+  "result_commit_note": "No executed-pilot result commit; this is the CUDA deferral handoff",
+  "scientific_adjudication": "not performed",
+  "shuffle_bootstrap_CI": null,
+  "statistical_baseline_CE": {
+    "independent": {
+      "bigram": 2.896606403039183,
+      "bucket_unigram": 2.9013141131537616,
+      "global_unigram": 2.901697255276755,
+      "trigram": 2.9095626972106974
+    },
+    "primary": {
+      "bigram": 2.894704009202998,
+      "bucket_unigram": 2.8990428178142844,
+      "global_unigram": 2.900035213585893,
+      "trigram": 2.906179593444026
+    }
+  },
+  "tests": {
+    "additional_final_evaluator_and_safety_cases_passed": 3,
+    "combined_passed": 1679,
+    "combined_skipped": 2,
+    "fixture_policy": "E012 sources in E011-established read-only historical fixture mirror; five byte-identical contained NPZ fixtures. Three evaluator/safety cases were added afterward and passed in the focused rerun.",
+    "focused_sequence_tests_passed": 50,
+    "full_suite_conditional_skips": [
+      {
+        "reason": "CUDA is unavailable",
+        "test": "tests.test_axial_attention::test_axial_block_cuda_float16_autocast_regression[None]"
+      },
+      {
+        "reason": "CUDA is unavailable",
+        "test": "tests.test_axial_attention::test_axial_block_cuda_float16_autocast_regression[128]"
+      },
+      {
+        "reason": "CUDA is unavailable",
+        "test": "tests.test_e007_coordinate_equivariance::test_production_capacity_cuda_strict_equivariance"
+      },
+      {
+        "reason": "CUDA is unavailable",
+        "test": "tests.test_e007_coordinate_objective_pilot::test_quantiles_match_cuda_input_dtype_and_device[dtype0]"
+      },
+      {
+        "reason": "CUDA is unavailable",
+        "test": "tests.test_e007_coordinate_objective_pilot::test_quantiles_match_cuda_input_dtype_and_device[dtype1]"
+      },
+      {
+        "reason": "CUDA is unavailable",
+        "test": "tests.test_physical_auxiliary_loss::test_cuda_float16_autocast"
+      },
+      {
+        "reason": "CUDA is unavailable",
+        "test": "tests.test_physical_auxiliary_loss::test_adjacent_loss_cuda_float16_autocast"
+      },
+      {
+        "reason": "Local pilot mmCIF files are not available",
+        "test": "tests.test_preprocess_state::test_real_pilot_resume_smoke_when_local_files_exist"
+      },
+      {
+        "reason": "Set RUN_RCSB_INTEGRATION_TESTS=1 to query the real RCSB Search API",
+        "test": "tests.test_query_rcsb::test_real_rcsb_smoke_query_candidate_limit_10"
+      },
+      {
+        "reason": "CUDA is unavailable",
+        "test": "tests.test_rich_geometry_sidecars::test_cuda_feature_backend_matches_canonical_cpu_when_available"
+      },
+      {
+        "reason": "CUDA is not available",
+        "test": "tests.test_training_step::test_cuda_resume_rng_restore_when_cuda_available"
+      },
+      {
+        "reason": "CUDA is not available",
+        "test": "tests.test_training_step::test_optional_cuda_amp_smoke"
+      },
+      {
+        "reason": "CUDA is unavailable",
+        "test": "tests.test_triangle_multiplication::test_triangle_block_cuda_float16_autocast_dtype_safety"
+      }
+    ],
+    "full_suite_log_sha256": "894b1a7946e6bd0bfe6f6d2e9ca9e20c2cc2df6706c6a8fe3564c94d34c57cd7",
+    "full_suite_passed": 1665,
+    "full_suite_tests": 1678,
+    "junit_evidence_sha256": {
+      "cuda_tests.xml": "d2300e4b843929b922e5e1d2339af81a02e5d654e853c85898f11a3297bb8b46",
+      "focused_tests.xml": "cb0ac5e227e0303b28a88d2a257729e0144c5e343b872e9fe056561e442b5f03",
+      "full_tests.xml": "250b9d2413e447437be18c4693155ebde5d2dc4ca26cb4e5f9e81fae7509b0f9"
+    },
+    "no_tests_weakened": true,
+    "previously_cuda_skipped_cases_passed": 11,
+    "ruff_format": "passed",
+    "ruff_lint": "passed",
+    "status": "passed",
+    "syntax": "passed",
+    "whitespace": "passed"
+  },
+  "top1_prediction_change": null,
+  "train_count": 231743,
+  "updates_completed": 0,
+  "validation_count": 23307,
+  "worktree": "proteinGen-causal-rope"
+}

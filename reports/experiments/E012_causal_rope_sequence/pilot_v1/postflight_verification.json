@@ -1,0 +1,39 @@
+{
+  "all_reported_gate_CIs_reproduced_exactly": true,
+  "all_trajectory_means_reproduced_exactly": true,
+  "checkpoint_hashes_verified": 6,
+  "local_final_records_sha256": {
+    "independent": "eb26cae59d047a0268d9acd9ff23c75bbc0a2f1401cd6f42510d942713209269",
+    "primary": "6a36207e6992e4f8c8c6a33ee41a9f235e2546ce3b02cd0ff5de9efda54c3934"
+  },
+  "local_telemetry_sha256": "fd128f4683098cba8e020c51be9b91b4def33e7285ab701361d579da1e892f9e",
+  "optimizer_scheduler_sampler_counters_verified": true,
+  "protected_contract_hashes_verified": true,
+  "protected_worktree_state": {
+    "E010_phase4c": {
+      "E012_wrote_files": false,
+      "branch": "e010-phase4c-local-auxiliary",
+      "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+      "matches_preparation_snapshot": true,
+      "status": ""
+    },
+    "E010_phase4d": {
+      "E012_wrote_files": false,
+      "branch": "e010-phase4d-hybrid-local-global",
+      "head": "f9b42c36459f17c9f7fb42c20496b7c7b58a4ea6",
+      "matches_preparation_snapshot": false,
+      "status": ""
+    },
+    "E011": {
+      "E012_wrote_files": false,
+      "branch": "e011-sequence-context-only",
+      "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "matches_preparation_snapshot": true,
+      "status": ""
+    }
+  },
+  "status": "passed",
+  "unique_training_identities": 128000,
+  "update0_independent_initialization_verified": true,
+  "updates": 2000
+}

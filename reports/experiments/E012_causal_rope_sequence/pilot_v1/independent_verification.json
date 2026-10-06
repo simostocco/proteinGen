@@ -1,0 +1,55 @@
+{
+  "bootstrap_resamples": 10000,
+  "bootstrap_seed": 12112,
+  "checkpoint_hashes_verified": 6,
+  "classification": "CSEQ-C",
+  "execution_start_commit": "d5b793ca60b6dcba0d9487bb879f08186d0b6169",
+  "gates_and_classification_independently_reproduced": true,
+  "independent_bootstrap_implementation": "uniform identity choice resampling; percentile intervals; no sealed summarize call",
+  "interpretation_note_fixed_before_execution": "Fixed before execution: the empirical trigram baseline is worse than unigram on both panels. Beating trigram alone is not evidence of contextual learning. Ordered-context evidence depends on the preregistered shuffle and context-window gates. No gate is changed.",
+  "optimizer_scheduler_rng_sampler_integrity": true,
+  "original_preparation_commit": "76814fd071a20f1bcc1e381533bfe195381aa1ca",
+  "paired_intervals_exactly_reproduced": 86,
+  "protected_hashes_verified": true,
+  "protected_worktrees": {
+    "E010_phase4c": {
+      "E012_wrote_worktree_files": false,
+      "matches_execution_start": true,
+      "state": {
+        "branch": "e010-phase4c-local-auxiliary",
+        "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+        "status": ""
+      }
+    },
+    "E010_phase4d": {
+      "E012_wrote_worktree_files": false,
+      "concurrent_owner_working_tree_status": "",
+      "independent_owner_commit_advance": "f9b42c3 docs(e010): record bounded correction oracle v4\n20c20de feat(e010): prepare independent bounded correction oracle v4",
+      "interpretation": "Concurrent owner commits; no E012 writes or scientific-input changes",
+      "matches_execution_start": false,
+      "owner_working_tree_status_at_execution_start": "?? configs/e010_phase4d_bounded_oracle_v4.yaml\n?? scripts/run_e010_phase4d_bounded_oracle_v4.py\n?? src/protein_distance_diffusion/training/e010_bounded_oracle_v4.py\n?? tests/test_e010_bounded_oracle_v4.py",
+      "state": {
+        "branch": "e010-phase4d-hybrid-local-global",
+        "head": "f9b42c36459f17c9f7fb42c20496b7c7b58a4ea6",
+        "status": ""
+      }
+    },
+    "E011": {
+      "E012_wrote_worktree_files": false,
+      "matches_execution_start": true,
+      "state": {
+        "branch": "e011-sequence-context-only",
+        "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+        "status": ""
+      }
+    }
+  },
+  "raw_final_records_sha256": {
+    "independent": "eb26cae59d047a0268d9acd9ff23c75bbc0a2f1401cd6f42510d942713209269",
+    "primary": "6a36207e6992e4f8c8c6a33ee41a9f235e2546ce3b02cd0ff5de9efda54c3934"
+  },
+  "status": "passed",
+  "successful_updates": 2000,
+  "training_identities": 128000,
+  "update0_fingerprint_verified": true
+}

@@ -1,0 +1,43 @@
+{
+  "GPU_ownership_observation": {
+    "linux_python_trainers": 0,
+    "memory_used_including_desktop_mib": 855,
+    "performance_state": "P8",
+    "research_compute_idle": true,
+    "utilization_percent": 3
+  },
+  "boundaries": [
+    0,
+    250,
+    500,
+    1000,
+    1500,
+    2000
+  ],
+  "branch": "e012-causal-rope-sequence",
+  "contract_sha256": "1a56b8958bb9a81c7dc269bce7c3efa79f19fc6dc85498beb09cfb10f346e612",
+  "deferral_commit": "d5b793ca60b6dcba0d9487bb879f08186d0b6169",
+  "execution_start_commit": "d5b793ca60b6dcba0d9487bb879f08186d0b6169",
+  "interpretation_note_before_execution": "Fixed before execution: the empirical trigram baseline is worse than unigram on both panels. Beating trigram alone is not evidence of contextual learning. Ordered-context evidence depends on the preregistered shuffle and context-window gates. No gate is changed.",
+  "original_preparation_commit": "76814fd071a20f1bcc1e381533bfe195381aa1ca",
+  "protected_hashes_verified": 26,
+  "protected_worktree_start_state": {
+    "E010_phase4c": {
+      "branch": "e010-phase4c-local-auxiliary",
+      "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+      "status": ""
+    },
+    "E010_phase4d": {
+      "branch": "e010-phase4d-hybrid-local-global",
+      "head": "43864b38001c2ee0118bc8b7530b547cba4ca5f1",
+      "status": "?? configs/e010_phase4d_bounded_oracle_v4.yaml\n?? scripts/run_e010_phase4d_bounded_oracle_v4.py\n?? src/protein_distance_diffusion/training/e010_bounded_oracle_v4.py\n?? tests/test_e010_bounded_oracle_v4.py"
+    },
+    "E011": {
+      "branch": "e011-sequence-context-only",
+      "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "status": ""
+    }
+  },
+  "updates_authorized": 2000,
+  "verified_utc": "2026-10-06T05:30:48.800879+00:00"
+}

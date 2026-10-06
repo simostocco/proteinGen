@@ -1,0 +1,86 @@
+{
+  "biological_generation_launched": false,
+  "classification": "CSEQ-C",
+  "contract_sha256": "1a56b8958bb9a81c7dc269bce7c3efa79f19fc6dc85498beb09cfb10f346e612",
+  "execution_start_commit": "d5b793ca60b6dcba0d9487bb879f08186d0b6169",
+  "independent_verifier_sha256": "9349315150752dd0df7e6041db8dbbe382b29d98c691818c98e79c9b573bf0fe",
+  "local_checkpoints": [
+    {
+      "filename": "checkpoint-00000.pt",
+      "sha256": "2c71a83f9984f73814052876b39e8ae4093003c1cf286070acabb8d2e95f45bf",
+      "updates": 0
+    },
+    {
+      "filename": "checkpoint-00250.pt",
+      "sha256": "3a070873d8c7b4c0ca15693f321e4b6432b806ba2a464765c2be1052aa9048e5",
+      "updates": 250
+    },
+    {
+      "filename": "checkpoint-00500.pt",
+      "sha256": "a4457ba9041db8187670ae3c38b62b2616d3a992c39518b93be2d7b1f2e54249",
+      "updates": 500
+    },
+    {
+      "filename": "checkpoint-01000.pt",
+      "sha256": "5718c423ba342d0ec75330029a347720f0d108dca4eda6d3004cab5ae82c3e97",
+      "updates": 1000
+    },
+    {
+      "filename": "checkpoint-01500.pt",
+      "sha256": "69bd523f685c4ce753fde898a49dbe710c72b06a46e8e8c0d02292a5a1fc0978",
+      "updates": 1500
+    },
+    {
+      "filename": "checkpoint-02000.pt",
+      "sha256": "ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188",
+      "updates": 2000
+    }
+  ],
+  "local_log_sha256": {
+    "telemetry.jsonl": "fd128f4683098cba8e020c51be9b91b4def33e7285ab701361d579da1e892f9e",
+    "training.log": "6d6c1ffd658e75387948e28083d84360327ceb610bbeeb893486e63552ac87ad"
+  },
+  "preparation_commit": "76814fd071a20f1bcc1e381533bfe195381aa1ca",
+  "published_artifact_sha256": {
+    "FINAL_REPORT.md": "24a85896f315f66b34b7899b1be81f02590bac94a612c0876c021743f0f19a96",
+    "baselines.json": "fd973ff33a8633670eae768e8906517667d821ab99650307b67e1e4dc42f1d01",
+    "chatgpt_handoff.json": "54b2a5b62fd437181dd5012c75759f1122a6dcc0436db2fb31bef0909fa5ca1c",
+    "contract.json": "1a56b8958bb9a81c7dc269bce7c3efa79f19fc6dc85498beb09cfb10f346e612",
+    "cuda_diagnostic_smoke.json": "1004efeaf80b838b76d421f460cd9b75140432a9c38519f2317e19e706d077d8",
+    "cuda_smoke.json": "b85c63b48e054dd7995fd9eafc93c742640cf496b14cd7b88b98bef33493c035",
+    "data_integrity.json": "90f1b6316ed425cbefe9bb03386d1c7ee5bbf180380a1997b4e2702f68bea564",
+    "deferral_history/FINAL_REPORT.md": "f1cbfe4d813d7d98de1ce972b1e0b50e9bb66ffd2fa6f602b0dd1c602afe4cb6",
+    "deferral_history/chatgpt_handoff.json": "cba53c95009deffe61254f614df02930b45cbe9c68cdac3553633c3da2789342",
+    "deferral_history/deferral_manifest.json": "47b0e9dfc4e4a317c572f7970cae0c4e37233437e6abaa9233ded19c61821f72",
+    "deferral_history/execution_deferred.json": "4d4302d3d063ee5708f13527cde579b5a98d5330bb850aa220efa9e6f13edbc3",
+    "execution_start.json": "f15d7231b8dd38381ff2caa7b27f5ff474f06075217a4b93db864d063d66aedc",
+    "historical_model_audit.json": "7e247e64fd664bb1bda5e64db436cb4ef23f558ae8a7a4dd13c074f8064f25df",
+    "independent_paired_identity_metrics.json": "b92a46429085ce434a673d5fcbbb76a48a8807cb6303f561be5a4d8fa61e33bd",
+    "independent_verification.json": "74772034e0f1ce8c55e2c8127842973747ffc8ea2f0f63e20afacde34a47c50a",
+    "panels.json": "645766abcd9d74e76861723e2f587bc29b09772c411a67ea41b4b959b0606464",
+    "positions.json": "862ee248eff69c2003ab6b2d5e0a4db6870df475d12a0de3d193e7392e89b379",
+    "postflight_verification.json": "fb7699253daf7dfff8ce1fc47fc43fb42607758918ea8bb7256d35640627fbf4",
+    "primary_paired_identity_metrics.json": "3b6fcfbee462006696360a394e22d363e90ae71ba961101a8fb87337906c8c5c",
+    "protected_worktree_state.json": "b0dadcdd75644c6804ac24e3b34a53795b2bbc0165794809bfb3eabb2efcaf7d",
+    "quality.json": "a81846e3972091e58d798a819d422e39f981b03b44b352d31de391f8cbcf3a2c",
+    "results.json": "5e772e140fa93507d7d7731d2021ed5bef9625931e9d7966ae358472695057b3",
+    "training_summary.json": "ee01314142155f7a2a7bf72a7bb0d46e8175c57b8fe0f59ae97bc0cc446ff80a",
+    "trajectory.json": "ab1c51cd5653b596347696c91de9163615ce9a1c35717a6e5c706d1216c07253",
+    "trajectory_context.png": "da98217df88ef460f59ac3a636c555c49f93c5606ad21a424ccb41c6c2a40129"
+  },
+  "raw_likelihood_sha256": {
+    "independent_likelihood_00000.json": "75b840247208df6c5170e89499fe8ed51b55fe265e6232ab62818f4bf35042f0",
+    "independent_likelihood_00250.json": "96c8a369949d4e1fe8cf48a36d58b96cbc286922b7759a5021577f35ea2dbe93",
+    "independent_likelihood_00500.json": "3fc1898b9f27f9ad9c9a5c07fb1a5d1bbd2a33fc04dd5a9748a1f92fce629846",
+    "independent_likelihood_01000.json": "451eabdce19d15dbc7331399369e601698bd5c22723f5cecc356690fa1b75c27",
+    "independent_likelihood_01500.json": "c750ad891acf2707ffb3d353434b83843ce414307bb934d094b0f359e728cf64",
+    "independent_likelihood_02000.json": "eee12e1553709df23ffb5d18b3e2fece418fd4d084337329060aa5433465c71a",
+    "primary_likelihood_00000.json": "a16d80a0c9855723722849ce4b792531b38d320b7dffd0ec9226170ae639df18",
+    "primary_likelihood_00250.json": "1a536c47732a70b544b846b7fa853d315cfdc6d2e1a46d110de801e60ac177be",
+    "primary_likelihood_00500.json": "54fdf4a01a6befb4ebcbd361a59903a48135af486f56b384a1609445a03823de",
+    "primary_likelihood_01000.json": "b94332caa5260967912565e5457c50da2254a1e3074e064b1f70e54da0f4ba35",
+    "primary_likelihood_01500.json": "2a5c1f878e26ba263a1a580b2149430c8faf6c86a21032d50b20515e3bd66924",
+    "primary_likelihood_02000.json": "eedf95dbbaec3fb2fc83c98dc1d50ca5808198938d03b21a19e354c53fe4fb53"
+  },
+  "updates_completed": 2000
+}
