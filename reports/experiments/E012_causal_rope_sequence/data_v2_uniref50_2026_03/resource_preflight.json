@@ -1,0 +1,21 @@
+{
+  "assumptions": "Conservative retained-artifact budget; not measured. All representatives assumed eligible at max length; actual filtering may reduce it. Raw decompressed size, metadata and MMseqs temporary sizes are estimates. Historical immutable data already occupies disk and is not deleted.",
+  "available_bytes": 189611659264,
+  "components_bytes": {
+    "audit_and_transaction_allowance": 1000000000,
+    "compressed_source": 8780552383,
+    "decompressed_source_estimate": 30000000000,
+    "exact_union_sqlite_sequence_provenance_indexes": 35035161300,
+    "filtered_fasta_500_residues_plus_160_header_bytes": 25634417820,
+    "final_fasta_manifest_ids_compact_shards": 35600000000,
+    "mmseqs_databases_indexes_allowance": 27249569900,
+    "mmseqs_temporary_allowance_3x_databases": 81748709700,
+    "protected_clean_fasta_short_ids": 21021096780,
+    "two_cluster_membership_tables": 3737083872
+  },
+  "download_authorized_by_gate": false,
+  "estimated_peak_bytes": 269806591755,
+  "peak_capacity_pass": false,
+  "preferred_free_bytes_2_5x_peak": 674516479388,
+  "preferred_margin_pass": false
+}

@@ -16,3 +16,8 @@ logs/
 
 # Downloaded third-party model payloads and acquisition caches
 /external_models/
+
+# External sequence foundation payloads belong on D: only
+/sequence_foundation/
+/external_data/
+/uniref50*.fasta*

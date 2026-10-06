@@ -1,0 +1,29 @@
+{
+  "base_processing_commit": "0769de607ea0ddc8e514d485acf4533f63b8aa98",
+  "compression": "gzip",
+  "immutable_release_url_verified": false,
+  "observed_transport_base": "https://ftp.uniprot.org/pub/databases/uniprot/current_release/uniref/uniref50/",
+  "processing_script": "scripts/prepare_e012_large_sequence_corpus.py",
+  "processing_script_sha256": "f946f500601e458a553e09b49d538d5cffa734973e97abe3fc9ec716392ac505",
+  "published_raw_entries": 38840027,
+  "raw_downloaded": false,
+  "raw_expected_bytes": 8780552383,
+  "raw_expected_md5": "0492e3cf4093276ae4319ba24d52514f",
+  "raw_filename": "uniref50.fasta.gz",
+  "raw_local_bytes": null,
+  "raw_official_checksum_verified": false,
+  "raw_sha256": null,
+  "release": "2026_03",
+  "release_note_official_md5_verified": true,
+  "release_specific_checks": {
+    "https://ftp.ebi.ac.uk/pub/databases/uniprot/previous_releases/release-2026_03/": 404,
+    "https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2026_03/": 404
+  },
+  "retrieval_timestamp": "2026-10-06T10:24:21Z",
+  "scientific_pin": {
+    "md5": "0492e3cf4093276ae4319ba24d52514f",
+    "release": "2026_03",
+    "size": 8780552383
+  },
+  "source_mirror": "ftp.uniprot.org"
+}
