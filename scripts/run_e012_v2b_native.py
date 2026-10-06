@@ -90,6 +90,7 @@ def load():
     spec=importlib.util.spec_from_file_location('e012_v2b_scientific_core',path)
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    module.DEFAULT_ROOT=Path(native(LINUX_ROOT))
     install(module)
     return module
 

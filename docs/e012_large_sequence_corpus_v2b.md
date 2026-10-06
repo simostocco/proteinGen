@@ -48,7 +48,7 @@ gzip seek into immutable raw source. True collisions retain distinct offset keys
 Representative offset is first encounter in pinned FASTA; chosen UniRef ID is
 lexicographic minimum among encountered exact duplicates.
 
-Reservoir: retain at most 24M sequences plus at most one 100k checkpoint batch.
+Reservoir: retain at most 24M sequences plus at most one 1M checkpoint batch.
 Frozen priority = SHA256(b'E012-V2B:12014\0' + canonical sequence ASCII bytes).
 Order ascending (priority, sequence SHA256, source offset). No model-dependent
 selection or repeated sampling. Retain all external exact unique records if below
@@ -151,5 +151,10 @@ The selected priority prefix is unchanged. Sorting reserves at most 32GB using
 batch temp coexists with final sorting. Sort files are transient under D:/tmp and
 are removed on SQLite close; certified residual-folder cleanup is recorded.
 Full source sequences remain streamed; only bounded SQLite caches reside in RAM.
+Filter transactions checkpoint every 1M source records. The reservoir can hold up
+to cap+1M transient records, then is trimmed to exactly the fixed cap before
+checkpoint. This does not change its selected membership. Reserve 12GB for WAL
+and reusable pages during filtering. Native root normalization also preserves
+mandatory protected-search preflight and index-hash validation.
 Both compressed source readers use 8MiB buffering to avoid small D: reads during
 gzip resume seeks and parsing. Gzip CRC validation and uncompressed offsets are unchanged.

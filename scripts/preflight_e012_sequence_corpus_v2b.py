@@ -35,7 +35,7 @@ def main():
     stage = {
         'source_download': {'raw': raw, 'partial_and_metadata_allowance': 1_000_000_000},
         'stream_filter_reservoir': {'raw': raw, 'hash_offset_index': 6_000_000_000,
-            'reservoir_sqlite_sequences_24m': 30_000_000_000, 'journals_and_pages': 5_000_000_000},
+            'reservoir_sqlite_sequences_24m': 30_000_000_000, 'journals_and_pages': 12_000_000_000},
         'batched_protected_screen': {'raw':raw, 'reservoir_sqlite':30_000_000_000,
             'chunk_fasta_and_mmseqs_dbs_results_tmp':8_000_000_000,'metadata_and_journals':5_000_000_000},
         'finalization_and_verification': {'raw':raw, 'reservoir_sqlite':30_000_000_000,
