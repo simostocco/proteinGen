@@ -1,0 +1,38 @@
+{
+  "additional_updates": 8000,
+  "checkpoint_hashes_verified": 4,
+  "global_update": 10000,
+  "historical_checkpoint_sha256": "ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188",
+  "optimizer_rng_sampler_verified": true,
+  "paired_intervals_independently_reproduced": 172,
+  "protected_hashes_verified": true,
+  "protected_worktrees": {
+    "E010_phase4c": {
+      "E012_wrote_files": false,
+      "branch": "e010-phase4c-local-auxiliary",
+      "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+      "status": ""
+    },
+    "E010_phase4d": {
+      "E012_wrote_files": false,
+      "branch": "e010-phase4d-hybrid-local-global",
+      "head": "36113e708194d280ead04af4359e6a8d599a6955",
+      "status": "?? configs/e010_phase4d_local_feasibility_v7.yaml\n?? docs/e010_phase4d_local_feasibility_v7.md\n?? scripts/run_e010_local_feasibility_v7.py\n?? src/protein_distance_diffusion/training/e010_local_feasibility_v7.py\n?? tests/test_e010_local_feasibility_v7.py"
+    },
+    "E011": {
+      "E012_wrote_files": false,
+      "branch": "e011-sequence-context-only",
+      "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "status": ""
+    }
+  },
+  "raw_final_record_hashes": {
+    "independent_final_records_05000.json": "26d6eb814cc098d1b5f440d8a4a11242e3f969f99b8e273c168dab5db1b7e624",
+    "independent_final_records_10000.json": "78305ba87a709a709db3fb875f90f68dc8877ac63342dd8b411dd37cf37bd7bd",
+    "primary_final_records_05000.json": "8ab76b57499ea03332cd43e7759c3b857c3711556f390e5e063e8a303f60e127",
+    "primary_final_records_10000.json": "1bdb29e950568bb0c304fe2e55ac4c021ecb3146d237c581435a304acc2d7a94"
+  },
+  "status": "passed",
+  "total_exposures": 640000,
+  "total_residues": 117588908
+}

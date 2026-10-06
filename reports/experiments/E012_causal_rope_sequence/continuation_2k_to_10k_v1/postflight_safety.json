@@ -1,0 +1,57 @@
+{
+  "E012_CUDA_workload_completed": true,
+  "driver_postflight_sample": {
+    "device_total_mib": 8151,
+    "device_used_mib": 849,
+    "timestamp": "2026/10/06 09:58:06.061",
+    "utilization_percent": 5
+  },
+  "interpretation": "E011/Phase4C unchanged; Phase4D owner committed new work during execution; no E012 writes there.",
+  "protected_worktrees": {
+    "E010_phase4c": {
+      "E012_wrote_files": false,
+      "matches_start": true,
+      "postflight": {
+        "E012_wrote_files": false,
+        "branch": "e010-phase4c-local-auxiliary",
+        "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+        "status": ""
+      },
+      "start": {
+        "branch": "e010-phase4c-local-auxiliary",
+        "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+        "status": ""
+      }
+    },
+    "E010_phase4d": {
+      "E012_wrote_files": false,
+      "matches_start": false,
+      "postflight": {
+        "E012_wrote_files": false,
+        "branch": "e010-phase4d-hybrid-local-global",
+        "head": "36113e708194d280ead04af4359e6a8d599a6955",
+        "status": "?? configs/e010_phase4d_local_feasibility_v7.yaml\n?? docs/e010_phase4d_local_feasibility_v7.md\n?? scripts/run_e010_local_feasibility_v7.py\n?? src/protein_distance_diffusion/training/e010_local_feasibility_v7.py\n?? tests/test_e010_local_feasibility_v7.py"
+      },
+      "start": {
+        "branch": "e010-phase4d-hybrid-local-global",
+        "head": "f9b42c36459f17c9f7fb42c20496b7c7b58a4ea6",
+        "status": "?? configs/e010_phase4d_cartesian_oracle_v5.yaml\n?? docs/e010_phase4d_cartesian_oracle_v5.md\n?? scripts/run_e010_phase4d_cartesian_oracle_v5.py\n?? src/protein_distance_diffusion/training/e010_cartesian_oracle_v5.py\n?? tests/test_e010_cartesian_oracle_v5.py"
+      }
+    },
+    "E011": {
+      "E012_wrote_files": false,
+      "matches_start": true,
+      "postflight": {
+        "E012_wrote_files": false,
+        "branch": "e011-sequence-context-only",
+        "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+        "status": ""
+      },
+      "start": {
+        "branch": "e011-sequence-context-only",
+        "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+        "status": ""
+      }
+    }
+  }
+}

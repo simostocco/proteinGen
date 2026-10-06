@@ -1,0 +1,3956 @@
+{
+  "Adam_moments_restored": true,
+  "CSEQ_classification": "CSEQ-C",
+  "additional_updates": 8000,
+  "biological_generation_launched": false,
+  "checkpoints": [
+    {
+      "filename": "checkpoint-03000.pt",
+      "sha256": "8bb6ddd9fcb7bdab49f91d163390243cb8f3d45cffee7cd0c1b124378db80030",
+      "updates": 3000
+    },
+    {
+      "filename": "checkpoint-05000.pt",
+      "sha256": "06ef3eddc9560ee4d3160a8aeb280d14bd1112c334d19f023556dbf3e2b32df4",
+      "updates": 5000
+    },
+    {
+      "filename": "checkpoint-07500.pt",
+      "sha256": "533340bf81b01111401c2765cb0e0ed16c57429a36bf3dc8608b82d66057bd11",
+      "updates": 7500
+    },
+    {
+      "filename": "checkpoint-10000.pt",
+      "sha256": "23d4aad8327c491d31d22192e2b4f51bda8e68f13e1c213ed7925cfcafb7bf89",
+      "updates": 10000
+    }
+  ],
+  "continuation_classification": "CONT-B",
+  "continuation_schedule": {
+    "checkpoint_lr": 0.0,
+    "cosine_end": 10000,
+    "kind": "explicit_2k_to_10k_warm_restart_v1",
+    "maximum_lr": 0.0003,
+    "restart_end": 2100,
+    "terminal_lr": 0.0
+  },
+  "continuation_updates_per_second": 3.6065314364560312,
+  "contract_sha256": "09af1c37a485a6b1746a49b65d49b41b09e1774d9ca85803a6f31178f1b40c28",
+  "effective_batch": 64,
+  "exactly_one_recommended_next_experiment": "Preregister a fixed-checkpoint, length-stratified TRAIN-versus-held-out generalization audit of the 10k model, including early-prefix errors, without further training.",
+  "final_pre_execution_preparation_commit": "f0a19187b2945f8f34e2ad30bd709fdeca9d5e5a",
+  "global_update": 10000,
+  "gpu_utilization_median_percent": 41.0,
+  "historical_updates_per_second": 2.046916037642876,
+  "independent_verification": {
+    "additional_updates": 8000,
+    "checkpoint_hashes_verified": 4,
+    "global_update": 10000,
+    "historical_checkpoint_sha256": "ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188",
+    "optimizer_rng_sampler_verified": true,
+    "paired_intervals_independently_reproduced": 172,
+    "protected_hashes_verified": true,
+    "protected_worktrees": {
+      "E010_phase4c": {
+        "E012_wrote_files": false,
+        "branch": "e010-phase4c-local-auxiliary",
+        "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+        "status": ""
+      },
+      "E010_phase4d": {
+        "E012_wrote_files": false,
+        "branch": "e010-phase4d-hybrid-local-global",
+        "head": "36113e708194d280ead04af4359e6a8d599a6955",
+        "status": "?? configs/e010_phase4d_local_feasibility_v7.yaml\n?? docs/e010_phase4d_local_feasibility_v7.md\n?? scripts/run_e010_local_feasibility_v7.py\n?? src/protein_distance_diffusion/training/e010_local_feasibility_v7.py\n?? tests/test_e010_local_feasibility_v7.py"
+      },
+      "E011": {
+        "E012_wrote_files": false,
+        "branch": "e011-sequence-context-only",
+        "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+        "status": ""
+      }
+    },
+    "raw_final_record_hashes": {
+      "independent_final_records_05000.json": "26d6eb814cc098d1b5f440d8a4a11242e3f969f99b8e273c168dab5db1b7e624",
+      "independent_final_records_10000.json": "78305ba87a709a709db3fb875f90f68dc8877ac63342dd8b411dd37cf37bd7bd",
+      "primary_final_records_05000.json": "8ab76b57499ea03332cd43e7759c3b857c3711556f390e5e063e8a303f60e127",
+      "primary_final_records_10000.json": "1bdb29e950568bb0c304fe2e55ac4c021ecb3146d237c581435a304acc2d7a94"
+    },
+    "status": "passed",
+    "total_exposures": 640000,
+    "total_residues": 117588908
+  },
+  "initial_preparation_commit": "d8956176933acd3eafe15b263e9d65ef22d32afa",
+  "length_conditioning_ablation": {
+    "10000": {
+      "independent": {
+        "ci95": [
+          0.02050907338198158,
+          0.02760428503315779
+        ],
+        "delta": 0.024109404446789995
+      },
+      "primary": {
+        "ci95": [
+          0.026039511199269328,
+          0.033060007854146534
+        ],
+        "delta": 0.029559909788076766
+      }
+    },
+    "5000": {
+      "independent": {
+        "ci95": [
+          0.011143351569626248,
+          0.01630142536087078
+        ],
+        "delta": 0.013796789949992672
+      },
+      "primary": {
+        "ci95": [
+          0.01325219404679956,
+          0.017910219974874055
+        ],
+        "delta": 0.015572552976664156
+      }
+    }
+  },
+  "model_parameters": 15533952,
+  "nominal_population_passes": 2.7616799644433705,
+  "optimizer_restored": true,
+  "peak_allocated_bytes": 2278235648,
+  "peak_reserved_bytes": 3519021056,
+  "peak_total_device_used_mib": 4612,
+  "physical_batch_plan": {
+    "0": {
+      "forward_backward_seconds": 0.06010669795796275,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 925710336,
+      "peak_reserved_bytes": 968884224,
+      "physical_proteins": 64
+    },
+    "1": {
+      "forward_backward_seconds": 0.07541347341611981,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 1547896832,
+      "peak_reserved_bytes": 1572864000,
+      "physical_proteins": 64
+    },
+    "2": {
+      "forward_backward_seconds": 0.15214944595936686,
+      "partition": [
+        32,
+        32
+      ],
+      "peak_allocated_bytes": 1635281408,
+      "peak_reserved_bytes": 1677721600,
+      "physical_proteins": 32
+    },
+    "3": {
+      "forward_backward_seconds": 0.25122741248924285,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 2728467456,
+      "peak_reserved_bytes": 2780823552,
+      "physical_proteins": 40
+    },
+    "4": {
+      "forward_backward_seconds": 0.3488014121539891,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 3466172928,
+      "peak_reserved_bytes": 3649044480,
+      "physical_proteins": 40
+    }
+  },
+  "precision": "bfloat16",
+  "preparation_commit": "f0a19187b2945f8f34e2ad30bd709fdeca9d5e5a",
+  "processed_proteins": 640000,
+  "processed_residues": 117588908,
+  "scientific_boundaries": {
+    "10000": {
+      "independent": {
+        "aggregate": {
+          "deltas": {
+            "bigram": {
+              "ci95": [
+                0.0019135818310825016,
+                0.0142040633538495
+              ],
+              "delta": 0.00800735685334354,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "bucket_unigram": {
+              "ci95": [
+                -0.0026402249453146595,
+                0.009465878935909956
+              ],
+              "delta": 0.003299646738765389,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "global_unigram": {
+              "ci95": [
+                -0.0032199095351832926,
+                0.009236749531602306
+              ],
+              "delta": 0.0029165046157722772,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "last1": {
+              "ci95": [
+                -0.6101505282606319,
+                -0.5667903853307128
+              ],
+              "delta": -0.5883429016550201,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "last8": {
+              "ci95": [
+                -0.12159597629369151,
+                -0.10460328682842206
+              ],
+              "delta": -0.11313641242713882,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "shuffle": {
+              "ci95": [
+                -0.05975913464037635,
+                -0.043220476100882844
+              ],
+              "delta": -0.051541509236834565,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "trigram": {
+              "ci95": [
+                -0.010969803109117524,
+                0.0012075428896862748
+              ],
+              "delta": -0.004948937318170291,
+              "identities": 2048,
+              "resamples": 10000
+            }
+          },
+          "means": {
+            "bigram": 2.8966064030391836,
+            "bucket_unigram": 2.9013141131537616,
+            "global_unigram": 2.901697255276755,
+            "js": 0.04435289075874084,
+            "kl": 0.19831018361772124,
+            "last1": 3.495453362764808,
+            "last16": 2.9852486065762642,
+            "last32": 2.9541959811601446,
+            "last4": 3.0482407965655227,
+            "last64": 2.930494722646262,
+            "last8": 3.0202468735369266,
+            "neutral_length": 2.928723164339317,
+            "normal": 2.904613759892527,
+            "prefix_normal": 2.907110461109788,
+            "shuffle": 2.9586519703466223,
+            "top1_change": 0.747802734375,
+            "top3_change": 0.93304443359375,
+            "trigram": 2.9095626972106974
+          }
+        },
+        "confirmation": {
+          "A": false,
+          "B": false,
+          "C": true,
+          "D": true,
+          "E": false
+        },
+        "gates": {
+          "A": false,
+          "B": false,
+          "C": true,
+          "D": true,
+          "E": false
+        },
+        "strata": {
+          "0": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  0.017682432533753546,
+                  0.06699144683077136
+                ],
+                "delta": 0.04252108899706889,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  0.011928126861913333,
+                  0.06061417582357388
+                ],
+                "delta": 0.03626472097439935,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  0.010111944974207268,
+                  0.06038254563468327
+                ],
+                "delta": 0.03534299965899402,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6905510916147969,
+                  -0.5738308337507877
+                ],
+                "delta": -0.6322316585753802,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.1290146903350109,
+                  -0.08154444019377613
+                ],
+                "delta": -0.10574259147212682,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.1314577636766667,
+                  -0.07328014683482585
+                ],
+                "delta": -0.10195850031776034,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  0.0060003337759048266,
+                  0.05522053548285238
+                ],
+                "delta": 0.03045417350073478,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.9191892541312283,
+              "bucket_unigram": 2.9254456221538985,
+              "global_unigram": 2.926367343469303,
+              "js": 0.08608710714649773,
+              "kl": 0.4032465113921051,
+              "last1": 3.590271974044388,
+              "last16": 3.0091586814586107,
+              "last32": 2.9781141182353523,
+              "last4": 3.0800392254379227,
+              "last64": 2.9580403154690074,
+              "last8": 3.0637829069411344,
+              "neutral_length": 2.951148932299963,
+              "normal": 2.9617103431282974,
+              "prefix_normal": 2.9580403154690074,
+              "shuffle": 3.0599988157867677,
+              "top1_change": 0.7842987804878049,
+              "top3_change": 0.9454268292682927,
+              "trigram": 2.9312561696275625
+            }
+          },
+          "1": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  0.015133587382807838,
+                  0.04097222953553266
+                ],
+                "delta": 0.027903977170143833,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  0.0015505318464210385,
+                  0.02826901717566548
+                ],
+                "delta": 0.014805330740500956,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  0.005512322800505782,
+                  0.03233130651856847
+                ],
+                "delta": 0.018825897806702012,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.7133272483248373,
+                  -0.6088939006018516
+                ],
+                "delta": -0.6611579670834056,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.14114265245139127,
+                  -0.09880308586699625
+                ],
+                "delta": -0.11992498900055092,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.07034560692279983,
+                  -0.032158762899903756
+                ],
+                "delta": -0.05152202728571776,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  0.0010792963442341473,
+                  0.026807704039357515
+                ],
+                "delta": 0.013922843741126742,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.893380514089733,
+              "bucket_unigram": 2.9064791605193765,
+              "global_unigram": 2.9024585934531753,
+              "js": 0.055842376112572915,
+              "kl": 0.2508129687598628,
+              "last1": 3.594645953721627,
+              "last16": 3.0301439837283173,
+              "last32": 2.983579491564799,
+              "last4": 3.074378296446691,
+              "last64": 2.951627601613415,
+              "last8": 3.0534129756387722,
+              "neutral_length": 2.914869206707652,
+              "normal": 2.921284491259877,
+              "prefix_normal": 2.9334879866382213,
+              "shuffle": 2.9850100139239393,
+              "top1_change": 0.8105182926829269,
+              "top3_change": 0.9730182926829268,
+              "trigram": 2.907361647518751
+            }
+          },
+          "2": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  0.0014043353664369785,
+                  0.01834996485234533
+                ],
+                "delta": 0.010149237164427944,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.0050498298924627,
+                  0.012185223310711684
+                ],
+                "delta": 0.0039007663187721996,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.0031229725099396295,
+                  0.014070715057334251
+                ],
+                "delta": 0.005793379930379426,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.7341395844264019,
+                  -0.6246397977405785
+                ],
+                "delta": -0.6789382778332889,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.14047347175388986,
+                  -0.10343017777846247
+                ],
+                "delta": -0.12211966937009218,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.05229076220309871,
+                  -0.022809547860024044
+                ],
+                "delta": -0.037807622710118116,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.009602175853017956,
+                  0.006380608555854502
+                ],
+                "delta": -0.0013553235785331056,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.885471257480389,
+              "bucket_unigram": 2.8917197283260445,
+              "global_unigram": 2.8898271147144374,
+              "js": 0.03591624930711809,
+              "kl": 0.15377545828232542,
+              "last1": 3.5819345692314615,
+              "last16": 3.0049992670395933,
+              "last32": 2.9623951613218704,
+              "last4": 3.0631771573853657,
+              "last64": 2.948004092295748,
+              "last8": 3.025115960768265,
+              "neutral_length": 2.918807578959116,
+              "normal": 2.8956204946448163,
+              "prefix_normal": 2.902996291398173,
+              "shuffle": 2.940803914108291,
+              "top1_change": 0.7626524390243903,
+              "top3_change": 0.941920731707317,
+              "trigram": 2.89697581822335
+            }
+          },
+          "3": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.018627250339018225,
+                  -0.004110554781609423
+                ],
+                "delta": -0.012202856501315204,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.019599837458401215,
+                  -0.005044203014105808
+                ],
+                "delta": -0.013118640042493414,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.021283658001417967,
+                  -0.006736689977232023
+                ],
+                "delta": -0.01478538305173193,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.5878809056419538,
+                  -0.5147946426941564
+                ],
+                "delta": -0.5515501961865021,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.12913600987843568,
+                  -0.09719330826569304
+                ],
+                "delta": -0.11346232087731653,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.04683523115708805,
+                  -0.02301887093330472
+                ],
+                "delta": -0.03485641201325034,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.03208764779517949,
+                  -0.017859338823053163
+                ],
+                "delta": -0.025732899459558235,
+                "identities": 409,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.894577175797036,
+              "bucket_unigram": 2.8954929593382133,
+              "global_unigram": 2.8971597023474516,
+              "js": 0.025003437009151322,
+              "kl": 0.1051459681341757,
+              "last1": 3.4305213476384764,
+              "last16": 2.9538258290861013,
+              "last32": 2.94088473872334,
+              "last4": 3.026330150707117,
+              "last64": 2.9105327955036127,
+              "last8": 2.9924334723292905,
+              "neutral_length": 2.933405656394865,
+              "normal": 2.88237431929572,
+              "prefix_normal": 2.878971151451974,
+              "shuffle": 2.9138275634652246,
+              "top1_change": 0.7137836185819071,
+              "top3_change": 0.9128973105134475,
+              "trigram": 2.9081072187552786
+            }
+          },
+          "4": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.03281704352610906,
+                  -0.024339517904980176
+                ],
+                "delta": -0.028472932081386768,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.029682091638219305,
+                  -0.021474707330080084
+                ],
+                "delta": -0.025464144487614675,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.0350972617434324,
+                  -0.026597010057996168
+                ],
+                "delta": -0.030719585846285948,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.4455711744172874,
+                  -0.38978195558966594
+                ],
+                "delta": -0.41732956459034537,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.11863692645202253,
+                  -0.0900433891313534
+                ],
+                "delta": -0.10441200727731582,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.041216365554417426,
+                  -0.021785643998366303
+                ],
+                "delta": -0.031473341748272245,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.04631518181269641,
+                  -0.038188200852473576
+                ],
+                "delta": -0.042174968583418314,
+                "identities": 409,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.8903937114564955,
+              "bucket_unigram": 2.8873849238627236,
+              "global_unigram": 2.892640365221395,
+              "js": 0.018805780403474276,
+              "kl": 0.07804946289524438,
+              "last1": 3.2792071686778104,
+              "last16": 2.9278987529562346,
+              "last32": 2.9058560271836216,
+              "last4": 2.9971009809933693,
+              "last64": 2.8841069798863495,
+              "last8": 2.9662896113647808,
+              "neutral_length": 2.9253877328485616,
+              "normal": 2.861920779375109,
+              "prefix_normal": 2.861877604087465,
+              "shuffle": 2.893350945835737,
+              "top1_change": 0.6674816625916871,
+              "top3_change": 0.8918092909535452,
+              "trigram": 2.9040957479585274
+            }
+          }
+        }
+      },
+      "primary": {
+        "aggregate": {
+          "deltas": {
+            "bigram": {
+              "ci95": [
+                -0.00725775376092018,
+                0.0057911242784450334
+              ],
+              "delta": -0.0006073948175085025,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "bucket_unigram": {
+              "ci95": [
+                -0.011456520750732434,
+                0.0013240108603109675
+              ],
+              "delta": -0.00494620342879479,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "global_unigram": {
+              "ci95": [
+                -0.012681050609613432,
+                0.0005204619680710434
+              ],
+              "delta": -0.005938599200403705,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "last1": {
+              "ci95": [
+                -0.6076776963075117,
+                -0.5641590430983836
+              ],
+              "delta": -0.5858699628593719,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "last8": {
+              "ci95": [
+                -0.12239113744261175,
+                -0.10415675112224386
+              ],
+              "delta": -0.11320845999545742,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "shuffle": {
+              "ci95": [
+                -0.07394310828003134,
+                -0.05558100249684608
+              ],
+              "delta": -0.06482848630921229,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "trigram": {
+              "ci95": [
+                -0.018583004089027477,
+                -0.005777281596318742
+              ],
+              "delta": -0.012082979058537075,
+              "identities": 2048,
+              "resamples": 10000
+            }
+          },
+          "means": {
+            "bigram": 2.8947040092029983,
+            "bucket_unigram": 2.8990428178142844,
+            "global_unigram": 2.900035213585893,
+            "js": 0.04521706769047124,
+            "kl": 0.20282048685307785,
+            "last1": 3.47698137265904,
+            "last16": 2.973055957261705,
+            "last32": 2.9441099958115733,
+            "last4": 3.0432853985849277,
+            "last64": 2.9148997878506275,
+            "last8": 3.0043198697951254,
+            "neutral_length": 2.923656524173566,
+            "normal": 2.8940966143854894,
+            "prefix_normal": 2.891111409799668,
+            "shuffle": 2.9559398961088803,
+            "top1_change": 0.741424560546875,
+            "top3_change": 0.932403564453125,
+            "trigram": 2.9061795934440267
+          }
+        },
+        "confirmation": {
+          "A": true,
+          "B": true,
+          "C": true,
+          "D": true,
+          "E": false
+        },
+        "gates": {
+          "A": false,
+          "B": false,
+          "C": true,
+          "D": true,
+          "E": false
+        },
+        "strata": {
+          "0": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.009521003978428552,
+                  0.03823708988346891
+                ],
+                "delta": 0.014560923864607113,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.013459079886608456,
+                  0.031720360684141
+                ],
+                "delta": 0.009433998531177356,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.01810596122147211,
+                  0.02989243719374499
+                ],
+                "delta": 0.006114571701789156,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.7484844500678354,
+                  -0.6271472855155646
+                ],
+                "delta": -0.6866687380375022,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.11085068585415261,
+                  -0.06850985285800087
+                ],
+                "delta": -0.08941533141005355,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.1434307438089186,
+                  -0.08695356044378791
+                ],
+                "delta": -0.11511326781408254,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.018470162562042453,
+                  0.02944634425216256
+                ],
+                "delta": 0.005878752189693367,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.9140446529762354,
+              "bucket_unigram": 2.9191715783096654,
+              "global_unigram": 2.9224910051390536,
+              "js": 0.0850641039898539,
+              "kl": 0.3995496220038082,
+              "last1": 3.6059046762802076,
+              "last16": 2.9802286988888493,
+              "last32": 2.93770809406468,
+              "last4": 3.0485504320374033,
+              "last64": 2.9192359382427053,
+              "last8": 3.008651269652759,
+              "neutral_length": 2.9361821959658365,
+              "normal": 2.9286055768408428,
+              "prefix_normal": 2.9192359382427053,
+              "shuffle": 3.034349206056788,
+              "top1_change": 0.769359756097561,
+              "top3_change": 0.9388719512195122,
+              "trigram": 2.922726824651149
+            }
+          },
+          "1": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  0.014711821940132184,
+                  0.03981001679091454
+                ],
+                "delta": 0.027064914708103165,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  0.002570916624335508,
+                  0.028545279386966355
+                ],
+                "delta": 0.015493914082881578,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  0.0059710533500654086,
+                  0.031940644413751315
+                ],
+                "delta": 0.018879093133736653,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6836905230289261,
+                  -0.5820304274870831
+                ],
+                "delta": -0.6332726817091132,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.15597763169932602,
+                  -0.1142823291042388
+                ],
+                "delta": -0.1352521152106652,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.10209880841851614,
+                  -0.06125163948245875
+                ],
+                "delta": -0.0819372486810441,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  0.0036463743815707285,
+                  0.028681848620433437
+                ],
+                "delta": 0.016165422291174864,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.890616119310251,
+              "bucket_unigram": 2.902187119935472,
+              "global_unigram": 2.8988019408846166,
+              "js": 0.056771836540304696,
+              "kl": 0.25364460146200857,
+              "last1": 3.551066427305589,
+              "last16": 3.019679196039108,
+              "last32": 2.987618262393055,
+              "last4": 3.075959451553957,
+              "last64": 2.9364062049179855,
+              "last8": 3.053045860807141,
+              "neutral_length": 2.9130688969681904,
+              "normal": 2.917681034018354,
+              "prefix_normal": 2.917793745596476,
+              "shuffle": 2.9997309942775203,
+              "top1_change": 0.8067073170731708,
+              "top3_change": 0.9640243902439024,
+              "trigram": 2.901515611727179
+            }
+          },
+          "2": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.01702917085583529,
+                  0.017158366479017383
+                ],
+                "delta": 0.0021051428524850127,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.023652067000276222,
+                  0.010953738576606782
+                ],
+                "delta": -0.004241615342902979,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.022171907448698253,
+                  0.012577858385435447
+                ],
+                "delta": -0.0026953315969699067,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6888965917672732,
+                  -0.5846676072299486
+                ],
+                "delta": -0.6354954052980536,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.15029478840925423,
+                  -0.10022930232688446
+                ],
+                "delta": -0.12366843115710807,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.06521925518062688,
+                  -0.018443738858684923
+                ],
+                "delta": -0.04006609484680356,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.025090149586097538,
+                  0.005839085176463538
+                ],
+                "delta": -0.00813756744273209,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.889317705441936,
+              "bucket_unigram": 2.895664463637324,
+              "global_unigram": 2.894118179891391,
+              "js": 0.04005078980560761,
+              "kl": 0.17623994274543336,
+              "last1": 3.5292776192662574,
+              "last16": 2.9880072660745434,
+              "last32": 2.971487570153664,
+              "last4": 3.0624529438604395,
+              "last64": 2.9407076047114,
+              "last8": 3.017450645125312,
+              "neutral_length": 2.9153374248161548,
+              "normal": 2.891422848294421,
+              "prefix_normal": 2.893782213968204,
+              "shuffle": 2.9338483088150076,
+              "top1_change": 0.7652439024390244,
+              "top3_change": 0.9463414634146341,
+              "trigram": 2.899560415737153
+            }
+          },
+          "3": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.02164348115870992,
+                  -0.012029960601978602
+                ],
+                "delta": -0.01692992437518483,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.022962245068856114,
+                  -0.013010763699125023
+                ],
+                "delta": -0.01807573732696682,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.024610027970263043,
+                  -0.014789246718026972
+                ],
+                "delta": -0.01978494522629192,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.5835728905166226,
+                  -0.5005974495387088
+                ],
+                "delta": -0.5410366812152205,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.1266883025280677,
+                  -0.09173342628967507
+                ],
+                "delta": -0.1088025089404993,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.06144822862959806,
+                  -0.03326065590440033
+                ],
+                "delta": -0.046988410445675116,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.0348483894313067,
+                  -0.025537776287497614
+                ],
+                "delta": -0.030281984729075232,
+                "identities": 409,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.8896354824851676,
+              "bucket_unigram": 2.8907812954369496,
+              "global_unigram": 2.8924905033362744,
+              "js": 0.025701741269897226,
+              "kl": 0.10795992588893906,
+              "last1": 3.4072862397529975,
+              "last16": 2.9488059682179526,
+              "last32": 2.9179649213259222,
+              "last4": 3.0142400888807948,
+              "last64": 2.8955994274498034,
+              "last8": 2.975052067478276,
+              "neutral_length": 2.930718356647818,
+              "normal": 2.872705558109983,
+              "prefix_normal": 2.8662495585377767,
+              "shuffle": 2.913237968983452,
+              "top1_change": 0.7102689486552567,
+              "top3_change": 0.9190097799511002,
+              "trigram": 2.9029875428390577
+            }
+          },
+          "4": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.033921413207892034,
+                  -0.025880188071579952
+                ],
+                "delta": -0.02994940807123932,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.031197368177692655,
+                  -0.02355457722883611
+                ],
+                "delta": -0.027428435052851446,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.036265715681033414,
+                  -0.028252956335854975
+                ],
+                "delta": -0.032304462573792936,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.46005954400985355,
+                  -0.40490827148030645
+                ],
+                "delta": -0.4323926235957317,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.12285493805181648,
+                  -0.09482727184032677
+                ],
+                "delta": -0.10888261619834616,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.04929763115817239,
+                  -0.030371760676699194
+                ],
+                "delta": -0.039933177111966395,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.04799546440838472,
+                  -0.040269617838160895
+                ],
+                "delta": -0.04416214729420044,
+                "identities": 409,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.8898819624514744,
+              "bucket_unigram": 2.8873609894330863,
+              "global_unigram": 2.892237016954028,
+              "js": 0.01838382154775793,
+              "kl": 0.0761680666012587,
+              "last1": 3.2907476840523118,
+              "last16": 2.928390570806367,
+              "last32": 2.9056134686775708,
+              "last4": 3.01508445157567,
+              "last64": 2.8824234793730046,
+              "last8": 2.967237676654926,
+              "neutral_length": 2.922991348070737,
+              "normal": 2.859932554380235,
+              "prefix_normal": 2.85835506045658,
+              "shuffle": 2.8982882375685466,
+              "top1_change": 0.6552567237163814,
+              "top3_change": 0.8936430317848411,
+              "trigram": 2.9040947016744356
+            }
+          }
+        }
+      }
+    },
+    "5000": {
+      "independent": {
+        "aggregate": {
+          "deltas": {
+            "bigram": {
+              "ci95": [
+                -0.012257736644311155,
+                -0.0024366390541074694
+              ],
+              "delta": -0.007275946132719523,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "bucket_unigram": {
+              "ci95": [
+                -0.016834311466961932,
+                -0.0071514297257368265
+              ],
+              "delta": -0.011983656247297672,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "global_unigram": {
+              "ci95": [
+                -0.017382821457022808,
+                -0.007423271797511198
+              ],
+              "delta": -0.012366798370290786,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "last1": {
+              "ci95": [
+                -0.6529954726146785,
+                -0.6128404492696948
+              ],
+              "delta": -0.6328002502028623,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "last8": {
+              "ci95": [
+                -0.10334603886625655,
+                -0.08906116683929888
+              ],
+              "delta": -0.0962828774333565,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "shuffle": {
+              "ci95": [
+                -0.04794126437700004,
+                -0.03460705646952494
+              ],
+              "delta": -0.04122546013018169,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "trigram": {
+              "ci95": [
+                -0.02513332211898847,
+                -0.015355195125267533
+              ],
+              "delta": -0.020232240304233356,
+              "identities": 2048,
+              "resamples": 10000
+            }
+          },
+          "means": {
+            "bigram": 2.8966064030391836,
+            "bucket_unigram": 2.9013141131537616,
+            "global_unigram": 2.901697255276755,
+            "js": 0.03154929211498627,
+            "kl": 0.1377356232469431,
+            "last1": 3.525120126637642,
+            "last16": 2.9589878716395503,
+            "last32": 2.928821881965952,
+            "last4": 3.019902489076287,
+            "last64": 2.906856904413317,
+            "last8": 2.988602753868136,
+            "neutral_length": 2.9031272468564566,
+            "normal": 2.889330456906464,
+            "prefix_normal": 2.8923198764347795,
+            "shuffle": 2.9335453365649613,
+            "top1_change": 0.680023193359375,
+            "top3_change": 0.915679931640625,
+            "trigram": 2.9095626972106974
+          }
+        },
+        "confirmation": {
+          "A": true,
+          "B": true,
+          "C": true,
+          "D": true,
+          "E": false
+        },
+        "gates": {
+          "A": false,
+          "B": true,
+          "C": true,
+          "D": true,
+          "E": false
+        },
+        "strata": {
+          "0": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.00735774722658154,
+                  0.03261488651741285
+                ],
+                "delta": 0.013068408909397849,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.013093899475006889,
+                  0.02607028217987729
+                ],
+                "delta": 0.006812040886728301,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.014785689788688326,
+                  0.025854936462865342
+                ],
+                "delta": 0.005890319571322972,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6767792444195757,
+                  -0.5720264622757301
+                ],
+                "delta": -0.6239715659455325,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.09751024818228893,
+                  -0.059886805743657665
+                ],
+                "delta": -0.07881544474959544,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.09026504612656536,
+                  -0.04269034918782936
+                ],
+                "delta": -0.06633919698048509,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.019885460908238197,
+                  0.021012201459531126
+                ],
+                "delta": 0.0010014934130637416,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.9191892541312283,
+              "bucket_unigram": 2.9254456221538985,
+              "global_unigram": 2.926367343469303,
+              "js": 0.06019421246264783,
+              "kl": 0.2728272438599627,
+              "last1": 3.554403735191821,
+              "last16": 2.9675297502673903,
+              "last32": 2.9403263104581217,
+              "last4": 3.0466121331936247,
+              "last64": 2.9304321692462887,
+              "last8": 3.009247613995884,
+              "neutral_length": 2.9261999338138396,
+              "normal": 2.9322576630406263,
+              "prefix_normal": 2.9304321692462887,
+              "shuffle": 2.9967713662267736,
+              "top1_change": 0.725,
+              "top3_change": 0.9359756097560976,
+              "trigram": 2.9312561696275625
+            }
+          },
+          "1": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.0015948441337230723,
+                  0.020985667559107312
+                ],
+                "delta": 0.010081960430880069,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.015063802354798157,
+                  0.008300758295302097
+                ],
+                "delta": -0.0030166859987628115,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.01102897782299254,
+                  0.012264799399093793
+                ],
+                "delta": 0.0010038810674382471,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6969269171838495,
+                  -0.6076604912890378
+                ],
+                "delta": -0.652216742672956,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.12414153173289379,
+                  -0.08713061569957951
+                ],
+                "delta": -0.10555834292750749,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.05845326643197573,
+                  -0.026409904676833462
+                ],
+                "delta": -0.04222994540717237,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.01546457232899303,
+                  0.006894657169430989
+                ],
+                "delta": -0.0038991729981370246,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.893380514089733,
+              "bucket_unigram": 2.9064791605193765,
+              "global_unigram": 2.9024585934531753,
+              "js": 0.04189082878587219,
+              "kl": 0.18365900216257858,
+              "last1": 3.567074320229692,
+              "last16": 2.992977048251664,
+              "last32": 2.9567943556817027,
+              "last4": 3.042762439987883,
+              "last64": 2.9266462469034082,
+              "last8": 3.0204159204842433,
+              "neutral_length": 2.897532736964342,
+              "normal": 2.9034624745206137,
+              "prefix_normal": 2.914857577556736,
+              "shuffle": 2.957087522963908,
+              "top1_change": 0.7605182926829268,
+              "top3_change": 0.9597560975609756,
+              "trigram": 2.907361647518751
+            }
+          },
+          "2": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.011662643851164648,
+                  -0.0011887672837752983
+                ],
+                "delta": -0.00628573965756451,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.018046498957074723,
+                  -0.007232999472963831
+                ],
+                "delta": -0.012534210503220258,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.01615050302506062,
+                  -0.005334268366095993
+                ],
+                "delta": -0.010641596891613031,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.741304591607536,
+                  -0.6435854700369186
+                ],
+                "delta": -0.6917050767604755,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.12969261833852747,
+                  -0.09869577679608783
+                ],
+                "delta": -0.11407867803427452,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.04551214177637952,
+                  -0.02184343532353425
+                ],
+                "delta": -0.03366571518327352,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.022838878299802044,
+                  -0.012996117485763486
+                ],
+                "delta": -0.017790300400525563,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.885471257480389,
+              "bucket_unigram": 2.8917197283260445,
+              "global_unigram": 2.8898271147144374,
+              "js": 0.025735904285084404,
+              "kl": 0.10884449450006686,
+              "last1": 3.5798759084220277,
+              "last16": 2.9790961965237086,
+              "last32": 2.9381079645122887,
+              "last4": 3.0370530852724276,
+              "last64": 2.9142998597474272,
+              "last8": 3.0022495096958264,
+              "neutral_length": 2.892482627891913,
+              "normal": 2.879185517822824,
+              "prefix_normal": 2.888170831661552,
+              "shuffle": 2.9218365468448253,
+              "top1_change": 0.6949695121951219,
+              "top3_change": 0.9320121951219512,
+              "trigram": 2.89697581822335
+            }
+          },
+          "3": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.02720488807528814,
+                  -0.018110850630908393
+                ],
+                "delta": -0.022932666637769814,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.02824830702229333,
+                  -0.019049505063646967
+                ],
+                "delta": -0.023848450178948027,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.0298537342364577,
+                  -0.02072427503698473
+                ],
+                "delta": -0.02551519318818654,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6686930244088968,
+                  -0.5906127390543222
+                ],
+                "delta": -0.6298864516801762,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.11152386244040319,
+                  -0.08624514839184996
+                ],
+                "delta": -0.09910907730469275,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.04429799415407962,
+                  -0.026820942144704332
+                ],
+                "delta": -0.035601706970437526,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.04072125305172138,
+                  -0.03174817222131722
+                ],
+                "delta": -0.036462709596012846,
+                "identities": 409,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.894577175797036,
+              "bucket_unigram": 2.8954929593382133,
+              "global_unigram": 2.8971597023474516,
+              "js": 0.01632636777834536,
+              "kl": 0.06729023531918962,
+              "last1": 3.499109086332018,
+              "last16": 2.942469631889004,
+              "last32": 2.917298448351747,
+              "last4": 2.9964488873646475,
+              "last64": 2.891711302201803,
+              "last8": 2.9683317119565342,
+              "neutral_length": 2.900129766510868,
+              "normal": 2.8716445091592653,
+              "prefix_normal": 2.8692226346518415,
+              "shuffle": 2.904824341622279,
+              "top1_change": 0.6266809290953546,
+              "top3_change": 0.8951711491442543,
+              "trigram": 2.9081072187552786
+            }
+          },
+          "4": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.033746742653018566,
+                  -0.027252763473544
+                ],
+                "delta": -0.030406296319985877,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.03054595545105488,
+                  -0.024403833310228298
+                ],
+                "delta": -0.027397508726213785,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.035958001362595284,
+                  -0.029490402534848005
+                ],
+                "delta": -0.03265295008488506,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6009942508250238,
+                  -0.5316828097216056
+                ],
+                "delta": -0.566051505312701,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.09601726796760213,
+                  -0.0715587365329181
+                ],
+                "delta": -0.08382936289542796,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.036273273928980054,
+                  -0.020262344228077073
+                ],
+                "delta": -0.02824536085971016,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.04735649026830657,
+                  -0.04101870909383411
+                ],
+                "delta": -0.04410833282201742,
+                "identities": 409,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.8903937114564955,
+              "bucket_unigram": 2.8873849238627236,
+              "global_unigram": 2.892640365221395,
+              "js": 0.013518039514354065,
+              "kl": 0.05568519938856131,
+              "last1": 3.424829530240205,
+              "last16": 2.912713578747344,
+              "last32": 2.8914631059243,
+              "last4": 2.9764727695109574,
+              "last64": 2.871070720098079,
+              "last8": 2.942607387822932,
+              "neutral_length": 2.8992744611353047,
+              "normal": 2.85998741513651,
+              "prefix_normal": 2.858778024927504,
+              "shuffle": 2.8870233857872143,
+              "top1_change": 0.59260391198044,
+              "top3_change": 0.8552872860635696,
+              "trigram": 2.9040957479585274
+            }
+          }
+        }
+      },
+      "primary": {
+        "aggregate": {
+          "deltas": {
+            "bigram": {
+              "ci95": [
+                -0.020109807481150987,
+                -0.009405494080202732
+              ],
+              "delta": -0.014474931959286078,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "bucket_unigram": {
+              "ci95": [
+                -0.024271040076382828,
+                -0.013920818860025178
+              ],
+              "delta": -0.018813740570572366,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "global_unigram": {
+              "ci95": [
+                -0.025507622559010592,
+                -0.014665985620396026
+              ],
+              "delta": -0.01980613634218128,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "last1": {
+              "ci95": [
+                -0.6509664081826603,
+                -0.6110081396977813
+              ],
+              "delta": -0.6309013045747905,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "last8": {
+              "ci95": [
+                -0.1061870791103207,
+                -0.0909152284749429
+              ],
+              "delta": -0.09846381522853298,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "shuffle": {
+              "ci95": [
+                -0.055533675874583494,
+                -0.04090185464396346
+              ],
+              "delta": -0.04807572961080686,
+              "identities": 2048,
+              "resamples": 10000
+            },
+            "trigram": {
+              "ci95": [
+                -0.031420540493297774,
+                -0.020985344157474797
+              ],
+              "delta": -0.02595051620031465,
+              "identities": 2048,
+              "resamples": 10000
+            }
+          },
+          "means": {
+            "bigram": 2.8947040092029983,
+            "bucket_unigram": 2.8990428178142844,
+            "global_unigram": 2.900035213585893,
+            "js": 0.03181375695235791,
+            "kl": 0.13986549795080805,
+            "last1": 3.5083337841702544,
+            "last16": 2.9470585763853947,
+            "last32": 2.9188105853165984,
+            "last4": 3.012299243913276,
+            "last64": 2.894123586028167,
+            "last8": 2.975896294823997,
+            "neutral_length": 2.895801630220376,
+            "normal": 2.880229077243712,
+            "prefix_normal": 2.8774324795954636,
+            "shuffle": 2.9255082092062707,
+            "top1_change": 0.676849365234375,
+            "top3_change": 0.91302490234375,
+            "trigram": 2.9061795934440267
+          }
+        },
+        "confirmation": {
+          "A": true,
+          "B": true,
+          "C": true,
+          "D": true,
+          "E": true
+        },
+        "gates": {
+          "A": false,
+          "B": true,
+          "C": true,
+          "D": true,
+          "E": true
+        },
+        "strata": {
+          "0": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.02661196060463529,
+                  0.010403213543097591
+                ],
+                "delta": -0.007519131523401563,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.030338425673187643,
+                  0.004277075062140794
+                ],
+                "delta": -0.01264605685683132,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.035258189834200676,
+                  0.002395496041611927
+                ],
+                "delta": -0.015965483686219518,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.7282894507627746,
+                  -0.624526082584883
+                ],
+                "delta": -0.6754908454580134,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.09095179921731626,
+                  -0.057075259059216156
+                ],
+                "delta": -0.07411416787710949,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.09667835766610351,
+                  -0.05410536757128373
+                ],
+                "delta": -0.07512985487176083,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.03553637182954258,
+                  0.0018492600837182072
+                ],
+                "delta": -0.01620130319831531,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.9140446529762354,
+              "bucket_unigram": 2.9191715783096654,
+              "global_unigram": 2.9224910051390536,
+              "js": 0.05873980257458935,
+              "kl": 0.2672301391806885,
+              "last1": 3.5656957468000723,
+              "last16": 2.9302217843040834,
+              "last32": 2.8995564637815,
+              "last4": 3.0089808015132937,
+              "last64": 2.8902049013420585,
+              "last8": 2.9643190692191683,
+              "neutral_length": 2.910527426440541,
+              "normal": 2.906525521452834,
+              "prefix_normal": 2.8902049013420585,
+              "shuffle": 2.9653347562138195,
+              "top1_change": 0.71875,
+              "top3_change": 0.9280487804878049,
+              "trigram": 2.922726824651149
+            }
+          },
+          "1": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.003594231706945832,
+                  0.016016963951579186
+                ],
+                "delta": 0.006266086164416879,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.015596974021188764,
+                  0.004848581959482256
+                ],
+                "delta": -0.0053049144608047095,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.012079485118779106,
+                  0.008333061064683255
+                ],
+                "delta": -0.0019197354099496306,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6723247210111907,
+                  -0.5808818656500514
+                ],
+                "delta": -0.6265663282142668,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.12409295110062592,
+                  -0.0895218486963177
+                ],
+                "delta": -0.10706816705142934,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.06961725508059122,
+                  -0.03721426857130721
+                ],
+                "delta": -0.05339223242748542,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.014494827122417054,
+                  0.005197870673270873
+                ],
+                "delta": -0.004633406252511421,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.890616119310251,
+              "bucket_unigram": 2.902187119935472,
+              "global_unigram": 2.8988019408846166,
+              "js": 0.041370893527559155,
+              "kl": 0.1828440509009652,
+              "last1": 3.529310468805559,
+              "last16": 2.9831564672836444,
+              "last32": 2.9520364671849033,
+              "last4": 3.0369328941451386,
+              "last64": 2.9113294244011563,
+              "last8": 3.0098123076427217,
+              "neutral_length": 2.893022060394287,
+              "normal": 2.8968822054746672,
+              "prefix_normal": 2.902744140591292,
+              "shuffle": 2.956136373018778,
+              "top1_change": 0.7681402439024391,
+              "top3_change": 0.9589939024390244,
+              "trigram": 2.901515611727179
+            }
+          },
+          "2": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.03190819432285008,
+                  -0.0012939494231789782
+                ],
+                "delta": -0.014038004395108564,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.03845721638106423,
+                  -0.007350247379319842
+                ],
+                "delta": -0.020384762590496555,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.03688760639786523,
+                  -0.005831813381080892
+                ],
+                "delta": -0.018838478844563484,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.7033209014309542,
+                  -0.6103753815460421
+                ],
+                "delta": -0.6557937419652534,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.13277535915490235,
+                  -0.0893978744481015
+                ],
+                "delta": -0.10978934935100669,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.05853742528655734,
+                  -0.01837332849729625
+                ],
+                "delta": -0.03615548491988714,
+                "identities": 410,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.040277619000364445,
+                  -0.012452956337729165
+                ],
+                "delta": -0.024280714690325667,
+                "identities": 410,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.889317705441936,
+              "bucket_unigram": 2.895664463637324,
+              "global_unigram": 2.894118179891391,
+              "js": 0.029088861632044428,
+              "kl": 0.12637767385117846,
+              "last1": 3.5366560306568826,
+              "last16": 2.9662424676438293,
+              "last32": 2.9425551847031897,
+              "last4": 3.035491355230305,
+              "last64": 2.9148414806142537,
+              "last8": 2.9906516380426362,
+              "neutral_length": 2.888452286255069,
+              "normal": 2.875279701046827,
+              "prefix_normal": 2.8808622886916293,
+              "shuffle": 2.9170177736115166,
+              "top1_change": 0.6961890243902439,
+              "top3_change": 0.9353658536585366,
+              "trigram": 2.899560415737153
+            }
+          },
+          "3": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.027821549860654105,
+                  -0.020826971088218543
+                ],
+                "delta": -0.024386506241721985,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.029170857856152362,
+                  -0.021800750023782796
+                ],
+                "delta": -0.025532319193503978,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.030817178485687463,
+                  -0.02359278991270806
+                ],
+                "delta": -0.027241527092829076,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6663223861664731,
+                  -0.5820207704251587
+                ],
+                "delta": -0.622945421127518,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.11823387205336437,
+                  -0.08769029152596762
+                ],
+                "delta": -0.10279523740102203,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.05326189158653103,
+                  -0.029571148491758303
+                ],
+                "delta": -0.040814708580287885,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.04126532321104933,
+                  -0.03410133298247853
+                ],
+                "delta": -0.03773856659561239,
+                "identities": 409,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.8896354824851676,
+              "bucket_unigram": 2.8907812954369496,
+              "global_unigram": 2.8924905033362744,
+              "js": 0.017443427739057646,
+              "kl": 0.07225284419261024,
+              "last1": 3.4814809269051485,
+              "last16": 2.9416910561307135,
+              "last32": 2.905092188942731,
+              "last4": 2.986212419234683,
+              "last64": 2.8826958960757096,
+              "last8": 2.961330743178652,
+              "neutral_length": 2.8970715375867626,
+              "normal": 2.865248976243446,
+              "prefix_normal": 2.8585355057776303,
+              "shuffle": 2.899350214357918,
+              "top1_change": 0.6263753056234719,
+              "top3_change": 0.8963936430317848,
+              "trigram": 2.9029875428390577
+            }
+          },
+          "4": {
+            "deltas": {
+              "bigram": {
+                "ci95": [
+                  -0.03593881191049228,
+                  -0.029532681617792753
+                ],
+                "delta": -0.03276589046595442,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "bucket_unigram": {
+                "ci95": [
+                  -0.03320004742667202,
+                  -0.027250422247936345
+                ],
+                "delta": -0.03024491744756655,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "global_unigram": {
+                "ci95": [
+                  -0.03834694242279767,
+                  -0.03191845660369353
+                ],
+                "delta": -0.03512094496850804,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last1": {
+                "ci95": [
+                  -0.6090872438436145,
+                  -0.538906872731777
+                ],
+                "delta": -0.5735509024856414,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "last8": {
+                "ci95": [
+                  -0.11013563197563814,
+                  -0.08706364801363031
+                ],
+                "delta": -0.09856296072470384,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "shuffle": {
+                "ci95": [
+                  -0.04244438332157132,
+                  -0.026921927258099058
+                ],
+                "delta": -0.03483636631723721,
+                "identities": 409,
+                "resamples": 10000
+              },
+              "trigram": {
+                "ci95": [
+                  -0.05003940257773291,
+                  -0.04388790327657905
+                ],
+                "delta": -0.046978629688915544,
+                "identities": 409,
+                "resamples": 10000
+              }
+            },
+            "means": {
+              "bigram": 2.8898819624514744,
+              "bucket_unigram": 2.8873609894330863,
+              "global_unigram": 2.892237016954028,
+              "js": 0.012343260689817448,
+              "kl": 0.05023927216629855,
+              "last1": 3.4282649631023094,
+              "last16": 2.913887109033956,
+              "last32": 2.8947204059322336,
+              "last4": 2.9937699295917395,
+              "last64": 2.871463085780339,
+              "last8": 2.953277021341372,
+              "neutral_length": 2.8899236011038782,
+              "normal": 2.8571160719855198,
+              "prefix_normal": 2.854714060616668,
+              "shuffle": 2.8895504269339054,
+              "top1_change": 0.574419315403423,
+              "top3_change": 0.8461185819070904,
+              "trigram": 2.9040947016744356
+            }
+          }
+        }
+      }
+    }
+  },
+  "short_length_relative_position_delta": {
+    "independent": {
+      "0": {
+        "identities": 410,
+        "normal_minus_bucket_ce_deciles": [
+          0.23547185063777976,
+          0.14672307936523352,
+          0.04410538380502478,
+          -0.01927066971587609,
+          0.005156873263010191,
+          -0.01847661014494786,
+          -0.022739243015665333,
+          -0.028328880971812687,
+          -0.014547781338153784,
+          0.013019787538910668
+        ]
+      },
+      "1": {
+        "identities": 410,
+        "normal_minus_bucket_ce_deciles": [
+          0.03718357214352862,
+          0.08554967182627825,
+          0.03253837280442539,
+          0.026973738156494592,
+          0.004131072577816831,
+          0.02396084415305592,
+          0.007307842256000868,
+          -0.011551864496660487,
+          -0.012915064171870128,
+          -0.05290047159715062
+        ]
+      },
+      "2": {
+        "identities": 410,
+        "normal_minus_bucket_ce_deciles": [
+          0.08256855546712762,
+          0.019424142398239155,
+          -0.0045472144530386924,
+          -0.0062068711402344144,
+          0.001379902316483134,
+          -0.014727258692411238,
+          -0.0005269246593952754,
+          -0.0012845780131521037,
+          -0.0038119158375304733,
+          -0.03638126243301356
+        ]
+      },
+      "3": {
+        "identities": 409,
+        "normal_minus_bucket_ce_deciles": [
+          0.016231680760415906,
+          -0.010083847894645096,
+          -0.012623284361322103,
+          -0.010734293598381546,
+          -0.008571434081459751,
+          -0.010515071022315517,
+          -0.0059759235394012495,
+          -0.016957545350637825,
+          -0.03038791889350863,
+          -0.0423393735140202
+        ]
+      },
+      "4": {
+        "identities": 409,
+        "normal_minus_bucket_ce_deciles": [
+          -0.01671188862723108,
+          -0.02377393910073925,
+          -0.028777298750014432,
+          -0.02152672398477264,
+          -0.01725012181920045,
+          -0.022414405599957023,
+          -0.025041387985744186,
+          -0.028341013582765136,
+          -0.02686592334903225,
+          -0.04420054305870804
+        ]
+      }
+    },
+    "primary": {
+      "0": {
+        "identities": 410,
+        "normal_minus_bucket_ce_deciles": [
+          0.18879966531761672,
+          0.15879343378857805,
+          0.01182208541773643,
+          -0.01141517043476848,
+          -0.03598157868263211,
+          -0.07173898131179998,
+          -0.07206654663322673,
+          -0.02081658447692101,
+          -0.021147879842794367,
+          -0.06378105486869644
+        ]
+      },
+      "1": {
+        "identities": 410,
+        "normal_minus_bucket_ce_deciles": [
+          0.06289449761313004,
+          0.0746023110718111,
+          0.04421873939558391,
+          0.012931703993055984,
+          -0.0033438334677893602,
+          -0.0006254760428893034,
+          0.005529891972301156,
+          -0.018924042196524857,
+          0.013112255389955165,
+          -0.04012604697412526
+        ]
+      },
+      "2": {
+        "identities": 410,
+        "normal_minus_bucket_ce_deciles": [
+          0.05646398270740538,
+          0.01765002501919144,
+          -0.011666192685147276,
+          -0.01592209778099621,
+          -0.027410640184094576,
+          -0.01727808884231441,
+          -0.018990021044369827,
+          -0.0058323109104336315,
+          0.012778553384474724,
+          -0.034368267346117504
+        ]
+      },
+      "3": {
+        "identities": 409,
+        "normal_minus_bucket_ce_deciles": [
+          0.0035446930781795538,
+          -0.020364085634470962,
+          -0.021894256162634428,
+          -0.02167489105257146,
+          -0.022572655375062717,
+          -0.009272206748720577,
+          -0.00929059132524117,
+          -0.017047237729011434,
+          -0.022786504764204168,
+          -0.04010123855777579
+        ]
+      },
+      "4": {
+        "identities": 409,
+        "normal_minus_bucket_ce_deciles": [
+          -0.00599441554077202,
+          -0.023005759529870086,
+          -0.022333974048670015,
+          -0.028158509925007347,
+          -0.027605492921426594,
+          -0.027698269964261252,
+          -0.02361630346414433,
+          -0.03468516361139262,
+          -0.03514620709254818,
+          -0.04644585320894361
+        ]
+      }
+    }
+  },
+  "source_checkpoint_sha256": "ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188",
+  "speedup": 1.7619342318550246,
+  "tests": {
+    "exact_resume": {
+      "Adam_moments_restored": true,
+      "budget_optimizer_updates": 0,
+      "disposable_smoke_updates": 3,
+      "exact_loss": 2.000027969479561,
+      "exact_weights": true,
+      "smoke_checkpoint_sha256": "9feca582670ffd6414bb23aed5067bea6c78831e0754010f623feffc09ce05cc",
+      "source_sha256": "ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188",
+      "status": "passed"
+    },
+    "historical_complete_suite_evidence": "reports/experiments/E012_causal_rope_sequence/pilot_v1/quality.json",
+    "no_tests_weakened": true,
+    "numerical_equivalence": {
+      "dropout_control": "eval only, architecture dropout unchanged for training",
+      "gradient_cosine": 1.0064321756362915,
+      "gradient_relative_error": 3.1937784683577775e-07,
+      "loss_difference": 0.0,
+      "optimizer_weight_max_difference": 7.450580596923828e-09,
+      "precision": "float32"
+    },
+    "pre_execution_owner_guard_correction": "Recognize both audited CPU-only v5 run/reproduce modes; corrected before optimizer update2001.",
+    "ruff_format": "passed",
+    "ruff_lint": "passed",
+    "sequence_suite_passed": 79,
+    "status": "passed",
+    "syntax": "passed",
+    "whitespace": "passed"
+  },
+  "throughput_convention": "sum of per-update training wall times, excluding evaluation; historical durations reconstructed from residues/sec",
+  "training_seconds": 2218.197772833286,
+  "training_summary": {
+    "additional_updates": 8000,
+    "cadence_100": [
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 2001,
+        "last_update": 2100,
+        "lr_at_end": 0.0003,
+        "mean_ce": 2.2019526632130146,
+        "mean_gradient_norm": 2.5793382251262664,
+        "mean_update_seconds": 0.3092445422639139
+      },
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 2101,
+        "last_update": 2200,
+        "lr_at_end": 0.0002998814095840952,
+        "mean_ce": 2.233526346534491,
+        "mean_gradient_norm": 3.2265630567073824,
+        "mean_update_seconds": 0.29479391432600094
+      },
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 2201,
+        "last_update": 2300,
+        "lr_at_end": 0.00029952582585220436,
+        "mean_ce": 2.1924578499794007,
+        "mean_gradient_norm": 3.0860545682907103,
+        "mean_update_seconds": 0.29857631468214096
+      },
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 2301,
+        "last_update": 2400,
+        "lr_at_end": 0.000298933811055296,
+        "mean_ce": 2.13396420493722,
+        "mean_gradient_norm": 2.5414093351364135,
+        "mean_update_seconds": 0.29592918870039286
+      },
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 2401,
+        "last_update": 2500,
+        "lr_at_end": 0.00029810630129044997,
+        "mean_ce": 2.0911468744277952,
+        "mean_gradient_norm": 2.293158617019653,
+        "mean_update_seconds": 0.294883798211813
+      },
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 2501,
+        "last_update": 2600,
+        "lr_at_end": 0.0002970446050206954,
+        "mean_ce": 2.0812819793820383,
+        "mean_gradient_norm": 2.6846133875846863,
+        "mean_update_seconds": 0.2916457405406982
+      },
+      {
+        "clipped_fraction": 0.99,
+        "first_update": 2601,
+        "last_update": 2700,
+        "lr_at_end": 0.0002957504010060615,
+        "mean_ce": 2.0254501950740815,
+        "mean_gradient_norm": 2.1189350098371507,
+        "mean_update_seconds": 0.2934364122478291
+      },
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 2701,
+        "last_update": 2800,
+        "lr_at_end": 0.00029422573564911303,
+        "mean_ce": 2.00575235709548,
+        "mean_gradient_norm": 2.4590657103061675,
+        "mean_update_seconds": 0.29494813554221766
+      },
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 2801,
+        "last_update": 2900,
+        "lr_at_end": 0.0002924730197591674,
+        "mean_ce": 1.987986530959606,
+        "mean_gradient_norm": 2.2669173431396485,
+        "mean_update_seconds": 0.2976803157641552
+      },
+      {
+        "clipped_fraction": 0.98,
+        "first_update": 2901,
+        "last_update": 3000,
+        "lr_at_end": 0.0002904950247403092,
+        "mean_ce": 1.9291180269420147,
+        "mean_gradient_norm": 2.167044541835785,
+        "mean_update_seconds": 0.29510262730531395
+      },
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 3001,
+        "last_update": 3100,
+        "lr_at_end": 0.00028829487820923095,
+        "mean_ce": 1.8934720684587956,
+        "mean_gradient_norm": 1.9228271818161011,
+        "mean_update_seconds": 0.2947806729492731
+      },
+      {
+        "clipped_fraction": 0.99,
+        "first_update": 3101,
+        "last_update": 3200,
+        "lr_at_end": 0.00028587605904982846,
+        "mean_ce": 1.8845922350883484,
+        "mean_gradient_norm": 1.9031786972284317,
+        "mean_update_seconds": 0.2976533737126738
+      },
+      {
+        "clipped_fraction": 1.0,
+        "first_update": 3201,
+        "last_update": 3300,
+        "lr_at_end": 0.00028324239191236975,
+        "mean_ce": 1.8742446258664132,
+        "mean_gradient_norm": 1.9693118679523467,
+        "mean_update_seconds": 0.284463994295802
+      },
+      {
+        "clipped_fraction": 0.97,
+        "first_update": 3301,
+        "last_update": 3400,
+        "lr_at_end": 0.00028039804116593737,
+        "mean_ce": 1.851657709926367,
+        "mean_gradient_norm": 1.8945783591270446,
+        "mean_update_seconds": 0.28206767898984253
+      },
+      {
+        "clipped_fraction": 0.99,
+        "first_update": 3401,
+        "last_update": 3500,
+        "lr_at_end": 0.00027734750431370457,
+        "mean_ce": 1.8471942639350891,
+        "mean_gradient_norm": 1.864001793861389,
+        "mean_update_seconds": 0.2675164762558416
+      },
+      {
+        "clipped_fraction": 0.99,
+        "first_update": 3501,
+        "last_update": 3600,
+        "lr_at_end": 0.0002740956048814586,
+        "mean_ce": 1.806608768850565,
+        "mean_gradient_norm": 1.8887055045366288,
+        "mean_update_seconds": 0.2630441614310257
+      },
+      {
+        "clipped_fraction": 0.96,
+        "first_update": 3601,
+        "last_update": 3700,
+        "lr_at_end": 0.0002706474847906147,
+        "mean_ce": 1.7714719163626433,
+        "mean_gradient_norm": 1.8190481728315353,
+        "mean_update_seconds": 0.25955603380221876
+      },
+      {
+        "clipped_fraction": 0.99,
+        "first_update": 3701,
+        "last_update": 3800,
+        "lr_at_end": 0.00026700859622778183,
+        "mean_ce": 1.7355475927889348,
+        "mean_gradient_norm": 1.7771600532531737,
+        "mean_update_seconds": 0.2616708872956224
+      },
+      {
+        "clipped_fraction": 0.97,
+        "first_update": 3801,
+        "last_update": 3900,
+        "lr_at_end": 0.0002631846930237345,
+        "mean_ce": 1.721220059543848,
+        "mean_gradient_norm": 1.668446446657181,
+        "mean_update_seconds": 0.2593768192850985
+      },
+      {
+        "clipped_fraction": 0.99,
+        "first_update": 3901,
+        "last_update": 4000,
+        "lr_at_end": 0.0002591818215554241,
+        "mean_ce": 1.6802917590737343,
+        "mean_gradient_norm": 1.8946112114191056,
+        "mean_update_seconds": 0.26284471120452507
+      },
+      {
+        "clipped_fraction": 0.96,
+        "first_update": 4001,
+        "last_update": 4100,
+        "lr_at_end": 0.0002550063111854138,
+        "mean_ce": 1.6850188553333283,
+        "mean_gradient_norm": 1.93832215487957,
+        "mean_update_seconds": 0.26302518682787196
+      },
+      {
+        "clipped_fraction": 0.96,
+        "first_update": 4101,
+        "last_update": 4200,
+        "lr_at_end": 0.0002506647642538555,
+        "mean_ce": 1.6819837169349194,
+        "mean_gradient_norm": 1.7117106050252915,
+        "mean_update_seconds": 0.2624309144332074
+      },
+      {
+        "clipped_fraction": 0.95,
+        "first_update": 4201,
+        "last_update": 4300,
+        "lr_at_end": 0.000246164045638833,
+        "mean_ce": 1.673111947029829,
+        "mean_gradient_norm": 1.6377366358041763,
+        "mean_update_seconds": 0.26656932091107594
+      },
+      {
+        "clipped_fraction": 0.97,
+        "first_update": 4301,
+        "last_update": 4400,
+        "lr_at_end": 0.00024151127190157862,
+        "mean_ce": 1.661230186596513,
+        "mean_gradient_norm": 1.538917288184166,
+        "mean_update_seconds": 0.26804897079477086
+      },
+      {
+        "clipped_fraction": 0.92,
+        "first_update": 4401,
+        "last_update": 4500,
+        "lr_at_end": 0.00023671380003372725,
+        "mean_ce": 1.6386672585457562,
+        "mean_gradient_norm": 1.5259126102924347,
+        "mean_update_seconds": 0.2675225349073298
+      },
+      {
+        "clipped_fraction": 0.99,
+        "first_update": 4501,
+        "last_update": 4600,
+        "lr_at_end": 0.00023177921582440012,
+        "mean_ce": 1.6392089346051215,
+        "mean_gradient_norm": 1.8619876837730407,
+        "mean_update_seconds": 0.2618818556983024
+      },
+      {
+        "clipped_fraction": 0.98,
+        "first_update": 4601,
+        "last_update": 4700,
+        "lr_at_end": 0.00022671532186551333,
+        "mean_ce": 1.5981589211523533,
+        "mean_gradient_norm": 1.9919093161821366,
+        "mean_update_seconds": 0.2624873129324988
+      },
+      {
+        "clipped_fraction": 0.94,
+        "first_update": 4701,
+        "last_update": 4800,
+        "lr_at_end": 0.00022153012521427588,
+        "mean_ce": 1.5676268690824509,
+        "mean_gradient_norm": 1.419918650984764,
+        "mean_update_seconds": 0.2664473421964794
+      },
+      {
+        "clipped_fraction": 0.85,
+        "first_update": 4801,
+        "last_update": 4900,
+        "lr_at_end": 0.00021623182473238676,
+        "mean_ce": 1.5941977512091399,
+        "mean_gradient_norm": 1.357655656337738,
+        "mean_update_seconds": 0.27099438895238565
+      },
+      {
+        "clipped_fraction": 0.99,
+        "first_update": 4901,
+        "last_update": 5000,
+        "lr_at_end": 0.0002108287981219491,
+        "mean_ce": 1.5642906542867423,
+        "mean_gradient_norm": 1.6592804563045502,
+        "mean_update_seconds": 0.26653478263411673
+      },
+      {
+        "clipped_fraction": 0.87,
+        "first_update": 5001,
+        "last_update": 5100,
+        "lr_at_end": 0.00020532958867860114,
+        "mean_ce": 1.5909546442329883,
+        "mean_gradient_norm": 1.4538523530960084,
+        "mean_update_seconds": 0.3013366732886061
+      },
+      {
+        "clipped_fraction": 0.91,
+        "first_update": 5101,
+        "last_update": 5200,
+        "lr_at_end": 0.00019974289178281018,
+        "mean_ce": 1.5563082879036665,
+        "mean_gradient_norm": 1.4933345991373062,
+        "mean_update_seconds": 0.29379575059749186
+      },
+      {
+        "clipped_fraction": 0.9,
+        "first_update": 5201,
+        "last_update": 5300,
+        "lr_at_end": 0.0001940775411506881,
+        "mean_ce": 1.5249429193884134,
+        "mean_gradient_norm": 1.4633254212141038,
+        "mean_update_seconds": 0.2932913924031891
+      },
+      {
+        "clipped_fraction": 0.93,
+        "first_update": 5301,
+        "last_update": 5400,
+        "lr_at_end": 0.0001883424948660712,
+        "mean_ce": 1.5129381234198809,
+        "mean_gradient_norm": 1.2798298639059067,
+        "mean_update_seconds": 0.29468752509448676
+      },
+      {
+        "clipped_fraction": 0.89,
+        "first_update": 5401,
+        "last_update": 5500,
+        "lr_at_end": 0.0001825468212159477,
+        "mean_ce": 1.5199900656193495,
+        "mean_gradient_norm": 1.509971764087677,
+        "mean_update_seconds": 0.2980188674409874
+      },
+      {
+        "clipped_fraction": 0.83,
+        "first_update": 5501,
+        "last_update": 5600,
+        "lr_at_end": 0.00017669968435163257,
+        "mean_ce": 1.4812725118547678,
+        "mean_gradient_norm": 1.4189369988441467,
+        "mean_update_seconds": 0.3006664434517734
+      },
+      {
+        "clipped_fraction": 0.87,
+        "first_update": 5601,
+        "last_update": 5700,
+        "lr_at_end": 0.00017081032979836025,
+        "mean_ce": 1.4787078211456537,
+        "mean_gradient_norm": 1.2926120728254318,
+        "mean_update_seconds": 0.2961118780216202
+      },
+      {
+        "clipped_fraction": 0.89,
+        "first_update": 5701,
+        "last_update": 5800,
+        "lr_at_end": 0.00016488806983620921,
+        "mean_ce": 1.4901103106141091,
+        "mean_gradient_norm": 1.3846931457519531,
+        "mean_update_seconds": 0.30499700679443775
+      },
+      {
+        "clipped_fraction": 0.83,
+        "first_update": 5801,
+        "last_update": 5900,
+        "lr_at_end": 0.00015894226877547296,
+        "mean_ce": 1.4671472206711769,
+        "mean_gradient_norm": 1.3428122413158416,
+        "mean_update_seconds": 0.29448872196720915
+      },
+      {
+        "clipped_fraction": 0.87,
+        "first_update": 5901,
+        "last_update": 6000,
+        "lr_at_end": 0.0001529823281497605,
+        "mean_ce": 1.4724599472433328,
+        "mean_gradient_norm": 1.3311253762245179,
+        "mean_update_seconds": 0.298451383872889
+      },
+      {
+        "clipped_fraction": 0.81,
+        "first_update": 6001,
+        "last_update": 6100,
+        "lr_at_end": 0.0001470176718502395,
+        "mean_ce": 1.4571617949008941,
+        "mean_gradient_norm": 1.257651926279068,
+        "mean_update_seconds": 0.29284939461387693
+      },
+      {
+        "clipped_fraction": 0.73,
+        "first_update": 6101,
+        "last_update": 6200,
+        "lr_at_end": 0.00014105773122452702,
+        "mean_ce": 1.4502825598418712,
+        "mean_gradient_norm": 1.193459191918373,
+        "mean_update_seconds": 0.2959830443817191
+      },
+      {
+        "clipped_fraction": 0.87,
+        "first_update": 6201,
+        "last_update": 6300,
+        "lr_at_end": 0.0001351119301637908,
+        "mean_ce": 1.4556971169263124,
+        "mean_gradient_norm": 1.3013902580738068,
+        "mean_update_seconds": 0.29504040110856294
+      },
+      {
+        "clipped_fraction": 0.7,
+        "first_update": 6301,
+        "last_update": 6400,
+        "lr_at_end": 0.00012918967020163975,
+        "mean_ce": 1.444587582424283,
+        "mean_gradient_norm": 1.1319804084300995,
+        "mean_update_seconds": 0.2923877719673328
+      },
+      {
+        "clipped_fraction": 0.79,
+        "first_update": 6401,
+        "last_update": 6500,
+        "lr_at_end": 0.00012330031564836749,
+        "mean_ce": 1.4360001187771558,
+        "mean_gradient_norm": 1.3891323792934418,
+        "mean_update_seconds": 0.28218733597313983
+      },
+      {
+        "clipped_fraction": 0.74,
+        "first_update": 6501,
+        "last_update": 6600,
+        "lr_at_end": 0.00011745317878405228,
+        "mean_ce": 1.4014997452497482,
+        "mean_gradient_norm": 1.1921362733840943,
+        "mean_update_seconds": 0.2608462561434135
+      },
+      {
+        "clipped_fraction": 0.84,
+        "first_update": 6601,
+        "last_update": 6700,
+        "lr_at_end": 0.0001116575051339288,
+        "mean_ce": 1.3986985492706299,
+        "mean_gradient_norm": 1.3424180805683137,
+        "mean_update_seconds": 0.2640548558882438
+      },
+      {
+        "clipped_fraction": 0.68,
+        "first_update": 6701,
+        "last_update": 6800,
+        "lr_at_end": 0.00010592245884931188,
+        "mean_ce": 1.4094823638349772,
+        "mean_gradient_norm": 1.1317333030700683,
+        "mean_update_seconds": 0.2694275800208561
+      },
+      {
+        "clipped_fraction": 0.71,
+        "first_update": 6801,
+        "last_update": 6900,
+        "lr_at_end": 0.00010025710821718983,
+        "mean_ce": 1.392684354633093,
+        "mean_gradient_norm": 1.1900568348169327,
+        "mean_update_seconds": 0.30419155247276647
+      },
+      {
+        "clipped_fraction": 0.72,
+        "first_update": 6901,
+        "last_update": 7000,
+        "lr_at_end": 9.467041132139883e-05,
+        "mean_ce": 1.393373719677329,
+        "mean_gradient_norm": 1.1577412855625153,
+        "mean_update_seconds": 0.2744568910007365
+      },
+      {
+        "clipped_fraction": 0.66,
+        "first_update": 7001,
+        "last_update": 7100,
+        "lr_at_end": 8.917120187805091e-05,
+        "mean_ce": 1.375372245386243,
+        "mean_gradient_norm": 1.1368169891834259,
+        "mean_update_seconds": 0.2726869535399601
+      },
+      {
+        "clipped_fraction": 0.67,
+        "first_update": 7101,
+        "last_update": 7200,
+        "lr_at_end": 8.37681752676132e-05,
+        "mean_ce": 1.3708126735687256,
+        "mean_gradient_norm": 1.1482126623392106,
+        "mean_update_seconds": 0.2665151316556148
+      },
+      {
+        "clipped_fraction": 0.61,
+        "first_update": 7201,
+        "last_update": 7300,
+        "lr_at_end": 7.846987478572411e-05,
+        "mean_ce": 1.3606628043204545,
+        "mean_gradient_norm": 1.2720484000444412,
+        "mean_update_seconds": 0.2834987884690054
+      },
+      {
+        "clipped_fraction": 0.46,
+        "first_update": 7301,
+        "last_update": 7400,
+        "lr_at_end": 7.328467813448667e-05,
+        "mean_ce": 1.3557219101488591,
+        "mean_gradient_norm": 1.029808685183525,
+        "mean_update_seconds": 0.28336963438661766
+      },
+      {
+        "clipped_fraction": 0.47,
+        "first_update": 7401,
+        "last_update": 7500,
+        "lr_at_end": 6.822078417559984e-05,
+        "mean_ce": 1.3406267468631268,
+        "mean_gradient_norm": 1.0181659358739852,
+        "mean_update_seconds": 0.2617518889391795
+      },
+      {
+        "clipped_fraction": 0.52,
+        "first_update": 7501,
+        "last_update": 7600,
+        "lr_at_end": 6.328619996627276e-05,
+        "mean_ce": 1.3397902626544238,
+        "mean_gradient_norm": 1.0685606050491332,
+        "mean_update_seconds": 0.26503125758841634
+      },
+      {
+        "clipped_fraction": 0.55,
+        "first_update": 7601,
+        "last_update": 7700,
+        "lr_at_end": 5.848872809842134e-05,
+        "mean_ce": 1.3596186040341853,
+        "mean_gradient_norm": 1.0723748070001602,
+        "mean_update_seconds": 0.2641634740121663
+      },
+      {
+        "clipped_fraction": 0.49,
+        "first_update": 7701,
+        "last_update": 7800,
+        "lr_at_end": 5.383595436116702e-05,
+        "mean_ce": 1.3652761996537448,
+        "mean_gradient_norm": 1.0216604554653168,
+        "mean_update_seconds": 0.2628205826645717
+      },
+      {
+        "clipped_fraction": 0.36,
+        "first_update": 7801,
+        "last_update": 7900,
+        "lr_at_end": 4.933523574614451e-05,
+        "mean_ce": 1.3229419555515052,
+        "mean_gradient_norm": 0.9866875809431076,
+        "mean_update_seconds": 0.262092620274052
+      },
+      {
+        "clipped_fraction": 0.66,
+        "first_update": 7901,
+        "last_update": 8000,
+        "lr_at_end": 4.499368881458621e-05,
+        "mean_ce": 1.329878825098276,
+        "mean_gradient_norm": 1.1389372050762177,
+        "mean_update_seconds": 0.2720294802868739
+      },
+      {
+        "clipped_fraction": 0.38,
+        "first_update": 8001,
+        "last_update": 8100,
+        "lr_at_end": 4.081817844457588e-05,
+        "mean_ce": 1.3391465758532286,
+        "mean_gradient_norm": 1.0033275145292282,
+        "mean_update_seconds": 0.2671702198358253
+      },
+      {
+        "clipped_fraction": 0.44,
+        "first_update": 8101,
+        "last_update": 8200,
+        "lr_at_end": 3.681530697626551e-05,
+        "mean_ce": 1.3149250193685293,
+        "mean_gradient_norm": 1.0184480160474778,
+        "mean_update_seconds": 0.2682905932329595
+      },
+      {
+        "clipped_fraction": 0.3,
+        "first_update": 8201,
+        "last_update": 8300,
+        "lr_at_end": 3.299140377221819e-05,
+        "mean_ce": 1.369695125669241,
+        "mean_gradient_norm": 0.9552465564012528,
+        "mean_update_seconds": 0.26574298697058113
+      },
+      {
+        "clipped_fraction": 0.45,
+        "first_update": 8301,
+        "last_update": 8400,
+        "lr_at_end": 2.935251520938528e-05,
+        "mean_ce": 1.3263341748714448,
+        "mean_gradient_norm": 0.9959328991174697,
+        "mean_update_seconds": 0.26380310313077643
+      },
+      {
+        "clipped_fraction": 0.33,
+        "first_update": 8401,
+        "last_update": 8500,
+        "lr_at_end": 2.5904395118541406e-05,
+        "mean_ce": 1.2912504088878631,
+        "mean_gradient_norm": 0.9657414746284485,
+        "mean_update_seconds": 0.2641414820286445
+      },
+      {
+        "clipped_fraction": 0.41,
+        "first_update": 8501,
+        "last_update": 8600,
+        "lr_at_end": 2.265249568629539e-05,
+        "mean_ce": 1.3497956544160843,
+        "mean_gradient_norm": 0.9914833170175552,
+        "mean_update_seconds": 0.26686286481097343
+      },
+      {
+        "clipped_fraction": 0.3,
+        "first_update": 8601,
+        "last_update": 8700,
+        "lr_at_end": 1.9601958834062625e-05,
+        "mean_ce": 1.340385737270117,
+        "mean_gradient_norm": 0.9431007838249207,
+        "mean_update_seconds": 0.26682032576063647
+      },
+      {
+        "clipped_fraction": 0.36,
+        "first_update": 8701,
+        "last_update": 8800,
+        "lr_at_end": 1.6757608087630216e-05,
+        "mean_ce": 1.310514306500554,
+        "mean_gradient_norm": 0.9649543964862823,
+        "mean_update_seconds": 0.2652523523615673
+      },
+      {
+        "clipped_fraction": 0.39,
+        "first_update": 8801,
+        "last_update": 8900,
+        "lr_at_end": 1.4123940950171541e-05,
+        "mean_ce": 1.3159121239185334,
+        "mean_gradient_norm": 0.9645594871044159,
+        "mean_update_seconds": 0.26559846153482797
+      },
+      {
+        "clipped_fraction": 0.24,
+        "first_update": 8901,
+        "last_update": 9000,
+        "lr_at_end": 1.1705121790769012e-05,
+        "mean_ce": 1.3136777228862047,
+        "mean_gradient_norm": 0.9282077330350876,
+        "mean_update_seconds": 0.265374069896061
+      },
+      {
+        "clipped_fraction": 0.21,
+        "first_update": 9001,
+        "last_update": 9100,
+        "lr_at_end": 9.504975259690833e-06,
+        "mean_ce": 1.3472405883669853,
+        "mean_gradient_norm": 0.906579098701477,
+        "mean_update_seconds": 0.2665278575755656
+      },
+      {
+        "clipped_fraction": 0.25,
+        "first_update": 9101,
+        "last_update": 9200,
+        "lr_at_end": 7.526980240832614e-06,
+        "mean_ce": 1.3051069578528405,
+        "mean_gradient_norm": 0.9437823295593262,
+        "mean_update_seconds": 0.26737350976793095
+      },
+      {
+        "clipped_fraction": 0.23,
+        "first_update": 9201,
+        "last_update": 9300,
+        "lr_at_end": 5.774264350886937e-06,
+        "mean_ce": 1.3114286106079818,
+        "mean_gradient_norm": 0.9159681385755539,
+        "mean_update_seconds": 0.2697790426784195
+      },
+      {
+        "clipped_fraction": 0.25,
+        "first_update": 9301,
+        "last_update": 9400,
+        "lr_at_end": 4.249598993938491e-06,
+        "mean_ce": 1.3168569506704808,
+        "mean_gradient_norm": 0.9254672771692276,
+        "mean_update_seconds": 0.27418563365470616
+      },
+      {
+        "clipped_fraction": 0.25,
+        "first_update": 9401,
+        "last_update": 9500,
+        "lr_at_end": 2.9553949793045704e-06,
+        "mean_ce": 1.3066840019822121,
+        "mean_gradient_norm": 0.9278608435392379,
+        "mean_update_seconds": 0.26658842121483756
+      },
+      {
+        "clipped_fraction": 0.26,
+        "first_update": 9501,
+        "last_update": 9600,
+        "lr_at_end": 1.8936987095499955e-06,
+        "mean_ce": 1.29664770655334,
+        "mean_gradient_norm": 0.9217491120100021,
+        "mean_update_seconds": 0.2636892557423562
+      },
+      {
+        "clipped_fraction": 0.21,
+        "first_update": 9601,
+        "last_update": 9700,
+        "lr_at_end": 1.0661889447039883e-06,
+        "mean_ce": 1.3284732666611672,
+        "mean_gradient_norm": 0.9039130198955536,
+        "mean_update_seconds": 0.2637990929186344
+      },
+      {
+        "clipped_fraction": 0.18,
+        "first_update": 9701,
+        "last_update": 9800,
+        "lr_at_end": 4.741741477956251e-07,
+        "mean_ce": 1.3077279083430766,
+        "mean_gradient_norm": 0.9024784964323044,
+        "mean_update_seconds": 0.2614832569984719
+      },
+      {
+        "clipped_fraction": 0.18,
+        "first_update": 9801,
+        "last_update": 9900,
+        "lr_at_end": 1.1859041590472352e-07,
+        "mean_ce": 1.2848253452777862,
+        "mean_gradient_norm": 0.8899003392457963,
+        "mean_update_seconds": 0.26632008387474343
+      },
+      {
+        "clipped_fraction": 0.14,
+        "first_update": 9901,
+        "last_update": 10000,
+        "lr_at_end": 0.0,
+        "mean_ce": 1.31664240822196,
+        "mean_gradient_norm": 0.9034616988897324,
+        "mean_update_seconds": 0.26678616693010554
+      }
+    ],
+    "clipped_update_fraction": 0.7115,
+    "length_stratum_exposures": [
+      47480,
+      147810,
+      200163,
+      86271,
+      30276
+    ],
+    "mean_gradient_norm": 1.4586493722200393
+  },
+  "trajectory": {
+    "10000": {
+      "independent": {
+        "normal_ce": 2.904613759892527,
+        "relative_position_by_stratum": {
+          "0": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.2071670254556146,
+              3.0771851462198465,
+              2.964002096071476,
+              2.893287366137999,
+              2.931603612896146,
+              2.9031838341093645,
+              2.9211227446067625,
+              2.8679584250989847,
+              2.8998009956101094,
+              2.9208368077874183
+            ]
+          },
+          "1": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.962081789970398,
+              2.97737210859749,
+              2.9412619812096037,
+              2.9340666446743944,
+              2.898580808453734,
+              2.9321074119428308,
+              2.918691639202397,
+              2.90786675650899,
+              2.891825406725814,
+              2.8396925298179068
+            ]
+          },
+          "2": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.9776632633151077,
+              2.9066932923741504,
+              2.8836705300366368,
+              2.8892610037108746,
+              2.8892570733638068,
+              2.886122477714685,
+              2.8843866034251886,
+              2.8917951740869663,
+              2.8899717330932617,
+              2.8544232961608142
+            ]
+          },
+          "3": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.9122252656661503,
+              2.875042502046506,
+              2.8809567104050466,
+              2.878267532455892,
+              2.8889361372203872,
+              2.8854078377954533,
+              2.8922585828963,
+              2.8858782662156157,
+              2.865111336439921,
+              2.858996343496085
+            ]
+          },
+          "4": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.861823563179352,
+              2.860847826400421,
+              2.8557219302013044,
+              2.8703503853534427,
+              2.871420789173005,
+              2.8664030090229438,
+              2.860704540331964,
+              2.8647113225279344,
+              2.8661948544471945,
+              2.840862676974905
+            ]
+          }
+        },
+        "token_weighted_ce": 2.8820676423714757,
+        "top1": 0.10710401788583113,
+        "top3": 0.2751115732953622
+      },
+      "primary": {
+        "normal_ce": 2.8940966143854894,
+        "relative_position_by_stratum": {
+          "0": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.148849785618666,
+              3.087658762332143,
+              2.9531058497159037,
+              2.8764203628479708,
+              2.8737998623491787,
+              2.8303479827168148,
+              2.845453305506125,
+              2.8873952688240423,
+              2.8870210616326912,
+              2.8623921580794383
+            ]
+          },
+          "1": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.973711817148255,
+              2.9740110238502937,
+              2.9487426452520418,
+              2.911432343866767,
+              2.8918326111283243,
+              2.89627653040537,
+              2.915470604489489,
+              2.8849415766756707,
+              2.9073904595723965,
+              2.869268308034757
+            ]
+          },
+          "2": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.9586492256420414,
+              2.9039944890059926,
+              2.8860968441131885,
+              2.8865809536230236,
+              2.8684344879939845,
+              2.8890871133827094,
+              2.8709064220521237,
+              2.8838663623100373,
+              2.9111828699844278,
+              2.852797180933242
+            ]
+          },
+          "3": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.8946759008545166,
+              2.850900493106807,
+              2.8594758176133217,
+              2.8720016087590965,
+              2.8688443843776263,
+              2.885538150162452,
+              2.8828886674493917,
+              2.8796211099274878,
+              2.8767846977215235,
+              2.855629602096483
+            ]
+          },
+          "4": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.8724976203843844,
+              2.8623475777782263,
+              2.8625785342638532,
+              2.8718371402955,
+              2.863981378690538,
+              2.8656249256180666,
+              2.8587983558113828,
+              2.8515910408607614,
+              2.8544406850064004,
+              2.835246835769243
+            ]
+          }
+        },
+        "token_weighted_ce": 2.876744239839209,
+        "top1": 0.1106630721901638,
+        "top3": 0.28017580956293386
+      }
+    },
+    "2000": {
+      "independent": {
+        "normal_ce": 2.8930154010886326,
+        "token_weighted_ce": 2.8756093106110874,
+        "top1": 0.10332041483252397,
+        "top3": 0.2681510036227337
+      },
+      "primary": {
+        "normal_ce": 2.8880722931862692,
+        "token_weighted_ce": 2.871712292642669,
+        "top1": 0.104715325757752,
+        "top3": 0.27331261726430967
+      }
+    },
+    "3000": {
+      "independent": {
+        "normal_ce": 2.889910193916876,
+        "relative_position_by_stratum": {
+          "0": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.0318780919400656,
+              3.0344823191805586,
+              2.9655386043757925,
+              2.8757563963169006,
+              2.93297836991345,
+              2.868438596551011,
+              2.890288468105037,
+              2.8711981988534694,
+              2.857755612890895,
+              2.851175833329922
+            ]
+          },
+          "1": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.8807325883609494,
+              2.9215511051619925,
+              2.921169619734694,
+              2.913201629243246,
+              2.901337263060779,
+              2.9183016899155407,
+              2.910453100902278,
+              2.9110379881975126,
+              2.8831596769937655,
+              2.8571740487726722
+            ]
+          },
+          "2": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.900142965956432,
+              2.8960397924955297,
+              2.8824804278817484,
+              2.883358660367567,
+              2.883931830932,
+              2.8833812890256323,
+              2.8700286702411932,
+              2.886083367394238,
+              2.8816114344247956,
+              2.8636978009851966
+            ]
+          },
+          "3": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.888128478253092,
+              2.873297080434039,
+              2.8775392045018724,
+              2.870877679810839,
+              2.8861846947145344,
+              2.8851131693366687,
+              2.8837767475100193,
+              2.881292512189497,
+              2.8655227956095652,
+              2.8635429298382227
+            ]
+          },
+          "4": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.8602650089776893,
+              2.8703641521318617,
+              2.866367677313191,
+              2.881223555007599,
+              2.872752484599069,
+              2.8708970482600056,
+              2.859408953953489,
+              2.8674345179700036,
+              2.8682878676137014,
+              2.8480371379619123
+            ]
+          }
+        },
+        "token_weighted_ce": 2.8774508648646973,
+        "top1": 0.10508339372790942,
+        "top3": 0.272871710907566
+      },
+      "primary": {
+        "normal_ce": 2.8837077730713645,
+        "relative_position_by_stratum": {
+          "0": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.0137818269613312,
+              3.049581522694448,
+              2.9608286693328765,
+              2.8894400872835297,
+              2.8678976338084152,
+              2.7972868596635214,
+              2.8587408013460114,
+              2.847876156830206,
+              2.8499925848914356,
+              2.849357312481578
+            ]
+          },
+          "1": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.8700779580488436,
+              2.9421177910595406,
+              2.9269043009455613,
+              2.9106099716046963,
+              2.8967910228705986,
+              2.8949124685147916,
+              2.906831427318294,
+              2.901966727070692,
+              2.907752549939039,
+              2.878385389723429
+            ]
+          },
+          "2": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.887484543207215,
+              2.8845184263296244,
+              2.8958192276927393,
+              2.8980220787136295,
+              2.8785172397100434,
+              2.8841949455894347,
+              2.870972969403445,
+              2.8805718660354613,
+              2.885084107372819,
+              2.856898672585716
+            ]
+          },
+          "3": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.873281891596638,
+              2.844542130135674,
+              2.8584428205539663,
+              2.877823375256545,
+              2.8704285289372673,
+              2.8820071033860186,
+              2.879138425393326,
+              2.876085499971012,
+              2.874877620734329,
+              2.8604481785687956
+            ]
+          },
+          "4": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.866185239591342,
+              2.8677315117385977,
+              2.8668943640655296,
+              2.8799046420817853,
+              2.8659768098723917,
+              2.8682093532860717,
+              2.8529175662761213,
+              2.855441268906908,
+              2.8620081606587453,
+              2.8438529344526073
+            ]
+          }
+        },
+        "token_weighted_ce": 2.8736000635380727,
+        "top1": 0.10619281511117151,
+        "top3": 0.2759189884909574
+      }
+    },
+    "5000": {
+      "independent": {
+        "normal_ce": 2.889330456906464,
+        "relative_position_by_stratum": {
+          "0": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.148502937613464,
+              3.0574402656497024,
+              2.942526059906657,
+              2.868030403227341,
+              2.9075429135660937,
+              2.8708198139762007,
+              2.8962316152526113,
+              2.8582209646701813,
+              2.8647497017209123,
+              2.872114932846005
+            ]
+          },
+          "1": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.9171298942914823,
+              2.941425061334924,
+              2.931212025808125,
+              2.9185459191479333,
+              2.8945090712025396,
+              2.9178577469616402,
+              2.9041066344191386,
+              2.89479721406611,
+              2.8727703838813596,
+              2.8354059655491897
+            ]
+          },
+          "2": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.933745146233861,
+              2.8934028199257713,
+              2.8721419976433604,
+              2.8776044134050607,
+              2.873528153174301,
+              2.8676968849824864,
+              2.8702285522367896,
+              2.8785361313238376,
+              2.874921540516179,
+              2.8478318301642815
+            ]
+          },
+          "3": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.8942438769165637,
+              2.868187843733137,
+              2.8699557991074465,
+              2.8658957877777027,
+              2.8767148696414417,
+              2.8749889954378087,
+              2.8753571008994703,
+              2.874661777305137,
+              2.86037497124054,
+              2.8555379415199633
+            ]
+          },
+          "4": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.858917883672458,
+              2.859500297853008,
+              2.8550088376462606,
+              2.866693043184164,
+              2.867493027288348,
+              2.8648428887784627,
+              2.8575775349344195,
+              2.861748086211151,
+              2.8627003440064147,
+              2.8453181798417293
+            ]
+          }
+        },
+        "token_weighted_ce": 2.8729687034167575,
+        "top1": 0.10631768867551727,
+        "top3": 0.2738671832885302
+      },
+      "primary": {
+        "normal_ce": 2.880229077243712,
+        "relative_position_by_stratum": {
+          "0": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.124862835029276,
+              3.05117740209964,
+              2.9249883682262605,
+              2.8713852393917922,
+              2.854130661451235,
+              2.8115752750780523,
+              2.8347491107335903,
+              2.8544409764976035,
+              2.8531932739949806,
+              2.8492488107303293
+            ]
+          },
+          "1": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.9005074849942836,
+              2.964437979423418,
+              2.925775539584276,
+              2.8962018716626052,
+              2.8806540475022504,
+              2.889901750552945,
+              2.89242701559532,
+              2.8748560980325792,
+              2.8857066852290454,
+              2.858779953747261
+            ]
+          },
+          "2": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.91078029042337,
+              2.8803067063501038,
+              2.875293084097708,
+              2.8774251667447617,
+              2.8623068919517496,
+              2.8723970736824147,
+              2.8642557683434884,
+              2.871328510889193,
+              2.888033346603511,
+              2.8488439792525817
+            ]
+          },
+          "3": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.877554781570994,
+              2.8432626930637,
+              2.8520567189437545,
+              2.865416352507319,
+              2.8631106221588434,
+              2.8766717834985633,
+              2.874873191045374,
+              2.8749722968103835,
+              2.869237851397041,
+              2.8548888274101873
+            ]
+          },
+          "4": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.8643789017404497,
+              2.8622053992777405,
+              2.8597927408288335,
+              2.868520733196753,
+              2.858670144908877,
+              2.8611449676504344,
+              2.8513539385387543,
+              2.850198514304126,
+              2.8551246525314444,
+              2.8394547173329845
+            ]
+          }
+        },
+        "token_weighted_ce": 2.8683054440396623,
+        "top1": 0.10874376997571744,
+        "top3": 0.27787541301404417
+      }
+    },
+    "7500": {
+      "independent": {
+        "normal_ce": 2.9173679226078093,
+        "relative_position_by_stratum": {
+          "0": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.268307963377092,
+              3.118474696322185,
+              2.9771794944274714,
+              2.920824104720136,
+              2.946968845932222,
+              2.9211144114776357,
+              2.9387940246884416,
+              2.890354183716018,
+              2.91681529930452,
+              2.9312226524258533
+            ]
+          },
+          "1": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.9955800504219243,
+              3.003011646176257,
+              2.960375621996638,
+              2.9470482615436,
+              2.9102824552722555,
+              2.948185919552315,
+              2.9335695865677622,
+              2.9210333809619997,
+              2.9080050828980237,
+              2.8500857876568304
+            ]
+          },
+          "2": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.006389757482017,
+              2.922158535840004,
+              2.8928155818272656,
+              2.894289307680163,
+              2.8949381282785374,
+              2.893143300290742,
+              2.89278181355174,
+              2.9002294650891933,
+              2.900519964171619,
+              2.861558821724682
+            ]
+          },
+          "3": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.925694547830409,
+              2.879910843296564,
+              2.8860504563105427,
+              2.8818990892769363,
+              2.894947731698929,
+              2.8913059135520953,
+              2.896976649324002,
+              2.8906206833995642,
+              2.8680090181402007,
+              2.8604227062542456
+            ]
+          },
+          "4": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.8674256912362024,
+              2.8649279980175653,
+              2.86038084725296,
+              2.8786334793258703,
+              2.8796875027980664,
+              2.872162527443436,
+              2.865392982231084,
+              2.8686536063774875,
+              2.871862603866092,
+              2.843449035308763
+            ]
+          }
+        },
+        "token_weighted_ce": 2.890115044960312,
+        "top1": 0.10562940096315288,
+        "top3": 0.27388096962022246
+      },
+      "primary": {
+        "normal_ce": 2.907171096368984,
+        "relative_position_by_stratum": {
+          "0": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.2003583979315873,
+              3.1201769812621754,
+              2.9639701119147057,
+              2.901561155224719,
+              2.890512724016316,
+              2.8428121946025184,
+              2.8652494035116054,
+              2.8945274522028317,
+              2.8988298517901723,
+              2.8658800541627696
+            ]
+          },
+          "1": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              3.009674749868672,
+              3.015056646789038,
+              2.9661343780959526,
+              2.9263566139267714,
+              2.9128857227814633,
+              2.9183732684065657,
+              2.932337243382524,
+              2.895571756362915,
+              2.9193668086354325,
+              2.882486472478727
+            ]
+          },
+          "2": {
+            "identities": 410,
+            "relative_position_ce_deciles": [
+              2.9799893681595964,
+              2.9156079249787314,
+              2.896098420928586,
+              2.893312396642911,
+              2.877776049444024,
+              2.8984316570930275,
+              2.8852527568162216,
+              2.8954275721456946,
+              2.922346401343792,
+              2.863482066959983
+            ]
+          },
+          "3": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.9071063957470846,
+              2.858838614864243,
+              2.865925740587245,
+              2.8802921120373393,
+              2.8761285960237086,
+              2.8948690244213,
+              2.8920543153012,
+              2.8871867767464563,
+              2.8823593274888317,
+              2.8630899357037904
+            ]
+          },
+          "4": {
+            "identities": 409,
+            "relative_position_ce_deciles": [
+              2.878726141377008,
+              2.866243887064218,
+              2.8682684682692177,
+              2.8799909816685982,
+              2.869496561787239,
+              2.870109463670726,
+              2.86212077234077,
+              2.8550062424396243,
+              2.8589205059853624,
+              2.838422383539251
+            ]
+          }
+        },
+        "token_weighted_ce": 2.8858341315887537,
+        "top1": 0.10852688444492742,
+        "top3": 0.27812905203245464
+      }
+    }
+  },
+  "wall_seconds": 3676.058826397173
+}

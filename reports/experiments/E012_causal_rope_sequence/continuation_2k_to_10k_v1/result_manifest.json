@@ -1,0 +1,54 @@
+{
+  "CSEQ_classification": "CSEQ-C",
+  "checkpoints": [
+    {
+      "filename": "checkpoint-03000.pt",
+      "sha256": "8bb6ddd9fcb7bdab49f91d163390243cb8f3d45cffee7cd0c1b124378db80030",
+      "updates": 3000
+    },
+    {
+      "filename": "checkpoint-05000.pt",
+      "sha256": "06ef3eddc9560ee4d3160a8aeb280d14bd1112c334d19f023556dbf3e2b32df4",
+      "updates": 5000
+    },
+    {
+      "filename": "checkpoint-07500.pt",
+      "sha256": "533340bf81b01111401c2765cb0e0ed16c57429a36bf3dc8608b82d66057bd11",
+      "updates": 7500
+    },
+    {
+      "filename": "checkpoint-10000.pt",
+      "sha256": "23d4aad8327c491d31d22192e2b4f51bda8e68f13e1c213ed7925cfcafb7bf89",
+      "updates": 10000
+    }
+  ],
+  "continuation_classification": "CONT-B",
+  "global_update": 10000,
+  "historical_source_sha256": "ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188",
+  "paired_identity_metric_serialization": "Compact sorted-key JSON; same parsed values as independently verified raw per-identity records",
+  "published_artifact_sha256": {
+    "FINAL_REPORT.md": "42f183eef8ce3a8aa0b73885be10f7b73feed77be4b1101dea16bc371589123c",
+    "calibration.json": "51b31289bad8872b25ed4370f54acfa9a5caf84259e3ee4f59fd7f91355d93f4",
+    "chatgpt_handoff.json": "ce183c2c6785341754b95a049e09ba1bc3e1f3a1671008d07986f92643cb6ed8",
+    "continuation_trajectory.png": "837145744c29de4ff6499fed1a2d70393f0bb2e0db04c75f7009d1a20b21b4cf",
+    "contract.json": "09af1c37a485a6b1746a49b65d49b41b09e1774d9ca85803a6f31178f1b40c28",
+    "execution_start.json": "4b429b94674223dda82e636069a1f5ba6ba6cfbb7c1803328b14a3cd21056e02",
+    "gpu_utilization.json": "54f1ec6c577a5984c0cdca01ca57b1aac525b7873463e7469cfda72694deac40",
+    "independent_paired_identity_metrics_05000.json": "343a8a7868b07b1fbdee1b29f4d6f0d08c223f6e533e2d48e611fe4edd903589",
+    "independent_paired_identity_metrics_10000.json": "446b3ba84cd48d42dc1decb660838121380039d8fc9a6eeb5a398b3899c14cee",
+    "independent_verification.json": "da38e92cf9b65c595a447372ee5f0063ff7b6c76a6517ef4807e7427e097741a",
+    "postflight_safety.json": "d722c08929c05ab60449ee0b54ee49d3c7556444ea71ab1f9c435f5b8a21813d",
+    "primary_paired_identity_metrics_05000.json": "c349db8ed893ef0dccee2375db9d61884b54c1739bf7f0bf90a121199544b75d",
+    "primary_paired_identity_metrics_10000.json": "8e2e12971d559c614c031a056b8207b87c98e6638fb3d46027a7aadf00383501",
+    "quality.json": "15058f1ec0a8054c9f5518dd05af55d95bb90666c9e0d9fc40b2f00c366a772f",
+    "relative_position_baseline_comparison.json": "a3ac81e9f78c92b193a05c3146153284c41398823a3838251664e94bd16837ee",
+    "results.json": "be255942bf0e05b61d1a2392da11c8a125431745bd6e5ff452ba89a9f028d1e8",
+    "resume_smoke.json": "41dec05478b7190dccff712fe7b5f811bf6b76ddf77cf2cf813de6893ae7e62b",
+    "scientific_boundaries.json": "ab0549aa006328c49cd8193fbcefa4226ba1846bc1063e0577b893f83653baf7",
+    "training_summary.json": "46b81378ea18e279da2fc15f001116d019d956a2bb72c3405a4c45530d652ab0",
+    "trajectory.json": "ebfcfb2cc4033fe9bfa88b3ce8d30f554fd1e34af8c29271f53e3a5e86d2a237"
+  },
+  "raw_telemetry_sha256": "0693ce868a871b488d5cec40e22f77709e1c13456a078d58df812540c5c28afd",
+  "training_log_sha256": "0c917ba6f417f2594d582c162ae122c66272545c501b6d6fd0b7910f4757d814",
+  "verifier_sha256": "8ebe4d8ab1d889cec3b1b7212ed588f9f24b176a232968ff6e67de3f57a714dc"
+}

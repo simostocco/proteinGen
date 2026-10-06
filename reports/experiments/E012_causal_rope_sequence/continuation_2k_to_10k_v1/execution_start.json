@@ -1,0 +1,22 @@
+{
+  "contract_sha256": "09af1c37a485a6b1746a49b65d49b41b09e1774d9ca85803a6f31178f1b40c28",
+  "preparation_commit": "f0a19187b2945f8f34e2ad30bd709fdeca9d5e5a",
+  "process_snapshot": " 948588 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py reproduce\n 948643 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py reproduce\n 948644 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py reproduce\n 948645 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py reproduce\n 948646 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py reproduce\n 956014 /home/simostocco/miniforge3/envs/proteingen/bin/python -m scripts.run_e012_continuation train\n",
+  "source_checkpoint_sha256": "ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188",
+  "source_lr": 0.0,
+  "source_scheduler_record": {
+    "_get_lr_called_within_step": false,
+    "_is_initial": false,
+    "_last_lr": [
+      0.0
+    ],
+    "_step_count": 2001,
+    "base_lrs": [
+      0.0003
+    ],
+    "last_epoch": 2000,
+    "lr_lambdas": [
+      null
+    ]
+  }
+}
