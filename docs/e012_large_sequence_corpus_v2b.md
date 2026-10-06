@@ -25,7 +25,8 @@ index; its 2 GB allowance is included in the 8 GB search-stage budget. A measure
 10k historical search pilot projects 3.32 GB for 100k batches with 4x disk slack. Runtime floor is 30% of starting free
 capacity. Free-space monitoring every 10s, with checks at transaction boundaries
 and during subprocesses, stops before that reserve is breached.
-SQLite caches are bounded at 512 MiB per main connection, 2 GiB for the compact
+SQLite caches are bounded at 512 MiB per ordinary connection, 3 GiB for the active
+filter connection, 2 GiB for the compact
 hash/offset index and 64 MiB for exclusions, allocated only on demand. Full external
 sequences are never held as an in-memory corpus. These caps fit inspected available RAM.
 Report sampled filesystem consumption separately from planned peak; unrelated D: writes may

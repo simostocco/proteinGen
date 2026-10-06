@@ -328,6 +328,7 @@ class Build:
         state_path = self.root/'tmp/filter_checkpoint.json'
         seen = connection(seen_path)
         db = connection(self.reservoir)
+        db.execute('PRAGMA cache_size=-3145728')  # Filter only: at most 3 GiB, on demand.
         db.execute('ATTACH DATABASE ? AS seen',(str(seen_path),))
         db.execute('PRAGMA seen.cache_size=-2097152')  # Compact hash/offset index only: 2 GiB.
         seen.close()
