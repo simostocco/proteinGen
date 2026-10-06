@@ -1,0 +1,154 @@
+{
+  "additional_updates": 8000,
+  "biological_generation_authorized": false,
+  "bootstrap_resamples": 10000,
+  "bootstrap_seed": 12112,
+  "complete_diagnostics_boundaries": [
+    5000,
+    10000
+  ],
+  "continuation_label_priority": [
+    "CONT-A",
+    "CONT-D",
+    "CONT-B",
+    "CONT-C",
+    "CONT-E"
+  ],
+  "cuda_calibration_and_resume_passed": true,
+  "effective_proteins": 64,
+  "final_global_update": 10000,
+  "geometry_allowed": false,
+  "historical_configuration": "configs/e012_causal_rope_sequence_v1.yaml",
+  "historical_contract_sha256": "1a56b8958bb9a81c7dc269bce7c3efa79f19fc6dc85498beb09cfb10f346e612",
+  "historical_result_commit": "f6091b6895c98d083c9e292346e0f704ed4dd523",
+  "historical_result_manifest_sha256": "2e52c3be754be4bdfe96bdf60b70009abee848eb1657caf204ba1408abde9f7b",
+  "larger_run_authorized": false,
+  "model_parameters": 15533952,
+  "normal_boundaries": [
+    3000,
+    5000,
+    7500,
+    10000
+  ],
+  "protected_hashes": {
+    "configs/e012_causal_rope_continuation_2k_to_10k_v1.yaml": "580562c429bc7c27d8d3291615b8d719be261ee13deb9476df7ce53d2ea01c60",
+    "configs/e012_causal_rope_sequence_v1.yaml": "063cbaef32ccc19293e738e56f9114c26df4b20bfe4e77ad770dcc123053a71e",
+    "docs/e012_causal_rope_continuation_2k_to_10k.md": "05601e3e6874f34874a280015b77de9a76c10aa5a68213816f8aded6b23af53e",
+    "docs/e012_causal_rope_sequence.md": "17fab6bc1a7fcdf55b0a8f1cb1faf36ca1a97b3ad8d308fff5544005693a82c9",
+    "outputs/e012_causal_rope_sequence/pilot_v1/train.parquet": "75b6861359f6e9526443fbf1d2b475e55086306df18d4144ca0c7b1afcc580a6",
+    "outputs/e012_causal_rope_sequence/pilot_v1/validation.parquet": "cd6097d3d29f0c4dd4f913a2ac07af45cfcdd029f0b6c5900771a2b698edb925",
+    "reports/experiments/E012_causal_rope_sequence/continuation_2k_to_10k_v1/calibration.json": "51b31289bad8872b25ed4370f54acfa9a5caf84259e3ee4f59fd7f91355d93f4",
+    "reports/experiments/E012_causal_rope_sequence/continuation_2k_to_10k_v1/quality.json": "002267abf107478f184a2d94ff752a4ca8160542cf0dbb660fca29d538412a14",
+    "reports/experiments/E012_causal_rope_sequence/continuation_2k_to_10k_v1/resume_smoke.json": "41dec05478b7190dccff712fe7b5f811bf6b76ddf77cf2cf813de6893ae7e62b",
+    "reports/experiments/E012_causal_rope_sequence/pilot_v1/baselines.json": "fd973ff33a8633670eae768e8906517667d821ab99650307b67e1e4dc42f1d01",
+    "reports/experiments/E012_causal_rope_sequence/pilot_v1/cuda_diagnostic_smoke.json": "1004efeaf80b838b76d421f460cd9b75140432a9c38519f2317e19e706d077d8",
+    "reports/experiments/E012_causal_rope_sequence/pilot_v1/cuda_smoke.json": "b85c63b48e054dd7995fd9eafc93c742640cf496b14cd7b88b98bef33493c035",
+    "reports/experiments/E012_causal_rope_sequence/pilot_v1/data_integrity.json": "90f1b6316ed425cbefe9bb03386d1c7ee5bbf180380a1997b4e2702f68bea564",
+    "reports/experiments/E012_causal_rope_sequence/pilot_v1/historical_model_audit.json": "7e247e64fd664bb1bda5e64db436cb4ef23f558ae8a7a4dd13c074f8064f25df",
+    "reports/experiments/E012_causal_rope_sequence/pilot_v1/panels.json": "645766abcd9d74e76861723e2f587bc29b09772c411a67ea41b4b959b0606464",
+    "reports/experiments/E012_causal_rope_sequence/pilot_v1/positions.json": "862ee248eff69c2003ab6b2d5e0a4db6870df475d12a0de3d193e7392e89b379",
+    "reports/experiments/E012_causal_rope_sequence/pilot_v1/protected_worktree_state.json": "b0dadcdd75644c6804ac24e3b34a53795b2bbc0165794809bfb3eabb2efcaf7d",
+    "reports/experiments/E012_causal_rope_sequence/pilot_v1/quality.json": "a81846e3972091e58d798a819d422e39f981b03b44b352d31de391f8cbcf3a2c",
+    "scripts/report_e012_causal_rope.py": "a46b71ffdabcd3a5855c3d214bdfb1026e62882b9d5e428a1bdf1b33469ab8af",
+    "scripts/report_e012_continuation.py": "8ebe4d8ab1d889cec3b1b7212ed588f9f24b176a232968ff6e67de3f57a714dc",
+    "scripts/run_e012_causal_rope.py": "18c850f60657c4ca358a24214382eafd990e3bddb3ee39ab8036837ed3c5e35e",
+    "scripts/run_e012_continuation.py": "3a31c1af090db19847c1319a56a68d587315fa725e7e0a4788c3320f9e4fbd4b",
+    "scripts/verify_e012_pilot_results.py": "9349315150752dd0df7e6041db8dbbe382b29d98c691818c98e79c9b573bf0fe",
+    "src/protein_sequence_generation/collate.py": "744e8b41d1753045835cf06f0f6f9eef5932bdde69cc5fc91c6d5367596a65e2",
+    "src/protein_sequence_generation/dataset.py": "c5be95c7f57a57bb1f07c058d76f95e918fa06b901811b9f157164e9b980d14a",
+    "src/protein_sequence_generation/e012.py": "721610cd6e76628c57395b3df09aeb1e8c1f9b16a8baa460878cc3ca63032588",
+    "src/protein_sequence_generation/e012_continuation.py": "22757e39ae7ddb7f5abd49277a7bb339a76616421be4aacc624dc6b9e99a73ed",
+    "src/protein_sequence_generation/embeddings.py": "45f991c04e95a056dce8bf25a725a6f24ffa7a240705a87ed852a56ac33f6038",
+    "src/protein_sequence_generation/evaluation.py": "eb1ec9631e1a3c72e3d98a08654b176bb29d03d7a992fe2013af80a862880f47",
+    "src/protein_sequence_generation/metrics.py": "3666e059659d11ba7ef6d3d79b7683ba1c57201e9868dcf9fc41164390dac250",
+    "src/protein_sequence_generation/model.py": "ed633a058889243a8333123182260481390ae06d4b5fd1d2f0acaecd44f30cd3",
+    "src/protein_sequence_generation/sampling.py": "d522f4c9e9eadd10d87728ea4968a2dddd88f69882756ef810d3a2b8b8acafb6",
+    "src/protein_sequence_generation/training.py": "2c3d54d8e9ff890d7d2597db5ae57325fd50626d93754329b8d394d028a342a7",
+    "src/protein_sequence_generation/vocabulary.py": "986727a7675855e3b5db98862da20e8947e6301c0b8c3c877c82afc98c544145",
+    "tests/sequence/test_e012_causal_rope.py": "ac114d37dfeece538eaa1d1e2d00ad7d96744f2761265c4129ef516542a0cf05",
+    "tests/sequence/test_e012_continuation.py": "ffdafff178a25ee1c5c41ea173371f72d8c8cce87ec0fcfb19aca7fff8cf6850"
+  },
+  "protected_worktree_start_state": {
+    "E010_phase4c": {
+      "branch": "e010-phase4c-local-auxiliary",
+      "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+      "status": ""
+    },
+    "E010_phase4d": {
+      "branch": "e010-phase4d-hybrid-local-global",
+      "head": "f9b42c36459f17c9f7fb42c20496b7c7b58a4ea6",
+      "status": "?? configs/e010_phase4d_cartesian_oracle_v5.yaml\n?? docs/e010_phase4d_cartesian_oracle_v5.md\n?? scripts/run_e010_phase4d_cartesian_oracle_v5.py\n?? src/protein_distance_diffusion/training/e010_cartesian_oracle_v5.py\n?? tests/test_e010_cartesian_oracle_v5.py"
+    },
+    "E011": {
+      "branch": "e011-sequence-context-only",
+      "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "status": ""
+    }
+  },
+  "quality_passed": true,
+  "reserved_safety_threshold_bytes": 6964222362,
+  "reuse_gates_baselines_positions_windows": true,
+  "sampler_policy": "restore source permutation and cursor; next epoch RNG seed12012+epoch; sort within64 only",
+  "scheduler": {
+    "checkpoint_lr": 0.0,
+    "cosine_end": 10000,
+    "kind": "explicit_2k_to_10k_warm_restart_v1",
+    "maximum_lr": 0.0003,
+    "restart_end": 2100,
+    "terminal_lr": 0.0
+  },
+  "selected_plan": {
+    "0": {
+      "forward_backward_seconds": 0.06010669795796275,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 925710336,
+      "peak_reserved_bytes": 968884224,
+      "physical_proteins": 64
+    },
+    "1": {
+      "forward_backward_seconds": 0.07541347341611981,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 1547896832,
+      "peak_reserved_bytes": 1572864000,
+      "physical_proteins": 64
+    },
+    "2": {
+      "forward_backward_seconds": 0.15214944595936686,
+      "partition": [
+        32,
+        32
+      ],
+      "peak_allocated_bytes": 1635281408,
+      "peak_reserved_bytes": 1677721600,
+      "physical_proteins": 32
+    },
+    "3": {
+      "forward_backward_seconds": 0.25122741248924285,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 2728467456,
+      "peak_reserved_bytes": 2780823552,
+      "physical_proteins": 40
+    },
+    "4": {
+      "forward_backward_seconds": 0.3488014121539891,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 3466172928,
+      "peak_reserved_bytes": 3649044480,
+      "physical_proteins": 40
+    }
+  },
+  "source_checkpoint": "outputs/e012_causal_rope_sequence/pilot_v1/checkpoint-02000.pt",
+  "source_sha256": "ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188",
+  "start_global_update": 2000,
+  "total_device_bytes": 8546484224
+}

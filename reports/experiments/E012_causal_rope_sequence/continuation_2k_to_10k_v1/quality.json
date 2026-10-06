@@ -1,0 +1,28 @@
+{
+  "exact_resume": {
+    "Adam_moments_restored": true,
+    "budget_optimizer_updates": 0,
+    "disposable_smoke_updates": 3,
+    "exact_loss": 2.000027969479561,
+    "exact_weights": true,
+    "smoke_checkpoint_sha256": "9feca582670ffd6414bb23aed5067bea6c78831e0754010f623feffc09ce05cc",
+    "source_sha256": "ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188",
+    "status": "passed"
+  },
+  "historical_complete_suite_evidence": "reports/experiments/E012_causal_rope_sequence/pilot_v1/quality.json",
+  "no_tests_weakened": true,
+  "numerical_equivalence": {
+    "dropout_control": "eval only, architecture dropout unchanged for training",
+    "gradient_cosine": 1.0064321756362915,
+    "gradient_relative_error": 3.1937784683577775e-07,
+    "loss_difference": 0.0,
+    "optimizer_weight_max_difference": 7.450580596923828e-09,
+    "precision": "float32"
+  },
+  "ruff_format": "passed",
+  "ruff_lint": "passed",
+  "sequence_suite_passed": 78,
+  "status": "passed",
+  "syntax": "passed",
+  "whitespace": "passed"
+}

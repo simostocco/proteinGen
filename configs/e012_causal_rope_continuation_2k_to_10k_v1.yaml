@@ -1,0 +1,62 @@
+historical_configuration: configs/e012_causal_rope_sequence_v1.yaml
+source_checkpoint: outputs/e012_causal_rope_sequence/pilot_v1/checkpoint-02000.pt
+source_sha256: ff666eccdb6d28d51f2d3d561242152512e2dddf74fc0f251429d55b886d0188
+start_global_update: 2000
+final_global_update: 10000
+additional_updates: 8000
+effective_proteins: 64
+selected_plan:
+  '0':
+    forward_backward_seconds: 0.06010669795796275
+    partition:
+    - 64
+    peak_allocated_bytes: 925710336
+    peak_reserved_bytes: 968884224
+    physical_proteins: 64
+  '1':
+    forward_backward_seconds: 0.07541347341611981
+    partition:
+    - 64
+    peak_allocated_bytes: 1547896832
+    peak_reserved_bytes: 1572864000
+    physical_proteins: 64
+  '2':
+    forward_backward_seconds: 0.15214944595936686
+    partition:
+    - 32
+    - 32
+    peak_allocated_bytes: 1635281408
+    peak_reserved_bytes: 1677721600
+    physical_proteins: 32
+  '3':
+    forward_backward_seconds: 0.25122741248924285
+    partition:
+    - 40
+    - 24
+    peak_allocated_bytes: 2728467456
+    peak_reserved_bytes: 2780823552
+    physical_proteins: 40
+  '4':
+    forward_backward_seconds: 0.3488014121539891
+    partition:
+    - 40
+    - 24
+    peak_allocated_bytes: 3466172928
+    peak_reserved_bytes: 3649044480
+    physical_proteins: 40
+scheduler:
+  kind: explicit_2k_to_10k_warm_restart_v1
+  checkpoint_lr: 0.0
+  restart_end: 2100
+  maximum_lr: 0.0003
+  cosine_end: 10000
+  terminal_lr: 0.0
+normal_boundaries:
+- 3000
+- 5000
+- 7500
+- 10000
+complete_diagnostics_boundaries:
+- 5000
+- 10000
+reuse_gates_baselines_positions_windows: true

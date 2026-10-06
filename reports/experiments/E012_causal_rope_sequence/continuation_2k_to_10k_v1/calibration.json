@@ -1,0 +1,834 @@
+{
+  "calibration_optimizer_updates": 0,
+  "candidates": [
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.43057019205298275,
+      "length": 64,
+      "partition": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "peak_allocated_bytes": 436709888,
+      "peak_reserved_bytes": 461373440,
+      "physical_proteins": 8,
+      "proteins_per_second": 148.64010835223968,
+      "residues_per_second": 9512.96693454334,
+      "safe": true,
+      "status": "passed",
+      "stratum": 0
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.2093421129975468,
+      "length": 64,
+      "partition": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "peak_allocated_bytes": 520402432,
+      "peak_reserved_bytes": 547356672,
+      "physical_proteins": 16,
+      "proteins_per_second": 305.7196618663632,
+      "residues_per_second": 19566.058359447245,
+      "safe": true,
+      "status": "passed",
+      "stratum": 0
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.16976599441841245,
+      "length": 64,
+      "partition": [
+        24,
+        24,
+        16
+      ],
+      "peak_allocated_bytes": 597211136,
+      "peak_reserved_bytes": 650117120,
+      "physical_proteins": 24,
+      "proteins_per_second": 376.98951559322825,
+      "residues_per_second": 24127.328997966608,
+      "safe": true,
+      "status": "passed",
+      "stratum": 0
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.12473730847705156,
+      "length": 64,
+      "partition": [
+        32,
+        32
+      ],
+      "peak_allocated_bytes": 676510208,
+      "peak_reserved_bytes": 717225984,
+      "physical_proteins": 32,
+      "proteins_per_second": 513.0782504560322,
+      "residues_per_second": 32837.00802918606,
+      "safe": true,
+      "status": "passed",
+      "stratum": 0
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.10165681620128453,
+      "length": 64,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 677523968,
+      "peak_reserved_bytes": 727711744,
+      "physical_proteins": 40,
+      "proteins_per_second": 629.5691955695078,
+      "residues_per_second": 40292.4285164485,
+      "safe": true,
+      "status": "passed",
+      "stratum": 0
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.1406368815805763,
+      "length": 64,
+      "partition": [
+        48,
+        16
+      ],
+      "peak_allocated_bytes": 775500800,
+      "peak_reserved_bytes": 868220928,
+      "physical_proteins": 48,
+      "proteins_per_second": 455.07266145781205,
+      "residues_per_second": 29124.65033329997,
+      "safe": true,
+      "status": "passed",
+      "stratum": 0
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.11859713902231306,
+      "length": 64,
+      "partition": [
+        56,
+        8
+      ],
+      "peak_allocated_bytes": 841954816,
+      "peak_reserved_bytes": 939524096,
+      "physical_proteins": 56,
+      "proteins_per_second": 539.6420227975224,
+      "residues_per_second": 34537.08945904143,
+      "safe": true,
+      "status": "passed",
+      "stratum": 0
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.06010669795796275,
+      "length": 64,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 925710336,
+      "peak_reserved_bytes": 968884224,
+      "physical_proteins": 64,
+      "proteins_per_second": 1064.7731812644263,
+      "residues_per_second": 68145.48360092328,
+      "safe": true,
+      "status": "passed",
+      "stratum": 0
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.4556062170304358,
+      "length": 128,
+      "partition": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "peak_allocated_bytes": 521432576,
+      "peak_reserved_bytes": 547356672,
+      "physical_proteins": 8,
+      "proteins_per_second": 140.4721832312587,
+      "residues_per_second": 17980.439453601113,
+      "safe": true,
+      "status": "passed",
+      "stratum": 1
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.2314528360730037,
+      "length": 128,
+      "partition": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "peak_allocated_bytes": 678570496,
+      "peak_reserved_bytes": 719323136,
+      "physical_proteins": 16,
+      "proteins_per_second": 276.51421812698567,
+      "residues_per_second": 35393.819920254165,
+      "safe": true,
+      "status": "passed",
+      "stratum": 1
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.15904221299570054,
+      "length": 128,
+      "partition": [
+        24,
+        24,
+        16
+      ],
+      "peak_allocated_bytes": 839900672,
+      "peak_reserved_bytes": 887095296,
+      "physical_proteins": 24,
+      "proteins_per_second": 402.4088875179959,
+      "residues_per_second": 51508.33760230347,
+      "safe": true,
+      "status": "passed",
+      "stratum": 1
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.12576595495920628,
+      "length": 128,
+      "partition": [
+        32,
+        32
+      ],
+      "peak_allocated_bytes": 993761792,
+      "peak_reserved_bytes": 1035993088,
+      "physical_proteins": 32,
+      "proteins_per_second": 508.8817559629645,
+      "residues_per_second": 65136.86476325946,
+      "safe": true,
+      "status": "passed",
+      "stratum": 1
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.1307556633837521,
+      "length": 128,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 1088017408,
+      "peak_reserved_bytes": 1174405120,
+      "physical_proteins": 40,
+      "proteins_per_second": 489.46254673625657,
+      "residues_per_second": 62651.20598224084,
+      "safe": true,
+      "status": "passed",
+      "stratum": 1
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.11779220402240753,
+      "length": 128,
+      "partition": [
+        48,
+        16
+      ],
+      "peak_allocated_bytes": 1242533888,
+      "peak_reserved_bytes": 1325400064,
+      "physical_proteins": 48,
+      "proteins_per_second": 543.3296756025154,
+      "residues_per_second": 69546.19847712197,
+      "safe": true,
+      "status": "passed",
+      "stratum": 1
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.13077427551615983,
+      "length": 128,
+      "partition": [
+        56,
+        8
+      ],
+      "peak_allocated_bytes": 1416842240,
+      "peak_reserved_bytes": 1545601024,
+      "physical_proteins": 56,
+      "proteins_per_second": 489.39288516334767,
+      "residues_per_second": 62642.2893009085,
+      "safe": true,
+      "status": "passed",
+      "stratum": 1
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.07541347341611981,
+      "length": 128,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 1547896832,
+      "peak_reserved_bytes": 1572864000,
+      "physical_proteins": 64,
+      "proteins_per_second": 848.6547177963539,
+      "residues_per_second": 108627.8038779333,
+      "safe": true,
+      "status": "passed",
+      "stratum": 1
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.4913584199966863,
+      "length": 256,
+      "partition": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "peak_allocated_bytes": 682746368,
+      "peak_reserved_bytes": 723517440,
+      "physical_proteins": 8,
+      "proteins_per_second": 130.2511514922887,
+      "residues_per_second": 33344.29478202591,
+      "safe": true,
+      "status": "passed",
+      "stratum": 2
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.2588867124868557,
+      "length": 256,
+      "partition": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "peak_allocated_bytes": 1004866048,
+      "peak_reserved_bytes": 1044381696,
+      "physical_proteins": 16,
+      "proteins_per_second": 247.21237867026272,
+      "residues_per_second": 63286.36893958726,
+      "safe": true,
+      "status": "passed",
+      "stratum": 2
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.18327576853334904,
+      "length": 256,
+      "partition": [
+        24,
+        24,
+        16
+      ],
+      "peak_allocated_bytes": 1313749504,
+      "peak_reserved_bytes": 1369440256,
+      "physical_proteins": 24,
+      "proteins_per_second": 349.2005545094986,
+      "residues_per_second": 89395.34195443164,
+      "safe": true,
+      "status": "passed",
+      "stratum": 2
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.15214944595936686,
+      "length": 256,
+      "partition": [
+        32,
+        32
+      ],
+      "peak_allocated_bytes": 1635281408,
+      "peak_reserved_bytes": 1677721600,
+      "physical_proteins": 32,
+      "proteins_per_second": 420.6390604740808,
+      "residues_per_second": 107683.59948136468,
+      "safe": true,
+      "status": "passed",
+      "stratum": 2
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.17828975792508572,
+      "length": 256,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 1890916352,
+      "peak_reserved_bytes": 1969225728,
+      "physical_proteins": 40,
+      "proteins_per_second": 358.96621738020247,
+      "residues_per_second": 91895.35164933183,
+      "safe": true,
+      "status": "passed",
+      "stratum": 2
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.2035350645892322,
+      "length": 256,
+      "partition": [
+        48,
+        16
+      ],
+      "peak_allocated_bytes": 2189903872,
+      "peak_reserved_bytes": 2271215616,
+      "physical_proteins": 48,
+      "proteins_per_second": 314.4421337382957,
+      "residues_per_second": 80497.1862370037,
+      "safe": true,
+      "status": "passed",
+      "stratum": 2
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.2237124281236902,
+      "length": 256,
+      "partition": [
+        56,
+        8
+      ],
+      "peak_allocated_bytes": 2527787008,
+      "peak_reserved_bytes": 2673868800,
+      "physical_proteins": 56,
+      "proteins_per_second": 286.0815580823007,
+      "residues_per_second": 73236.87886906898,
+      "safe": true,
+      "status": "passed",
+      "stratum": 2
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.15857589105144143,
+      "length": 256,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 2805770240,
+      "peak_reserved_bytes": 2854223872,
+      "physical_proteins": 64,
+      "proteins_per_second": 403.59224580512455,
+      "residues_per_second": 103319.61492611188,
+      "safe": true,
+      "status": "passed",
+      "stratum": 2
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.4521055694203824,
+      "length": 384,
+      "partition": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "peak_allocated_bytes": 854543872,
+      "peak_reserved_bytes": 889192448,
+      "physical_proteins": 8,
+      "proteins_per_second": 141.55985753957995,
+      "residues_per_second": 54358.9852951987,
+      "safe": true,
+      "status": "passed",
+      "stratum": 3
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.28781236440408975,
+      "length": 384,
+      "partition": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "peak_allocated_bytes": 1324741120,
+      "peak_reserved_bytes": 1390411776,
+      "physical_proteins": 16,
+      "proteins_per_second": 222.36709716245454,
+      "residues_per_second": 85388.96531038254,
+      "safe": true,
+      "status": "passed",
+      "stratum": 3
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.25157418195158243,
+      "length": 384,
+      "partition": [
+        24,
+        24,
+        16
+      ],
+      "peak_allocated_bytes": 1837667840,
+      "peak_reserved_bytes": 1948254208,
+      "physical_proteins": 24,
+      "proteins_per_second": 254.39812425711213,
+      "residues_per_second": 97688.87971473105,
+      "safe": true,
+      "status": "passed",
+      "stratum": 3
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.25353009905666113,
+      "length": 384,
+      "partition": [
+        32,
+        32
+      ],
+      "peak_allocated_bytes": 2278872576,
+      "peak_reserved_bytes": 2329935872,
+      "physical_proteins": 32,
+      "proteins_per_second": 252.43551056908916,
+      "residues_per_second": 96935.23605853024,
+      "safe": true,
+      "status": "passed",
+      "stratum": 3
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.25122741248924285,
+      "length": 384,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 2728467456,
+      "peak_reserved_bytes": 2780823552,
+      "physical_proteins": 40,
+      "proteins_per_second": 254.7492702562479,
+      "residues_per_second": 97823.7197783992,
+      "safe": true,
+      "status": "passed",
+      "stratum": 3
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.2684818239649758,
+      "length": 384,
+      "partition": [
+        48,
+        16
+      ],
+      "peak_allocated_bytes": 3201269760,
+      "peak_reserved_bytes": 3217031168,
+      "physical_proteins": 48,
+      "proteins_per_second": 238.37740318819118,
+      "residues_per_second": 91536.92282426542,
+      "safe": true,
+      "status": "passed",
+      "stratum": 3
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.29842544707935303,
+      "length": 384,
+      "partition": [
+        56,
+        8
+      ],
+      "peak_allocated_bytes": 3686917120,
+      "peak_reserved_bytes": 3705667584,
+      "physical_proteins": 56,
+      "proteins_per_second": 214.45892307897603,
+      "residues_per_second": 82352.22646232678,
+      "safe": true,
+      "status": "passed",
+      "stratum": 3
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.25710119400173426,
+      "length": 384,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 4112402432,
+      "peak_reserved_bytes": 4152360960,
+      "physical_proteins": 64,
+      "proteins_per_second": 248.92922122939768,
+      "residues_per_second": 95588.82095208872,
+      "safe": true,
+      "status": "passed",
+      "stratum": 3
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.5127181700663641,
+      "length": 500,
+      "partition": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "peak_allocated_bytes": 1008987136,
+      "peak_reserved_bytes": 1056964608,
+      "physical_proteins": 8,
+      "proteins_per_second": 124.82491110411809,
+      "residues_per_second": 62412.455552059044,
+      "safe": true,
+      "status": "passed",
+      "stratum": 4
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.3610434139845893,
+      "length": 500,
+      "partition": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "peak_allocated_bytes": 1649638912,
+      "peak_reserved_bytes": 1702887424,
+      "physical_proteins": 16,
+      "proteins_per_second": 177.26400072965123,
+      "residues_per_second": 88632.00036482561,
+      "safe": true,
+      "status": "passed",
+      "stratum": 4
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.35412142938002944,
+      "length": 500,
+      "partition": [
+        24,
+        24,
+        16
+      ],
+      "peak_allocated_bytes": 2290049536,
+      "peak_reserved_bytes": 2386558976,
+      "physical_proteins": 24,
+      "proteins_per_second": 180.7289666486624,
+      "residues_per_second": 90364.4833243312,
+      "safe": true,
+      "status": "passed",
+      "stratum": 4
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.3642534004757181,
+      "length": 500,
+      "partition": [
+        32,
+        32
+      ],
+      "peak_allocated_bytes": 2901253120,
+      "peak_reserved_bytes": 3019898880,
+      "physical_proteins": 32,
+      "proteins_per_second": 175.7018600688846,
+      "residues_per_second": 87850.9300344423,
+      "safe": true,
+      "status": "passed",
+      "stratum": 4
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.3488014121539891,
+      "length": 500,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 3466172928,
+      "peak_reserved_bytes": 3649044480,
+      "physical_proteins": 40,
+      "proteins_per_second": 183.48549567151764,
+      "residues_per_second": 91742.74783575881,
+      "safe": true,
+      "status": "passed",
+      "stratum": 4
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.36364941159263253,
+      "length": 500,
+      "partition": [
+        48,
+        16
+      ],
+      "peak_allocated_bytes": 4106476032,
+      "peak_reserved_bytes": 4307550208,
+      "physical_proteins": 48,
+      "proteins_per_second": 175.99368501575935,
+      "residues_per_second": 87996.84250787969,
+      "safe": true,
+      "status": "passed",
+      "stratum": 4
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.3873866945505142,
+      "length": 500,
+      "partition": [
+        56,
+        8
+      ],
+      "peak_allocated_bytes": 4729319424,
+      "peak_reserved_bytes": 4907335680,
+      "physical_proteins": 56,
+      "proteins_per_second": 165.2095978006146,
+      "residues_per_second": 82604.7989003073,
+      "safe": true,
+      "status": "passed",
+      "stratum": 4
+    },
+    {
+      "finite_gradients": true,
+      "finite_loss": true,
+      "forward_backward_seconds": 0.3627603375352919,
+      "length": 500,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 5339095552,
+      "peak_reserved_bytes": 5576327168,
+      "physical_proteins": 64,
+      "proteins_per_second": 176.42502053790162,
+      "residues_per_second": 88212.5102689508,
+      "safe": true,
+      "status": "passed",
+      "stratum": 4
+    }
+  ],
+  "desktop_margin_bytes": 375809638,
+  "effective_proteins": 64,
+  "equivalence": {
+    "dropout_control": "eval only, architecture dropout unchanged for training",
+    "gradient_cosine": 1.0064321756362915,
+    "gradient_relative_error": 3.1937784683577775e-07,
+    "loss_difference": 0.0,
+    "optimizer_weight_max_difference": 7.450580596923828e-09,
+    "precision": "float32"
+  },
+  "equivalence_smoke_optimizer_steps_on_disposable_restorations": 2,
+  "gpu": "NVIDIA GeForce RTX 5060",
+  "initial_free_bytes": 7134511104,
+  "precision": "bfloat16",
+  "process_snapshot": " 930883 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py run\n 930929 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py run\n 930930 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py run\n 930931 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py run\n 930932 /home/simostocco/miniforge3/envs/proteingen/bin/python -u scripts/run_e010_phase4d_cartesian_oracle_v5.py run\n 938693 /home/simostocco/miniforge3/envs/proteingen/bin/python -m scripts.run_e012_continuation calibrate\n",
+  "reserved_safety_threshold_bytes": 6964222362,
+  "selected_plan": {
+    "0": {
+      "forward_backward_seconds": 0.06010669795796275,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 925710336,
+      "peak_reserved_bytes": 968884224,
+      "physical_proteins": 64
+    },
+    "1": {
+      "forward_backward_seconds": 0.07541347341611981,
+      "partition": [
+        64
+      ],
+      "peak_allocated_bytes": 1547896832,
+      "peak_reserved_bytes": 1572864000,
+      "physical_proteins": 64
+    },
+    "2": {
+      "forward_backward_seconds": 0.15214944595936686,
+      "partition": [
+        32,
+        32
+      ],
+      "peak_allocated_bytes": 1635281408,
+      "peak_reserved_bytes": 1677721600,
+      "physical_proteins": 32
+    },
+    "3": {
+      "forward_backward_seconds": 0.25122741248924285,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 2728467456,
+      "peak_reserved_bytes": 2780823552,
+      "physical_proteins": 40
+    },
+    "4": {
+      "forward_backward_seconds": 0.3488014121539891,
+      "partition": [
+        40,
+        24
+      ],
+      "peak_allocated_bytes": 3466172928,
+      "peak_reserved_bytes": 3649044480,
+      "physical_proteins": 40
+    }
+  },
+  "status": "passed",
+  "target_fraction": 0.9,
+  "total_device_bytes": 8546484224
+}
