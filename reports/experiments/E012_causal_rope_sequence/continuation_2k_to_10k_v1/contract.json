@@ -30,6 +30,7 @@
     7500,
     10000
   ],
+  "pre_execution_guard_correction": "Recognize both audited CPU-only v5 run/reproduce modes; corrected before optimizer update2001.",
   "protected_hashes": {
     "configs/e012_causal_rope_continuation_2k_to_10k_v1.yaml": "580562c429bc7c27d8d3291615b8d719be261ee13deb9476df7ce53d2ea01c60",
     "configs/e012_causal_rope_sequence_v1.yaml": "063cbaef32ccc19293e738e56f9114c26df4b20bfe4e77ad770dcc123053a71e",
@@ -38,7 +39,7 @@
     "outputs/e012_causal_rope_sequence/pilot_v1/train.parquet": "75b6861359f6e9526443fbf1d2b475e55086306df18d4144ca0c7b1afcc580a6",
     "outputs/e012_causal_rope_sequence/pilot_v1/validation.parquet": "cd6097d3d29f0c4dd4f913a2ac07af45cfcdd029f0b6c5900771a2b698edb925",
     "reports/experiments/E012_causal_rope_sequence/continuation_2k_to_10k_v1/calibration.json": "51b31289bad8872b25ed4370f54acfa9a5caf84259e3ee4f59fd7f91355d93f4",
-    "reports/experiments/E012_causal_rope_sequence/continuation_2k_to_10k_v1/quality.json": "002267abf107478f184a2d94ff752a4ca8160542cf0dbb660fca29d538412a14",
+    "reports/experiments/E012_causal_rope_sequence/continuation_2k_to_10k_v1/quality.json": "15058f1ec0a8054c9f5518dd05af55d95bb90666c9e0d9fc40b2f00c366a772f",
     "reports/experiments/E012_causal_rope_sequence/continuation_2k_to_10k_v1/resume_smoke.json": "41dec05478b7190dccff712fe7b5f811bf6b76ddf77cf2cf813de6893ae7e62b",
     "reports/experiments/E012_causal_rope_sequence/pilot_v1/baselines.json": "fd973ff33a8633670eae768e8906517667d821ab99650307b67e1e4dc42f1d01",
     "reports/experiments/E012_causal_rope_sequence/pilot_v1/cuda_diagnostic_smoke.json": "1004efeaf80b838b76d421f460cd9b75140432a9c38519f2317e19e706d077d8",
@@ -52,7 +53,7 @@
     "scripts/report_e012_causal_rope.py": "a46b71ffdabcd3a5855c3d214bdfb1026e62882b9d5e428a1bdf1b33469ab8af",
     "scripts/report_e012_continuation.py": "8ebe4d8ab1d889cec3b1b7212ed588f9f24b176a232968ff6e67de3f57a714dc",
     "scripts/run_e012_causal_rope.py": "18c850f60657c4ca358a24214382eafd990e3bddb3ee39ab8036837ed3c5e35e",
-    "scripts/run_e012_continuation.py": "3a31c1af090db19847c1319a56a68d587315fa725e7e0a4788c3320f9e4fbd4b",
+    "scripts/run_e012_continuation.py": "048ecd0b76d942dc3c4c09282861ed979ef10f8ce2be789242033a82d158f5d3",
     "scripts/verify_e012_pilot_results.py": "9349315150752dd0df7e6041db8dbbe382b29d98c691818c98e79c9b573bf0fe",
     "src/protein_sequence_generation/collate.py": "744e8b41d1753045835cf06f0f6f9eef5932bdde69cc5fc91c6d5367596a65e2",
     "src/protein_sequence_generation/dataset.py": "c5be95c7f57a57bb1f07c058d76f95e918fa06b901811b9f157164e9b980d14a",
@@ -66,7 +67,7 @@
     "src/protein_sequence_generation/training.py": "2c3d54d8e9ff890d7d2597db5ae57325fd50626d93754329b8d394d028a342a7",
     "src/protein_sequence_generation/vocabulary.py": "986727a7675855e3b5db98862da20e8947e6301c0b8c3c877c82afc98c544145",
     "tests/sequence/test_e012_causal_rope.py": "ac114d37dfeece538eaa1d1e2d00ad7d96744f2761265c4129ef516542a0cf05",
-    "tests/sequence/test_e012_continuation.py": "ffdafff178a25ee1c5c41ea173371f72d8c8cce87ec0fcfb19aca7fff8cf6850"
+    "tests/sequence/test_e012_continuation.py": "d1497737394883adc041340d929653d3e82512e867579d2a061823500a1b3b53"
   },
   "protected_worktree_start_state": {
     "E010_phase4c": {

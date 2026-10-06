@@ -120,3 +120,20 @@ def test_historical_checkpoint_contract_and_adam():
         assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest, name
     # Frozen gates and shuffle/windows are protected source, not copied or redefined.
     assert "src/protein_sequence_generation/e012.py" in contract["protected_hashes"]
+
+
+def test_cpu_oracle_reproduce_is_not_cuda_owner(monkeypatch):
+    from types import SimpleNamespace
+
+    from scripts import run_e012_continuation as runner
+
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda *a, **kw: SimpleNamespace(
+            stdout="999999 python scripts/run_e010_phase4d_cartesian_oracle_v5.py reproduce\n"
+        ),
+    )
+    monkeypatch.setattr(runner.torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(runner.torch.cuda, "is_bf16_supported", lambda: True)
+    assert "reproduce" in runner.gpu_guard()

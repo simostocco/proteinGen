@@ -58,7 +58,13 @@ def gpu_guard():
         if len(fields) < 2 or int(fields[0]) == os.getpid():
             continue
         cmd = fields[1]
-        if "run_e010_phase4d_cartesian_oracle_v5.py run" in cmd:
+        if any(
+            phase in cmd
+            for phase in [
+                "run_e010_phase4d_cartesian_oracle_v5.py run",
+                "run_e010_phase4d_cartesian_oracle_v5.py reproduce",
+            ]
+        ):
             # Audited CPU-only oracle, no package/environment changes.
             assert (
                 "device: cpu"
