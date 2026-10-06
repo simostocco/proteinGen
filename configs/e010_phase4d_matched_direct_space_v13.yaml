@@ -1,0 +1,27 @@
+schema: e010_phase4d_matched_direct_space_v13
+branch: e010-phase4d-hybrid-local-global
+historical_v11_commit: 4a82eff5169298022683f47cd345af5ceae02a2c
+historical_v12_commit: fcf3a3e052520db0ef60abc102b30e25ce9559d5
+K: 8
+s_max_angstrom: 0.04
+solver_override: {maxiter: 2000}
+only_solver_change: maximum_iterations_1000_to_2000
+objective: unchanged_V11_local_only
+parameterization: unchanged_direct_delta_0.04_times_z_explicit_closed_balls
+physical_contract: unchanged_V9B_as_used_in_V11
+initialization: exact_zero
+solver_invocations_per_example: 1
+examples: 60
+workers: 4
+threads_each: 1
+device: cpu
+precision: float64
+classification_materiality:
+  physical_pass_increase_examples: 6
+  material_shadow_reduction_examples: 6
+  source: unchanged_V11_descriptive_ten_percent_of_panel_rule
+panel_certification_requires_all_60: true
+condition_450_local_gain_threshold_pct: 5.0
+no_outcome_based_reruns: true
+no_cuda: true
+no_neural_training: true
