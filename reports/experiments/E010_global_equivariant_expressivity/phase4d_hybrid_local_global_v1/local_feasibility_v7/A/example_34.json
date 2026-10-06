@@ -1,0 +1,397 @@
+{
+  "arm": "A",
+  "baseline": {
+    "aligned_rmsd": 6.404238165730319,
+    "chiral_error_sum": 72.45832975968342,
+    "chiral_loss_eligible": 180,
+    "chirality_assessability_gained": 0,
+    "chirality_assessability_lost": 0,
+    "chirality_assessable": 180,
+    "chirality_common_assessable": 180,
+    "chirality_common_baseline_inversions": 87,
+    "chirality_common_inversions": 87,
+    "chirality_inversions": 87,
+    "collapse": false,
+    "condition": 250,
+    "continuous_chiral_loss": 0.4025462764426857,
+    "displacement_max": 0.0,
+    "displacement_rms": 0.0,
+    "finite": true,
+    "frame_assessability_preserved": true,
+    "frame_degenerate": 0,
+    "frame_eligible": 181,
+    "frame_interior": 181,
+    "local_mse": {
+      "1": 2.846139306156838,
+      "2": 6.399709995494746,
+      "3": 10.933059160898054
+    },
+    "local_rmse": {
+      "1": 1.6870504752842572,
+      "2": 2.529764810312363,
+      "3": 3.3065176789029955
+    },
+    "mean_local_rmse": 2.5077776548332054,
+    "path_length_max": 0.0,
+    "path_length_rms": 0.0,
+    "radius_gyration": 16.635059610108097,
+    "raw_cartesian": 15.13729275817276,
+    "sample_id": "8cmd_A",
+    "step_correction_max": 0.0,
+    "step_correction_rms": 0.0,
+    "stratum": "129-256"
+  },
+  "frame_eligibility": [
+    181,
+    181,
+    181,
+    181,
+    181
+  ],
+  "index": 34,
+  "optimizer": {
+    "active_constraints": [
+      false,
+      false
+    ],
+    "cg_iterations": 753,
+    "complementarity": 0.0,
+    "constraint_feasible": true,
+    "constraints": [
+      -0.01162551416925972,
+      0.04314735005695436
+    ],
+    "converged": true,
+    "final_local": 6.141616562476056,
+    "function_evaluations": 27,
+    "history": [
+      {
+        "barrier_parameter": 0.0,
+        "constraint_violation": 0.0,
+        "constraints": [
+          -0.009900990099009799,
+          0.0
+        ],
+        "iteration": 1,
+        "local_objective": 6.726302820849878,
+        "normalized_objective": 1.0,
+        "optimality": 0.0003799707686739348,
+        "trust_radius": 1.0
+      },
+      {
+        "barrier_parameter": 0.0,
+        "constraint_violation": 0.0,
+        "constraints": [
+          -0.011623594439701845,
+          0.042896399188448786
+        ],
+        "iteration": 10,
+        "local_objective": 6.144810771786344,
+        "normalized_objective": 0.9135495286859443,
+        "optimality": 8.357955560928066e-07,
+        "trust_radius": 435.10766970615845
+      },
+      {
+        "barrier_parameter": 0.0,
+        "constraint_violation": 0.0,
+        "constraints": [
+          -0.011625487814538538,
+          0.04314803889550234
+        ],
+        "iteration": 20,
+        "local_objective": 6.141626848842383,
+        "normalized_objective": 0.9130761745969651,
+        "optimality": 1.9835935395964843e-10,
+        "trust_radius": 7547.674114710046
+      }
+    ],
+    "initial_local": 6.726302820849878,
+    "iterations": 27,
+    "message": "`gtol` termination condition is satisfied.",
+    "multipliers": [
+      0.0,
+      0.0
+    ],
+    "optimality": 4.613044533291326e-13,
+    "runtime_seconds": 2.967724861111492,
+    "scipy_success": true,
+    "stationarity": {
+      "boundary_active_fraction": 1.0,
+      "lagrangian_correction_gradient_norm": 0.09254856632130022,
+      "local_gradient_norm": 0.09254856632130022,
+      "maximum_feasible_radial_residual": 0.0,
+      "maximum_tangential_residual": 1.1060461056878551e-08,
+      "normalized_ball_kkt_max": 1.1155205773362091e-06,
+      "projected_ball_mapping_max": 9.833918510675606e-07
+    },
+    "status": 1
+  },
+  "oracle": {
+    "aligned_rmsd": 6.393083460233219,
+    "chiral_error_sum": 75.58471467836672,
+    "chiral_loss_eligible": 180,
+    "chirality_assessability_gained": 0,
+    "chirality_assessability_lost": 0,
+    "chirality_assessable": 180,
+    "chirality_common_assessable": 180,
+    "chirality_common_baseline_inversions": 87,
+    "chirality_common_inversions": 84,
+    "chirality_inversions": 84,
+    "collapse": false,
+    "condition": 250,
+    "continuous_chiral_loss": 0.41991508154648177,
+    "displacement_max": 0.159999971692287,
+    "displacement_rms": 0.15912322000393844,
+    "finite": true,
+    "frame_assessability_preserved": true,
+    "frame_degenerate": 0,
+    "frame_eligible": 181,
+    "frame_interior": 181,
+    "local_mse": {
+      "1": 2.4987941679983954,
+      "2": 5.85663400303432,
+      "3": 10.069421516395453
+    },
+    "local_rmse": {
+      "1": 1.5807574665325466,
+      "2": 2.420048347251418,
+      "3": 3.173235181387515
+    },
+    "mean_local_rmse": 2.391346998390493,
+    "path_length_max": 0.15999997169228708,
+    "path_length_rms": 0.15912322000393853,
+    "radius_gyration": 16.66333389517048,
+    "raw_cartesian": 15.095778383920376,
+    "sample_id": "8cmd_A",
+    "step_correction_max": 0.03999999292307177,
+    "step_correction_rms": 0.03978080500098463,
+    "stratum": "129-256"
+  },
+  "record": {
+    "condition": 250,
+    "sample_id": "8cmd_A",
+    "stratum": "129-256"
+  },
+  "state_coordinate_sha256": [
+    "a8a287085b3e9820842688f1590913ab8d19b5b872c8c28d8261d495581ac243",
+    "b2014b832bdb3b7891f21d34988e75f8ed96040a12bab9da3347069501784cee",
+    "43f14ff71bb2f4de41378dc032d9a24980aca8348867ade12d968d42e43d3aa2",
+    "14a3967812b150c75421bd0570a2cae553b1d2673a9719829cee33b4eaeb941a",
+    "b9df385be13ea598694a0f826997c68aa173363eb7d3f2012eb50ac6d6c16934"
+  ],
+  "states": [
+    {
+      "aligned_rmsd": 6.404238165730319,
+      "chiral_error_sum": 72.45832975968342,
+      "chiral_loss_eligible": 180,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 0,
+      "chirality_assessable": 180,
+      "chirality_common_assessable": 180,
+      "chirality_common_baseline_inversions": 87,
+      "chirality_common_inversions": 87,
+      "chirality_inversions": 87,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.4025462764426857,
+      "displacement_max": 0.0,
+      "displacement_rms": 0.0,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 181,
+      "frame_interior": 181,
+      "local_mse": {
+        "1": 2.846139306156838,
+        "2": 6.399709995494746,
+        "3": 10.933059160898054
+      },
+      "local_rmse": {
+        "1": 1.6870504752842572,
+        "2": 2.529764810312363,
+        "3": 3.3065176789029955
+      },
+      "mean_local_rmse": 2.5077776548332054,
+      "path_length_max": 0.0,
+      "path_length_rms": 0.0,
+      "radius_gyration": 16.635059610108097,
+      "raw_cartesian": 15.13729275817276,
+      "sample_id": "8cmd_A",
+      "step_correction_max": 0.0,
+      "step_correction_rms": 0.0,
+      "stratum": "129-256"
+    },
+    {
+      "aligned_rmsd": 6.4010813108901345,
+      "chiral_error_sum": 73.2429715977029,
+      "chiral_loss_eligible": 180,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 0,
+      "chirality_assessable": 180,
+      "chirality_common_assessable": 180,
+      "chirality_common_baseline_inversions": 87,
+      "chirality_common_inversions": 87,
+      "chirality_inversions": 87,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.40690539776501616,
+      "displacement_max": 0.03999999292307175,
+      "displacement_rms": 0.03978080500098461,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 181,
+      "frame_interior": 181,
+      "local_mse": {
+        "1": 2.7571439890003444,
+        "2": 6.261283505607807,
+        "3": 10.713139069283123
+      },
+      "local_rmse": {
+        "1": 1.6604649918020988,
+        "2": 2.502255683499951,
+        "3": 3.2730931959360894
+      },
+      "mean_local_rmse": 2.478604623746046,
+      "path_length_max": 0.03999999292307177,
+      "path_length_rms": 0.03978080500098463,
+      "radius_gyration": 16.64199024497675,
+      "raw_cartesian": 15.12533163633801,
+      "sample_id": "8cmd_A",
+      "step_correction_max": 0.03999999292307177,
+      "step_correction_rms": 0.03978080500098463,
+      "stratum": "129-256"
+    },
+    {
+      "aligned_rmsd": 6.398169689449707,
+      "chiral_error_sum": 74.02485087397129,
+      "chiral_loss_eligible": 180,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 0,
+      "chirality_assessable": 180,
+      "chirality_common_assessable": 180,
+      "chirality_common_baseline_inversions": 87,
+      "chirality_common_inversions": 84,
+      "chirality_inversions": 84,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.4112491715220627,
+      "displacement_max": 0.0799999858461435,
+      "displacement_rms": 0.07956161000196922,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 181,
+      "frame_interior": 181,
+      "local_mse": {
+        "1": 2.6694764597492275,
+        "2": 6.124587502500671,
+        "3": 10.495848764692965
+      },
+      "local_rmse": {
+        "1": 1.6338532552678124,
+        "2": 2.4747903956700394,
+        "3": 3.239729736365823
+      },
+      "mean_local_rmse": 2.449457795767892,
+      "path_length_max": 0.07999998584614354,
+      "path_length_rms": 0.07956161000196926,
+      "radius_gyration": 16.64901291527318,
+      "raw_cartesian": 15.114425533351032,
+      "sample_id": "8cmd_A",
+      "step_correction_max": 0.03999999292307177,
+      "step_correction_rms": 0.03978080500098463,
+      "stratum": "129-256"
+    },
+    {
+      "aligned_rmsd": 6.395503636703832,
+      "chiral_error_sum": 74.80521081954392,
+      "chiral_loss_eligible": 180,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 0,
+      "chirality_assessable": 180,
+      "chirality_common_assessable": 180,
+      "chirality_common_baseline_inversions": 87,
+      "chirality_common_inversions": 84,
+      "chirality_inversions": 84,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.41558450455302176,
+      "displacement_max": 0.11999997876921524,
+      "displacement_rms": 0.11934241500295384,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 181,
+      "frame_interior": 181,
+      "local_mse": {
+        "1": 2.5833101277187716,
+        "2": 5.989684567863126,
+        "3": 10.28125484905432
+      },
+      "local_rmse": {
+        "1": 1.6072679078855434,
+        "2": 2.4473832082171207,
+        "3": 3.2064395907383507
+      },
+      "mean_local_rmse": 2.420363568947005,
+      "path_length_max": 0.11999997876921531,
+      "path_length_rms": 0.11934241500295391,
+      "radius_gyration": 16.656127504583566,
+      "raw_cartesian": 15.10457444921182,
+      "sample_id": "8cmd_A",
+      "step_correction_max": 0.03999999292307177,
+      "step_correction_rms": 0.03978080500098463,
+      "stratum": "129-256"
+    },
+    {
+      "aligned_rmsd": 6.393083460233219,
+      "chiral_error_sum": 75.58471467836672,
+      "chiral_loss_eligible": 180,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 0,
+      "chirality_assessable": 180,
+      "chirality_common_assessable": 180,
+      "chirality_common_baseline_inversions": 87,
+      "chirality_common_inversions": 84,
+      "chirality_inversions": 84,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.41991508154648177,
+      "displacement_max": 0.159999971692287,
+      "displacement_rms": 0.15912322000393844,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 181,
+      "frame_interior": 181,
+      "local_mse": {
+        "1": 2.4987941679983954,
+        "2": 5.85663400303432,
+        "3": 10.069421516395453
+      },
+      "local_rmse": {
+        "1": 1.5807574665325466,
+        "2": 2.420048347251418,
+        "3": 3.173235181387515
+      },
+      "mean_local_rmse": 2.391346998390493,
+      "path_length_max": 0.15999997169228708,
+      "path_length_rms": 0.15912322000393853,
+      "radius_gyration": 16.66333389517048,
+      "raw_cartesian": 15.095778383920376,
+      "sample_id": "8cmd_A",
+      "step_correction_max": 0.03999999292307177,
+      "step_correction_rms": 0.03978080500098463,
+      "stratum": "129-256"
+    }
+  ],
+  "temporary_assessability_losses": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "variables_sha256": "a0c3401c660ba9d37f378c1d91f212ad572c0e18ed308aff937d367d172284f8"
+}

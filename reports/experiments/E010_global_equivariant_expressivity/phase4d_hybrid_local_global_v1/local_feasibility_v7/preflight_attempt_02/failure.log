@@ -1,0 +1,48 @@
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/concurrent/futures/process.py", line 264, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/proteinGen-hybrid-local-global/scripts/run_e010_local_feasibility_v7.py", line 157, in example
+    write(path, result)
+  File "/home/simostocco/proteinGen-hybrid-local-global/scripts/run_e010_phase4d_recurrent_capacity_v3.py", line 45, in write
+    tmp.write_text(json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type bool is not JSON serializable
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/simostocco/proteinGen-hybrid-local-global/scripts/run_e010_local_feasibility_v7.py", line 209, in <module>
+    register() if args.mode == "register" else execute(args.mode)
+                                               ^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/proteinGen-hybrid-local-global/scripts/run_e010_local_feasibility_v7.py", line 188, in execute
+    print(mode, *future.result(), flush=True)
+                 ^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+TypeError: Object of type bool is not JSON serializable

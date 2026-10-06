@@ -1,0 +1,71 @@
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/concurrent/futures/process.py", line 264, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/proteinGen-hybrid-local-global/scripts/run_e010_local_feasibility_v7.py", line 96, in example
+    tr, log, z = v7.solve(b, arm, CFG)
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/proteinGen-hybrid-local-global/src/protein_distance_diffusion/training/e010_local_feasibility_v7.py", line 209, in solve
+    result = constrained_minimize(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/proteinGen-hybrid-local-global/src/protein_distance_diffusion/training/e010_local_feasibility_v7.py", line 80, in constrained_minimize
+    return minimize(
+           ^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/optimize/_minimize.py", line 799, in minimize
+    res = _minimize_trustregion_constr(fun, x0, args, jac, hess, hessp,
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/optimize/_trustregion_constr/minimize_trustregion_constr.py", line 537, in _minimize_trustregion_constr
+    _, result = equality_constrained_sqp(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/optimize/_trustregion_constr/equality_constrained_sqp.py", line 127, in equality_constrained_sqp
+    c_t = H.dot(dn) + c
+          ^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 643, in dot
+    return self.matvec(x)
+           ^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 391, in matvec
+    return self._shared_matvec(x)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 353, in _shared_matvec
+    y = self._rmatvec(x) if adjoint else self._matvec(x)
+                                         ^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 891, in _matvec
+    return self.__matvec_impl(x)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/optimize/_trustregion_constr/minimize_trustregion_constr.py", line 57, in matvec
+    return H_objective.dot(p) + H_constraints.dot(p)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 643, in dot
+    return self.matvec(x)
+           ^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 391, in matvec
+    return self._shared_matvec(x)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 353, in _shared_matvec
+    y = self._rmatvec(x) if adjoint else self._matvec(x)
+                                         ^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 891, in _matvec
+    return self.__matvec_impl(x)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/proteinGen-hybrid-local-global/src/protein_distance_diffusion/training/e010_local_feasibility_v7.py", line 112, in matvec
+    raise RuntimeError("nonfinite exact Hessian-vector product")
+RuntimeError: nonfinite exact Hessian-vector product
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/simostocco/proteinGen-hybrid-local-global/scripts/run_e010_local_feasibility_v7.py", line 195, in <module>
+    register() if args.mode == "register" else execute(args.mode)
+                                               ^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/proteinGen-hybrid-local-global/scripts/run_e010_local_feasibility_v7.py", line 174, in execute
+    print(mode, *future.result(), flush=True)
+                 ^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+RuntimeError: nonfinite exact Hessian-vector product
