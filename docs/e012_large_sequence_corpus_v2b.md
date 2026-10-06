@@ -95,6 +95,11 @@ For cluster sizes n_i, N=sum n_i, p_i=n_i/N: inverse Simpson = 1/sum(p_i^2),
 entropy effective = exp(-sum(p_i log p_i)); Gini = sum_ij |n_i-n_j|/(2*K*N).
 Singleton fractions use explicit cluster and sequence denominators.
 
+Sequence rows use an append-oriented SQLite table with compact hash/priority indexes.
+A legacy WITHOUT ROWID table is migrated atomically; sequences, priorities and
+checkpoint counts are preserved. Migration uses in-memory index sorting
+and retains old pages as reusable SQLite free space, within the stage disk budget.
+
 Resume: one SQLite database with WAL and synchronous=FULL atomically checkpoints
 the dedup hash index, reservoir and cursor. A prior attached-index checkpoint is
 migrated transactionally and retained until reservoir completion. Source parsing

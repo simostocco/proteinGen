@@ -168,6 +168,43 @@ class V2BTests(unittest.TestCase):
             self.assertEqual(s['external_exact_unique_encountered'],8)
             self.assertEqual(s['exact_duplicates_removed'],1)
 
+    def test_sequence_table_layout_migration_preserves_checkpoint(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            b,records=self.fixture(root,cap=5)
+            real_save=m.save
+            def injected(path,obj):
+                real_save(path,obj)
+                if Path(path).name=='filter_checkpoint.json':
+                    raise RuntimeError('stop at checkpoint')
+            with patch.object(m,'RAW_COUNT',len(records)),patch.object(m,'HISTORICAL_UNIQUE',3),patch.object(m,'CHECKPOINT_EVERY',3):
+                with patch.object(m,'save',injected):
+                    with self.assertRaisesRegex(RuntimeError,'stop at checkpoint'):
+                        b.filter_reservoir()
+                db=sqlite3.connect(b.reservoir)
+                before=db.execute('SELECT * FROM candidates ORDER BY p,h,off').fetchall()
+                db.execute('CREATE TABLE legacy_candidates(h BLOB, off INTEGER, p BLOB, seq TEXT, source_id TEXT, multiplicity INTEGER, historical INTEGER, external INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
+                db.execute('INSERT INTO legacy_candidates SELECT * FROM candidates')
+                db.execute('DROP TABLE candidates')
+                db.execute('ALTER TABLE legacy_candidates RENAME TO candidates')
+                db.execute('CREATE INDEX priority_index ON candidates(p,h,off)')
+                db.commit()
+                db.close()
+                with patch.object(m,'save',injected):
+                    with self.assertRaisesRegex(RuntimeError,'stop at checkpoint'):
+                        b.filter_reservoir()
+                db=sqlite3.connect(b.reservoir)
+                self.assertNotIn('WITHOUT ROWID',db.execute("SELECT sql FROM sqlite_master WHERE name='candidates'").fetchone()[0])
+                after=db.execute('SELECT * FROM candidates ORDER BY p,h,off').fetchall()
+                self.assertTrue(all(row in after for row in before))
+                db.close()
+                b.filter_reservoir()
+            stats=json.loads((root/'stats/filtering_stats.json').read_text())
+            self.assertEqual(stats['raw_count'],len(records))
+            self.assertEqual(stats['external_exact_unique_encountered'],8)
+            self.assertEqual(stats['exact_duplicates_removed'],1)
+            self.assertEqual(stats['external_reservoir_count'],5)
+
     def test_reusable_target_index_preserves_search_results(self):
         import subprocess
         import random

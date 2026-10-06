@@ -343,7 +343,27 @@ class Build:
             db.execute('PRAGMA journal_mode=WAL')
             db.execute('PRAGMA synchronous=FULL')
             db.execute('PRAGMA wal_autocheckpoint=65536')
-            db.execute('CREATE TABLE IF NOT EXISTS candidates(h BLOB, off INTEGER, p BLOB, seq TEXT, source_id TEXT, multiplicity INTEGER, historical INTEGER, external INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
+            # Append full sequence rows; keep compact hash/priority indexes.
+            schema=db.execute("SELECT sql FROM sqlite_master WHERE name='candidates'").fetchone()
+            if schema and 'WITHOUT ROWID' in schema[0].upper():
+                with self.stage('sqlite_append_migration'):
+                    self.guard()
+                    db.execute('PRAGMA temp_store=MEMORY')
+                    db.execute('BEGIN IMMEDIATE')
+                    try:
+                        db.execute('CREATE TABLE candidates_append(h BLOB NOT NULL, off INTEGER NOT NULL, p BLOB, seq TEXT, source_id TEXT, multiplicity INTEGER, historical INTEGER, external INTEGER, PRIMARY KEY(h,off))')
+                        db.execute('INSERT INTO candidates_append SELECT * FROM candidates')
+                        db.execute('DROP TABLE candidates')
+                        db.execute('ALTER TABLE candidates_append RENAME TO candidates')
+                        db.execute('CREATE INDEX priority_index ON candidates(p,h,off)')
+                        db.commit()
+                    except BaseException:
+                        db.rollback()
+                        raise
+                    finally:
+                        db.execute('PRAGMA temp_store=DEFAULT')
+                    self.guard()
+            db.execute('CREATE TABLE IF NOT EXISTS candidates(h BLOB NOT NULL, off INTEGER NOT NULL, p BLOB, seq TEXT, source_id TEXT, multiplicity INTEGER, historical INTEGER, external INTEGER, PRIMARY KEY(h,off))')
             db.execute('CREATE INDEX IF NOT EXISTS priority_index ON candidates(p,h,off)')
             db.execute('CREATE TABLE IF NOT EXISTS progress(k TEXT PRIMARY KEY, v TEXT)')
             row = db.execute("SELECT v FROM progress WHERE k='checkpoint'").fetchone()
