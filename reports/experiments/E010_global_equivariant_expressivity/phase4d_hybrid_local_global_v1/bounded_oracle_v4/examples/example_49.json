@@ -1,0 +1,1222 @@
+{
+  "baseline": {
+    "aligned_rmsd": 6.883505196095593,
+    "chiral_error_sum": 230.0660938712122,
+    "chiral_loss_eligible": 398,
+    "chirality_assessability_gained": 0,
+    "chirality_assessability_lost": 0,
+    "chirality_assessable": 398,
+    "chirality_common_assessable": 398,
+    "chirality_common_baseline_inversions": 200,
+    "chirality_common_inversions": 200,
+    "chirality_inversions": 200,
+    "collapse": false,
+    "condition": 250,
+    "continuous_chiral_loss": 0.5780555122392266,
+    "displacement_max": 0.0,
+    "displacement_mean_square": 0.0,
+    "displacement_rms": 0.0,
+    "finite": true,
+    "frame_assessability_preserved": true,
+    "frame_degenerate": 0,
+    "frame_eligible": 399,
+    "frame_interior": 399,
+    "input_frame_degenerate": 0,
+    "input_frame_eligible": 399,
+    "local_mse": {
+      "1": 3.6451554955234746,
+      "2": 8.87585611506755,
+      "3": 13.217610521678242
+    },
+    "local_rmse": {
+      "1": 1.9092290317097826,
+      "2": 2.9792375056493148,
+      "3": 3.635603185398297
+    },
+    "mean_local_rmse": 2.841356574252465,
+    "radius_gyration": 33.890297186799586,
+    "raw_cartesian": 16.50434269427544,
+    "sample_id": "9m6h_B",
+    "step_correction_max": 0.0,
+    "step_correction_rms": 0.0,
+    "stratum": "385-500"
+  },
+  "optimistic_geometry_bound": {
+    "mean_local_rmse_lower_bound": 2.569963952966878,
+    "offset_rmse_lower_bounds": {
+      "1": 1.6280826566879456,
+      "2": 2.697747565715447,
+      "3": 3.3840616364972416
+    }
+  },
+  "optimizer": {
+    "closure_evaluations": 9725,
+    "converged": false,
+    "history": [
+      {
+        "closure_evaluations": 24,
+        "coordinate_change_max_angstrom": 0.03410029759631369,
+        "iteration": 10,
+        "objective_contribution": 4.6074991628768105,
+        "projected_gradient_residual": 0.19134313217293586,
+        "relative_objective_change": 0.00011554470810281616,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 44,
+        "coordinate_change_max_angstrom": 0.007627253339774639,
+        "iteration": 20,
+        "objective_contribution": 4.606483270591728,
+        "projected_gradient_residual": 0.08780976264526238,
+        "relative_objective_change": 2.5228974940495786e-06,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 64,
+        "coordinate_change_max_angstrom": 0.0007155559531229686,
+        "iteration": 30,
+        "objective_contribution": 4.606454233072352,
+        "projected_gradient_residual": 0.030318757466789217,
+        "relative_objective_change": 9.414951030263936e-08,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 40,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 3
+      },
+      {
+        "closure_evaluations": 225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 50,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 13
+      },
+      {
+        "closure_evaluations": 325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 60,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 23
+      },
+      {
+        "closure_evaluations": 425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 70,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 33
+      },
+      {
+        "closure_evaluations": 525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 80,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 43
+      },
+      {
+        "closure_evaluations": 625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 90,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 53
+      },
+      {
+        "closure_evaluations": 725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 100,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 63
+      },
+      {
+        "closure_evaluations": 825,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 110,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 73
+      },
+      {
+        "closure_evaluations": 925,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 120,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 83
+      },
+      {
+        "closure_evaluations": 1025,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 130,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 93
+      },
+      {
+        "closure_evaluations": 1125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 140,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 103
+      },
+      {
+        "closure_evaluations": 1225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 150,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 113
+      },
+      {
+        "closure_evaluations": 1325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 160,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 123
+      },
+      {
+        "closure_evaluations": 1425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 170,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 133
+      },
+      {
+        "closure_evaluations": 1525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 180,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 143
+      },
+      {
+        "closure_evaluations": 1625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 190,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 153
+      },
+      {
+        "closure_evaluations": 1725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 200,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 163
+      },
+      {
+        "closure_evaluations": 1825,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 210,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 173
+      },
+      {
+        "closure_evaluations": 1925,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 220,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 183
+      },
+      {
+        "closure_evaluations": 2025,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 230,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 193
+      },
+      {
+        "closure_evaluations": 2125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 240,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 203
+      },
+      {
+        "closure_evaluations": 2225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 250,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 213
+      },
+      {
+        "closure_evaluations": 2325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 260,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 223
+      },
+      {
+        "closure_evaluations": 2425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 270,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 233
+      },
+      {
+        "closure_evaluations": 2525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 280,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 243
+      },
+      {
+        "closure_evaluations": 2625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 290,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 253
+      },
+      {
+        "closure_evaluations": 2725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 300,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 263
+      },
+      {
+        "closure_evaluations": 2825,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 310,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 273
+      },
+      {
+        "closure_evaluations": 2925,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 320,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 283
+      },
+      {
+        "closure_evaluations": 3025,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 330,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 293
+      },
+      {
+        "closure_evaluations": 3125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 340,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 303
+      },
+      {
+        "closure_evaluations": 3225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 350,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 313
+      },
+      {
+        "closure_evaluations": 3325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 360,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 323
+      },
+      {
+        "closure_evaluations": 3425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 370,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 333
+      },
+      {
+        "closure_evaluations": 3525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 380,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 343
+      },
+      {
+        "closure_evaluations": 3625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 390,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 353
+      },
+      {
+        "closure_evaluations": 3725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 400,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 363
+      },
+      {
+        "closure_evaluations": 3825,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 410,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 373
+      },
+      {
+        "closure_evaluations": 3925,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 420,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 383
+      },
+      {
+        "closure_evaluations": 4025,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 430,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 393
+      },
+      {
+        "closure_evaluations": 4125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 440,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 403
+      },
+      {
+        "closure_evaluations": 4225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 450,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 413
+      },
+      {
+        "closure_evaluations": 4325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 460,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 423
+      },
+      {
+        "closure_evaluations": 4425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 470,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 433
+      },
+      {
+        "closure_evaluations": 4525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 480,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 443
+      },
+      {
+        "closure_evaluations": 4625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 490,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 453
+      },
+      {
+        "closure_evaluations": 4725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 500,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 463
+      },
+      {
+        "closure_evaluations": 4825,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 510,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 473
+      },
+      {
+        "closure_evaluations": 4925,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 520,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 483
+      },
+      {
+        "closure_evaluations": 5025,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 530,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 493
+      },
+      {
+        "closure_evaluations": 5125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 540,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 503
+      },
+      {
+        "closure_evaluations": 5225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 550,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 513
+      },
+      {
+        "closure_evaluations": 5325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 560,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 523
+      },
+      {
+        "closure_evaluations": 5425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 570,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 533
+      },
+      {
+        "closure_evaluations": 5525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 580,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 543
+      },
+      {
+        "closure_evaluations": 5625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 590,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 553
+      },
+      {
+        "closure_evaluations": 5725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 600,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 563
+      },
+      {
+        "closure_evaluations": 5825,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 610,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 573
+      },
+      {
+        "closure_evaluations": 5925,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 620,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 583
+      },
+      {
+        "closure_evaluations": 6025,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 630,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 593
+      },
+      {
+        "closure_evaluations": 6125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 640,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 603
+      },
+      {
+        "closure_evaluations": 6225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 650,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 613
+      },
+      {
+        "closure_evaluations": 6325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 660,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 623
+      },
+      {
+        "closure_evaluations": 6425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 670,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 633
+      },
+      {
+        "closure_evaluations": 6525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 680,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 643
+      },
+      {
+        "closure_evaluations": 6625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 690,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 653
+      },
+      {
+        "closure_evaluations": 6725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 700,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 663
+      },
+      {
+        "closure_evaluations": 6825,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 710,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 673
+      },
+      {
+        "closure_evaluations": 6925,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 720,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 683
+      },
+      {
+        "closure_evaluations": 7025,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 730,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 693
+      },
+      {
+        "closure_evaluations": 7125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 740,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 703
+      },
+      {
+        "closure_evaluations": 7225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 750,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 713
+      },
+      {
+        "closure_evaluations": 7325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 760,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 723
+      },
+      {
+        "closure_evaluations": 7425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 770,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 733
+      },
+      {
+        "closure_evaluations": 7525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 780,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 743
+      },
+      {
+        "closure_evaluations": 7625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 790,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 753
+      },
+      {
+        "closure_evaluations": 7725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 800,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 763
+      },
+      {
+        "closure_evaluations": 7825,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 810,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 773
+      },
+      {
+        "closure_evaluations": 7925,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 820,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 783
+      },
+      {
+        "closure_evaluations": 8025,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 830,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 793
+      },
+      {
+        "closure_evaluations": 8125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 840,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 803
+      },
+      {
+        "closure_evaluations": 8225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 850,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 813
+      },
+      {
+        "closure_evaluations": 8325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 860,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 823
+      },
+      {
+        "closure_evaluations": 8425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 870,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 833
+      },
+      {
+        "closure_evaluations": 8525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 880,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 843
+      },
+      {
+        "closure_evaluations": 8625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 890,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 853
+      },
+      {
+        "closure_evaluations": 8725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 900,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 863
+      },
+      {
+        "closure_evaluations": 8825,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 910,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 873
+      },
+      {
+        "closure_evaluations": 8925,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 920,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 883
+      },
+      {
+        "closure_evaluations": 9025,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 930,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 893
+      },
+      {
+        "closure_evaluations": 9125,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 940,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 903
+      },
+      {
+        "closure_evaluations": 9225,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 950,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 913
+      },
+      {
+        "closure_evaluations": 9325,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 960,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 923
+      },
+      {
+        "closure_evaluations": 9425,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 970,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 933
+      },
+      {
+        "closure_evaluations": 9525,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 980,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 943
+      },
+      {
+        "closure_evaluations": 9625,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 990,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 953
+      },
+      {
+        "closure_evaluations": 9725,
+        "coordinate_change_max_angstrom": 0.0,
+        "iteration": 1000,
+        "objective_contribution": 4.606452435907124,
+        "projected_gradient_residual": 0.00931479911161337,
+        "relative_objective_change": 0.0,
+        "stable_iterations": 963
+      }
+    ],
+    "iterations": 1000,
+    "projected_gradient_residual": 0.00931479911161337,
+    "runtime_seconds": 188.34674455807544,
+    "stable_iterations": 963,
+    "termination": "maximum_iterations"
+  },
+  "oracle": {
+    "aligned_rmsd": 6.740431019511586,
+    "chiral_error_sum": 217.16003046706214,
+    "chiral_loss_eligible": 398,
+    "chirality_assessability_gained": 0,
+    "chirality_assessability_lost": 0,
+    "chirality_assessable": 398,
+    "chirality_common_assessable": 398,
+    "chirality_common_baseline_inversions": 200,
+    "chirality_common_inversions": 196,
+    "chirality_inversions": 196,
+    "collapse": false,
+    "condition": 250,
+    "continuous_chiral_loss": 0.545628217253925,
+    "displacement_max": 0.15999997858493595,
+    "displacement_mean_square": 0.025472283533072456,
+    "displacement_rms": 0.15960038700790313,
+    "finite": true,
+    "frame_assessability_preserved": true,
+    "frame_degenerate": 0,
+    "frame_eligible": 399,
+    "frame_interior": 399,
+    "input_frame_degenerate": 0,
+    "input_frame_eligible": 399,
+    "local_mse": {
+      "1": 3.6366291284476144,
+      "2": 8.764299745010177,
+      "3": 12.927193604760005
+    },
+    "local_rmse": {
+      "1": 1.90699478983232,
+      "2": 2.9604560028837072,
+      "3": 3.5954406690640863
+    },
+    "mean_local_rmse": 2.8209638205933714,
+    "radius_gyration": 33.895822645605406,
+    "raw_cartesian": 15.830020611836087,
+    "sample_id": "9m6h_B",
+    "step_correction_max": 0.0399999978475263,
+    "step_correction_rms": 0.03990011433028046,
+    "stratum": "385-500"
+  },
+  "record": {
+    "condition": 250,
+    "sample_id": "9m6h_B",
+    "stratum": "385-500"
+  },
+  "states": [
+    {
+      "aligned_rmsd": 6.883505196095593,
+      "chiral_error_sum": 230.0660938712122,
+      "chiral_loss_eligible": 398,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 0,
+      "chirality_assessable": 398,
+      "chirality_common_assessable": 398,
+      "chirality_common_baseline_inversions": 200,
+      "chirality_common_inversions": 200,
+      "chirality_inversions": 200,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.5780555122392266,
+      "displacement_max": 0.0,
+      "displacement_mean_square": 0.0,
+      "displacement_rms": 0.0,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 399,
+      "frame_interior": 399,
+      "input_frame_degenerate": 0,
+      "input_frame_eligible": 399,
+      "local_mse": {
+        "1": 3.6451554955234746,
+        "2": 8.87585611506755,
+        "3": 13.217610521678242
+      },
+      "local_rmse": {
+        "1": 1.9092290317097826,
+        "2": 2.9792375056493148,
+        "3": 3.635603185398297
+      },
+      "mean_local_rmse": 2.841356574252465,
+      "radius_gyration": 33.890297186799586,
+      "raw_cartesian": 16.50434269427544,
+      "sample_id": "9m6h_B",
+      "step_correction_max": 0.0,
+      "step_correction_rms": 0.0,
+      "stratum": "385-500"
+    },
+    {
+      "aligned_rmsd": 6.847678826813819,
+      "chiral_error_sum": 226.9416527338645,
+      "chiral_loss_eligible": 398,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 0,
+      "chirality_assessable": 398,
+      "chirality_common_assessable": 398,
+      "chirality_common_baseline_inversions": 200,
+      "chirality_common_inversions": 198,
+      "chirality_inversions": 198,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.5702051576227751,
+      "displacement_max": 0.039999999681545516,
+      "displacement_mean_square": 0.001592019132324231,
+      "displacement_rms": 0.03990011443998916,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 399,
+      "frame_interior": 399,
+      "input_frame_degenerate": 0,
+      "input_frame_eligible": 399,
+      "local_mse": {
+        "1": 3.644528034641139,
+        "2": 8.850385977375735,
+        "3": 13.147288614712705
+      },
+      "local_rmse": {
+        "1": 1.9090647015334863,
+        "2": 2.9749598278591485,
+        "3": 3.6259190027788413
+      },
+      "mean_local_rmse": 2.836647844057159,
+      "radius_gyration": 33.891610505853606,
+      "raw_cartesian": 16.334169714390793,
+      "sample_id": "9m6h_B",
+      "step_correction_max": 0.03999999968154616,
+      "step_correction_rms": 0.039900114439989164,
+      "stratum": "385-500"
+    },
+    {
+      "aligned_rmsd": 6.811890296622045,
+      "chiral_error_sum": 223.71549557510588,
+      "chiral_loss_eligible": 398,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 1,
+      "chirality_assessable": 397,
+      "chirality_common_assessable": 397,
+      "chirality_common_baseline_inversions": 199,
+      "chirality_common_inversions": 198,
+      "chirality_inversions": 198,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.5620992351133314,
+      "displacement_max": 0.07999999344244431,
+      "displacement_mean_square": 0.006368068655741547,
+      "displacement_rms": 0.07980017954705082,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 399,
+      "frame_interior": 399,
+      "input_frame_degenerate": 0,
+      "input_frame_eligible": 399,
+      "local_mse": {
+        "1": 3.642898940660234,
+        "2": 8.823290488201362,
+        "3": 13.075478998475289
+      },
+      "local_rmse": {
+        "1": 1.9086379805139144,
+        "2": 2.9704024118293066,
+        "3": 3.6160031800975077
+      },
+      "mean_local_rmse": 2.831681190813576,
+      "radius_gyration": 33.892967466914975,
+      "raw_cartesian": 16.165058998914425,
+      "sample_id": "9m6h_B",
+      "step_correction_max": 0.03999999915778594,
+      "step_correction_rms": 0.03990011439247391,
+      "stratum": "385-500"
+    },
+    {
+      "aligned_rmsd": 6.776140832554003,
+      "chiral_error_sum": 220.43589656676718,
+      "chiral_loss_eligible": 398,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 0,
+      "chirality_assessable": 398,
+      "chirality_common_assessable": 398,
+      "chirality_common_baseline_inversions": 200,
+      "chirality_common_inversions": 197,
+      "chirality_inversions": 197,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.5538590365999175,
+      "displacement_max": 0.1199999841384248,
+      "displacement_mean_square": 0.014328157311182747,
+      "displacement_rms": 0.11970028116584668,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 399,
+      "frame_interior": 399,
+      "input_frame_degenerate": 0,
+      "input_frame_eligible": 399,
+      "local_mse": {
+        "1": 3.6402644554263883,
+        "2": 8.794589391523619,
+        "3": 13.002133600460846
+      },
+      "local_rmse": {
+        "1": 1.907947707728487,
+        "2": 2.965567296745029,
+        "3": 3.60584714047349
+      },
+      "mean_local_rmse": 2.8264540483156684,
+      "radius_gyration": 33.89437161856965,
+      "raw_cartesian": 15.997009353639337,
+      "sample_id": "9m6h_B",
+      "step_correction_max": 0.03999999803071684,
+      "step_correction_rms": 0.03990011434607809,
+      "stratum": "385-500"
+    },
+    {
+      "aligned_rmsd": 6.740431019511586,
+      "chiral_error_sum": 217.16003046706214,
+      "chiral_loss_eligible": 398,
+      "chirality_assessability_gained": 0,
+      "chirality_assessability_lost": 0,
+      "chirality_assessable": 398,
+      "chirality_common_assessable": 398,
+      "chirality_common_baseline_inversions": 200,
+      "chirality_common_inversions": 196,
+      "chirality_inversions": 196,
+      "collapse": false,
+      "condition": 250,
+      "continuous_chiral_loss": 0.545628217253925,
+      "displacement_max": 0.15999997858493595,
+      "displacement_mean_square": 0.025472283533072456,
+      "displacement_rms": 0.15960038700790313,
+      "finite": true,
+      "frame_assessability_preserved": true,
+      "frame_degenerate": 0,
+      "frame_eligible": 399,
+      "frame_interior": 399,
+      "input_frame_degenerate": 0,
+      "input_frame_eligible": 399,
+      "local_mse": {
+        "1": 3.6366291284476144,
+        "2": 8.764299745010177,
+        "3": 12.927193604760005
+      },
+      "local_rmse": {
+        "1": 1.90699478983232,
+        "2": 2.9604560028837072,
+        "3": 3.5954406690640863
+      },
+      "mean_local_rmse": 2.8209638205933714,
+      "radius_gyration": 33.895822645605406,
+      "raw_cartesian": 15.830020611836087,
+      "sample_id": "9m6h_B",
+      "step_correction_max": 0.0399999978475263,
+      "step_correction_rms": 0.03990011433028046,
+      "stratum": "385-500"
+    }
+  ]
+}

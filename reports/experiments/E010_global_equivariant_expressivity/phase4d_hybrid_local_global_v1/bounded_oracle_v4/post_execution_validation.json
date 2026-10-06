@@ -1,0 +1,33 @@
+{
+  "schema": "e010_v4_post_execution_validation",
+  "protected_v3_and_implementation_files_verified": 32,
+  "v3_source_config_pins_verified": 6,
+  "protected_historical_source_files_verified": 57,
+  "cache_unchanged": true,
+  "panel_order_unchanged": true,
+  "examples": 60,
+  "iteration_zero_exact_metric_parity": true,
+  "maximum_step_angstrom": 0.03999999999950916,
+  "maximum_cumulative_angstrom": 0.15999999981937016,
+  "pair_distance_architectural_bound_angstrom": 0.320002,
+  "all_states_finite_no_collapse": true,
+  "all_frames_preserved": true,
+  "chirality_assessability_changes": [
+    {
+      "index": 49,
+      "state": 2,
+      "lost": 1,
+      "gained": 0
+    }
+  ],
+  "baseline_metric_difference_against_v3": {
+    "raw_cartesian": -1.2028076383785447e-06,
+    "mean_local_rmse": 1.193540954957939e-08,
+    "aligned_rmsd": 0.0,
+    "continuous_chiral_loss": -2.9996261030618143e-10
+  },
+  "convergence_bookkeeping_verified": true,
+  "historical_tracked_files_unchanged": true,
+  "cuda_used": false,
+  "neural_training_launched": false
+}
