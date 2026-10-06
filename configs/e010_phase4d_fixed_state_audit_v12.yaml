@@ -1,0 +1,27 @@
+schema: e010_phase4d_fixed_state_audit_v12
+branch: e010-phase4d-hybrid-local-global
+historical_commit: 4a82eff5169298022683f47cd345af5ceae02a2c
+device: cpu
+precision: float64
+workers: 4
+threads_each: 1
+states: all_60_fixed_V11_endpoints
+K: 8
+s_max_angstrom: 0.04
+nonlinear_optimizer_invocations: 0
+trajectory_sampling: historical_every_10_iterations_only
+history_windows: [25, 50, 100, 250]
+QP: unchanged_V9B_NNLS_dual_Euclidean_tangent_cone_projection
+QP_radius: unchanged_V11_maximum_per_step_residue_vector_norm
+shadow_protocol: unchanged_V9B_scales_projection_feasibility_and_materiality
+normalization: unchanged_V9B
+no_new_certification_thresholds: true
+descriptive_evidence_only:
+  objective_progress_budget: frozen_material_normalized_local_decrease
+  physical_stationarity_relative_drop_reporting_threshold: 0.01
+  tangential_direction_power_majority: 0.5
+  near_boundary_reporting_fraction: 0.99
+  collapsed_radius_reference: historical_xtol
+no_endpoint_mutation: true
+no_cuda: true
+no_neural_training: true
