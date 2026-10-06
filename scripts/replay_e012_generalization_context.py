@@ -72,9 +72,9 @@ def replay():
             "contract_changed": False,
             "frozen_results_changed": False,
             "purpose": (
-            "Independently replay stored held-out contexts in identical current eval-mode precision and evaluator, "
-            "supplementing frozen historical-record reuse with fresh evidence."
-        ),
+                "Independently replay stored held-out contexts in identical current eval-mode precision and evaluator, "
+                "supplementing frozen historical-record reuse with fresh evidence."
+            ),
             "optimizer_steps": 0,
             "checkpoint_writes": 0,
             "training_launched": False,

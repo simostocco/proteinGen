@@ -1,0 +1,62 @@
+{
+  "all_four_checkpoints_all_three_panels_context_evaluated": true,
+  "checkpoint_writes": 0,
+  "checks": [
+    {
+      "checkpoint": 2000,
+      "identities": 2048,
+      "maximum_absolute_metric_difference": 0.0,
+      "panel": "primary",
+      "parsed_metrics_bitwise_equal": true
+    },
+    {
+      "checkpoint": 2000,
+      "identities": 2048,
+      "maximum_absolute_metric_difference": 0.0,
+      "panel": "independent",
+      "parsed_metrics_bitwise_equal": true
+    },
+    {
+      "checkpoint": 5000,
+      "identities": 2048,
+      "maximum_absolute_metric_difference": 0.0,
+      "panel": "primary",
+      "parsed_metrics_bitwise_equal": true
+    },
+    {
+      "checkpoint": 5000,
+      "identities": 2048,
+      "maximum_absolute_metric_difference": 0.0,
+      "panel": "independent",
+      "parsed_metrics_bitwise_equal": true
+    },
+    {
+      "checkpoint": 10000,
+      "identities": 2048,
+      "maximum_absolute_metric_difference": 0.0,
+      "panel": "primary",
+      "parsed_metrics_bitwise_equal": true
+    },
+    {
+      "checkpoint": 10000,
+      "identities": 2048,
+      "maximum_absolute_metric_difference": 0.0,
+      "panel": "independent",
+      "parsed_metrics_bitwise_equal": true
+    }
+  ],
+  "contract_changed": false,
+  "frozen_results_changed": false,
+  "optimizer_steps": 0,
+  "owners": {
+    "CUDA_used": true,
+    "audited_CPU_only_v7_v8_owners_allowed": true,
+    "driver": "Tue Oct  6 11:17:12 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 610.88                 KMD Version: 610.88        CUDA UMD Version: 13.3     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 5060      WDDM  |   00000000:01:00.0  On |                  N/A |\n|  0%   44C    P8             17W /  145W |     880MiB /   8151MiB |      9%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            3272    C+G   ...4__8wekyb3d8bbwe\\Video.UI.exe      N/A      |\n|    0   N/A  N/A            7864    C+G   ...cord\\app-1.0.9258\\Discord.exe      N/A      |\n|    0   N/A  N/A            8444    C+G   ...eenPal\\v3_JRE19\\ScreenPal.exe      N/A      |\n|    0   N/A  N/A           10108    C+G   ...les\\TeamViewer\\TeamViewer.exe      N/A      |\n|    0   N/A  N/A           10728    C+G   ....0.4234.48\\msedgewebview2.exe      N/A      |\n|    0   N/A  N/A           11908    C+G   C:\\Windows\\explorer.exe               N/A      |\n|    0   N/A  N/A           12076    C+G   ...indows\\System32\\ShellHost.exe      N/A      |\n|    0   N/A  N/A           12236    C+G   ...2txyewy\\CrossDeviceResume.exe      N/A      |\n|    0   N/A  N/A           14092    C+G   ..._cw5n1h2txyewy\\SearchHost.exe      N/A      |\n|    0   N/A  N/A           14116    C+G   ...y\\StartMenuExperienceHost.exe      N/A      |\n|    0   N/A  N/A           15012    C+G   ...SnippingTool\\SnippingTool.exe      N/A      |\n|    0   N/A  N/A           15780    C+G   ...ms\\Microsoft VS Code\\Code.exe      N/A      |\n|    0   N/A  N/A           16744    C+G   ....0.4234.48\\msedgewebview2.exe      N/A      |\n|    0   N/A  N/A           17688    C+G   ....0.4234.48\\msedgewebview2.exe      N/A      |\n|    0   N/A  N/A           17916    C+G   ...SAIR iCUE 4 Software\\iCUE.exe      N/A      |\n|    0   N/A  N/A           18552    C+G   ...Chrome\\Application\\chrome.exe      N/A      |\n|    0   N/A  N/A           21444    C+G   ...5n1h2txyewy\\TextInputHost.exe      N/A      |\n|    0   N/A  N/A           21600    C+G   ...em32\\ApplicationFrameHost.exe      N/A      |\n|    0   N/A  N/A           22332    C+G   ...ntrolPanel\\SystemSettings.exe      N/A      |\n|    0   N/A  N/A           22452    C+G   ...eenPal\\v3_JRE19\\ScreenPal.exe      N/A      |\n|    0   N/A  N/A           23036    C+G   ...Chrome\\Application\\chrome.exe      N/A      |\n|    0   N/A  N/A           23468    C+G   ...xyewy\\ShellExperienceHost.exe      N/A      |\n|    0   N/A  N/A           24880    C+G   ...4__8wekyb3d8bbwe\\ms-teams.exe      N/A      |\n|    0   N/A  N/A           26760    C+G   ...c76g0\\app\\ChatGPT Classic.exe      N/A      |\n|    0   N/A  N/A           28600    C+G   ...1g1gvanyjgm\\WhatsApp.Root.exe      N/A      |\n|    0   N/A  N/A           28712    C+G   ....0.4234.48\\msedgewebview2.exe      N/A      |\n|    0   N/A  N/A           31768    C+G   ...8wekyb3d8bbwe\\M365Copilot.exe      N/A      |\n|    0   N/A  N/A           33840    C+G   ...8bbwe\\PhoneExperienceHost.exe      N/A      |\n|    0   N/A  N/A           34936    C+G   ...yb3d8bbwe\\Notepad\\Notepad.exe      N/A      |\n+-----------------------------------------------------------------------------------------+\n",
+    "precision": "bfloat16",
+    "processes": "1191468 /home/simostocco/miniforge3/envs/proteingen/bin/python -m scripts.replay_e012_generalization_context\n"
+  },
+  "passed": true,
+  "purpose": "Independently replay stored held-out contexts in identical current eval-mode precision and evaluator, supplementing frozen historical-record reuse with fresh evidence.",
+  "seconds": 1777.8898419840261,
+  "training_launched": false
+}

@@ -1,0 +1,46 @@
+{
+  "E011_unchanged": true,
+  "Phase4C_unchanged": true,
+  "Phase4D_concurrent_owner_changes": "CPU-only V7/V8 work independently advanced its own branch; no writes by this audit",
+  "Phase4D_files_written_by_audit": false,
+  "checkpoint_writes": 0,
+  "contract_sha256_unchanged": "b20be3e1e4d04b52a10b85cb5e45c17cb8ab8ce84424ae72e0a6f16dcbdb5fa0",
+  "environment_packages_modified": false,
+  "optimizer_steps": 0,
+  "protected_history_hashes_verified": 75,
+  "protected_worktrees_after": {
+    "/home/simostocco/proteinGen-hybrid-local-global": {
+      "branch": "e010-phase4d-hybrid-local-global",
+      "head": "c0156099973f69461f5dc0d892e94c10441da172",
+      "status": ""
+    },
+    "/home/simostocco/proteinGen-sequence-context": {
+      "branch": "e011-sequence-context-only",
+      "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "status": ""
+    },
+    "/mnt/d/Simone/proteinGen": {
+      "branch": "e010-phase4c-local-auxiliary",
+      "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+      "status": ""
+    }
+  },
+  "protected_worktrees_before": {
+    "/home/simostocco/proteinGen-hybrid-local-global": {
+      "branch": "e010-phase4d-hybrid-local-global",
+      "head": "99c4b2393524059f3dbb757a8f1deee2f7517f57",
+      "status": "?? configs/e010_phase4d_local_feasibility_v8.yaml\n?? scripts/run_e010_local_feasibility_v8.py\n?? src/protein_distance_diffusion/training/e010_local_feasibility_v8.py"
+    },
+    "/home/simostocco/proteinGen-sequence-context": {
+      "branch": "e011-sequence-context-only",
+      "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "status": ""
+    },
+    "/mnt/d/Simone/proteinGen": {
+      "branch": "e010-phase4c-local-auxiliary",
+      "head": "215fb5b3eb127f690b382adae1c1607979169a85",
+      "status": ""
+    }
+  },
+  "scope": "E012 V3 new source and generalization_audit_v1 reports only"
+}
