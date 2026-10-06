@@ -1,0 +1,662 @@
+{
+  "conditions": {
+    "250": {
+      "active_constraints": {
+        "aligned": 0,
+        "bond_assessability": 0,
+        "continuous_chirality": 17,
+        "correction_balls": 1744,
+        "frame_assessability": 1,
+        "signed": 5,
+        "unsigned_assessability": 130
+      },
+      "all_finite": true,
+      "baseline_assessable": 4343,
+      "baseline_correct": 2210,
+      "baseline_inverted": 2133,
+      "convergence": 2,
+      "derivative_uncertainty": {
+        "maximum": 1.947095090715223e-10,
+        "median": 6.024893041065016e-13,
+        "minimum": 1.459998788533312e-13
+      },
+      "examples": 20,
+      "failed_gates": {
+        "complementarity": 2,
+        "derivatives": 1,
+        "dual_feasibility": 5,
+        "no_material_shadow_descent": 13,
+        "stationarity": 18
+      },
+      "final_assessable": 4343,
+      "frame_assessability_preserved": true,
+      "maximum_constraint_residuals": {
+        "aligned": -0.002720775700897793,
+        "continuous_chirality": 9.899936426194245e-10,
+        "strict_extra": -6.902473639803093e-11
+      },
+      "maximum_net_displacement_angstrom": 0.3199901028650004,
+      "maximum_path_length_angstrom": 0.3199901028650018,
+      "maximum_step_correction_angstrom": 0.039998762858125224,
+      "minimum_margins": {
+        "minimum_absolute_q_margin": 1.135372695782959e-08,
+        "minimum_bond_margin": 0.21736810525939057,
+        "minimum_frame_margin": 1.1588760816711578e-06,
+        "minimum_signed_margin": 1.135372695782959e-08
+      },
+      "no_collapse": true,
+      "projected_feasible_gradient": {
+        "maximum": 0.006473646380263863,
+        "median": 0.003473644604476316,
+        "minimum": 8.66532624558801e-07
+      },
+      "runtime_seconds": {
+        "maximum": 3952.196904144017,
+        "median": 670.645727191004,
+        "minimum": 50.17084625712596
+      },
+      "shadow_steps": {
+        "evaluations": 60,
+        "feasible": 30,
+        "feasible_material": 23,
+        "maximum_feasible_normalized_decrease": 0.00016563284130133304
+      },
+      "stationarity_threshold": {
+        "maximum": 3.333333333333333e-05,
+        "median": 1.0385775072702137e-05,
+        "minimum": 6.343614796955512e-06
+      },
+      "temporary_assessability_lost": 0
+    },
+    "450": {
+      "active_constraints": {
+        "aligned": 0,
+        "bond_assessability": 0,
+        "continuous_chirality": 12,
+        "correction_balls": 8672,
+        "frame_assessability": 0,
+        "signed": 18,
+        "unsigned_assessability": 101
+      },
+      "all_finite": true,
+      "baseline_assessable": 4343,
+      "baseline_correct": 2179,
+      "baseline_inverted": 2164,
+      "convergence": 6,
+      "derivative_uncertainty": {
+        "maximum": 2.116589847833694e-11,
+        "median": 7.056971673691237e-13,
+        "minimum": 8.913814131261688e-14
+      },
+      "examples": 20,
+      "failed_gates": {
+        "complementarity": 8,
+        "dual_feasibility": 9,
+        "no_material_shadow_descent": 9,
+        "stationarity": 14
+      },
+      "final_assessable": 4343,
+      "frame_assessability_preserved": true,
+      "maximum_constraint_residuals": {
+        "aligned": -0.004313853775912091,
+        "continuous_chirality": -5.843579731212856e-09,
+        "strict_extra": -7.0281861039542524e-12
+      },
+      "maximum_net_displacement_angstrom": 0.3199947237910232,
+      "maximum_path_length_angstrom": 0.3199947237910278,
+      "maximum_step_correction_angstrom": 0.03999934047474341,
+      "minimum_margins": {
+        "minimum_absolute_q_margin": 3.8638433189862767e-08,
+        "minimum_bond_margin": 0.17186406971624388,
+        "minimum_frame_margin": 1.0106293348278328e-05,
+        "minimum_signed_margin": 3.8638433189862767e-08
+      },
+      "no_collapse": true,
+      "projected_feasible_gradient": {
+        "maximum": 0.009785739692000932,
+        "median": 0.002573845508174616,
+        "minimum": 1.3218543670529594e-06
+      },
+      "runtime_seconds": {
+        "maximum": 3912.456683167955,
+        "median": 671.6206009835005,
+        "minimum": 5.909697586903349
+      },
+      "shadow_steps": {
+        "evaluations": 60,
+        "feasible": 32,
+        "feasible_material": 22,
+        "maximum_feasible_normalized_decrease": 0.00028703213092495794
+      },
+      "stationarity_threshold": {
+        "maximum": 3.333333333333333e-05,
+        "median": 1.0385775072702137e-05,
+        "minimum": 6.343614796955512e-06
+      },
+      "temporary_assessability_lost": 0
+    },
+    "50": {
+      "active_constraints": {
+        "aligned": 0,
+        "bond_assessability": 0,
+        "continuous_chirality": 3,
+        "correction_balls": 5888,
+        "frame_assessability": 1,
+        "signed": 5,
+        "unsigned_assessability": 40
+      },
+      "all_finite": true,
+      "baseline_assessable": 4343,
+      "baseline_correct": 3147,
+      "baseline_inverted": 1196,
+      "convergence": 4,
+      "derivative_uncertainty": {
+        "maximum": 1.0679315209927154e-11,
+        "median": 1.1255203461401317e-12,
+        "minimum": 8.559930542162419e-14
+      },
+      "examples": 20,
+      "failed_gates": {
+        "complementarity": 3,
+        "derivatives": 1,
+        "dual_feasibility": 4,
+        "no_material_shadow_descent": 13,
+        "stationarity": 16
+      },
+      "final_assessable": 4343,
+      "frame_assessability_preserved": true,
+      "maximum_constraint_residuals": {
+        "aligned": -0.03283902044885112,
+        "continuous_chirality": -3.705276663268364e-08,
+        "strict_extra": -1.404936058332193e-11
+      },
+      "maximum_net_displacement_angstrom": 0.3199961319139067,
+      "maximum_path_length_angstrom": 0.3199961319139022,
+      "maximum_step_correction_angstrom": 0.03999951648923778,
+      "minimum_margins": {
+        "minimum_absolute_q_margin": 8.867501394332999e-09,
+        "minimum_bond_margin": 0.7908923778510342,
+        "minimum_frame_margin": 2.7618563820216766e-06,
+        "minimum_signed_margin": 1.0064371966987158e-08
+      },
+      "no_collapse": true,
+      "projected_feasible_gradient": {
+        "maximum": 0.013271144787544886,
+        "median": 0.005993119440628693,
+        "minimum": 1.7480630365075445e-06
+      },
+      "runtime_seconds": {
+        "maximum": 3215.783707662951,
+        "median": 633.1084214965813,
+        "minimum": 40.260109999915585
+      },
+      "shadow_steps": {
+        "evaluations": 60,
+        "feasible": 37,
+        "feasible_material": 27,
+        "maximum_feasible_normalized_decrease": 0.0003489181201270508
+      },
+      "stationarity_threshold": {
+        "maximum": 3.333333333333333e-05,
+        "median": 1.0385775072702137e-05,
+        "minimum": 6.343614796955512e-06
+      },
+      "temporary_assessability_lost": 0
+    }
+  },
+  "follow_on_launched": false,
+  "interpretation": "All examples retained; nonconverged endpoints are descriptive feasible witnesses, not accepted oracle optima.",
+  "length_strata": {
+    "129-256": {
+      "active_constraints": {
+        "aligned": 0,
+        "bond_assessability": 0,
+        "continuous_chirality": 6,
+        "correction_balls": 4136,
+        "frame_assessability": 0,
+        "signed": 3,
+        "unsigned_assessability": 76
+      },
+      "aligned_change_pct": -0.3311147427631389,
+      "all_finite": true,
+      "baseline_assessable": 2115,
+      "baseline_correct": 1236,
+      "baseline_inverted": 879,
+      "chiral_change_pct": -0.34644142607761497,
+      "convergence": 2,
+      "derivative_uncertainty": {
+        "maximum": 2.116589847833694e-11,
+        "median": 2.145552069343637e-12,
+        "minimum": 2.1456003640452082e-13
+      },
+      "examples": 12,
+      "failed_gates": {
+        "complementarity": 2,
+        "dual_feasibility": 4,
+        "no_material_shadow_descent": 7,
+        "stationarity": 10
+      },
+      "final_assessable": 2115,
+      "frame_assessability_preserved": true,
+      "local_gain_pct": 10.65935548529544,
+      "maximum_constraint_residuals": {
+        "aligned": -0.007120883290126723,
+        "continuous_chirality": -1.0216557266851112e-08,
+        "strict_extra": -1.429341246912416e-10
+      },
+      "maximum_net_displacement_angstrom": 0.3199899980226471,
+      "maximum_path_length_angstrom": 0.3199903598276095,
+      "maximum_step_correction_angstrom": 0.03999879793872147,
+      "minimum_margins": {
+        "minimum_absolute_q_margin": 7.782624968131175e-08,
+        "minimum_bond_margin": 0.2508489081689006,
+        "minimum_frame_margin": 3.4834144829589753e-06,
+        "minimum_signed_margin": 7.782624968131175e-08
+      },
+      "no_collapse": true,
+      "offset_gains_pct": {
+        "1": 13.15382317438807,
+        "2": 11.26894368596707,
+        "3": 8.914256443907675
+      },
+      "projected_feasible_gradient": {
+        "maximum": 0.011137207963884559,
+        "median": 0.004575594098506203,
+        "minimum": 2.5646858439957205e-05
+      },
+      "raw_cartesian_change_pct": 0.06056455750500511,
+      "runtime_seconds": {
+        "maximum": 828.6837447260041,
+        "median": 633.1084214965813,
+        "minimum": 470.2059261179529
+      },
+      "shadow_steps": {
+        "evaluations": 36,
+        "feasible": 13,
+        "feasible_material": 12,
+        "maximum_feasible_normalized_decrease": 0.00031097556575754304
+      },
+      "stationarity_threshold": {
+        "maximum": 1.2451456127293806e-05,
+        "median": 1.0385775072702137e-05,
+        "minimum": 9.782319760890369e-06
+      },
+      "temporary_assessability_lost": 0
+    },
+    "20-64": {
+      "active_constraints": {
+        "aligned": 0,
+        "bond_assessability": 0,
+        "continuous_chirality": 9,
+        "correction_balls": 2552,
+        "frame_assessability": 0,
+        "signed": 6,
+        "unsigned_assessability": 9
+      },
+      "aligned_change_pct": -0.41388726228583916,
+      "all_finite": true,
+      "baseline_assessable": 411,
+      "baseline_correct": 260,
+      "baseline_inverted": 151,
+      "chiral_change_pct": -0.38354994298706035,
+      "convergence": 7,
+      "derivative_uncertainty": {
+        "maximum": 7.490917885988324e-12,
+        "median": 1.2734103796928874e-12,
+        "minimum": 2.5198287900707326e-13
+      },
+      "examples": 12,
+      "failed_gates": {
+        "complementarity": 1,
+        "dual_feasibility": 2,
+        "no_material_shadow_descent": 1,
+        "stationarity": 5
+      },
+      "final_assessable": 411,
+      "frame_assessability_preserved": true,
+      "local_gain_pct": 10.085999174040428,
+      "maximum_constraint_residuals": {
+        "aligned": -0.002720775700897793,
+        "continuous_chirality": 9.899936426194245e-10,
+        "strict_extra": -7.0281861039542524e-12
+      },
+      "maximum_net_displacement_angstrom": 0.3199947237910232,
+      "maximum_path_length_angstrom": 0.3199947237910278,
+      "maximum_step_correction_angstrom": 0.03999934047474341,
+      "minimum_margins": {
+        "minimum_absolute_q_margin": 1.135372695782959e-08,
+        "minimum_bond_margin": 0.43899501696358706,
+        "minimum_frame_margin": 0.024924361977811116,
+        "minimum_signed_margin": 1.135372695782959e-08
+      },
+      "no_collapse": true,
+      "offset_gains_pct": {
+        "1": 12.076692318227488,
+        "2": 10.354893887476102,
+        "3": 8.619215378151646
+      },
+      "projected_feasible_gradient": {
+        "maximum": 0.009785739692000932,
+        "median": 1.2091063878703081e-05,
+        "minimum": 8.66532624558801e-07
+      },
+      "raw_cartesian_change_pct": 0.2409126336983647,
+      "runtime_seconds": {
+        "maximum": 356.56947581702843,
+        "median": 138.44470328907482,
+        "minimum": 5.909697586903349
+      },
+      "shadow_steps": {
+        "evaluations": 36,
+        "feasible": 26,
+        "feasible_material": 3,
+        "maximum_feasible_normalized_decrease": 0.00028703213092495794
+      },
+      "stationarity_threshold": {
+        "maximum": 3.333333333333333e-05,
+        "median": 2.5053030135530565e-05,
+        "minimum": 1.8898223650461358e-05
+      },
+      "temporary_assessability_lost": 0
+    },
+    "257-384": {
+      "active_constraints": {
+        "aligned": 0,
+        "bond_assessability": 0,
+        "continuous_chirality": 4,
+        "correction_balls": 2744,
+        "frame_assessability": 1,
+        "signed": 5,
+        "unsigned_assessability": 71
+      },
+      "aligned_change_pct": -0.3552732207219411,
+      "all_finite": true,
+      "baseline_assessable": 3999,
+      "baseline_correct": 2330,
+      "baseline_inverted": 1669,
+      "chiral_change_pct": -0.4066399181314684,
+      "convergence": 0,
+      "derivative_uncertainty": {
+        "maximum": 6.327685819762508e-11,
+        "median": 2.8536562002301483e-13,
+        "minimum": 8.559930542162419e-14
+      },
+      "examples": 12,
+      "failed_gates": {
+        "complementarity": 5,
+        "derivatives": 1,
+        "dual_feasibility": 6,
+        "no_material_shadow_descent": 10,
+        "stationarity": 12
+      },
+      "final_assessable": 3999,
+      "frame_assessability_preserved": true,
+      "local_gain_pct": 10.203414694586066,
+      "maximum_constraint_residuals": {
+        "aligned": -0.007664236810896785,
+        "continuous_chirality": -1.0663336880156749e-08,
+        "strict_extra": -6.902473639803093e-11
+      },
+      "maximum_net_displacement_angstrom": 0.31999301349279075,
+      "maximum_path_length_angstrom": 0.31999301349277715,
+      "maximum_step_correction_angstrom": 0.03999912668659715,
+      "minimum_margins": {
+        "minimum_absolute_q_margin": 8.867501394332999e-09,
+        "minimum_bond_margin": 0.23306697227368386,
+        "minimum_frame_margin": 1.1588760816711578e-06,
+        "minimum_signed_margin": 1.0064371966987158e-08
+      },
+      "no_collapse": true,
+      "offset_gains_pct": {
+        "1": 13.079047632644048,
+        "2": 10.635414223113738,
+        "3": 8.324690132240864
+      },
+      "projected_feasible_gradient": {
+        "maximum": 0.007098333014458051,
+        "median": 0.003231560756894199,
+        "minimum": 0.00019390112118981845
+      },
+      "raw_cartesian_change_pct": 0.03944317213901982,
+      "runtime_seconds": {
+        "maximum": 2749.4799890918657,
+        "median": 941.2808979210677,
+        "minimum": 785.1101586460136
+      },
+      "shadow_steps": {
+        "evaluations": 36,
+        "feasible": 19,
+        "feasible_material": 19,
+        "maximum_feasible_normalized_decrease": 0.0002126193316831504
+      },
+      "stationarity_threshold": {
+        "maximum": 8.192319205190404e-06,
+        "median": 7.789002281011586e-06,
+        "minimum": 7.293249574894727e-06
+      },
+      "temporary_assessability_lost": 0
+    },
+    "385-500": {
+      "active_constraints": {
+        "aligned": 0,
+        "bond_assessability": 0,
+        "continuous_chirality": 5,
+        "correction_balls": 2816,
+        "frame_assessability": 1,
+        "signed": 8,
+        "unsigned_assessability": 74
+      },
+      "aligned_change_pct": -0.315112971345366,
+      "all_finite": true,
+      "baseline_assessable": 5178,
+      "baseline_correct": 2978,
+      "baseline_inverted": 2200,
+      "chiral_change_pct": -0.6834783240441955,
+      "convergence": 0,
+      "derivative_uncertainty": {
+        "maximum": 1.947095090715223e-10,
+        "median": 2.404881849216167e-13,
+        "minimum": 1.268576910185004e-13
+      },
+      "examples": 12,
+      "failed_gates": {
+        "complementarity": 4,
+        "derivatives": 1,
+        "dual_feasibility": 5,
+        "no_material_shadow_descent": 10,
+        "stationarity": 12
+      },
+      "final_assessable": 5178,
+      "frame_assessability_preserved": true,
+      "local_gain_pct": 10.32483021459475,
+      "maximum_constraint_residuals": {
+        "aligned": -0.008212433066818625,
+        "continuous_chirality": -5.843579731212856e-09,
+        "strict_extra": -1.4834118596812345e-11
+      },
+      "maximum_net_displacement_angstrom": 0.3199825282551906,
+      "maximum_path_length_angstrom": 0.3199825283190879,
+      "maximum_step_correction_angstrom": 0.0399978336577653,
+      "minimum_margins": {
+        "minimum_absolute_q_margin": 3.8638433189862767e-08,
+        "minimum_bond_margin": 0.17186406971624388,
+        "minimum_frame_margin": 2.7618563820216766e-06,
+        "minimum_signed_margin": 3.8638433189862767e-08
+      },
+      "no_collapse": true,
+      "offset_gains_pct": {
+        "1": 13.292643927690051,
+        "2": 10.580548467356799,
+        "3": 8.554319530987442
+      },
+      "projected_feasible_gradient": {
+        "maximum": 0.0066745547043776925,
+        "median": 0.00312421702881689,
+        "minimum": 0.0005565182763341132
+      },
+      "raw_cartesian_change_pct": 0.03225195160827532,
+      "runtime_seconds": {
+        "maximum": 3952.196904144017,
+        "median": 1523.5919787334278,
+        "minimum": 1012.5895366021432
+      },
+      "shadow_steps": {
+        "evaluations": 36,
+        "feasible": 25,
+        "feasible_material": 25,
+        "maximum_feasible_normalized_decrease": 0.0002853124893555936
+      },
+      "stationarity_threshold": {
+        "maximum": 7.207499701564472e-06,
+        "median": 6.877004848353942e-06,
+        "minimum": 6.343614796955512e-06
+      },
+      "temporary_assessability_lost": 0
+    },
+    "65-128": {
+      "active_constraints": {
+        "aligned": 0,
+        "bond_assessability": 0,
+        "continuous_chirality": 8,
+        "correction_balls": 4056,
+        "frame_assessability": 0,
+        "signed": 6,
+        "unsigned_assessability": 41
+      },
+      "aligned_change_pct": -0.4457815473923543,
+      "all_finite": true,
+      "baseline_assessable": 1326,
+      "baseline_correct": 732,
+      "baseline_inverted": 594,
+      "chiral_change_pct": -1.0967052569413882,
+      "convergence": 3,
+      "derivative_uncertainty": {
+        "maximum": 9.024559580531056e-12,
+        "median": 1.1125050880522736e-12,
+        "minimum": 8.913814131261688e-14
+      },
+      "examples": 12,
+      "failed_gates": {
+        "complementarity": 1,
+        "dual_feasibility": 1,
+        "no_material_shadow_descent": 7,
+        "stationarity": 9
+      },
+      "final_assessable": 1326,
+      "frame_assessability_preserved": true,
+      "local_gain_pct": 9.852993047834069,
+      "maximum_constraint_residuals": {
+        "aligned": -0.007866912203636445,
+        "continuous_chirality": -2.1234049962792767e-08,
+        "strict_extra": -1.404936058332193e-11
+      },
+      "maximum_net_displacement_angstrom": 0.3199961319139067,
+      "maximum_path_length_angstrom": 0.3199961319139022,
+      "maximum_step_correction_angstrom": 0.03999951648923778,
+      "minimum_margins": {
+        "minimum_absolute_q_margin": 9.288423484219192e-09,
+        "minimum_bond_margin": 0.1953574631884113,
+        "minimum_frame_margin": 1.688510077468684e-05,
+        "minimum_signed_margin": 3.1961538947337e-08
+      },
+      "no_collapse": true,
+      "offset_gains_pct": {
+        "1": 12.188480948126513,
+        "2": 10.403508465673228,
+        "3": 8.288858567447221
+      },
+      "projected_feasible_gradient": {
+        "maximum": 0.013271144787544886,
+        "median": 0.0047222854102015165,
+        "minimum": 2.213226485813311e-06
+      },
+      "raw_cartesian_change_pct": -0.14050561872659406,
+      "runtime_seconds": {
+        "maximum": 517.1659478030633,
+        "median": 443.7103417215403,
+        "minimum": 200.55431620310992
+      },
+      "shadow_steps": {
+        "evaluations": 36,
+        "feasible": 16,
+        "feasible_material": 13,
+        "maximum_feasible_normalized_decrease": 0.0003489181201270508
+      },
+      "stationarity_threshold": {
+        "maximum": 1.3608276348795433e-05,
+        "median": 1.339389967700981e-05,
+        "minimum": 1.3187609467915739e-05
+      },
+      "temporary_assessability_lost": 0
+    }
+  },
+  "overall": {
+    "active_constraints": {
+      "aligned": 0,
+      "bond_assessability": 0,
+      "continuous_chirality": 32,
+      "correction_balls": 16304,
+      "frame_assessability": 2,
+      "signed": 28,
+      "unsigned_assessability": 271
+    },
+    "all_finite": true,
+    "baseline_assessable": 13029,
+    "baseline_correct": 7536,
+    "baseline_inverted": 5493,
+    "convergence": 12,
+    "derivative_uncertainty": {
+      "maximum": 1.947095090715223e-10,
+      "median": 1.0750272894100022e-12,
+      "minimum": 8.559930542162419e-14
+    },
+    "examples": 60,
+    "failed_gates": {
+      "complementarity": 13,
+      "derivatives": 2,
+      "dual_feasibility": 18,
+      "no_material_shadow_descent": 35,
+      "stationarity": 48
+    },
+    "final_assessable": 13029,
+    "frame_assessability_preserved": true,
+    "maximum_constraint_residuals": {
+      "aligned": -0.002720775700897793,
+      "continuous_chirality": 9.899936426194245e-10,
+      "strict_extra": -7.0281861039542524e-12
+    },
+    "maximum_net_displacement_angstrom": 0.3199961319139067,
+    "maximum_path_length_angstrom": 0.3199961319139022,
+    "maximum_step_correction_angstrom": 0.03999951648923778,
+    "minimum_margins": {
+      "minimum_absolute_q_margin": 8.867501394332999e-09,
+      "minimum_bond_margin": 0.17186406971624388,
+      "minimum_frame_margin": 1.1588760816711578e-06,
+      "minimum_signed_margin": 1.0064371966987158e-08
+    },
+    "no_collapse": true,
+    "projected_feasible_gradient": {
+      "maximum": 0.013271144787544886,
+      "median": 0.0032263126963779807,
+      "minimum": 8.66532624558801e-07
+    },
+    "runtime_seconds": {
+      "maximum": 3952.196904144017,
+      "median": 633.1084214965813,
+      "minimum": 5.909697586903349
+    },
+    "shadow_steps": {
+      "evaluations": 180,
+      "feasible": 99,
+      "feasible_material": 72,
+      "maximum_feasible_normalized_decrease": 0.0003489181201270508
+    },
+    "stationarity_threshold": {
+      "maximum": 3.333333333333333e-05,
+      "median": 1.0385775072702137e-05,
+      "minimum": 6.343614796955512e-06
+    },
+    "temporary_assessability_lost": 0
+  },
+  "scientific_settings_changed": false
+}
