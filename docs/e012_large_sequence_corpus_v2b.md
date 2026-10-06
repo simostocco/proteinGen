@@ -128,3 +128,18 @@ python scripts/prepare_e012_sequence_corpus_v2b.py handoff
 
 Only code, configs, official small metadata, protocol, hashes and summaries enter Git.
 All large artifacts and MMseqs temp data stay under the D-disk versioned root.
+
+Native I/O adapter: scripts/run_e012_v2b_native.py uses the existing Windows
+Python 3.12.1 / SQLite 3.43.1 runtime for native NTFS reads and writes. No
+dependencies are installed or upgraded. The scientific stage implementation is
+unchanged. JSON paths are translated on read and canonically recorded as Linux
+paths on write, preserving prior Linux checkpoints. Linux MMseqs 15 and GNU time
+are invoked through wsl.exe with explicit argv and the same policy/commands.
+Certified derived-directory cleanup runs through Linux to handle MMseqs POSIX
+symlinks; existing cleanup guards and certificates apply. Windows parent peak RAM
+is PeakWorkingSetSize; external command peaks remain Linux GNU time measurements.
+Record exact native package versions and adapter hash in native_environment.json.
+All 16 integrity tests pass in both environments. Native Parquet output byte
+reproducibility is tied to recorded PyArrow 21.0.0 and adapter/script hashes.
+Read-only benchmark, 1000 indexed lookups: WSL 86.907s, native NTFS 0.047s.
+Full source sequences remain streamed; only bounded SQLite caches reside in RAM.

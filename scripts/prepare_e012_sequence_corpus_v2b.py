@@ -888,7 +888,7 @@ class Build:
         outputs=[fasta,ids,audit,sample,out/'summary.json']+sorted(shardroot.glob('*.parquet'))+sorted(manifest.glob('*.parquet'))
         with (out/'SHA256SUMS').open('w') as f:
             for p in outputs:
-                f.write(f'{digest(p)}  {p.relative_to(self.root)}\n')
+                f.write(f'{digest(p)}  {p.relative_to(self.root).as_posix()}\n')
         outputs.append(out/'SHA256SUMS')
         save(self.report/'final_manifest_summary.json',summary)
         self.complete('final',inputs,outputs,statistics=summary)
