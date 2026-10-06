@@ -153,3 +153,27 @@ def test_teacher_forcing_padding_is_shared():
     assert set(inputs) == {"input_ids", "target_ids", "lengths", "attention_mask"}
     assert not inputs["attention_mask"][0, 20:].any()
     assert torch.equal(inputs["input_ids"][1, 1:50], inputs["target_ids"][1, :49])
+
+
+@pytest.mark.parametrize("version", [7, 8])
+@pytest.mark.parametrize("mode", ["run", "reproduce"])
+def test_gpu_guard_only_allows_audited_cpu_owners(tmp_path, monkeypatch, version, mode):
+    from types import SimpleNamespace
+
+    fake_root = tmp_path / "sequence"
+    config = tmp_path / f"proteinGen-hybrid-local-global/configs/e010_phase4d_local_feasibility_v{version}.yaml"
+    config.parent.mkdir(parents=True)
+    config.write_text("device: cpu\nno_cuda: true\n")
+    monkeypatch.setattr(audit, "ROOT", fake_root)
+
+    def fake_run(command, **kwargs):
+        text = f"123 python scripts/run_e010_local_feasibility_v{version}.py {mode}" if command[0] == "ps" else "idle"
+        return SimpleNamespace(stdout=text)
+
+    monkeypatch.setattr(audit.subprocess, "run", fake_run)
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(torch.cuda, "is_bf16_supported", lambda: True)
+    assert audit.gpu_check()["CUDA_used"]
+    config.write_text("device: cuda\nno_cuda: false\n")
+    with pytest.raises(AssertionError):
+        audit.gpu_check()

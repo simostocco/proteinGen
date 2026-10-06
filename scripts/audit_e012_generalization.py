@@ -178,8 +178,11 @@ def gpu_check():
         ["ps", "-C", "python", "-C", "python3", "-o", "pid=,args="], capture_output=True, text=True
     ).stdout
     for line in commands.splitlines():
-        if "run_e010_local_feasibility_v7.py run" in line:
-            config = ROOT.parent / "proteinGen-hybrid-local-global/configs/e010_phase4d_local_feasibility_v7.yaml"
+        if any(f"run_e010_local_feasibility_v{v}.py {mode}" in line for v in [7, 8] for mode in ["run", "reproduce"]):
+            version = 8 if "local_feasibility_v8.py" in line else 7
+            config = (
+                ROOT.parent / f"proteinGen-hybrid-local-global/configs/e010_phase4d_local_feasibility_v{version}.yaml"
+            )
             assert "device: cpu" in config.read_text() and "no_cuda: true" in config.read_text()
         elif any(name in line for name in ["run_e010_", "run_e011_", "run_e012_", "train_sequence", "train_diffusion"]):
             raise RuntimeError(f"Other research execution requires GPU ownership review: {line}")
@@ -190,7 +193,7 @@ def gpu_check():
         "driver": driver,
         "CUDA_used": True,
         "precision": "bfloat16",
-        "CPU_only_v7_owner_allowed": True,
+        "audited_CPU_only_v7_v8_owners_allowed": True,
     }
 
 
