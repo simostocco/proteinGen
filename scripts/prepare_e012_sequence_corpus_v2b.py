@@ -107,7 +107,7 @@ def connection(path):
     db = sqlite3.connect(path)
     db.execute('PRAGMA journal_mode=DELETE')
     db.execute('PRAGMA synchronous=FULL')
-    db.execute('PRAGMA cache_size=-131072')
+    db.execute('PRAGMA cache_size=-524288')  # At most 512 MiB, allocated on demand.
     db.execute('PRAGMA temp_store=MEMORY')
     return db
 
@@ -320,6 +320,7 @@ class Build:
         seen = connection(seen_path)
         db = connection(self.reservoir)
         db.execute('ATTACH DATABASE ? AS seen',(str(seen_path),))
+        db.execute('PRAGMA seen.cache_size=-2097152')  # Compact hash/offset index only: 2 GiB.
         seen.close()
         db.execute('CREATE TABLE IF NOT EXISTS seen.hashes(h BLOB, off INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
         db.execute('CREATE TABLE IF NOT EXISTS candidates(h BLOB, off INTEGER, p BLOB, seq TEXT, source_id TEXT, multiplicity INTEGER, historical INTEGER, external INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
@@ -526,6 +527,7 @@ class Build:
                 elif line.strip():
                     protected_sequences[line.strip()]=sid
         db.execute('ATTACH DATABASE ? AS excluded',(str(exclusions),))
+        db.execute('PRAGMA excluded.cache_size=-65536')
         if independent:
             where='WHERE NOT EXISTS(SELECT 1 FROM excluded.removed e WHERE e.h=c.h AND e.off=c.off)'
             n=db.execute('SELECT count(*) FROM candidates c '+where).fetchone()[0]

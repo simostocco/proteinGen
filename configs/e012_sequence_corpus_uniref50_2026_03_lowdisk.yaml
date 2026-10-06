@@ -16,6 +16,9 @@ protected_cov_mode: 0
 protected_sensitivity: 7.5
 screen_batch_size: 100000
 threads: 8
+sqlite_main_cache_mib: 512
+sqlite_exact_hash_index_cache_mib: 2048
+sqlite_exclusions_cache_mib: 64
 shards: 512
 shard_format: parquet_zstd
 disk_max_fraction_of_starting_free: 0.70

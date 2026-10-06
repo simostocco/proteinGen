@@ -24,8 +24,11 @@ the small protected set, sequentially. Reuse a hash-certified 1.01 GB protected-
 index; its 2 GB allowance is included in the 8 GB search-stage budget. A measured
 10k historical search pilot projects 3.32 GB for 100k batches with 4x disk slack. Runtime floor is 30% of starting free
 capacity. Free-space monitoring every 10s, with checks at transaction boundaries
-and during subprocesses, stops before that reserve is breached. Report sampled
-filesystem consumption separately from planned peak; unrelated D: writes may
+and during subprocesses, stops before that reserve is breached.
+SQLite caches are bounded at 512 MiB per main connection, 2 GiB for the compact
+hash/offset index and 64 MiB for exclusions, allocated only on demand. Full external
+sequences are never held as an in-memory corpus. These caps fit inspected available RAM.
+Report sampled filesystem consumption separately from planned peak; unrelated D: writes may
 affect free-space measurements. Use at most eight CPU threads and no GPU.
 
 Protected scope: DATA-E explicitly left membership unbuilt. V2B resolves that

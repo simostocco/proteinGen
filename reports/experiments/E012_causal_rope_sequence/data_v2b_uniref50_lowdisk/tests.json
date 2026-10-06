@@ -1,0 +1,24 @@
+{
+  "suite": "tests/test_e012_data_v2b.py",
+  "tests_run": 14,
+  "passed": 14,
+  "training_launched": false,
+  "includes": [
+    "raw checksum corruption",
+    "FASTA normalization and malformed records",
+    "canonical alphabet and lengths",
+    "forced sequence-hash collisions",
+    "reservoir priority selection",
+    "historical unique union",
+    "filter transaction recovery",
+    "post-union recovery",
+    "protected exact overlap",
+    "real MMseqs bidirectional coverage",
+    "independent search",
+    "persistent-index parity",
+    "shard append recovery",
+    "FASTA/manifest/shard/count/index parity",
+    "tokenizer and causal BOS shift",
+    "cleanup protection"
+  ]
+}
