@@ -17,6 +17,7 @@ import math
 import os
 from pathlib import Path
 import resource
+import re
 import shutil
 import sqlite3
 import subprocess
@@ -262,10 +263,13 @@ class Build:
 
     def run(self, command, log):
         self.guard()
+        started=time.monotonic()
+        rss_file=Path(log).with_suffix('.rss.txt')
+        measured_command=['/usr/bin/time','-v','-o',str(rss_file)]+list(map(str,command))
         with Path(log).open('a') as handle:
             handle.write(json.dumps({'timestamp':now(),'command':list(map(str,command))})+'\n')
             handle.flush()
-            p = subprocess.Popen(list(map(str,command)),stdout=handle,stderr=subprocess.STDOUT)
+            p = subprocess.Popen(measured_command,stdout=handle,stderr=subprocess.STDOUT)
             while p.poll() is None:
                 try:
                     self.guard()
@@ -276,6 +280,11 @@ class Build:
                 time.sleep(1)
             if p.returncode:
                 raise RuntimeError(f'Command failed ({p.returncode}); see {log}')
+        measured=re.search(r'Maximum resident set size \(kbytes\):\s*(\d+)',rss_file.read_text())
+        if not measured:
+            raise RuntimeError('Per-command resource measurement missing')
+        self.last_command_metrics={'wall_seconds':time.monotonic()-started,
+            'maxrss_kib':int(measured.group(1)),'method':'GNU time -v for this command and its children'}
 
     def verify_raw(self):
         inputs = {'release':'2026_03','expected_bytes':RAW_BYTES,'expected_md5':RAW_MD5}
@@ -1005,7 +1014,8 @@ class Build:
                     disk=sum(p.stat().st_size for p in work.rglob('*') if p.is_file())
                     pilot_stats={'sample_sha256':inputs['sample_sha256'],'pilot_n':10_000,
                         'wall_seconds':seconds,'measured_retained_disk_bytes':disk,
-                        'children_peak_rss_kib':resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss,
+                        'children_peak_rss_kib':self.last_command_metrics['maxrss_kib'],
+                        'rss_measurement_method':self.last_command_metrics['method'],
                         'command':list(map(str,command)),'pilot_cluster_tsv_sha256':digest(work/'pilot_cluster.tsv')}
                     save(cert,pilot_stats)
                 # Predeclared conservative linear extrapolation with 4x slack.
