@@ -21,6 +21,9 @@ sqlite_filter_cache_mib: 5120
 sqlite_candidate_layout: append_rows_with_compact_indexes
 sqlite_filter_journal_mode: WAL
 sqlite_filter_synchronous: FULL
+sqlite_assignment_cache_mib: 3072
+sqlite_assignment_lookup_cache_mib: 2048
+sqlite_external_sort_budget_bytes: 32000000000
 sqlite_exclusions_cache_mib: 64
 shards: 512
 shard_format: parquet_zstd

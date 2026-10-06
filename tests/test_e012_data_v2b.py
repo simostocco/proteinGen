@@ -14,6 +14,44 @@ m=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(m)
 
 class V2BTests(unittest.TestCase):
+    def test_sorted_cursor_preserves_empty_shard_boundaries(self):
+        db=sqlite3.connect(':memory:')
+        rows=m.ShardRows(db.execute("SELECT 'a',0 UNION ALL SELECT 'b',0 UNION ALL SELECT 'c',2"))
+        self.assertEqual(list(rows.shard(0)),[('a',),('b',)])
+        self.assertIsNone(rows.shard(1).fetchone())
+        self.assertEqual(list(rows.shard(2)),[('c',)])
+        self.assertIsNone(rows.shard(3).fetchone())
+        db.close()
+
+    def test_independent_screen_uses_priority_prefix_despite_append_order(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            b,records=self.fixture(root,cap=20)
+            with patch.object(m,'RAW_COUNT',len(records)),patch.object(m,'HISTORICAL_UNIQUE',3):
+                b.filter_reservoir()
+            db=sqlite3.connect(b.reservoir)
+            physical=db.execute('SELECT seq FROM candidates ORDER BY rowid').fetchall()
+            ranked=db.execute('SELECT seq FROM candidates ORDER BY p,h,off').fetchall()
+            for k in range(1,len(ranked)):
+                outside=set(physical[:k])-set(ranked[:k])
+                if outside:
+                    break
+            self.assertTrue(outside)
+            b.target=k
+            b.protected.write_text('>heldout_outside_selected_prefix\n'+next(iter(outside))[0]+'\n')
+            ex=sqlite3.connect(root/'manifests/exclusions.sqlite')
+            ex.execute('CREATE TABLE removed(h BLOB,off INTEGER,protected TEXT,identity REAL,PRIMARY KEY(h,off)) WITHOUT ROWID')
+            ex.commit()
+            ex.close()
+            db.close()
+            def empty_search(command,log):
+                Path(command[4]).write_text('')
+            with patch.object(b,'run',empty_search):
+                b.screen(True)
+            stats=json.loads((root/'stats/verify_protected.json').read_text())
+            self.assertEqual(stats['candidates_screened'],k)
+            self.assertTrue(stats['zero_detected_violations'])
+
     def test_parser_whitespace_uppercase_malformed_and_rejections(self):
         records=list(m.fasta_records(io.BytesIO(b'orphan\n>UniRef50_ok description\nacde fghik\tlmnpqrstvwy\n>\nAAAA\n>UniRef50_bad\nACDEFGHIKLMNPQRSTVWYX\n')))
         self.assertEqual(len(records),4)

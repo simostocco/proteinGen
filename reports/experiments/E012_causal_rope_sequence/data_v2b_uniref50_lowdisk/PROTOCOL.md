@@ -13,11 +13,11 @@ replace only this task's sequential transfer and preserve its verified byte pref
 Validate exact HTTP Content-Range responses and complete segment byte counts/hashes,
 then assemble and verify the full official MD5. Keep chunk inputs until the verified
 raw-source completion marker, then record their reproducible cleanup. Range assembly
-peak allowance is 18,561,104,766 bytes; the overall planned peak stays 79.78 GB.
+peak allowance is 18,561,104,766 bytes; the overall revised planned peak is 102.78 GB.
 Keep compressed raw source. Verify bytes, MD5, SHA256 before any preprocessing;
 full gzip CRC/end-of-stream verified by mandatory complete streaming filter pass.
 
-Resource plan: resource_plan.json, peak 79,780,552,383 bytes, below 70% of
+Resource plan: resource_plan.json, peak 102,780,552,383 bytes, below 70% of
 189,611,429,888 initially free bytes (132,728,000,921). No complete decompression,
 full filtered FASTA, or full corpus clustering. Screen batches of 100,000 against
 the small protected set, sequentially. Reuse a hash-certified 1.01 GB protected-target
@@ -139,7 +139,15 @@ Certified derived-directory cleanup runs through Linux to handle MMseqs POSIX
 symlinks; existing cleanup guards and certificates apply. Windows parent peak RAM
 is PeakWorkingSetSize; external command peaks remain Linux GNU time measurements.
 Record exact native package versions and adapter hash in native_environment.json.
-All 16 integrity tests pass in both environments. Native Parquet output byte
+Integrity tests cover both runtimes. Native Parquet output byte
 reproducibility is tied to recorded PyArrow 21.0.0 and adapter/script hashes.
 Read-only benchmark, 1000 indexed lookups: WSL 86.907s, native NTFS 0.047s.
+These measurements were affected by cache warmth and are not a controlled speedup.
+Cold random reads are expensive; sequential scans and bounded D: external sorting
+avoid random full-sequence retrieval during screening, finalization and certification.
+Priority indexes cover length so residue-balanced assignment does not fetch sequences.
+The selected priority prefix is unchanged. Sorting reserves at most 32GB using
+2.5*(selected residues + 160*selected N), checked before execution. No MMseqs
+batch temp coexists with final sorting. Sort files are transient under D:/tmp and
+are removed on SQLite close; certified residual-folder cleanup is recorded.
 Full source sequences remain streamed; only bounded SQLite caches reside in RAM.

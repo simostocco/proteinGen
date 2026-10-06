@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack, closing
 from datetime import datetime, timezone
 import gzip
 import hashlib
@@ -152,6 +152,37 @@ class Stats:
                 'aa_counts':{a:self.aa[a] for a in AA},
                 'aa_frequencies':{a:self.aa[a]/self.residues if self.residues else 0 for a in AA}}
 
+class ShardRows:
+    """Consume one globally sorted scan without losing a row at shard boundaries."""
+    def __init__(self, cursor):
+        self.cursor=cursor
+        self.pending=None
+
+    def close(self):
+        if self.cursor is not None:
+            try:
+                self.cursor.close()
+            except sqlite3.ProgrammingError:
+                pass  # Connection already closed on normal publication path.
+            self.cursor=None
+        self.pending=None
+
+    def shard(self, number):
+        parent=self
+        class Cursor:
+            def fetchone(self):
+                if parent.pending is None:
+                    parent.pending=parent.cursor.fetchone()
+                if parent.pending is None or parent.pending[-1]!=number:
+                    return None
+                row=parent.pending[:-1]
+                parent.pending=None
+                return row
+            def __iter__(self):
+                while (row:=self.fetchone()) is not None:
+                    yield row
+        return Cursor()
+
 class Build:
     def __init__(self, root=DEFAULT_ROOT, repo=REPO, cap=24_000_000, target=20_000_000):
         self.root, self.repo = Path(root), Path(repo)
@@ -171,6 +202,30 @@ class Build:
         self.min_free = min(self.min_free, free)
         if free < self.floor or self.low_space:
             raise RuntimeError('DATA2-E: runtime disk reserve breached; stage not completed')
+
+    def sorted_shard_rows(self, db, columns, first_shard, n, residues):
+        """Scan sequences sequentially and sort on D:, rather than random HDD reads."""
+        estimated_sort_bytes=math.ceil(2.5*(residues+n*160))
+        if estimated_sort_bytes>32_000_000_000 or estimated_sort_bytes>shutil.disk_usage(self.root).free-self.floor:
+            raise RuntimeError('DATA2-E: bounded sequential shard-sort preflight failed')
+        folder=self.root/'tmp/sqlite_sort'
+        folder.mkdir(exist_ok=True)
+        db.execute('PRAGMA temp_store=FILE')
+        escaped=str(folder).replace("'","''")
+        db.execute("PRAGMA temp_store_directory='"+escaped+"'")
+        db.execute('PRAGMA assignments.cache_size=-2097152')
+        db.set_progress_handler(lambda:int(self.low_space),100_000)
+        save(self.root/'stats/shard_sort_preflight.json',{'sequences':n,'residues':residues,
+            'estimated_temporary_bytes':estimated_sort_bytes,'budget_bytes':32_000_000_000,
+            'temporary_root':str(folder),'query':'candidate append scan; indexed assignment lookup; external shard/row sort'})
+        try:
+            cursor=db.execute('SELECT '+columns+',a.shard FROM candidates c NOT INDEXED CROSS JOIN assignments.assignment a '
+                'WHERE a.h=c.h AND a.off=c.off AND a.shard>=? ORDER BY a.shard,a.row',(first_shard,))
+        except sqlite3.Error:
+            if self.low_space:
+                raise RuntimeError('DATA2-E: disk reserve breached during shard sort')
+            raise
+        return ShardRows(cursor)
 
     def telemetry(self, stage, before, start):
         data = {'stage':stage,'start':start['timestamp'],'end':now(),
@@ -355,7 +410,7 @@ class Build:
                         db.execute('INSERT INTO candidates_append SELECT * FROM candidates')
                         db.execute('DROP TABLE candidates')
                         db.execute('ALTER TABLE candidates_append RENAME TO candidates')
-                        db.execute('CREATE INDEX priority_index ON candidates(p,h,off)')
+                        db.execute('CREATE INDEX priority_index ON candidates(p,h,off,length(seq))')
                         db.commit()
                     except BaseException:
                         db.rollback()
@@ -364,7 +419,12 @@ class Build:
                         db.execute('PRAGMA temp_store=DEFAULT')
                     self.guard()
             db.execute('CREATE TABLE IF NOT EXISTS candidates(h BLOB NOT NULL, off INTEGER NOT NULL, p BLOB, seq TEXT, source_id TEXT, multiplicity INTEGER, historical INTEGER, external INTEGER, PRIMARY KEY(h,off))')
-            db.execute('CREATE INDEX IF NOT EXISTS priority_index ON candidates(p,h,off)')
+            index=db.execute("SELECT sql FROM sqlite_master WHERE name='priority_index'").fetchone()
+            if index and 'length(seq)' not in index[0]:
+                with db:
+                    db.execute('DROP INDEX priority_index')
+                    db.execute('CREATE INDEX priority_index ON candidates(p,h,off,length(seq))')
+            db.execute('CREATE INDEX IF NOT EXISTS priority_index ON candidates(p,h,off,length(seq))')
             db.execute('CREATE TABLE IF NOT EXISTS progress(k TEXT PRIMARY KEY, v TEXT)')
             row = db.execute("SELECT v FROM progress WHERE k='checkpoint'").fetchone()
             state = json.loads(row[0]) if row else {'offset':0,'raw':0,'length_valid':0,'canonical':0,
@@ -553,7 +613,7 @@ class Build:
         reservoir_marker=json.loads(self.marker('reservoir').read_text())
         inputs={'reservoir_sha256':reservoir_marker['outputs'][str(self.reservoir)],
             'protected_sha256':digest(self.protected),'policy':{'identity':.30,'coverage':.80,'cov_mode':0,'sensitivity':7.5},
-            'verification':independent}
+            'verification':independent,'batch_order':'append-table scan; independent hash-priority cutoff'}
         name='verify_protected' if independent else 'screen'
         if self.completed(name,inputs):
             return
@@ -582,7 +642,15 @@ class Build:
             where=''
             n=db.execute('SELECT count(*) FROM candidates').fetchone()[0]
             limit=n
-        cursor=db.execute('SELECT c.h,c.off,c.seq,c.historical,c.external FROM candidates c '+where+' ORDER BY c.p,c.h,c.off LIMIT ?', (limit,))
+        parameters=[]
+        if independent and limit:
+            boundary=db.execute('SELECT c.p,c.h,c.off FROM candidates c '+where+' ORDER BY c.p,c.h,c.off LIMIT 1 OFFSET ?', (limit-1,)).fetchone()
+            where+=' AND (c.p,c.h,c.off)<=(?,?,?)'
+            parameters.extend(boundary)
+        parameters.append(limit)
+        # Sequential row order avoids random full-sequence reads on HDD storage.
+        # Selection remains exactly the same frozen priority prefix.
+        cursor=db.execute('SELECT c.h,c.off,c.seq,c.historical,c.external FROM candidates c '+where+' ORDER BY c.rowid LIMIT ?', parameters)
         matches_total=0
         with self.stage(name):
             batch_number=0
@@ -698,200 +766,210 @@ class Build:
         if n<MIN_FINAL:
             save(self.report/'status.json',{'classification':'DATA2-C','clean_pool':pool,'training':False})
             raise RuntimeError('DATA2-C: clean pool below 10M; no other database allowed')
-        db=connection(self.reservoir)
-        db.execute('ATTACH DATABASE ? AS excluded',(str(self.root/'manifests/exclusions.sqlite'),))
-        assignment_path=self.root/'tmp/shard_assignments.sqlite'
-        assignments=connection(assignment_path)
-        assignments.execute('CREATE TABLE IF NOT EXISTS assignment(idx INTEGER PRIMARY KEY,h BLOB,off INTEGER,shard INTEGER,row INTEGER)')
-        assignments.execute('CREATE INDEX IF NOT EXISTS shard_rows ON assignment(shard,row)')
-        assignments.execute('CREATE UNIQUE INDEX IF NOT EXISTS assignment_unique ON assignment(h,off)')
-        assignments.execute('CREATE TABLE IF NOT EXISTS progress(k TEXT PRIMARY KEY,v TEXT)')
-        prev=assignments.execute("SELECT v FROM progress WHERE k='state'").fetchone()
-        ast=json.loads(prev[0]) if prev else {'inputs':inputs,'count':0,'last':None,'counts':[0]*SHARD_COUNT,'residues':[0]*SHARD_COUNT,'complete':False}
-        if ast['inputs']!=inputs:
-            raise RuntimeError('assignment checkpoint inputs changed')
-        with self.stage('residue_balanced_assignment'):
-            if not ast['complete']:
-                boundary=''
-                params=[]
-                if ast['last']:
-                    boundary='AND (c.p,c.h,c.off)>(?,?,?)'
-                    params=[bytes.fromhex(ast['last'][0]),bytes.fromhex(ast['last'][1]),ast['last'][2]]
-                params.append(n-ast['count'])
-                cursor=db.execute('SELECT c.h,c.off,c.p,length(c.seq) FROM candidates c WHERE NOT EXISTS(SELECT 1 FROM excluded.removed e WHERE e.h=c.h AND e.off=c.off) '+boundary+' ORDER BY c.p,c.h,c.off LIMIT ?',params)
-                heap=[(load,i) for i,load in enumerate(ast['residues'])]
-                heapq.heapify(heap)
-                for h,off,p,length in cursor:
-                    load,shard=heapq.heappop(heap)
-                    assignments.execute('INSERT INTO assignment VALUES(?,?,?,?,?)',(ast['count'],h,off,shard,ast['counts'][shard]))
-                    ast['count']+=1
-                    ast['counts'][shard]+=1
-                    ast['residues'][shard]+=length
-                    heapq.heappush(heap,(ast['residues'][shard],shard))
-                    ast['last']=[p.hex(),h.hex(),off]
-                    if ast['count']%100_000==0:
-                        assignments.execute("INSERT OR REPLACE INTO progress VALUES('state',?)",(json.dumps(ast),))
-                        assignments.commit()
-                        self.guard()
-                        print(json.dumps({'stage':'assignment','n':ast['count']}),flush=True)
-                assert ast['count']==n
-                ast['complete']=True
-                assignments.execute("INSERT OR REPLACE INTO progress VALUES('state',?)",(json.dumps(ast),))
-                assignments.commit()
-        assignments.close()
-        db.execute('ATTACH DATABASE ? AS assignments',(str(assignment_path),))
-        out=self.root/'corpus'
-        shardroot=out/'shards'
-        manifest=out/'manifest'
-        shardroot.mkdir(exist_ok=True)
-        manifest.mkdir(exist_ok=True)
-        schema=pa.schema([('sample_id',pa.string()),('sequence',pa.string()),('length',pa.int16())])
-        mschema=pa.schema([('index',pa.int64()),('selection_rank',pa.int64()),('sample_id',pa.string()),('sequence_sha256',pa.binary(32)),
-            ('priority',pa.binary(32)),('uniref_id',pa.string()),('source_offset',pa.int64()),
-            ('source_historical_e012',pa.bool_()),('source_uniref50_2026_03',pa.bool_()),
-            ('multiplicity',pa.int32()),('length',pa.int16()),('shard',pa.int16()),('shard_row',pa.int32())])
-        fasta=out/f'e012_uniref50_2026_03_{n}.fasta.gz'
-        ids=out/'ids.txt.gz'
-        sample=self.root/'clusters/diversity_sample_1000000.fasta'
-        fstate=self.root/'tmp/final_checkpoint.json'
-        state=json.loads(fstate.read_text()) if fstate.exists() else {'inputs':inputs,'next_shard':0,'count':0,
-            'fasta_bytes':0,'ids_bytes':0,'sample_bytes':0,'stats':Stats().checkpoint(),
-            'composition':{},'shards':[],'sample_n':0,'audit_n':0}
-        if state['inputs']!=inputs:
-            raise RuntimeError('final checkpoint input mismatch')
-        for path,key in [(fasta,'fasta_bytes'),(ids,'ids_bytes'),(sample,'sample_bytes')]:
-            path.parent.mkdir(exist_ok=True,parents=True)
-            if not path.exists():
-                if state[key]:
-                    raise RuntimeError('missing completed final checkpoint output')
-                path.touch()
-            with path.open('r+b') as f:
-                if path.stat().st_size<state[key]:
-                    raise RuntimeError('truncated completed final checkpoint output')
-                f.truncate(state[key])  # Discard only uncertified tail from interrupted append.
-        def in_sample(index,size):
-            j=(index*size+n-1)//n
-            return j<size and (j*n)//size==index
-        stats=Stats(state['stats'])
-        composition=Counter(state['composition'])
-        with self.stage('finalization'):
-            for shard in range(state['next_shard'],SHARD_COUNT):
-                folder=self.root/'tmp'/f'final-shard-{shard:03d}'
-                folder.mkdir(exist_ok=True)
-                pf=shardroot/f'part-{shard:03d}.parquet'
-                pm=manifest/f'part-{shard:03d}.parquet'
-                audit_part=self.root/'manifests'/f'audit-part-{shard:03d}.parquet'
-                part=folder/'canonical.fasta.gz'
-                ipart=folder/'ids.txt.gz'
-                spart=folder/'sample.fasta'
-                rows=[]
-                meta=[]
-                audit_rows=[]
-                shard_stats=Stats()
-                shard_composition=Counter()
-                sample_n=0
-                pw=pq.ParquetWriter(pf.with_suffix('.parquet.partial'),schema,compression='zstd')
-                mw=pq.ParquetWriter(pm.with_suffix('.parquet.partial'),mschema,compression='zstd')
-                cursor=db.execute('SELECT a.idx,a.row,c.h,c.off,c.p,c.seq,c.source_id,c.multiplicity,c.historical,c.external FROM assignments.assignment a JOIN candidates c USING(h,off) WHERE a.shard=? ORDER BY a.row',(shard,))
-                with part.open('wb') as fo,gzip.GzipFile(filename='',mode='wb',fileobj=fo,mtime=0,compresslevel=6) as fg, ipart.open('wb') as io,gzip.GzipFile(filename='',mode='wb',fileobj=io,mtime=0) as ig,spart.open('w') as sf:
-                    for rank,srow,h,off,p,seq,sid,multi,hist,ext in cursor:
-                        index=state['count']+shard_stats.n
-                        assert valid(seq) and h==sequence_digest(seq) and p==priority(seq)
-                        sample_id=f's_{h.hex()}_{off}'
-                        fg.write(f'>{sample_id}\n{seq}\n'.encode())
-                        ig.write(f'{index}\t{sample_id}\n'.encode())
-                        row={'sample_id':sample_id,'sequence':seq,'length':len(seq)}
-                        rows.append(row)
-                        meta.append({'index':index,'selection_rank':rank,'sample_id':sample_id,'sequence_sha256':h,
-                            'priority':p,'uniref_id':sid if ext else None,'source_offset':off,
-                            'source_historical_e012':bool(hist),'source_uniref50_2026_03':bool(ext),
-                            'multiplicity':multi,'length':len(seq),'shard':shard,'shard_row':srow})
-                        if in_sample(index,DIAGNOSTIC_SAMPLE_N):
-                            sf.write(f'>{sample_id}\n{seq}\n')
-                            sample_n+=1
-                        if in_sample(index,AUDIT_SAMPLE_N):
-                            audit_rows.append(row)
-                        shard_stats.add(seq)
-                        shard_composition[f'historical={hist},external={ext}']+=1
-                        if len(rows)>=4096:
+        with ExitStack() as resources:
+            db=resources.enter_context(closing(connection(self.reservoir)))
+            db.execute('ATTACH DATABASE ? AS excluded',(str(self.root/'manifests/exclusions.sqlite'),))
+            assignment_path=self.root/'tmp/shard_assignments.sqlite'
+            assignments=resources.enter_context(closing(connection(assignment_path)))
+            assignments.execute('PRAGMA cache_size=-3145728')
+            assignments.execute('PRAGMA journal_mode=WAL')
+            assignments.execute('PRAGMA wal_autocheckpoint=65536')
+            assignments.execute('CREATE TABLE IF NOT EXISTS assignment(idx INTEGER PRIMARY KEY,h BLOB,off INTEGER,shard INTEGER,row INTEGER)')
+            assignments.execute('CREATE INDEX IF NOT EXISTS shard_rows ON assignment(shard,row)')
+            assignments.execute('CREATE UNIQUE INDEX IF NOT EXISTS assignment_unique ON assignment(h,off)')
+            assignments.execute('CREATE TABLE IF NOT EXISTS progress(k TEXT PRIMARY KEY,v TEXT)')
+            prev=assignments.execute("SELECT v FROM progress WHERE k='state'").fetchone()
+            ast=json.loads(prev[0]) if prev else {'inputs':inputs,'count':0,'last':None,'counts':[0]*SHARD_COUNT,'residues':[0]*SHARD_COUNT,'complete':False}
+            if ast['inputs']!=inputs:
+                raise RuntimeError('assignment checkpoint inputs changed')
+            with self.stage('residue_balanced_assignment'):
+                if not ast['complete']:
+                    boundary=''
+                    params=[]
+                    if ast['last']:
+                        boundary='AND (c.p,c.h,c.off)>(?,?,?)'
+                        params=[bytes.fromhex(ast['last'][0]),bytes.fromhex(ast['last'][1]),ast['last'][2]]
+                    params.append(n-ast['count'])
+                    cursor=db.execute('SELECT c.h,c.off,c.p,length(c.seq) FROM candidates c WHERE NOT EXISTS(SELECT 1 FROM excluded.removed e WHERE e.h=c.h AND e.off=c.off) '+boundary+' ORDER BY c.p,c.h,c.off LIMIT ?',params)
+                    heap=[(load,i) for i,load in enumerate(ast['residues'])]
+                    heapq.heapify(heap)
+                    for h,off,p,length in cursor:
+                        load,shard=heapq.heappop(heap)
+                        assignments.execute('INSERT INTO assignment VALUES(?,?,?,?,?)',(ast['count'],h,off,shard,ast['counts'][shard]))
+                        ast['count']+=1
+                        ast['counts'][shard]+=1
+                        ast['residues'][shard]+=length
+                        heapq.heappush(heap,(ast['residues'][shard],shard))
+                        ast['last']=[p.hex(),h.hex(),off]
+                        if ast['count']%100_000==0:
+                            assignments.execute("INSERT OR REPLACE INTO progress VALUES('state',?)",(json.dumps(ast),))
+                            assignments.commit()
+                            self.guard()
+                            print(json.dumps({'stage':'assignment','n':ast['count']}),flush=True)
+                    assert ast['count']==n
+                    ast['complete']=True
+                    assignments.execute("INSERT OR REPLACE INTO progress VALUES('state',?)",(json.dumps(ast),))
+                    assignments.commit()
+            assignments.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+            assignments.execute('PRAGMA journal_mode=DELETE')
+            assignments.close()
+            db.execute('ATTACH DATABASE ? AS assignments',(str(assignment_path),))
+            out=self.root/'corpus'
+            shardroot=out/'shards'
+            manifest=out/'manifest'
+            shardroot.mkdir(exist_ok=True)
+            manifest.mkdir(exist_ok=True)
+            schema=pa.schema([('sample_id',pa.string()),('sequence',pa.string()),('length',pa.int16())])
+            mschema=pa.schema([('index',pa.int64()),('selection_rank',pa.int64()),('sample_id',pa.string()),('sequence_sha256',pa.binary(32)),
+                ('priority',pa.binary(32)),('uniref_id',pa.string()),('source_offset',pa.int64()),
+                ('source_historical_e012',pa.bool_()),('source_uniref50_2026_03',pa.bool_()),
+                ('multiplicity',pa.int32()),('length',pa.int16()),('shard',pa.int16()),('shard_row',pa.int32())])
+            fasta=out/f'e012_uniref50_2026_03_{n}.fasta.gz'
+            ids=out/'ids.txt.gz'
+            sample=self.root/'clusters/diversity_sample_1000000.fasta'
+            fstate=self.root/'tmp/final_checkpoint.json'
+            state=json.loads(fstate.read_text()) if fstate.exists() else {'inputs':inputs,'next_shard':0,'count':0,
+                'fasta_bytes':0,'ids_bytes':0,'sample_bytes':0,'stats':Stats().checkpoint(),
+                'composition':{},'shards':[],'sample_n':0,'audit_n':0}
+            if state['inputs']!=inputs:
+                raise RuntimeError('final checkpoint input mismatch')
+            for path,key in [(fasta,'fasta_bytes'),(ids,'ids_bytes'),(sample,'sample_bytes')]:
+                path.parent.mkdir(exist_ok=True,parents=True)
+                if not path.exists():
+                    if state[key]:
+                        raise RuntimeError('missing completed final checkpoint output')
+                    path.touch()
+                with path.open('r+b') as f:
+                    if path.stat().st_size<state[key]:
+                        raise RuntimeError('truncated completed final checkpoint output')
+                    f.truncate(state[key])  # Discard only uncertified tail from interrupted append.
+            def in_sample(index,size):
+                j=(index*size+n-1)//n
+                return j<size and (j*n)//size==index
+            stats=Stats(state['stats'])
+            composition=Counter(state['composition'])
+            with self.stage('finalization'):
+                shard_rows=self.sorted_shard_rows(db,
+                    'a.idx,a.row,c.h,c.off,c.p,c.seq,c.source_id,c.multiplicity,c.historical,c.external',
+                    state['next_shard'],n,sum(ast['residues']))
+                resources.callback(shard_rows.close)
+                for shard in range(state['next_shard'],SHARD_COUNT):
+                    folder=self.root/'tmp'/f'final-shard-{shard:03d}'
+                    folder.mkdir(exist_ok=True)
+                    pf=shardroot/f'part-{shard:03d}.parquet'
+                    pm=manifest/f'part-{shard:03d}.parquet'
+                    audit_part=self.root/'manifests'/f'audit-part-{shard:03d}.parquet'
+                    part=folder/'canonical.fasta.gz'
+                    ipart=folder/'ids.txt.gz'
+                    spart=folder/'sample.fasta'
+                    rows=[]
+                    meta=[]
+                    audit_rows=[]
+                    shard_stats=Stats()
+                    shard_composition=Counter()
+                    sample_n=0
+                    pw=pq.ParquetWriter(pf.with_suffix('.parquet.partial'),schema,compression='zstd')
+                    mw=pq.ParquetWriter(pm.with_suffix('.parquet.partial'),mschema,compression='zstd')
+                    cursor=shard_rows.shard(shard)
+                    with part.open('wb') as fo,gzip.GzipFile(filename='',mode='wb',fileobj=fo,mtime=0,compresslevel=6) as fg, ipart.open('wb') as io,gzip.GzipFile(filename='',mode='wb',fileobj=io,mtime=0) as ig,spart.open('w') as sf:
+                        for rank,srow,h,off,p,seq,sid,multi,hist,ext in cursor:
+                            index=state['count']+shard_stats.n
+                            assert valid(seq) and h==sequence_digest(seq) and p==priority(seq)
+                            sample_id=f's_{h.hex()}_{off}'
+                            fg.write(f'>{sample_id}\n{seq}\n'.encode())
+                            ig.write(f'{index}\t{sample_id}\n'.encode())
+                            row={'sample_id':sample_id,'sequence':seq,'length':len(seq)}
+                            rows.append(row)
+                            meta.append({'index':index,'selection_rank':rank,'sample_id':sample_id,'sequence_sha256':h,
+                                'priority':p,'uniref_id':sid if ext else None,'source_offset':off,
+                                'source_historical_e012':bool(hist),'source_uniref50_2026_03':bool(ext),
+                                'multiplicity':multi,'length':len(seq),'shard':shard,'shard_row':srow})
+                            if in_sample(index,DIAGNOSTIC_SAMPLE_N):
+                                sf.write(f'>{sample_id}\n{seq}\n')
+                                sample_n+=1
+                            if in_sample(index,AUDIT_SAMPLE_N):
+                                audit_rows.append(row)
+                            shard_stats.add(seq)
+                            shard_composition[f'historical={hist},external={ext}']+=1
+                            if len(rows)>=4096:
+                                pw.write_table(pa.Table.from_pylist(rows,schema=schema))
+                                mw.write_table(pa.Table.from_pylist(meta,schema=mschema))
+                                rows.clear()
+                                meta.clear()
+                        if rows:
                             pw.write_table(pa.Table.from_pylist(rows,schema=schema))
                             mw.write_table(pa.Table.from_pylist(meta,schema=mschema))
-                            rows.clear()
-                            meta.clear()
-                    if rows:
-                        pw.write_table(pa.Table.from_pylist(rows,schema=schema))
-                        mw.write_table(pa.Table.from_pylist(meta,schema=mschema))
-                pw.close()
-                mw.close()
-                assert shard_stats.n==ast['counts'][shard]
-                assert shard_stats.residues==ast['residues'][shard]
-                pf.with_suffix('.parquet.partial').replace(pf)
-                pm.with_suffix('.parquet.partial').replace(pm)
-                pq.write_table(pa.Table.from_pylist(audit_rows,schema=schema),audit_part,compression='zstd')
-                # Shard sequences and manifest hashes must agree before the append marker.
-                shard_h=hashlib.sha256()
-                meta_h=hashlib.sha256()
-                for batch in pq.ParquetFile(pf).iter_batches(columns=['sequence']):
-                    for seq in batch.column(0).to_pylist():
-                        shard_h.update(sequence_digest(seq))
-                for batch in pq.ParquetFile(pm).iter_batches(columns=['sequence_sha256']):
-                    for h in batch.column(0).to_pylist():
-                        meta_h.update(h)
-                assert shard_h.digest()==meta_h.digest()
-                shard_info={'path':str(pf),'manifest_path':str(pm),'sequences':shard_stats.n,
-                    'residues':shard_stats.residues,'bytes':pf.stat().st_size,'sha256':digest(pf),
-                    'manifest_sha256':digest(pm),'canonical_member_sha256':digest(part),
-                    'ids_member_sha256':digest(ipart),'sequence_order_sha256':shard_h.hexdigest()}
-                for source,destination,key in [(part,fasta,'fasta_bytes'),(ipart,ids,'ids_bytes'),(spart,sample,'sample_bytes')]:
-                    with source.open('rb') as r,destination.open('ab') as w:
-                        shutil.copyfileobj(r,w)
-                        w.flush()
-                        os.fsync(w.fileno())
-                    state[key]=destination.stat().st_size
-                stats.n+=shard_stats.n
-                stats.residues+=shard_stats.residues
-                stats.lengths.update(shard_stats.lengths)
-                stats.aa.update(shard_stats.aa)
-                composition.update(shard_composition)
-                state['next_shard']=shard+1
-                state['count']=stats.n
-                state['stats']=stats.checkpoint()
-                state['composition']=dict(composition)
-                state['shards'].append(shard_info)
-                state['sample_n']+=sample_n
-                state['audit_n']+=len(audit_rows)
-                save(fstate,state)
-                cert=self.root/'manifests'/f'final-shard-{shard:03d}.complete.json'
-                save(cert,{'inputs':inputs,'outputs':shard_info,'checkpoint_sha256':digest(fstate),
-                    'protected_verification_marker_sha256':digest(self.marker('verify_protected')),'timestamp':now()})
-                self.cleanup([folder],cert)
-                self.guard()
-                print(json.dumps({'stage':'final','shard':shard,'n':stats.n}),flush=True)
-        assert stats.n==n and state['sample_n']==DIAGNOSTIC_SAMPLE_N and state['audit_n']==AUDIT_SAMPLE_N
-        audit=out/'audit_10000.parquet'
-        aw=pq.ParquetWriter(audit,schema,compression='zstd')
-        for shard in range(SHARD_COUNT):
-            aw.write_table(pq.read_table(self.root/'manifests'/f'audit-part-{shard:03d}.parquet'))
-        aw.close()
-        db.close()
-        summary={'classification':'DATA2-B' if n==20_000_000 else 'DATA2-A',
-            'statistics':stats.summary(),'source_composition':dict(composition),
-            'fasta':str(fasta),'fasta_bytes':fasta.stat().st_size,'manifest':str(manifest),
-            'shard_root':str(shardroot),'shards':state['shards'],
-            'shard_bytes_total':sum(s['bytes'] for s in state['shards']),
-            'scale_vs_nominal':n/231743,'scale_vs_unique':n/87930,
-            'historical_unique_residue_scale':stats.residues/17211507,
-            'selection':'Ascending frozen priority then sequence hash and source offset; all clean records if fewer than target. Output order is residue-balanced shard order.',
-            'diversity_sample_n':DIAGNOSTIC_SAMPLE_N,'diversity_sample_rule':'Systematic final-output ranks floor(j*N/1000000)',
-            'audit_sample_n':AUDIT_SAMPLE_N,'audit_sample_sha256':digest(audit),'training':False}
-        save(out/'summary.json',summary)
-        outputs=[fasta,ids,audit,sample,out/'summary.json']+sorted(shardroot.glob('*.parquet'))+sorted(manifest.glob('*.parquet'))
-        with (out/'SHA256SUMS').open('w') as f:
-            for p in outputs:
-                f.write(f'{digest(p)}  {p.relative_to(self.root).as_posix()}\n')
-        outputs.append(out/'SHA256SUMS')
-        save(self.report/'final_manifest_summary.json',summary)
-        self.complete('final',inputs,outputs,statistics=summary)
+                    pw.close()
+                    mw.close()
+                    assert shard_stats.n==ast['counts'][shard]
+                    assert shard_stats.residues==ast['residues'][shard]
+                    pf.with_suffix('.parquet.partial').replace(pf)
+                    pm.with_suffix('.parquet.partial').replace(pm)
+                    pq.write_table(pa.Table.from_pylist(audit_rows,schema=schema),audit_part,compression='zstd')
+                    # Shard sequences and manifest hashes must agree before the append marker.
+                    shard_h=hashlib.sha256()
+                    meta_h=hashlib.sha256()
+                    for batch in pq.ParquetFile(pf).iter_batches(columns=['sequence']):
+                        for seq in batch.column(0).to_pylist():
+                            shard_h.update(sequence_digest(seq))
+                    for batch in pq.ParquetFile(pm).iter_batches(columns=['sequence_sha256']):
+                        for h in batch.column(0).to_pylist():
+                            meta_h.update(h)
+                    assert shard_h.digest()==meta_h.digest()
+                    shard_info={'path':str(pf),'manifest_path':str(pm),'sequences':shard_stats.n,
+                        'residues':shard_stats.residues,'bytes':pf.stat().st_size,'sha256':digest(pf),
+                        'manifest_sha256':digest(pm),'canonical_member_sha256':digest(part),
+                        'ids_member_sha256':digest(ipart),'sequence_order_sha256':shard_h.hexdigest()}
+                    for source,destination,key in [(part,fasta,'fasta_bytes'),(ipart,ids,'ids_bytes'),(spart,sample,'sample_bytes')]:
+                        with source.open('rb') as r,destination.open('ab') as w:
+                            shutil.copyfileobj(r,w)
+                            w.flush()
+                            os.fsync(w.fileno())
+                        state[key]=destination.stat().st_size
+                    stats.n+=shard_stats.n
+                    stats.residues+=shard_stats.residues
+                    stats.lengths.update(shard_stats.lengths)
+                    stats.aa.update(shard_stats.aa)
+                    composition.update(shard_composition)
+                    state['next_shard']=shard+1
+                    state['count']=stats.n
+                    state['stats']=stats.checkpoint()
+                    state['composition']=dict(composition)
+                    state['shards'].append(shard_info)
+                    state['sample_n']+=sample_n
+                    state['audit_n']+=len(audit_rows)
+                    save(fstate,state)
+                    cert=self.root/'manifests'/f'final-shard-{shard:03d}.complete.json'
+                    save(cert,{'inputs':inputs,'outputs':shard_info,'checkpoint_sha256':digest(fstate),
+                        'protected_verification_marker_sha256':digest(self.marker('verify_protected')),'timestamp':now()})
+                    self.cleanup([folder],cert)
+                    self.guard()
+                    print(json.dumps({'stage':'final','shard':shard,'n':stats.n}),flush=True)
+            assert stats.n==n and state['sample_n']==DIAGNOSTIC_SAMPLE_N and state['audit_n']==AUDIT_SAMPLE_N
+            audit=out/'audit_10000.parquet'
+            aw=pq.ParquetWriter(audit,schema,compression='zstd')
+            for shard in range(SHARD_COUNT):
+                aw.write_table(pq.read_table(self.root/'manifests'/f'audit-part-{shard:03d}.parquet'))
+            aw.close()
+            db.close()
+            summary={'classification':'DATA2-B' if n==20_000_000 else 'DATA2-A',
+                'statistics':stats.summary(),'source_composition':dict(composition),
+                'fasta':str(fasta),'fasta_bytes':fasta.stat().st_size,'manifest':str(manifest),
+                'shard_root':str(shardroot),'shards':state['shards'],
+                'shard_bytes_total':sum(s['bytes'] for s in state['shards']),
+                'scale_vs_nominal':n/231743,'scale_vs_unique':n/87930,
+                'historical_unique_residue_scale':stats.residues/17211507,
+                'selection':'Ascending frozen priority then sequence hash and source offset; all clean records if fewer than target. Output order is residue-balanced shard order.',
+                'diversity_sample_n':DIAGNOSTIC_SAMPLE_N,'diversity_sample_rule':'Systematic final-output ranks floor(j*N/1000000)',
+                'audit_sample_n':AUDIT_SAMPLE_N,'audit_sample_sha256':digest(audit),'training':False}
+            save(out/'summary.json',summary)
+            outputs=[fasta,ids,audit,sample,out/'summary.json']+sorted(shardroot.glob('*.parquet'))+sorted(manifest.glob('*.parquet'))
+            with (out/'SHA256SUMS').open('w') as f:
+                for p in outputs:
+                    f.write(f'{digest(p)}  {p.relative_to(self.root).as_posix()}\n')
+            outputs.append(out/'SHA256SUMS')
+            save(self.report/'final_manifest_summary.json',summary)
+            self.complete('final',inputs,outputs,statistics=summary)
 
     def certify(self):
         """Read every frozen representation; verify loader behavior without a model."""
@@ -915,99 +993,103 @@ class Build:
                 raise RuntimeError(f'Final checksum mismatch: {p}')
         summary=final['statistics']
         assert digest(self.reservoir)==json.loads(self.marker('reservoir').read_text())['outputs'][str(self.reservoir)]
-        db=connection(self.reservoir)
-        ap=self.root/'tmp/shard_assignments.sqlite'
-        db.execute('ATTACH DATABASE ? AS assignments',(str(ap),))
-        db.execute('ATTACH DATABASE ? AS excluded',(str(self.root/'manifests/exclusions.sqlite'),))
-        assert db.execute('SELECT count(*) FROM assignments.assignment').fetchone()[0]==summary['statistics']['sequences']
-        assert db.execute('SELECT count(*) FROM assignments.assignment a JOIN excluded.removed e USING(h,off)').fetchone()[0]==0
-        fasta=Path(summary['fasta'])
-        ids=fasta.parent/'ids.txt.gz'
-        stats=Stats()
-        audit_seqs=set()
-        sequence_order=hashlib.sha256()
-        with self.stage('certify'),gzip.open(fasta,'rt') as ff,gzip.open(ids,'rt') as fi:
-            for shard in summary['shards']:
-                pf=Path(shard['path'])
-                pm=Path(shard['manifest_path'])
-                actual_residues=0
-                cursor=db.execute('SELECT a.idx,a.row,c.h,c.off,c.p,c.seq,c.historical,c.external FROM assignments.assignment a JOIN candidates c USING(h,off) WHERE a.shard=? ORDER BY a.row',(int(pf.stem.split('-')[1]),))
-                metadata=pq.ParquetFile(pm).iter_batches(batch_size=8192)
-                sequences=pq.ParquetFile(pf).iter_batches(batch_size=8192)
-                matched=0
-                for sb,mb in zip(sequences,metadata,strict=True):
-                    sr,mr=sb.to_pylist(),mb.to_pylist()
-                    assert len(sr)==len(mr)
-                    for row,meta in zip(sr,mr,strict=True):
-                        expected=cursor.fetchone()
-                        assert expected is not None
-                        rank,srow,h,off,p,seq,hist,ext=expected
-                        assert valid(seq) and row['sequence']==seq
-                        assert row['sample_id']==meta['sample_id']==f's_{h.hex()}_{off}'
-                        assert meta['sequence_sha256']==sequence_digest(seq)==h
-                        assert meta['priority']==priority(seq)==p
-                        assert row['length']==meta['length']==len(seq)
-                        assert meta['index']==stats.n and meta['selection_rank']==rank and meta['shard_row']==srow
-                        assert meta['source_historical_e012']==bool(hist) and meta['source_uniref50_2026_03']==bool(ext)
-                        assert ff.readline().rstrip()=='>'+row['sample_id']
-                        assert ff.readline().rstrip()==seq
-                        assert fi.readline().rstrip()==f'{stats.n}\t{row["sample_id"]}'
-                        stats.add(seq)
-                        sequence_order.update(h)
-                        actual_residues+=len(seq)
-                        matched+=1
-                assert cursor.fetchone() is None
-                assert matched==shard['sequences'] and actual_residues==shard['residues']
-                self.guard()
-            assert not ff.readline() and not fi.readline()
-        assert stats.summary()==summary['statistics']
-        audit_path=fasta.parent/'audit_10000.parquet'
-        dataset=ProteinSequenceDataset(audit_path)
-        assert len(dataset)==AUDIT_SAMPLE_N and dataset.audit['exact_duplicate_count']==0
-        started=time.monotonic()
-        audit_residues=0
-        for first in range(0,len(dataset),128):
-            items=[dataset[i] for i in range(first,min(first+128,len(dataset)))]
-            collated=collate_sequences(items)
-            historical_batch=batch([{'sample_id':i['sample_id'],'sequence':i['sequence']} for i in items],'cpu')
-            for key in ['input_ids','target_ids','attention_mask','lengths']:
-                assert torch.equal(collated[key],historical_batch[key])
-            for j,item in enumerate(items):
-                length=int(item['length'])
-                assert collated['input_ids'][j,0]==dataset.vocabulary.bos_id
-                assert torch.equal(collated['input_ids'][j,1:length],collated['target_ids'][j,:length-1])
-                assert collated['attention_mask'][j].sum()==length
-                audit_residues+=length
-                audit_seqs.add(item['sequence'])
-        elapsed=time.monotonic()-started
-        assert len(audit_seqs)==AUDIT_SAMPLE_N
-        # Audit sequences are a verified subset of independently screened final inputs.
-        audit_hashes=[sequence_digest(s) for s in audit_seqs]
-        for h in audit_hashes:
-            assert db.execute('SELECT count(*) FROM assignments.assignment WHERE h=?',(h,)).fetchone()[0]>=1
-        db.close()
-        tracked=subprocess.check_output(['git','ls-files','-z'],cwd=self.repo).split(b'\0')
-        bulk=[os.fsdecode(p) for p in tracked if p and (self.repo/os.fsdecode(p)).is_file() and (self.repo/os.fsdecode(p)).stat().st_size>100_000_000]
-        assert not bulk,bulk
-        changes=subprocess.check_output(['git','diff','e3cd8ad337407a6de968fde9a24fb027f1336fda','--name-only'],cwd=self.repo,text=True).splitlines()
-        forbidden=[p for p in changes if p.startswith('reports/') and not p.startswith(REPORT_REL+'/')]
-        assert not forbidden,forbidden
-        cert={'certified':True,'classification':summary['classification'],
-            'sequences':stats.n,'residues':stats.residues,'representation_counts_agree':True,
-            'sequence_order_sha256':sequence_order.hexdigest(),
-            'final_exact_unique':True,'shard_exclusivity':True,'manifest_index_consistency':True,
-            'all_sha256_verified':True,'protected_exact_overlap':0,'protected_detected_homology_overlap':0,
-            'audit_sample_n':AUDIT_SAMPLE_N,'audit_sha256':digest(audit_path),'tokenizer_compatible':True,
-            'causal_collate_historical_parity':True,'bos_target_shift':True,
-            'loader_sequences_per_second':AUDIT_SAMPLE_N/elapsed,'loader_residues_per_second':audit_residues/elapsed,
-            'loader_audit_wall_seconds':elapsed,'large_git_tracked':bulk,
-            'historical_reports_unchanged':True,'training_launched':False}
-        cp=self.root/'corpus/certification.json'
-        save(cp,cert)
-        save(self.report/'certification.json',cert)
-        self.complete('certified',inputs,[cp],statistics=cert)
-        # Reservoir is derivable, but retain it until diagnostic preparation and
-        # durable frozen-corpus certification are complete. No raw/final cleanup.
+        with ExitStack() as resources:
+            db=resources.enter_context(closing(connection(self.reservoir)))
+            ap=self.root/'tmp/shard_assignments.sqlite'
+            db.execute('ATTACH DATABASE ? AS assignments',(str(ap),))
+            db.execute('ATTACH DATABASE ? AS excluded',(str(self.root/'manifests/exclusions.sqlite'),))
+            assert db.execute('SELECT count(*) FROM assignments.assignment').fetchone()[0]==summary['statistics']['sequences']
+            assert db.execute('SELECT count(*) FROM assignments.assignment a JOIN excluded.removed e USING(h,off)').fetchone()[0]==0
+            fasta=Path(summary['fasta'])
+            ids=fasta.parent/'ids.txt.gz'
+            stats=Stats()
+            audit_seqs=set()
+            sequence_order=hashlib.sha256()
+            with self.stage('certify'),gzip.open(fasta,'rt') as ff,gzip.open(ids,'rt') as fi:
+                shard_rows=self.sorted_shard_rows(db,'a.idx,a.row,c.h,c.off,c.p,c.seq,c.historical,c.external',
+                    0,summary['statistics']['sequences'],summary['statistics']['total_residues'])
+                resources.callback(shard_rows.close)
+                for shard in summary['shards']:
+                    pf=Path(shard['path'])
+                    pm=Path(shard['manifest_path'])
+                    actual_residues=0
+                    cursor=shard_rows.shard(int(pf.stem.split('-')[1]))
+                    metadata=pq.ParquetFile(pm).iter_batches(batch_size=8192)
+                    sequences=pq.ParquetFile(pf).iter_batches(batch_size=8192)
+                    matched=0
+                    for sb,mb in zip(sequences,metadata,strict=True):
+                        sr,mr=sb.to_pylist(),mb.to_pylist()
+                        assert len(sr)==len(mr)
+                        for row,meta in zip(sr,mr,strict=True):
+                            expected=cursor.fetchone()
+                            assert expected is not None
+                            rank,srow,h,off,p,seq,hist,ext=expected
+                            assert valid(seq) and row['sequence']==seq
+                            assert row['sample_id']==meta['sample_id']==f's_{h.hex()}_{off}'
+                            assert meta['sequence_sha256']==sequence_digest(seq)==h
+                            assert meta['priority']==priority(seq)==p
+                            assert row['length']==meta['length']==len(seq)
+                            assert meta['index']==stats.n and meta['selection_rank']==rank and meta['shard_row']==srow
+                            assert meta['source_historical_e012']==bool(hist) and meta['source_uniref50_2026_03']==bool(ext)
+                            assert ff.readline().rstrip()=='>'+row['sample_id']
+                            assert ff.readline().rstrip()==seq
+                            assert fi.readline().rstrip()==f'{stats.n}\t{row["sample_id"]}'
+                            stats.add(seq)
+                            sequence_order.update(h)
+                            actual_residues+=len(seq)
+                            matched+=1
+                    assert cursor.fetchone() is None
+                    assert matched==shard['sequences'] and actual_residues==shard['residues']
+                    self.guard()
+                assert not ff.readline() and not fi.readline()
+            assert stats.summary()==summary['statistics']
+            audit_path=fasta.parent/'audit_10000.parquet'
+            dataset=ProteinSequenceDataset(audit_path)
+            assert len(dataset)==AUDIT_SAMPLE_N and dataset.audit['exact_duplicate_count']==0
+            started=time.monotonic()
+            audit_residues=0
+            for first in range(0,len(dataset),128):
+                items=[dataset[i] for i in range(first,min(first+128,len(dataset)))]
+                collated=collate_sequences(items)
+                historical_batch=batch([{'sample_id':i['sample_id'],'sequence':i['sequence']} for i in items],'cpu')
+                for key in ['input_ids','target_ids','attention_mask','lengths']:
+                    assert torch.equal(collated[key],historical_batch[key])
+                for j,item in enumerate(items):
+                    length=int(item['length'])
+                    assert collated['input_ids'][j,0]==dataset.vocabulary.bos_id
+                    assert torch.equal(collated['input_ids'][j,1:length],collated['target_ids'][j,:length-1])
+                    assert collated['attention_mask'][j].sum()==length
+                    audit_residues+=length
+                    audit_seqs.add(item['sequence'])
+            elapsed=time.monotonic()-started
+            assert len(audit_seqs)==AUDIT_SAMPLE_N
+            # Audit sequences are a verified subset of independently screened final inputs.
+            audit_hashes=[sequence_digest(s) for s in audit_seqs]
+            for h in audit_hashes:
+                assert db.execute('SELECT count(*) FROM assignments.assignment WHERE h=?',(h,)).fetchone()[0]>=1
+            db.close()
+            tracked=subprocess.check_output(['git','ls-files','-z'],cwd=self.repo).split(b'\0')
+            bulk=[os.fsdecode(p) for p in tracked if p and (self.repo/os.fsdecode(p)).is_file() and (self.repo/os.fsdecode(p)).stat().st_size>100_000_000]
+            assert not bulk,bulk
+            changes=subprocess.check_output(['git','diff','e3cd8ad337407a6de968fde9a24fb027f1336fda','--name-only'],cwd=self.repo,text=True).splitlines()
+            forbidden=[p for p in changes if p.startswith('reports/') and not p.startswith(REPORT_REL+'/')]
+            assert not forbidden,forbidden
+            cert={'certified':True,'classification':summary['classification'],
+                'sequences':stats.n,'residues':stats.residues,'representation_counts_agree':True,
+                'sequence_order_sha256':sequence_order.hexdigest(),
+                'final_exact_unique':True,'shard_exclusivity':True,'manifest_index_consistency':True,
+                'all_sha256_verified':True,'protected_exact_overlap':0,'protected_detected_homology_overlap':0,
+                'audit_sample_n':AUDIT_SAMPLE_N,'audit_sha256':digest(audit_path),'tokenizer_compatible':True,
+                'causal_collate_historical_parity':True,'bos_target_shift':True,
+                'loader_sequences_per_second':AUDIT_SAMPLE_N/elapsed,'loader_residues_per_second':audit_residues/elapsed,
+                'loader_audit_wall_seconds':elapsed,'large_git_tracked':bulk,
+                'historical_reports_unchanged':True,'training_launched':False}
+            cp=self.root/'corpus/certification.json'
+            save(cp,cert)
+            save(self.report/'certification.json',cert)
+            self.complete('certified',inputs,[cp],statistics=cert)
+            # Reservoir is derivable, but retain it until diagnostic preparation and
+            # durable frozen-corpus certification are complete. No raw/final cleanup.
 
     def diversity(self):
         """Diagnose sample only, with a predeclared pilot scaling rule."""
@@ -1016,7 +1098,7 @@ class Build:
             'sample_sha256':digest(sample),'rule_version':'v2b_sample_resource_rule_v1'}
         if self.completed('diversity',inputs):
             return
-        self.cleanup([self.reservoir,self.root/'tmp/shard_assignments.sqlite',self.root/'tmp/final_checkpoint.json'],self.marker('certified'))
+        self.cleanup([self.reservoir,self.root/'tmp/shard_assignments.sqlite',self.root/'tmp/final_checkpoint.json',self.root/'tmp/sqlite_sort'],self.marker('certified'))
         def cluster_command(fasta,prefix,tmp,ident):
             return ['mmseqs','easy-linclust',fasta,prefix,tmp,'--min-seq-id',str(ident),
                 '-c','0.80','--cov-mode','0','--cluster-mode','0','--threads','8',

@@ -112,6 +112,21 @@ def main():
         result=unittest.TextTestRunner(verbosity=1).run(unittest.defaultTestLoader.loadTestsFromModule(t))
         raise SystemExit(0 if result.wasSuccessful() else 1)
     b=m.Build(Path(native(LINUX_ROOT)),Path(native(LINUX_REPO)))
+    log=(b.root/'stats/native_build.log').open('a',buffering=1)
+    class Tee:
+        def __init__(self,stream):
+            self.stream=stream
+        def write(self,value):
+            log.write(value)
+            return self.stream.write(value)
+        def flush(self):
+            log.flush()
+            self.stream.flush()
+        @property
+        def encoding(self):
+            return self.stream.encoding
+    sys.stdout=Tee(sys.stdout)
+    sys.stderr=Tee(sys.stderr)
     environment={'runtime':'native Windows Python with Linux MMseqs bridge',
         'python':sys.version,'sqlite':m.sqlite3.sqlite_version,
         'packages':{p:importlib.metadata.version(p) for p in ['pyarrow','torch','numpy','psutil']},
@@ -136,6 +151,18 @@ def main():
             for name,stage in stages.items():
                 m.save(status,{'status':'BUILD_RUNNING','stage':name,'runtime':'native Windows',
                     'native_pid':os.getpid(),'timestamp':m.now(),'training_launched':False,'classification':None})
+                if name=='reservoir' and b.reservoir.exists() and not b.marker('reservoir').exists():
+                    with b.stage('sequential_checkpoint_cache_warm'):
+                        with b.reservoir.open('rb') as f:
+                            while f.read(8*1024*1024):
+                                pass
+                if name in {'final','certify'}:
+                    assignment=b.root/'tmp/shard_assignments.sqlite'
+                    if assignment.exists():
+                        with b.stage('sequential_assignment_cache_warm'):
+                            with assignment.open('rb') as f:
+                                while f.read(8*1024*1024):
+                                    pass
                 stage()
         else:
             stages[args.stage]()
