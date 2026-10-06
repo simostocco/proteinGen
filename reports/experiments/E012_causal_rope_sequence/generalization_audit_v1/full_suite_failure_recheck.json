@@ -1,0 +1,722 @@
+{
+  "cases": [
+    {
+      "outcome": "passed",
+      "reason": null,
+      "test": "tests.test_e005_codesign::test_synthetic_dry_run_is_deterministic_and_bounded"
+    },
+    {
+      "outcome": "passed",
+      "reason": null,
+      "test": "tests.test_e005_codesign::test_failure_writes_incomplete_report_and_no_checkpoint"
+    },
+    {
+      "outcome": "passed",
+      "reason": null,
+      "test": "tests.test_e005_codesign::test_reporter_checkpoints_partial_stage_atomically"
+    },
+    {
+      "outcome": "passed",
+      "reason": null,
+      "test": "tests.test_e005_codesign::test_synthetic_real_path_tiny_overfit_is_fixed_bounded_and_complete"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E006_rich_geometry_codesign/phase3_calibration_v2/report.json'",
+      "test": "tests.test_e006_production_selection::test_immutable_report_and_selection_hashes_and_exact_budgets"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E006_rich_geometry_codesign/phase3_calibration_v2/report.json'",
+      "test": "tests.test_e006_production_selection::test_numerical_equivalence_does_not_override_memory_gates"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E006_rich_geometry_codesign/phase3_production_batch_selection_v1.json'",
+      "test": "tests.test_e006_production_selection::test_selection_and_calibration_hash_tampering_fail"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E006_rich_geometry_codesign/phase3_production_batch_selection_v1.json'",
+      "test": "tests.test_e006_production_selection::test_relabeling_unsafe_case_as_selected_still_fails"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E006_rich_geometry_codesign/phase3_production_batch_selection_v1.json'",
+      "test": "tests.test_e006_production_selection::test_stage_specific_batch_planning_and_pair_budget_semantics"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E006_rich_geometry_codesign/phase3_calibration_v1/report.json'",
+      "test": "tests.test_e006_rich_calibration_v2::test_v2_config_and_v1_artifact_are_immutable"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v2/report.json'",
+      "test": "tests.test_e007_coordinate_capacity_pilot::test_plan_is_read_only_and_refuses_existing_output"
+    },
+    {
+      "outcome": "failed",
+      "reason": "AssertionError: assert 'e3b0c44298fc...5991b7852b855' == 'b7a77cd477e8...9f99ce7fe7f9b'\n  \n  - b7a77cd477e8125317a6ff2b55cb5411a075efde8675a2bfdd49f99ce7fe7f9b\n  + e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test": "tests.test_e007_coordinate_checkpoint_sampling_replication::test_phase3g_fingerprint_methods_are_reconciled_and_inventory_verifies"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3H.1 prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1/report.json",
+      "test": "tests.test_e007_coordinate_checkpoint_selection::test_exact_selected_checkpoint_and_hash"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3H.1 prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1/report.json",
+      "test": "tests.test_e007_coordinate_checkpoint_selection::test_exact_pass_accounting_failures_and_per_length_counts"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1/checkpoint_pareto.json'",
+      "test": "tests.test_e007_coordinate_checkpoint_selection::test_pareto_contract_has_no_scalar_score_and_preserves_failed_gate"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3H.1 prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1/report.json",
+      "test": "tests.test_e007_coordinate_checkpoint_selection::test_publication_is_atomic_separated_and_non_authorizing"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3H.1 prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1/report.json",
+      "test": "tests.test_e007_coordinate_checkpoint_selection::test_protected_inputs_remain_unchanged"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3H.1 prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1/report.json",
+      "test": "tests.test_e007_coordinate_checkpoint_selection::test_plan_only_has_no_side_effect_or_model_workload"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3H.1 prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/coordinate_checkpoint_sampling_replication_v1/report.json",
+      "test": "tests.test_e007_coordinate_checkpoint_selection::test_hash_mismatch_refuses_before_output_creation"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'outputs/recovered_full_b2_v_axial_edm_triangle_e004/checkpoints/final_validation_selected.pt'",
+      "test": "tests.test_e007_coordinate_generator::test_pinned_e004_checkpoint_still_loads_without_mutation"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v1/report.json'",
+      "test": "tests.test_e007_coordinate_objective_pilot::test_plan_pins_v2_thresholds_is_read_only_and_refuses_existing_output"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_smoke_v2/report.json'",
+      "test": "tests.test_e007_coordinate_objective_pilot::test_atomic_publication_is_non_authorizing_and_stdout_payload_can_be_compact"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/report.json'",
+      "test": "tests.test_e007_coordinate_real_continuation::test_source_step1000_evaluation_is_hash_pinned"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/report.json'",
+      "test": "tests.test_e007_coordinate_real_continuation::test_source_checkpoint_and_protected_inputs_are_pinned_read_only"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/report.json'",
+      "test": "tests.test_e007_coordinate_real_continuation::test_plan_is_model_free_and_refuses_existing_output"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/report.json'",
+      "test": "tests.test_e007_coordinate_real_continuation::test_plan_reads_existing_staging_without_mutation"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/continuation_allocator_diagnostic_v1/report.json'",
+      "test": "tests.test_e007_coordinate_real_continuation::test_completed_cuda_allocator_diagnostic_is_equivalent_and_bounded"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/continuation_allocator_diagnostic_v2/report.json'",
+      "test": "tests.test_e007_coordinate_real_continuation::test_second_cuda_allocator_diagnostic_selects_post_long_cleanup"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/continuation_allocator_diagnostic_v3/report.json'",
+      "test": "tests.test_e007_coordinate_real_continuation::test_cleanup_headroom_cuda_diagnostic_is_stable_and_non_authorizing"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1/normalization.json'",
+      "test": "tests.test_e007_coordinate_real_loader_smoke::test_pinned_normalization_hash_scale_and_production_contract"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json'",
+      "test": "tests.test_e007_coordinate_smoke::test_panels_are_balanced_disjoint_and_hashed"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json'",
+      "test": "tests.test_e007_coordinate_smoke::test_model_and_training_features_have_no_clean_or_sequence_input"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json'",
+      "test": "tests.test_e007_coordinate_smoke::test_gradient_flow_reaches_head_and_trunk"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json'",
+      "test": "tests.test_e007_coordinate_smoke::test_paired_evaluation_and_euclidean_sampling_are_deterministic"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json'",
+      "test": "tests.test_e007_coordinate_smoke::test_oracle_sampler_and_timestep_stratification"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json'",
+      "test": "tests.test_e007_coordinate_smoke::test_plan_is_non_authorizing_bounded_and_refuses_output"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json'",
+      "test": "tests.test_e007_coordinate_smoke::test_atomic_tiny_publication_is_non_authorizing_and_preserves_sources"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/COORDINATE_MODEL_CONTRACT_V1.json'",
+      "test": "tests.test_e007_coordinate_smoke::test_v2_plan_pins_v1_panels_and_preserves_completed_evidence"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3I.1 prerequisite is absent: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt",
+      "test": "tests.test_e007_denoiser_sampler_localization::test_plan_only_is_output_scan_model_and_cuda_free"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3I.1 prerequisite is absent: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt",
+      "test": "tests.test_e007_denoiser_sampler_localization::test_plan_refuses_mutated_phase3i_hash"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] Failed to open local file 'reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/mmseqs/identity_30/clean_validation_manifest.parquet'. Detail: [errno 2] No such file or directory",
+      "test": "tests.test_e007_denoiser_sampler_localization::test_real_selected_40_row_panel_has_complete_canonical_schema"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v3/report.json'",
+      "test": "tests.test_e007_frozen_prior_geometry::test_plan_verifies_phase4b_v3_and_has_no_side_effects"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v3/report.json'",
+      "test": "tests.test_e007_frozen_prior_geometry::test_phase4b_v3_hash_tampering_is_refused"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v3/report.json'",
+      "test": "tests.test_e007_frozen_prior_geometry::test_all_publication_authorizations_are_false"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/frozen_prior_geometry_smoke_v1/report.json'",
+      "test": "tests.test_e007_frozen_prior_geometry_capacity::test_plan_only_has_no_dataset_model_cuda_optimizer_or_output_side_effects"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_calibration_v2/report.json'",
+      "test": "tests.test_e007_local_backbone_calibration_v2::test_panel_contract_and_plan_only_side_effect_free"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3I.2 protected input is absent: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt",
+      "test": "tests.test_e007_local_backbone_calibration_v2::test_real_panel_validation_is_read_only_and_builds_expected_cells"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_calibration_v1/report.json'",
+      "test": "tests.test_e007_local_backbone_calibration_v2::test_v1_config_preserved"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_calibration_v2/report.json'",
+      "test": "tests.test_e007_local_backbone_calibration_v3::test_immutable_v2_false_positive_correction"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_calibration_v2/report.json'",
+      "test": "tests.test_e007_local_backbone_calibration_v3::test_deterministic_coefficients_are_identity_independent"
+    },
+    {
+      "outcome": "failed",
+      "reason": "ValueError: protected v2 protocol file is missing or changed",
+      "test": "tests.test_e007_local_backbone_calibration_v3::test_plan_only_has_80_cells_and_does_not_create_temporary_outputs"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_calibration_v3/report.json'",
+      "test": "tests.test_e007_local_backbone_calibration_v3::test_production_plan_only_preserves_protected_calibration_and_output_paths"
+    },
+    {
+      "outcome": "failed",
+      "reason": "ValueError: protected v2 protocol file is missing or changed",
+      "test": "tests.test_e007_local_backbone_calibration_v3::test_v3_real_panel_validation_precedes_model_cuda_and_forward_activity"
+    },
+    {
+      "outcome": "failed",
+      "reason": "ValueError: protected v2 protocol file is missing or changed",
+      "test": "tests.test_e007_local_backbone_calibration_v3::test_upper_lower_activity_gates_report_reasons_and_strongest_rule"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase-3I.2 protected input is absent: outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt",
+      "test": "tests.test_e007_local_backbone_repair::test_plan_is_side_effect_free_and_blocks_uncalibrated_pilot"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/report.json'",
+      "test": "tests.test_e007_phase3f_decision_parity::test_completed_report_reproduces_legacy_failure_and_corrected_decision"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/report.json'",
+      "test": "tests.test_e007_phase3f_decision_parity::test_memory_is_compared_as_peak_mib_with_inclusive_boundary"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/report.json'",
+      "test": "tests.test_e007_phase3f_decision_parity::test_missing_numerical_field_refuses_instead_of_defaulting_true"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/coordinate_real_pilot_v1/report.json'",
+      "test": "tests.test_e007_phase3f_decision_parity::test_pareto_analysis_uses_no_scalar_and_retains_separate_candidates"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_audit_lifecycle::test_v4_contract_pins_passed_smoke_and_failed_v3_evidence"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_audit_lifecycle::test_v5_contract_is_read_only_and_pins_failed_v4_evidence"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_v2_safety_factors_are_exactly_derived_from_protected_v1_report"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_v2_schedule_is_positive_complete_relative_and_v_mse_unchanged"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v2/report.json'",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_v2_plan_and_pilot_contract_are_non_authorizing_and_250_cells"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_protected_v1_files_remain_immutable"
+    },
+    {
+      "outcome": "failed",
+      "reason": "ValueError: protected v3 evidence hash mismatch",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_table_validates_full_schedule_anchors_interpolation_and_clamp"
+    },
+    {
+      "outcome": "failed",
+      "reason": "ValueError: protected v3 evidence hash mismatch",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_mixed_timestep_rows_are_per_sample_and_permutation_invariant"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_v3_high_noise_multiplier_anchors_interpolation_and_invariants"
+    },
+    {
+      "outcome": "failed",
+      "reason": "AssertionError: assert (not False and False)\n +  where False = exists()\n +    where exists = PosixPath('/home/simostocco/proteinGen-causal-rope/reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dynamic_stability_preflight_v1').exists\n +  and   False = is_dir()\n +    where is_dir = PosixPath('/home/simostocco/proteinGen-causal-rope/reports/experiments/E007_matrix_sequence_cogeneration/.local_backbone_repair_dynamic_stability_preflight_v1.inprogress').is_dir",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_dynamic_preflight_contract_is_read_only_and_has_no_sampling_path"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_dynamic_v2_uses_isolated_paths_and_contract"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_dense_preflight::test_dynamic_recovery_boundary_contract_and_resume_fail_closed"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'outputs/e007_coordinate_real_continuation_to_10000_v1/checkpoints/step-09000.pt'",
+      "test": "tests.test_e007_phase3i2_dynamic_memory_contract::test_production_memory_smoke_startup_resolves_reviewed_model_contract"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dynamic_stability_v5_incident_review_v1.json'",
+      "test": "tests.test_e007_phase3i2_dynamic_v6::test_v5_evidence_pinned_and_read_only_contract_plan"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_final_relocation::test_production_read_only_contract_reconstructs_full_protected_panels"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_phase3i2_lifecycle_smoke_reviewed_pilot_v4_decision_v1.json'",
+      "test": "tests.test_e007_phase3i2_lifecycle_smoke_v4_contract::test_v4_is_reviewed_and_only_authorizes_bounded_pilot"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_phase3i2_lifecycle_smoke_reviewed_pilot_v4_decision_v1.json'",
+      "test": "tests.test_e007_phase3i2_lifecycle_smoke_v4_contract::test_changed_smoke_evidence_refuses_contract"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_phase3i2_lifecycle_smoke_reviewed_pilot_v4_decision_v1.json'",
+      "test": "tests.test_e007_phase3i2_lifecycle_smoke_v4_contract::test_changed_decision_refuses_contract"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_phase3i2_lifecycle_smoke_reviewed_pilot_v4_decision_v1.json'",
+      "test": "tests.test_e007_phase3i2_lifecycle_smoke_v4_contract::test_previous_staging_cannot_be_reused"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_phase3i2_reviewed_v6_decision_v1.json'",
+      "test": "tests.test_e007_phase3i2_reviewed_v6_pilot::test_exact_production_configuration_and_reviewed_evidence_are_pinned"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_phase3i2_reviewed_v6_decision_v1.json'",
+      "test": "tests.test_e007_phase3i2_reviewed_v6_pilot::test_both_arms_get_identical_weights_and_independent_fresh_training_state"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_dense_preflight_v1/report.json'",
+      "test": "tests.test_e007_phase3i2_reviewed_v6_pilot::test_v3_coefficient_lookup_is_timestep_indexed"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/.local_backbone_repair_pilot_phase3i2_final_v1.inprogress/heartbeat.json'",
+      "test": "tests.test_e007_phase3i2_reviewed_v6_pilot::test_read_only_plan_and_contract_do_not_create_output"
+    },
+    {
+      "outcome": "failed",
+      "reason": "ValueError: protected artifact hash mismatch: reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/drift_audits.json",
+      "test": "tests.test_e007_phase3i3_trajectory::test_contract_validation_is_read_only"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_performance_correction_v2/reuse_manifest.json'",
+      "test": "tests.test_e007_phase3i4_performance_v2::test_v2_holdout_refuses_without_completed_selected_calibration"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_performance_correction_v2/reuse_manifest.json'",
+      "test": "tests.test_e007_phase3i4_performance_v2::test_v2_monitor_is_read_only_and_paths_are_versioned"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/phase3i4_performance_correction_v2/reuse_manifest.json'",
+      "test": "tests.test_e007_phase3i4_performance_v2::test_v2_execution_refuses_existing_publication_and_incompatible_staging"
+    },
+    {
+      "outcome": "failed",
+      "reason": "ValueError: protected Phase 3I.3 artifact mismatch: reports/experiments/E007_matrix_sequence_cogeneration/denoiser_sampler_trajectory_audit_v1/report.json",
+      "test": "tests.test_e007_phase3i4_sampler_correction::test_contract_checks_exact_external_log_path_and_hash"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt'",
+      "test": "tests.test_e007_phase3i5_sampler_unroll::test_panel_contract_proves_validation_calibration_and_holdout_separation"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt'",
+      "test": "tests.test_e007_phase3i5_sampler_unroll::test_plan_has_complete_workload_and_no_extension_or_side_effects"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt'",
+      "test": "tests.test_e007_phase3i5_sampler_unroll::test_reviewed_v5_contract_and_plan_are_non_authorizing"
+    },
+    {
+      "outcome": "failed",
+      "reason": "subprocess.CalledProcessError: Command '['/home/simostocco/miniforge3/envs/proteingen/bin/python', '-c', \"import importlib.abc,runpy,sys;class_blocker=type('Blocker',(importlib.abc.MetaPathFinder,),{'find_spec':lambda self,fullname,path=None,target=None: (_ for _ in ()).throw(AssertionError('torch imported')) if fullname.startswith('torch') else None});sys.meta_path.insert(0,class_blocker());sys.argv=['scripts/run_e007_phase3i5_sampler_unroll.py','--plan-only'];runpy.run_path(sys.argv[0],run_name='__main__')\"]' returned non-zero exit status 1.",
+      "test": "tests.test_e007_phase3i5_sampler_unroll::test_plan_cli_does_not_import_torch_or_create_outputs"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt'",
+      "test": "tests.test_e007_phase3i5_sampler_unroll::test_v2_contract_is_fresh_non_authorizing_and_keeps_two_transitions"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/phase3i5_incidents/e007_phase3i5_memory_incident_v1.json'",
+      "test": "tests.test_e007_phase3i5_sampler_unroll::test_incident_record_preserves_v1_config_and_failure_hashes"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt'",
+      "test": "tests.test_e007_phase3i5_sampler_unroll::test_smoke_dispatch_is_real_lifecycle_entrypoint"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt'",
+      "test": "tests.test_e007_phase3i5_sampler_unroll::test_failure_is_recorded_and_smoke_publication_is_separate"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/local_backbone_repair_pilot_phase3i2_reviewed_v6_v4/arms/v_only/step-00500.pt'",
+      "test": "tests.test_e007_phase3i5_sampler_unroll::test_full_cpu_mock_execution_stops_at_25_and_publishes_review_gate"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_loaders::test_reviewed_readiness_and_locked_artifact_hashes_verify"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v1/report.json'",
+      "test": "tests.test_e007_pretrained_loaders_v2::test_v1_hashes_and_v2_output_are_separate"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v1/esm2_150m.json'",
+      "test": "tests.test_e007_pretrained_loaders_v2::test_v1_failure_is_recorded_as_loader_failure"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_smoke_v1/report.json'",
+      "test": "tests.test_e007_pretrained_loaders_v3::test_v1_v2_are_immutable_and_v3_is_separate"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/pretrained_sequence_prior_cpu_diagnostic_v1/report.json'",
+      "test": "tests.test_e007_pretrained_loaders_v3::test_real_cpu_diagnostic_is_pinned_non_authorizing_and_exactly_replayed"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_loaders_v3::test_v3_plan_is_side_effect_free"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase 4A prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json",
+      "test": "tests.test_e007_pretrained_sequence_prior::test_contract_separates_facts_estimates_questions_and_tests"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase 4A prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json",
+      "test": "tests.test_e007_pretrained_sequence_prior::test_dataset_vocabulary_and_tokenizer_boundaries"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase 4A prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json",
+      "test": "tests.test_e007_pretrained_sequence_prior::test_conditioning_contract_prevents_identity_leakage_and_false_latent_claims"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase 4A prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json",
+      "test": "tests.test_e007_pretrained_sequence_prior::test_phase4b_plan_is_exact_bounded_and_blocked"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase 4A prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json",
+      "test": "tests.test_e007_pretrained_sequence_prior::test_plan_only_has_no_output_network_model_or_cache_side_effect"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase 4A prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json",
+      "test": "tests.test_e007_pretrained_sequence_prior::test_publication_is_atomic_separate_and_non_authorizing"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase 4A prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json",
+      "test": "tests.test_e007_pretrained_sequence_prior::test_hash_mismatch_refuses_before_output_creation"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase 4A prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json",
+      "test": "tests.test_e007_pretrained_sequence_prior::test_protected_prerequisites_remain_unchanged_after_temporary_publication"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: E007 Phase 4A prerequisite is absent: reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json",
+      "test": "tests.test_e007_pretrained_sequence_prior::test_primary_models_support_length_500_by_declared_position_contract"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_ordinary_retry_replaces_unjournaled_failed_staging_artifact"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_ordinary_retry_reuses_valid_journaled_downloads_without_network"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_plan_only_has_no_network_cache_or_output"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_acquisition_offline_verification_and_tamper_refusal"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_acquisition_refuses_existing_cache_and_never_executes_downloaded_code"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_resume_after_atomic_cache_promotion_publishes_lock"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_fake_isolated_smoke_is_atomic_zero_update_and_non_authorizing"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_smoke_resume_hash_verifies_committed_candidate"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_smoke_resume_rejects_changed_committed_result"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/PRETRAINED_SEQUENCE_PRIOR_CONTRACT_V1.json'",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_artifact_lock_records_candidate_licenses_and_provenance"
+    },
+    {
+      "outcome": "failed",
+      "reason": "AssertionError: assert False\n +  where False = is_dir()\n +    where is_dir = PosixPath('external_models/e007_phase4b_v1').is_dir\n +      where PosixPath('external_models/e007_phase4b_v1') = Path('external_models/e007_phase4b_v1')",
+      "test": "tests.test_e007_pretrained_sequence_prior_smoke::test_v2_production_plan_does_not_import_torch_or_create_paths"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1/report.json'",
+      "test": "tests.test_e007_split_homology_publication::test_repository_source_publication_defect_is_pinned_and_immutable"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'reports/experiments/E008_geometry_native/decoder_pilot_v2/checkpoint.pt'",
+      "test": "tests.test_e008_failure_diagnostic::test_diagnostic_plan_validates_pinned_evidence_without_cuda"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v1/preparation_manifest.json'",
+      "test": "tests.test_e010_phase4a_lifecycle::test_inconsistent_v1_contract_fails_closed"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v2/preparation_manifest.json'",
+      "test": "tests.test_e010_phase4a_lifecycle::test_reconciled_v2_preparation_pins_remain_read_only_after_publication"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v1/preparation_manifest.json'",
+      "test": "tests.test_e010_phase4a_lifecycle::test_small_mocked_lifecycle_reaches_first_boundary_and_finishes"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/plan.json'",
+      "test": "tests.test_e010_phase4a_multicorruption_v2::test_real_v2_plan_has_revised_cohort_and_exact_source_samples"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/training_seed_manifest.json'",
+      "test": "tests.test_e010_phase4a_multicorruption_v2::test_training_loader_never_opens_excluded_archive"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/preparation_manifest.json'",
+      "test": "tests.test_e010_phase4a_multicorruption_v2::test_fresh_state_saves_pinned_metadata_from_validated_real_contract"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'",
+      "test": "tests.test_e010_phase4a_v3_extension::test_v3_preparation_is_exact_and_non_authorizing"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/extension_schedule.json'",
+      "test": "tests.test_e010_phase4a_v3_extension::test_extension_schedule_gives_each_training_identity_one_exposure_per_epoch"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'",
+      "test": "tests.test_e010_phase4a_v3_extension::test_v2_final_and_scientific_review_match_the_preserved_pins"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'",
+      "test": "tests.test_e010_phase4a_v3_readonly_finalizer::test_real_preparation_record_separates_forward_permissions_from_execution"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'",
+      "test": "tests.test_e010_phase4a_v3_readonly_finalizer::test_historical_execution_and_repaired_reporting_hashes_share_runner_path"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'",
+      "test": "tests.test_e010_phase4a_v3_readonly_finalizer::test_unreviewed_runner_bytes_fail_historical_lineage_validation"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/phase4a_v3_extension_config.json'",
+      "test": "tests.test_e010_phase4a_v3_readonly_finalizer::test_real_v3_config_resolves_strata_from_its_pinned_base_config"
+    },
+    {
+      "outcome": "failed",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-causal-rope/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/training_seed_manifest.json'",
+      "test": "tests.test_e010_phase4b_real_denoiser::test_real_schedule_reuses_exact_identities_and_is_timestep_balanced"
+    },
+    {
+      "outcome": "failed",
+      "reason": "AssertionError: assert not True\n +  where True = <function is_initialized at 0x7088bd3668e0>()\n +    where <function is_initialized at 0x7088bd3668e0> = <module 'torch.cuda' from '/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/torch/cuda/__init__.py'>.is_initialized\n +      where <module 'torch.cuda' from '/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/torch/cuda/__init__.py'> = <module 'torch' from '/home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/torch/__init__.py'>.cuda",
+      "test": "tests.test_e010_phase4b_real_denoiser::test_execute_restart_guard_runs_before_any_cuda_or_model_work[False]"
+    },
+    {
+      "outcome": "passed",
+      "reason": null,
+      "test": "tests.test_rich_geometry_sidecars::test_actual_pilot_pipeline_preserves_typed_ownership_across_resume"
+    },
+    {
+      "outcome": "passed",
+      "reason": null,
+      "test": "tests.test_sequence_geometry_smoke::test_bounded_read_only_pairing_smoke"
+    }
+  ],
+  "fresh_failed_case_recheck": {
+    "failed": 135,
+    "passed": 6,
+    "seconds": 15.77
+  },
+  "historical_files_not_changed": true,
+  "initial_full_suite": {
+    "failed": 141,
+    "passed": 1598,
+    "seconds": 169.0,
+    "skipped": 2
+  },
+  "tests_not_weakened": true
+}

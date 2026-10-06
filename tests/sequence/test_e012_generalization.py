@@ -1,6 +1,9 @@
 """Matched-panel evaluation and non-training guarantees for E012 V3."""
 
 import inspect
+import os
+import subprocess
+import sys
 
 import numpy as np
 import pytest
@@ -112,16 +115,26 @@ def test_audit_calls_same_historical_likelihood_for_every_panel_and_never_traini
 def test_frozen_real_panel_membership_hashes_and_historical_protection():
     if not (audit.REPORT / "contract.json").exists():
         pytest.skip("selection contract not yet prepared")
-    contract = audit.read(audit.REPORT / "contract.json")
-    for name, digest in contract["source_hashes"].items():
-        assert old.sha(audit.ROOT / name) == digest
-    training, panels = audit.populations()
-    selected = select_train_panel(training, panels["primary"], {r["sample_id"] for r in old.load_rows("validation")})
-    panel = audit.read(audit.REPORT / "train_panel.json")
-    assert selected["sample_ids"] == panel["sample_ids"]
-    assert panel["stratum_counts"] == [410, 410, 410, 409, 409]
-    assert all(len(v) == 2048 for v in panels.values())
-    assert audit.verify_historical()
+    # Isolate the large real-data hash/membership check so its Python/Arrow arenas
+    # cannot invalidate unrelated tests' 2GiB per-process RSS guards.
+    code = """
+from scripts import audit_e012_generalization as audit
+from scripts import run_e012_causal_rope as old
+from protein_sequence_generation.e012_generalization import select_train_panel
+contract = audit.read(audit.REPORT / 'contract.json')
+for name, digest in contract['source_hashes'].items():
+    assert old.sha(audit.ROOT / name) == digest
+training, panels = audit.populations()
+selected = select_train_panel(training, panels['primary'], {r['sample_id'] for r in old.load_rows('validation')})
+panel = audit.read(audit.REPORT / 'train_panel.json')
+assert selected['sample_ids'] == panel['sample_ids']
+assert panel['stratum_counts'] == [410,410,410,409,409]
+assert all(len(v) == 2048 for v in panels.values())
+assert audit.verify_historical()
+"""
+    env = {**os.environ, "PYTHONPATH": str(audit.ROOT / "src") + os.pathsep + str(audit.ROOT)}
+    result = subprocess.run([sys.executable, "-c", code], cwd=audit.ROOT, env=env, capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_training_log_semantics_are_explicit_in_original_source():
