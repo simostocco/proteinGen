@@ -1,0 +1,18 @@
+{
+  "preparation_commit": "34ed55ee832637f7533b8127ddba3b6471d851f4",
+  "fixed_files_sha256": {
+    "configs/e010_phase4d_recurrent_capacity_v3.yaml": "f9fe825172d617fce1d97eb530cc7ee8ad2374a9a1c786adeeb7cadae7ed25f2",
+    "scripts/run_e010_phase4d_recurrent_capacity_v3.py": "dd0a45f36f1016827255f763a2032947bcd511827f854d9daee37465f9f95564",
+    "src/protein_distance_diffusion/models/e010_recurrent_local.py": "b267a147e6e037ebd5c423294da117bfae080a5c9d1d9e79428e56ae3e198c01",
+    "src/protein_distance_diffusion/training/e010_recurrent_capacity.py": "47438cf117ca3630dc82434b95bdc1149746e80f158de1574a1e53720f750656",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/recurrent_capacity_v3/cache_manifest.json": "cafd88b75a7f1fda44294ee53fc40af25c35e5c7dcedb830e32144335587ab0a",
+    "reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/recurrent_capacity_v3/cuda_preflight.json": "d3c9a61a0d983750dd927b1837aa8d0bcca11a42345c3366f064d45d66bef5ba"
+  },
+  "arms": [
+    "S",
+    "M",
+    "L"
+  ],
+  "successful_updates_each": 500,
+  "held_out_authorized": false
+}

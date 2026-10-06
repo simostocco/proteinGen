@@ -1,0 +1,59 @@
+{
+  "schema": "e010_v3_post_execution_validation",
+  "protected_inputs_rehashed": 57,
+  "fixed_execution_inputs_rehashed": 6,
+  "cache_sha256": "1609e1b7cdc8217115fa0574ea5056f3ccb575c88f9a63fc8687ad55cd7073f0",
+  "historical_tracked_files_unchanged": true,
+  "successful_updates": {
+    "S": 500,
+    "M": 500,
+    "L": 500
+  },
+  "boundaries_each": [
+    0,
+    25,
+    50,
+    100,
+    250,
+    500
+  ],
+  "states_each": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "all_boundaries_finite_no_collapse": true,
+  "all_boundaries_correction_bounds_valid": true,
+  "all_boundaries_frame_assessability_preserved": true,
+  "final_chirality_assessability_preserved_all_arms": true,
+  "intermediate_chirality_assessability_changes": [
+    {
+      "variant": "S",
+      "update": 100,
+      "state": 4,
+      "assessable": 13028,
+      "lost": 1,
+      "gained": 0
+    },
+    {
+      "variant": "S",
+      "update": 500,
+      "state": 3,
+      "assessable": 13028,
+      "lost": 1,
+      "gained": 0
+    },
+    {
+      "variant": "M",
+      "update": 100,
+      "state": 2,
+      "assessable": 13028,
+      "lost": 1,
+      "gained": 0
+    }
+  ],
+  "checkpoint_or_dataset_committed": false,
+  "held_out_launched": false
+}
