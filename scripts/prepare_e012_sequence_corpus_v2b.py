@@ -447,7 +447,11 @@ class Build:
             count = db.execute('SELECT count(*) FROM candidates').fetchone()[0]
             cutoff = db.execute('SELECT p FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1').fetchone()
             cutoff = cutoff[0] if cutoff and count>=self.cap else None
-            with self.stage('stream_filter_reservoir'), gzip.open(self.raw,'rb') as reader, gzip.open(self.raw,'rb') as verifier:
+            with self.stage('stream_filter_reservoir'), \
+                    self.raw.open('rb',buffering=8*1024**2) as raw_reader, \
+                    self.raw.open('rb',buffering=8*1024**2) as raw_verifier, \
+                    gzip.GzipFile(fileobj=raw_reader,mode='rb') as reader, \
+                    gzip.GzipFile(fileobj=raw_verifier,mode='rb') as verifier:
                 def source_at(off):
                     return next(fasta_records(verifier,off))
                 def same_hash_offsets(h):

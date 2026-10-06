@@ -151,3 +151,5 @@ The selected priority prefix is unchanged. Sorting reserves at most 32GB using
 batch temp coexists with final sorting. Sort files are transient under D:/tmp and
 are removed on SQLite close; certified residual-folder cleanup is recorded.
 Full source sequences remain streamed; only bounded SQLite caches reside in RAM.
+Both compressed source readers use 8MiB buffering to avoid small D: reads during
+gzip resume seeks and parsing. Gzip CRC validation and uncompressed offsets are unchanged.
