@@ -1,0 +1,13 @@
+........................................................................ [ 51%]
+....................................................................     [100%]
+=============================== warnings summary ===============================
+tests/test_e010_local_feasibility_v7.py::test_constrained_synthetic_feasible_active_infeasible[0.0-False-0.0]
+  /home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/optimize/_trustregion_constr/equality_constrained_sqp.py:217: UserWarning: Singular Jacobian matrix. Using SVD decomposition to perform the factorizations.
+    Z, LS, Y = projections(A, factorization_method)
+
+tests/test_e010_local_feasibility_v7.py::test_constrained_synthetic_feasible_active_infeasible[0.0-False-0.0]
+  /home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/optimize/_trustregion_constr/equality_constrained_sqp.py:81: UserWarning: Singular Jacobian matrix. Using SVD decomposition to perform the factorizations.
+    Z, LS, Y = projections(A, factorization_method)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+140 passed, 2 warnings in 29.54s

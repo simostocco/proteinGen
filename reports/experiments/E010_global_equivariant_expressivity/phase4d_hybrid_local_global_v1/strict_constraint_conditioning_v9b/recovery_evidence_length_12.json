@@ -1,0 +1,154 @@
+{
+  "converged": true,
+  "scipy_success": true,
+  "status": 1,
+  "message": "`gtol` termination condition is satisfied.",
+  "iterations": 39,
+  "function_evaluations": 56,
+  "cg_iterations": 219,
+  "optimality": 4.448412835335301e-13,
+  "initial_local": 0.4571441938552759,
+  "final_local": 0.10713492609617209,
+  "constraints": [
+    -0.22035580150836653,
+    -0.2628743013767856,
+    -2.448258042294146,
+    -1.207795161557696,
+    -1.3345971418463343,
+    -0.45309611325224786,
+    -1.0519774055265583,
+    -0.07880657339883221,
+    -0.2172525283090518,
+    -4.766507158236054,
+    -0.26256118647519383,
+    -1.2480869817062588,
+    -1.591071335042322,
+    -0.7328312726818499,
+    -0.7884335718059341,
+    -1.0776679391434323,
+    -1.609912067973706,
+    -0.7258944386255217,
+    -0.994729954689304,
+    -0.7801737373022412,
+    -1.1245168208092349,
+    -0.9590635656590533,
+    -0.8435578276471505,
+    -1.2624156947516996,
+    -0.9922049339150623,
+    -0.8009382578261862,
+    -0.9839307314814835,
+    -1.2561824723605277,
+    -0.9602568766257298,
+    -0.7322991398137784,
+    -1.1323697614767638
+  ],
+  "constraint_feasible": true,
+  "multipliers": [
+    1.1619939438029398e-12,
+    9.742290921444213e-13,
+    1.0458213468689532e-13,
+    2.118330910131665e-13,
+    1.9193295021012458e-13,
+    5.647616010090769e-13,
+    2.433321638866325e-13,
+    3.2638747324232527e-12,
+    1.173757606204214e-12,
+    5.368398999217856e-14,
+    9.722828496795517e-13,
+    2.0517822151169257e-13,
+    1.6088377872609517e-13,
+    3.4936179206380794e-13,
+    3.2464895532106793e-13,
+    2.374619913092309e-13,
+    1.5903775346825654e-13,
+    3.527036306248847e-13,
+    2.5732896189222504e-13,
+    3.2803736657800696e-13,
+    2.276510233449737e-13,
+    2.6694106682903906e-13,
+    3.0346959334851336e-13,
+    2.0278460409115698e-13,
+    2.580093122162656e-13,
+    3.19632421901989e-13,
+    2.601826351442936e-13,
+    2.0378567162573852e-13,
+    2.6657495505328935e-13,
+    3.496080922554032e-13,
+    2.2607314147788807e-13
+  ],
+  "complementarity": 2.572147836653069e-13,
+  "stationarity": {
+    "local_gradient_norm": 1.4634013724437835,
+    "lagrangian_correction_gradient_norm": 1.463401372442292,
+    "normalized_ball_kkt_max": 7.035081776590858e-08,
+    "projected_ball_mapping_max": 1.829623374828234e-07,
+    "boundary_active_fraction": 1.0
+  },
+  "quartets": {
+    "assessable": 9,
+    "correct": 5,
+    "inverted": 4,
+    "active_signed": 0,
+    "minimum_signed_quantity": 0.0590750199448086,
+    "minimum_signed_margin": 0.0590740199448086,
+    "new_inversions": 0,
+    "repaired_inversions": 0,
+    "assessability_lost": 0,
+    "minimum_bond_margin": 1.6242182606192663,
+    "minimum_frame_margin": 0.294364662885998,
+    "minimum_absolute_q_margin": 0.036599533080663986,
+    "exact_extra_feasible": true,
+    "constraint_slices": {
+      "signed": [
+        0,
+        5
+      ],
+      "unsigned_assessability": [
+        5,
+        9
+      ],
+      "frame_assessability": [
+        9,
+        18
+      ],
+      "bond_assessability": [
+        18,
+        29
+      ]
+    }
+  },
+  "history": [
+    {
+      "iteration": 1,
+      "normalized_objective": 1.0,
+      "optimality": 0.02499396110929101,
+      "constraint_violation": 0.0,
+      "trust_radius": 1.0,
+      "barrier_parameter": 1e-07
+    },
+    {
+      "iteration": 10,
+      "normalized_objective": 0.2395499589875659,
+      "optimality": 2.8978381494632426e-05,
+      "constraint_violation": 0.0,
+      "trust_radius": 26.304739369310532,
+      "barrier_parameter": 1e-07
+    },
+    {
+      "iteration": 20,
+      "normalized_objective": 0.23438618544660275,
+      "optimality": 1.2627799984811453e-08,
+      "constraint_violation": 0.0,
+      "trust_radius": 6057.276511466588,
+      "barrier_parameter": 2e-08
+    },
+    {
+      "iteration": 30,
+      "normalized_objective": 0.2343574573654833,
+      "optimality": 3.238310991347137e-11,
+      "constraint_violation": 0.0,
+      "trust_radius": 757159.5639333235,
+      "barrier_parameter": 1.6000000000000004e-10
+    }
+  ]
+}

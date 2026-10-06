@@ -1,0 +1,34 @@
+{
+  "classification": "COND-A",
+  "meaning": "V9 synthetic preflight is practically stationary under frozen physical sensitivity checks",
+  "cases": [
+    {
+      "length": 12,
+      "eligible_vectors": 80,
+      "stationarity_l2_sensitivity_threshold": 4.472135954999578e-05,
+      "physical_normalized_stationarity_l2": 6.1694483476480454e-09,
+      "best_shadow_normalized_decrease": -1.7752882497390488e-11
+    },
+    {
+      "length": 32,
+      "eligible_vectors": 240,
+      "stationarity_l2_sensitivity_threshold": 2.581988897471611e-05,
+      "physical_normalized_stationarity_l2": 1.3646105712488467e-07,
+      "best_shadow_normalized_decrease": 1.4872103548668747e-11
+    }
+  ],
+  "meaningful_feasible_descent_found": false,
+  "future_contract": {
+    "status": "proposal_only_not_applied_to_scientific_panel",
+    "primal": "exact nonpositive V9 extra constraints, global normalized safety residual <=1e-8, exact radial bounds and discrete gates",
+    "stationarity": "physical normalized L2 residual <= 1e-6/(sqrt(M)*1e-4/0.04), with derivative uncertainty tenfold smaller",
+    "dual_negativity_max": 1e-08,
+    "normalized_complementarity_max": 1e-06,
+    "shadow": "no feasible normalized local-loss decrease >=1e-6 at any frozen shadow scale"
+  },
+  "limitation": "Local numerical stationarity only, not global optimality or scientific-panel feasibility",
+  "recommended_next_action": "Prepare V10 with a preregistered physically normalized KKT termination contract",
+  "scientific_panel_launched": false,
+  "cuda_used": false,
+  "neural_training_launched": false
+}
