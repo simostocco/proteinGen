@@ -1,0 +1,481 @@
+{
+  "config": {
+    "classification_binary_gate": "preserve_V7_every_example",
+    "constraints": {
+      "active_tolerance": 1e-05,
+      "aligned_rmsd_ratio_limit": 1.01,
+      "assessability_gate": "every_example_preserves_all_baseline_assessable_quartets",
+      "continuous_chiral_ratio_limit": 1.0,
+      "inversion_gate": "every_example_final_count_at_most_Pg_count",
+      "normalized_feasibility_tolerance": 1e-08
+    },
+    "convergence": {
+      "boundary_relative_tolerance": 0.0001,
+      "complementarity_tolerance": 1e-06,
+      "dual_feasibility_tolerance": 1e-08,
+      "normalized_ball_kkt_max": 0.001,
+      "projected_ball_mapping_max": 0.001,
+      "strong_condition_450_min_per_arm": 18,
+      "strong_overall_min_per_arm": 48
+    },
+    "device": "cpu",
+    "full_result_reproduction_before_commit": true,
+    "gradient_validation": {
+      "absolute_tolerance": 1e-10,
+      "directions": [
+        "alternating_sign",
+        "sin_index",
+        "cos_index_times_1.7"
+      ],
+      "epsilons_angstrom": [
+        1e-06,
+        1e-05,
+        0.0001
+      ],
+      "pass_rule": "one_passing_epsilon_per_direction_for_every_baseline_panel_example",
+      "relative_tolerance": 1e-05
+    },
+    "history_interval": 10,
+    "initialization": "exact_zero_independently_for_every_example_and_arm",
+    "local_gain_threshold_pct": 5.0,
+    "material_gain_delta_percentage_points": 0.5,
+    "no_cuda": true,
+    "no_neural_training": true,
+    "no_restarts_or_setting_changes": true,
+    "objective": "local_mean_only",
+    "objective_normalization": "divide_by_frozen_baseline_local_mean_positive_constant",
+    "precision": "float64",
+    "primary_condition": 450,
+    "recurrence": {
+      "K": 8,
+      "eligibility": "historical_recomputed_each_step",
+      "s_max_angstrom": 0.04
+    },
+    "schema": "e010_phase4d_local_feasibility_v8",
+    "solver": {
+      "barrier_tol": 1e-12,
+      "constraint_hessian": "exact_autograd_matrix_free_HVP",
+      "gtol": 1e-12,
+      "initial_barrier_parameter": 1e-07,
+      "initial_barrier_tolerance": 1e-07,
+      "initial_constr_penalty": 1.0,
+      "initial_tr_radius": 1.0,
+      "maxiter": 1000,
+      "method": "trust-constr",
+      "objective_hessian": "exact_autograd_matrix_free_HVP",
+      "scipy_version": "1.18.1",
+      "sparse_jacobian": false,
+      "verbose": 0,
+      "xtol": 1e-12
+    },
+    "source_result_commit": "99c4b2393524059f3dbb757a8f1deee2f7517f57",
+    "threads_each": 1,
+    "workers": 4
+  },
+  "passed": true,
+  "records": [
+    {
+      "arm": "A",
+      "length": 12,
+      "optimizer": {
+        "active_constraints": [
+          false,
+          false
+        ],
+        "cg_iterations": 208,
+        "complementarity": 0.0,
+        "constraint_feasible": true,
+        "constraints": [
+          -0.2203557920087892,
+          -0.2628742936059727
+        ],
+        "converged": true,
+        "final_local": 0.10713493163122943,
+        "function_evaluations": 29,
+        "history": [
+          {
+            "barrier_parameter": 0.0,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.00990099009900991,
+              0.0
+            ],
+            "iteration": 1,
+            "local_objective": 0.4571441938552759,
+            "normalized_objective": 1.0,
+            "optimality": 0.025286893079759905,
+            "trust_radius": 1.0
+          },
+          {
+            "barrier_parameter": 0.0,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21854287236662828,
+              -0.2609993476755228
+            ],
+            "iteration": 10,
+            "local_objective": 0.10819486591920098,
+            "normalized_objective": 0.23667557714503892,
+            "optimality": 8.84071120409044e-06,
+            "trust_radius": 136.71297791587622
+          },
+          {
+            "barrier_parameter": 0.0,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.2203494549772841,
+              -0.2628814254079411
+            ],
+            "iteration": 20,
+            "local_objective": 0.1071382742073067,
+            "normalized_objective": 0.2343642895336102,
+            "optimality": 1.6351706364696287e-09,
+            "trust_radius": 2416.139816923882
+          }
+        ],
+        "initial_local": 0.4571441938552759,
+        "iterations": 29,
+        "message": "`gtol` termination condition is satisfied.",
+        "multipliers": [
+          0.0,
+          0.0
+        ],
+        "optimality": 6.821441351503258e-13,
+        "runtime_seconds": 1.7119012221228331,
+        "scipy_success": true,
+        "stationarity": {
+          "boundary_active_fraction": 1.0,
+          "lagrangian_correction_gradient_norm": 1.4634014275429514,
+          "local_gradient_norm": 1.4634014275429514,
+          "maximum_feasible_radial_residual": 0.0,
+          "maximum_tangential_residual": 2.847285365943774e-08,
+          "normalized_ball_kkt_max": 7.776167808382151e-08,
+          "projected_ball_mapping_max": 2.583508774912108e-07
+        },
+        "status": 1
+      }
+    },
+    {
+      "arm": "B",
+      "length": 12,
+      "optimizer": {
+        "active_constraints": [
+          false,
+          false
+        ],
+        "cg_iterations": 222,
+        "complementarity": 2.565670546822973e-13,
+        "constraint_feasible": true,
+        "constraints": [
+          -0.22035580423790935,
+          -0.26287453986841935
+        ],
+        "converged": true,
+        "final_local": 0.10713492381477242,
+        "function_evaluations": 34,
+        "history": [
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.00990099009900991,
+              0.0
+            ],
+            "iteration": 1,
+            "local_objective": 0.4571441938552759,
+            "normalized_objective": 1.0,
+            "optimality": 0.025278569536406236,
+            "trust_radius": 1.0
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21851499919613115,
+              -0.26097430622376605
+            ],
+            "iteration": 10,
+            "local_objective": 0.10824217353913712,
+            "normalized_objective": 0.23677906226105272,
+            "optimality": 9.247533375218861e-06,
+            "trust_radius": 133.82295198643976
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.2203491663442334,
+              -0.2628736754210613
+            ],
+            "iteration": 20,
+            "local_objective": 0.1071384238778042,
+            "normalized_objective": 0.23436461693686614,
+            "optimality": 1.554990768482726e-09,
+            "trust_radius": 997.3940364305396
+          },
+          {
+            "barrier_parameter": 8.000000000000001e-10,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.22035574543870007,
+              -0.26287632734217936
+            ],
+            "iteration": 30,
+            "local_objective": 0.10713497524264688,
+            "normalized_objective": 0.2343570730695182,
+            "optimality": 8.703861818725242e-12,
+            "trust_radius": 474393.0931565963
+          }
+        ],
+        "initial_local": 0.4571441938552759,
+        "iterations": 38,
+        "message": "`gtol` termination condition is satisfied.",
+        "multipliers": [
+          1.1620720983947517e-12,
+          9.760057204882633e-13
+        ],
+        "optimality": 4.202329295872381e-13,
+        "runtime_seconds": 5.497943439986557,
+        "scipy_success": true,
+        "stationarity": {
+          "boundary_active_fraction": 1.0,
+          "lagrangian_correction_gradient_norm": 1.4634013556173586,
+          "local_gradient_norm": 1.463401355616942,
+          "maximum_feasible_radial_residual": 0.0,
+          "maximum_tangential_residual": 3.3583055675463186e-08,
+          "normalized_ball_kkt_max": 9.171805737988132e-08,
+          "projected_ball_mapping_max": 1.575829376312658e-07
+        },
+        "status": 1
+      }
+    },
+    {
+      "arm": "A",
+      "length": 128,
+      "optimizer": {
+        "active_constraints": [
+          false,
+          false
+        ],
+        "cg_iterations": 1126,
+        "complementarity": 0.0,
+        "constraint_feasible": true,
+        "constraints": [
+          -0.21789792023328802,
+          -0.12516537207842515
+        ],
+        "converged": false,
+        "final_local": 0.172302616811552,
+        "function_evaluations": 47,
+        "history": [
+          {
+            "barrier_parameter": 0.0,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.00990099009900991,
+              0.0
+            ],
+            "iteration": 1,
+            "local_objective": 0.5906768765222914,
+            "normalized_objective": 1.0,
+            "optimality": 0.0019414652855112256,
+            "trust_radius": 1.0
+          },
+          {
+            "barrier_parameter": 0.0,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21605844492884174,
+              -0.12500733653583196
+            ],
+            "iteration": 10,
+            "local_objective": 0.17478572428058436,
+            "normalized_objective": 0.29590751090454814,
+            "optimality": 5.153947012283989e-06,
+            "trust_radius": 368.2763800760724
+          },
+          {
+            "barrier_parameter": 0.0,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21789377146060118,
+              -0.1251637822029098
+            ],
+            "iteration": 20,
+            "local_objective": 0.17231045910482268,
+            "normalized_objective": 0.2917169538095502,
+            "optimality": 4.723339839088783e-09,
+            "trust_radius": 6441.602777211454
+          },
+          {
+            "barrier_parameter": 0.0,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21789785721951604,
+              -0.12516552951367688
+            ],
+            "iteration": 30,
+            "local_objective": 0.17230267856755188,
+            "normalized_objective": 0.2917037815700737,
+            "optimality": 1.3584852242421494e-10,
+            "trust_radius": 48257.54896092954
+          },
+          {
+            "barrier_parameter": 0.0,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21789792023581345,
+              -0.1251653721007816
+            ],
+            "iteration": 40,
+            "local_objective": 0.1723026168115532,
+            "normalized_objective": 0.29170367701883576,
+            "optimality": 6.817690983134528e-11,
+            "trust_radius": 0.0006434336700241269
+          },
+          {
+            "barrier_parameter": 0.0,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21789792023328802,
+              -0.12516537207842515
+            ],
+            "iteration": 50,
+            "local_objective": 0.172302616811552,
+            "normalized_objective": 0.2917036770188337,
+            "optimality": 6.089630796006402e-11,
+            "trust_radius": 2.3214393860772057e-10
+          }
+        ],
+        "initial_local": 0.5906768765222914,
+        "iterations": 58,
+        "message": "`xtol` termination condition is satisfied.",
+        "multipliers": [
+          0.0,
+          0.0
+        ],
+        "optimality": 6.089630796006402e-11,
+        "runtime_seconds": 7.005976401967928,
+        "scipy_success": true,
+        "stationarity": {
+          "boundary_active_fraction": 0.9761904761904762,
+          "lagrangian_correction_gradient_norm": 0.4287661802902662,
+          "local_gradient_norm": 0.4287661802902662,
+          "maximum_feasible_radial_residual": 1.7281806581511113e-09,
+          "maximum_tangential_residual": 3.7557070514278224e-08,
+          "normalized_ball_kkt_max": 1.1973661446040348e-06,
+          "projected_ball_mapping_max": 1.5734020941631479e-06
+        },
+        "status": 2
+      }
+    },
+    {
+      "arm": "B",
+      "length": 128,
+      "optimizer": {
+        "active_constraints": [
+          false,
+          false
+        ],
+        "cg_iterations": 1411,
+        "complementarity": 1.2800518886332587e-12,
+        "constraint_feasible": true,
+        "constraints": [
+          -0.21789798015045725,
+          -0.12516508464830545
+        ],
+        "converged": true,
+        "final_local": 0.17230256253756912,
+        "function_evaluations": 41,
+        "history": [
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.00990099009900991,
+              0.0
+            ],
+            "iteration": 1,
+            "local_objective": 0.5906768765222914,
+            "normalized_objective": 1.0,
+            "optimality": 0.0019413842128305151,
+            "trust_radius": 1.0
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21607589010163986,
+              -0.12516490697525307
+            ],
+            "iteration": 10,
+            "local_objective": 0.17478988582908295,
+            "normalized_objective": 0.2959145562937685,
+            "optimality": 4.989733802501699e-06,
+            "trust_radius": 368.0282685440525
+          },
+          {
+            "barrier_parameter": 1e-07,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21788957390905395,
+              -0.12516862866528988
+            ],
+            "iteration": 20,
+            "local_objective": 0.17231046031397138,
+            "normalized_objective": 0.2917169558566063,
+            "optimality": 2.131814430397974e-09,
+            "trust_radius": 4830.65374336675
+          },
+          {
+            "barrier_parameter": 1.6000000000000004e-10,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.21789780858411756,
+              -0.12516865355186602
+            ],
+            "iteration": 30,
+            "local_objective": 0.17230333064933442,
+            "normalized_objective": 0.29170488552692125,
+            "optimality": 2.8795052247032213e-10,
+            "trust_radius": 5367615.560998024
+          },
+          {
+            "barrier_parameter": 1.2800000000000006e-12,
+            "constraint_violation": 0.0,
+            "constraints": [
+              -0.217897877306659,
+              -0.12516518606700222
+            ],
+            "iteration": 40,
+            "local_objective": 0.1723026785904821,
+            "normalized_objective": 0.29170378160889393,
+            "optimality": 3.7593822122742824e-12,
+            "trust_radius": 670951945.124753
+          }
+        ],
+        "initial_local": 0.5906768765222914,
+        "iterations": 47,
+        "message": "`gtol` termination condition is satisfied.",
+        "multipliers": [
+          5.8743243765771184e-12,
+          1.0226908664105543e-11
+        ],
+        "optimality": 4.0661766751485537e-13,
+        "runtime_seconds": 20.850136786000803,
+        "scipy_success": true,
+        "stationarity": {
+          "boundary_active_fraction": 0.9761904761904762,
+          "lagrangian_correction_gradient_norm": 0.4287660886899937,
+          "local_gradient_norm": 0.4287660886889376,
+          "maximum_feasible_radial_residual": 4.674096737520665e-14,
+          "maximum_tangential_residual": 1.189691251145716e-08,
+          "normalized_ball_kkt_max": 3.792883164360365e-07,
+          "projected_ball_mapping_max": 5.19899802218207e-07
+        },
+        "status": 1
+      }
+    }
+  ],
+  "scientific_panel_optimized": false
+}
