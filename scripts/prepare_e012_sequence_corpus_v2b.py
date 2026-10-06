@@ -326,152 +326,168 @@ class Build:
         import pyarrow.parquet as pq
         seen_path = self.root/'tmp/exact_hash_offsets.sqlite'
         state_path = self.root/'tmp/filter_checkpoint.json'
-        seen = connection(seen_path)
         db = connection(self.reservoir)
-        db.execute('PRAGMA cache_size=-3145728')  # Filter only: at most 3 GiB, on demand.
-        db.execute('ATTACH DATABASE ? AS seen',(str(seen_path),))
-        db.execute('PRAGMA seen.cache_size=-2097152')  # Compact hash/offset index only: 2 GiB.
-        seen.close()
-        db.execute('CREATE TABLE IF NOT EXISTS seen.hashes(h BLOB, off INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
-        db.execute('CREATE TABLE IF NOT EXISTS candidates(h BLOB, off INTEGER, p BLOB, seq TEXT, source_id TEXT, multiplicity INTEGER, historical INTEGER, external INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
-        db.execute('CREATE INDEX IF NOT EXISTS priority_index ON candidates(p,h,off)')
-        db.execute('CREATE TABLE IF NOT EXISTS progress(k TEXT PRIMARY KEY, v TEXT)')
-        row = db.execute("SELECT v FROM progress WHERE k='checkpoint'").fetchone()
-        state = json.loads(row[0]) if row else {'offset':0,'raw':0,'length_valid':0,'canonical':0,
-            'malformed':0,'unique':0,'duplicates':0,'stage':'external', 'inputs':inputs,
-            'raw_stats':Stats().checkpoint(),'valid_stats':Stats().checkpoint()}
-        if state['inputs'] != inputs:
-            raise RuntimeError('filter checkpoint input mismatch')
-        historical={}
-        train=self.repo/'outputs/e012_causal_rope_sequence/pilot_v1/train.parquet'
-        for batch in pq.ParquetFile(train).iter_batches(columns=['sample_id','sequence']):
-            for row in batch.to_pylist():
-                seq=row['sequence']
-                if not valid(seq):
-                    raise RuntimeError('historical TRAIN outside corpus contract')
-                historical[seq]=min(str(row['sample_id']),historical.get(seq,str(row['sample_id'])))
-        if len(historical)!=HISTORICAL_UNIQUE:
-            raise RuntimeError('historical unique count changed')
-        state.setdefault('historical_matches',{})
-        raw_stats,valid_stats = Stats(state['raw_stats']),Stats(state['valid_stats'])
-        count = db.execute('SELECT count(*) FROM candidates').fetchone()[0]
-        cutoff = db.execute('SELECT p FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1').fetchone()
-        cutoff = cutoff[0] if cutoff and count>=self.cap else None
-        with self.stage('stream_filter_reservoir'), gzip.open(self.raw,'rb') as reader, gzip.open(self.raw,'rb') as verifier:
-            def source_at(off):
-                return next(fasta_records(verifier,off))
-            def same_hash_offsets(h):
-                return [r[0] for r in db.execute('SELECT off FROM seen.hashes WHERE h=?',(h,))]
-            def sequence_at(h, off):
-                item = db.execute('SELECT seq FROM candidates WHERE h=? AND off=?',(h,off)).fetchone()
-                return item[0] if item else source_at(off)[2]
-            def checkpoint(next_offset):
-                nonlocal count,cutoff
-                # Trim one bounded batch above cap using an indexed priority order.
-                if count>self.cap:
-                    boundary=db.execute('SELECT p,h,off FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1 OFFSET ?', (count-self.cap-1,)).fetchone()
-                    db.execute('DELETE FROM candidates WHERE (p,h,off)>=(?,?,?)',boundary)
-                    count=self.cap
-                cutoff = db.execute('SELECT p FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1').fetchone()
-                cutoff = cutoff[0] if cutoff and count>=self.cap else None
-                state.update(offset=next_offset,raw_stats=raw_stats.checkpoint(),valid_stats=valid_stats.checkpoint())
-                db.execute("INSERT OR REPLACE INTO progress VALUES('checkpoint',?)",(json.dumps(state),))
-                db.commit()  # Attached DELETE journals atomically checkpoint both databases.
-                save(state_path,state)
-                self.guard()
-                print(json.dumps({'stage':'filter','raw':state['raw'],'unique':state['unique'],'reservoir':count,'free':shutil.disk_usage(self.root).free}),flush=True)
-            if state['stage']=='external':
-                for off,header,seq,malformed in fasta_records(reader,state['offset']):
-                    if off == state.get('skip_completed_offset'):
-                        continue
-                    state['raw']+=1
-                    raw_stats.add(seq)
-                    if malformed:
-                        state['malformed']+=1
-                    elif 20<=len(seq)<=500:
-                        state['length_valid']+=1
-                        if set(seq)<=ALPHABET:
-                            state['canonical']+=1
-                            valid_stats.add(seq)
-                            if seq in historical:
-                                rec=state['historical_matches'].setdefault(seq,[off,header.split()[0],0])
-                                rec[1]=min(rec[1],header.split()[0])
-                                rec[2]+=1
-                            h=sequence_digest(seq)
-                            duplicate=None
-                            for prior in same_hash_offsets(h):
-                                if sequence_at(h,prior)==seq:
-                                    duplicate=prior
-                                    break
-                            if duplicate is not None:
-                                state['duplicates']+=1
-                                db.execute('UPDATE candidates SET multiplicity=multiplicity+1, source_id=min(source_id,?) WHERE h=? AND off=?',(header.split()[0],h,duplicate))
-                            else:
-                                state['unique']+=1
-                                db.execute('INSERT INTO seen.hashes VALUES(?,?)',(h,off))
-                                p=priority(seq)
-                                if cutoff is None or p<=cutoff:
-                                    db.execute('INSERT INTO candidates VALUES(?,?,?,?,?,1,0,1)',(h,off,p,seq,header.split()[0]))
-                                    count+=1
-                    if state['raw']%CHECKPOINT_EVERY==0:
-                        # Yield consumes the next header. Resume from this completed record's
-                        # header, skip that one record, then continue with the next record.
-                        state['skip_completed_offset']=off
-                        checkpoint(off)
-                if state['raw'] != RAW_COUNT:
-                    raise RuntimeError(f'DATA2-F: parsed {state["raw"]} records, expected {RAW_COUNT}')
-                state['stage']='historical'
-                state.pop('skip_completed_offset',None)
-                checkpoint(reader.tell())
-            # Historical strings are known before streaming. Match them during that
-            # pass, avoiding thousands of random gzip seeks in the historical union.
-            if state['stage']!='complete':
-                external_reservoir=db.execute('SELECT count(*) FROM candidates WHERE external=1').fetchone()[0]
-                historical_added=0
-                cross_source=0
-                for ordinal,(seq,sid) in enumerate(sorted(historical.items())):
-                    h=sequence_digest(seq)
-                    match=state['historical_matches'].get(seq)
-                    if match is not None:
-                        off,source_id,multiplicity=match
-                        item=db.execute('SELECT seq FROM candidates WHERE h=? AND off=?',(h,off)).fetchone()
-                        if item:
-                            assert item[0]==seq
-                            db.execute('UPDATE candidates SET historical=1 WHERE h=? AND off=?',(h,off))
-                            cross_source+=1
+        try:
+            db.execute('PRAGMA cache_size=-5242880')  # Filter only: at most 5 GiB, on demand.
+            db.execute('CREATE TABLE IF NOT EXISTS exact_hashes(h BLOB, off INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
+            if seen_path.exists():
+                migrated=db.execute("SELECT name FROM sqlite_master WHERE name='exact_index_migration'").fetchone()
+                if not migrated:
+                    db.execute('ATTACH DATABASE ? AS legacy_seen',(str(seen_path),))
+                    db.execute('INSERT OR IGNORE INTO exact_hashes SELECT h,off FROM legacy_seen.hashes')
+                    db.execute('CREATE TABLE exact_index_migration(done INTEGER)')
+                    db.execute('INSERT INTO exact_index_migration VALUES(1)')
+                    db.commit()
+                    db.execute('DETACH DATABASE legacy_seen')
+            db.commit()
+            db.execute('PRAGMA journal_mode=WAL')
+            db.execute('PRAGMA synchronous=FULL')
+            db.execute('PRAGMA wal_autocheckpoint=65536')
+            db.execute('CREATE TABLE IF NOT EXISTS candidates(h BLOB, off INTEGER, p BLOB, seq TEXT, source_id TEXT, multiplicity INTEGER, historical INTEGER, external INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
+            db.execute('CREATE INDEX IF NOT EXISTS priority_index ON candidates(p,h,off)')
+            db.execute('CREATE TABLE IF NOT EXISTS progress(k TEXT PRIMARY KEY, v TEXT)')
+            row = db.execute("SELECT v FROM progress WHERE k='checkpoint'").fetchone()
+            state = json.loads(row[0]) if row else {'offset':0,'raw':0,'length_valid':0,'canonical':0,
+                'malformed':0,'unique':0,'duplicates':0,'stage':'external', 'inputs':inputs,
+                'raw_stats':Stats().checkpoint(),'valid_stats':Stats().checkpoint()}
+            if state['inputs'] != inputs:
+                raise RuntimeError('filter checkpoint input mismatch')
+            historical={}
+            train=self.repo/'outputs/e012_causal_rope_sequence/pilot_v1/train.parquet'
+            for batch in pq.ParquetFile(train).iter_batches(columns=['sample_id','sequence']):
+                for row in batch.to_pylist():
+                    seq=row['sequence']
+                    if not valid(seq):
+                        raise RuntimeError('historical TRAIN outside corpus contract')
+                    historical[seq]=min(str(row['sample_id']),historical.get(seq,str(row['sample_id'])))
+            if len(historical)!=HISTORICAL_UNIQUE:
+                raise RuntimeError('historical unique count changed')
+            state.setdefault('historical_matches',{})
+            raw_stats,valid_stats = Stats(state['raw_stats']),Stats(state['valid_stats'])
+            count = db.execute('SELECT count(*) FROM candidates').fetchone()[0]
+            cutoff = db.execute('SELECT p FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1').fetchone()
+            cutoff = cutoff[0] if cutoff and count>=self.cap else None
+            with self.stage('stream_filter_reservoir'), gzip.open(self.raw,'rb') as reader, gzip.open(self.raw,'rb') as verifier:
+                def source_at(off):
+                    return next(fasta_records(verifier,off))
+                def same_hash_offsets(h):
+                    return [r[0] for r in db.execute('SELECT off FROM exact_hashes WHERE h=?',(h,))]
+                def sequence_at(h, off):
+                    item = db.execute('SELECT seq FROM candidates WHERE h=? AND off=?',(h,off)).fetchone()
+                    return item[0] if item else source_at(off)[2]
+                def checkpoint(next_offset):
+                    nonlocal count,cutoff
+                    # Trim one bounded batch above cap using an indexed priority order.
+                    if count>self.cap:
+                        boundary=db.execute('SELECT p,h,off FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1 OFFSET ?', (count-self.cap-1,)).fetchone()
+                        db.execute('DELETE FROM candidates WHERE (p,h,off)>=(?,?,?)',boundary)
+                        count=self.cap
+                    cutoff = db.execute('SELECT p FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1').fetchone()
+                    cutoff = cutoff[0] if cutoff and count>=self.cap else None
+                    state.update(offset=next_offset,raw_stats=raw_stats.checkpoint(),valid_stats=valid_stats.checkpoint())
+                    db.execute("INSERT OR REPLACE INTO progress VALUES('checkpoint',?)",(json.dumps(state),))
+                    db.commit()  # One durable WAL transaction checkpoints hashes, records and cursor.
+                    save(state_path,state)
+                    self.guard()
+                    print(json.dumps({'stage':'filter','raw':state['raw'],'unique':state['unique'],'reservoir':count,'free':shutil.disk_usage(self.root).free}),flush=True)
+                if state['stage']=='external':
+                    for off,header,seq,malformed in fasta_records(reader,state['offset']):
+                        if off == state.get('skip_completed_offset'):
                             continue
-                        external=1
-                    else:
-                        source_id=sid
-                        external=0
-                        off=-ordinal-1
-                        multiplicity=1
-                    db.execute('INSERT INTO candidates VALUES(?,?,?,?,?,?,1,?)',(h,off,priority(seq),seq,source_id,multiplicity,external))
-                    historical_added+=1
-                state['union_counts']={'external_reservoir':external_reservoir,'historical_added':historical_added,'cross_source':cross_source}
-                state['stage']='complete'
-                db.execute('UPDATE progress SET v=? WHERE k=?',(json.dumps(state),'checkpoint'))
+                        state['raw']+=1
+                        raw_stats.add(seq)
+                        if malformed:
+                            state['malformed']+=1
+                        elif 20<=len(seq)<=500:
+                            state['length_valid']+=1
+                            if set(seq)<=ALPHABET:
+                                state['canonical']+=1
+                                valid_stats.add(seq)
+                                if seq in historical:
+                                    rec=state['historical_matches'].setdefault(seq,[off,header.split()[0],0])
+                                    rec[1]=min(rec[1],header.split()[0])
+                                    rec[2]+=1
+                                h=sequence_digest(seq)
+                                duplicate=None
+                                for prior in same_hash_offsets(h):
+                                    if sequence_at(h,prior)==seq:
+                                        duplicate=prior
+                                        break
+                                if duplicate is not None:
+                                    state['duplicates']+=1
+                                    db.execute('UPDATE candidates SET multiplicity=multiplicity+1, source_id=min(source_id,?) WHERE h=? AND off=?',(header.split()[0],h,duplicate))
+                                else:
+                                    state['unique']+=1
+                                    db.execute('INSERT INTO exact_hashes VALUES(?,?)',(h,off))
+                                    p=priority(seq)
+                                    if cutoff is None or p<=cutoff:
+                                        db.execute('INSERT INTO candidates VALUES(?,?,?,?,?,1,0,1)',(h,off,p,seq,header.split()[0]))
+                                        count+=1
+                        if state['raw']%CHECKPOINT_EVERY==0:
+                            # Yield consumes the next header. Resume from this completed record's
+                            # header, skip that one record, then continue with the next record.
+                            state['skip_completed_offset']=off
+                            checkpoint(off)
+                    if state['raw'] != RAW_COUNT:
+                        raise RuntimeError(f'DATA2-F: parsed {state["raw"]} records, expected {RAW_COUNT}')
+                    state['stage']='historical'
+                    state.pop('skip_completed_offset',None)
+                    checkpoint(reader.tell())
+                # Historical strings are known before streaming. Match them during that
+                # pass, avoiding thousands of random gzip seeks in the historical union.
+                if state['stage']!='complete':
+                    external_reservoir=db.execute('SELECT count(*) FROM candidates WHERE external=1').fetchone()[0]
+                    historical_added=0
+                    cross_source=0
+                    for ordinal,(seq,sid) in enumerate(sorted(historical.items())):
+                        h=sequence_digest(seq)
+                        match=state['historical_matches'].get(seq)
+                        if match is not None:
+                            off,source_id,multiplicity=match
+                            item=db.execute('SELECT seq FROM candidates WHERE h=? AND off=?',(h,off)).fetchone()
+                            if item:
+                                assert item[0]==seq
+                                db.execute('UPDATE candidates SET historical=1 WHERE h=? AND off=?',(h,off))
+                                cross_source+=1
+                                continue
+                            external=1
+                        else:
+                            source_id=sid
+                            external=0
+                            off=-ordinal-1
+                            multiplicity=1
+                        db.execute('INSERT INTO candidates VALUES(?,?,?,?,?,?,1,?)',(h,off,priority(seq),seq,source_id,multiplicity,external))
+                        historical_added+=1
+                    state['union_counts']={'external_reservoir':external_reservoir,'historical_added':historical_added,'cross_source':cross_source}
+                    state['stage']='complete'
+                    db.execute('UPDATE progress SET v=? WHERE k=?',(json.dumps(state),'checkpoint'))
+                    db.commit()
+                union=state['union_counts']
+                external_reservoir=union['external_reservoir']
+                historical_added=union['historical_added']
+                cross_source=union['cross_source']
+                n=db.execute('SELECT count(*) FROM candidates').fetchone()[0]
+                db.execute('DROP TABLE exact_hashes')
                 db.commit()
-            union=state['union_counts']
-            external_reservoir=union['external_reservoir']
-            historical_added=union['historical_added']
-            cross_source=union['cross_source']
-            n=db.execute('SELECT count(*) FROM candidates').fetchone()[0]
+                db.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+                db.execute('PRAGMA journal_mode=DELETE')
+                db.close()
+                stats={'raw_count':state['raw'],'malformed':state['malformed'],
+                    'length_valid':state['length_valid'],'canonical_valid':state['canonical'],
+                    'external_exact_unique_encountered':state['unique'],'exact_duplicates_removed':state['duplicates'],
+                    'external_reservoir_count':external_reservoir,'historical_unique':HISTORICAL_UNIQUE,
+                    'historical_added_to_reservoir':historical_added,'cross_source_reservoir_overlap':cross_source,
+                    'union_count':n,'raw_statistics':raw_stats.summary(),'canonical_statistics':valid_stats.summary(),
+                    'gzip_crc_verified':True,'seed':SEED,
+                    'priority_rule':'SHA256(E012-V2B:12014 NUL || canonical sequence); ascending (priority, sequence SHA256, source offset)',
+                    'representative_rule':'First source offset for the exact sequence; lexicographically smallest UniRef ID among exact duplicates encountered',
+                    'collision_verification':'Same SHA256 always compared by full string; source gzip seek for discarded reservoir records'}
+                save(self.root/'stats/filtering_stats.json',stats)
+                save(self.report/'filtering_stats.json',stats)
+                self.complete('reservoir',inputs,[self.reservoir,self.root/'stats/filtering_stats.json'],statistics=stats)
+                self.cleanup([seen_path,state_path],self.marker('reservoir'))
+        finally:
             db.close()
-            stats={'raw_count':state['raw'],'malformed':state['malformed'],
-                'length_valid':state['length_valid'],'canonical_valid':state['canonical'],
-                'external_exact_unique_encountered':state['unique'],'exact_duplicates_removed':state['duplicates'],
-                'external_reservoir_count':external_reservoir,'historical_unique':HISTORICAL_UNIQUE,
-                'historical_added_to_reservoir':historical_added,'cross_source_reservoir_overlap':cross_source,
-                'union_count':n,'raw_statistics':raw_stats.summary(),'canonical_statistics':valid_stats.summary(),
-                'gzip_crc_verified':True,'seed':SEED,
-                'priority_rule':'SHA256(E012-V2B:12014 NUL || canonical sequence); ascending (priority, sequence SHA256, source offset)',
-                'representative_rule':'First source offset for the exact sequence; lexicographically smallest UniRef ID among exact duplicates encountered',
-                'collision_verification':'Same SHA256 always compared by full string; source gzip seek for discarded reservoir records'}
-            save(self.root/'stats/filtering_stats.json',stats)
-            save(self.report/'filtering_stats.json',stats)
-            self.complete('reservoir',inputs,[self.reservoir,self.root/'stats/filtering_stats.json'],statistics=stats)
-            self.cleanup([seen_path,state_path],self.marker('reservoir'))
 
     def search_command(self, query, out, tmp):
         indexed=self.root/'mmseqs/protected_index/db' if hasattr(self,'root') else None
@@ -1124,7 +1140,7 @@ class Build:
             'aa_frequencies':final['statistics']['aa_frequencies'],
             'selection_method':method,'final_fasta':final['fasta'],'final_manifest':final['manifest'],
             'shard_root':final['shard_root'],'shard_count':512,
-            'tests':'14 V2B integrity tests including real MMseqs policy boundary, collision, crash/resume and loader parity; all frozen bytes independently verified.',
+            'tests':'15 V2B integrity tests including real MMseqs policy boundary, collision, crash/resume and loader parity; all frozen bytes independently verified.',
             'training_launched':False,'classification':final['classification'],
             'recommended_next_experiment':'One fixed-budget E012 causal-RoPE data-scaling comparison against historical unique TRAIN, with unchanged architecture and protected evaluation panels.'}
         save(self.report/'chatgpt_handoff.json',report)

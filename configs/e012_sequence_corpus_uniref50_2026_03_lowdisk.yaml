@@ -17,8 +17,9 @@ protected_sensitivity: 7.5
 screen_batch_size: 100000
 threads: 8
 sqlite_main_cache_mib: 512
-sqlite_filter_cache_mib: 3072
-sqlite_exact_hash_index_cache_mib: 2048
+sqlite_filter_cache_mib: 5120
+sqlite_filter_journal_mode: WAL
+sqlite_filter_synchronous: FULL
 sqlite_exclusions_cache_mib: 64
 shards: 512
 shard_format: parquet_zstd

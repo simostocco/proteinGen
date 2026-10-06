@@ -25,9 +25,9 @@ index; its 2 GB allowance is included in the 8 GB search-stage budget. A measure
 10k historical search pilot projects 3.32 GB for 100k batches with 4x disk slack. Runtime floor is 30% of starting free
 capacity. Free-space monitoring every 10s, with checks at transaction boundaries
 and during subprocesses, stops before that reserve is breached.
-SQLite caches are bounded at 512 MiB per ordinary connection, 3 GiB for the active
-filter connection, 2 GiB for the compact
-hash/offset index and 64 MiB for exclusions, allocated only on demand. Full external
+SQLite caches are bounded at 512 MiB per ordinary connection, 5 GiB total for the
+single active filter database including its compact hash index, and 64 MiB for
+exclusions, allocated only on demand. Full external
 sequences are never held as an in-memory corpus. These caps fit inspected available RAM.
 Report sampled filesystem consumption separately from planned peak; unrelated D: writes may
 affect free-space measurements. Use at most eight CPU threads and no GPU.
@@ -95,8 +95,11 @@ For cluster sizes n_i, N=sum n_i, p_i=n_i/N: inverse Simpson = 1/sum(p_i^2),
 entropy effective = exp(-sum(p_i log p_i)); Gini = sum_ij |n_i-n_j|/(2*K*N).
 Singleton fractions use explicit cluster and sequence denominators.
 
-Resume: transactional attached SQLite journals checkpoint dedup index and reservoir
-together. Reservoir stage inputs are pinned. Search batches have checksummed result
+Resume: one SQLite database with WAL and synchronous=FULL atomically checkpoints
+the dedup hash index, reservoir and cursor. A prior attached-index checkpoint is
+migrated transactionally and retained until reservoir completion. Source parsing
+resumes from the same cursor. Checkpoint/truncate WAL before hashing the completed
+reservoir. Reservoir stage inputs are pinned. Search batches have checksummed result
 and zero-overlap certificates before cleanup. Independent verification progress is
 separate from immutable exclusion DB. Assignment commits each 100k rows; final shards
 and concatenated gzip offsets checkpoint individually. On resume truncate only the

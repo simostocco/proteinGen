@@ -142,6 +142,32 @@ class V2BTests(unittest.TestCase):
             self.assertEqual(stats['historical_unique'],3)
             self.assertEqual(stats['union_count'],5+stats['historical_added_to_reservoir'])
 
+    def test_attached_hash_index_checkpoint_migrates_without_recounting(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            b,records=self.fixture(root,cap=20)
+            real_save=m.save
+            def injected(path,obj):
+                real_save(path,obj)
+                if Path(path).name=='filter_checkpoint.json':
+                    raise RuntimeError('stop at checkpoint')
+            with patch.object(m,'RAW_COUNT',len(records)),patch.object(m,'HISTORICAL_UNIQUE',3),patch.object(m,'CHECKPOINT_EVERY',3):
+                with patch.object(m,'save',injected):
+                    with self.assertRaisesRegex(RuntimeError,'stop at checkpoint'):
+                        b.filter_reservoir()
+                db=sqlite3.connect(b.reservoir)
+                db.execute('ATTACH DATABASE ? AS old_seen',(str(root/'tmp/exact_hash_offsets.sqlite'),))
+                db.execute('CREATE TABLE old_seen.hashes(h BLOB,off INTEGER,PRIMARY KEY(h,off)) WITHOUT ROWID')
+                db.execute('INSERT INTO old_seen.hashes SELECT h,off FROM exact_hashes')
+                db.execute('DROP TABLE exact_hashes')
+                db.commit()
+                db.close()
+                b.filter_reservoir()
+            s=json.loads((root/'stats/filtering_stats.json').read_text())
+            self.assertEqual(s['raw_count'],len(records))
+            self.assertEqual(s['external_exact_unique_encountered'],8)
+            self.assertEqual(s['exact_duplicates_removed'],1)
+
     def test_reusable_target_index_preserves_search_results(self):
         import subprocess
         import random
