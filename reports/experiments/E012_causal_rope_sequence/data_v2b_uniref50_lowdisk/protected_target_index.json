@@ -1,0 +1,35 @@
+{
+  "bytes": 1011642895,
+  "commands": [
+    [
+      "mmseqs",
+      "createdb",
+      "/mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/protected/protected.fasta",
+      "/mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/mmseqs/protected_index/db",
+      "--dbtype",
+      "1",
+      "--shuffle",
+      "0"
+    ],
+    [
+      "mmseqs",
+      "createindex",
+      "/mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/mmseqs/protected_index/db",
+      "/mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/mmseqs/protected_index/tmp",
+      "-s",
+      "7.5",
+      "--threads",
+      "8",
+      "--split-memory-limit",
+      "4G",
+      "--remove-tmp-files",
+      "0"
+    ]
+  ],
+  "inputs": {
+    "mmseqs_version": "15-6f452+ds-2",
+    "protected_sha256": "1f6df25e70e90d41bfb6a86268372d652f9ddccff15d4b0bfaf00899dca419ae",
+    "sensitivity": 7.5
+  },
+  "reference": "https://github.com/soedinglab/MMseqs2/wiki/Home/726c6045e91bb3554ec2dbac02cf16272d17a83c#searching"
+}

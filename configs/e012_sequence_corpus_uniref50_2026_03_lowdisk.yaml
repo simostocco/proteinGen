@@ -1,0 +1,32 @@
+version: e012_data_v2b_lowdisk_v1
+release: '2026_03'
+source: UniRef50_representatives
+root: /mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2
+raw_bytes: 8780552383
+raw_md5: 0492e3cf4093276ae4319ba24d52514f
+reservoir_cap: 24000000
+target: 20000000
+minimum_useful: 10000000
+seed: 12014
+alphabet: ACDEFGHIKLMNPQRSTVWY
+length: [20, 500]
+protected_identity: 0.30
+protected_coverage: 0.80
+protected_cov_mode: 0
+protected_sensitivity: 7.5
+screen_batch_size: 100000
+threads: 8
+shards: 512
+shard_format: parquet_zstd
+disk_max_fraction_of_starting_free: 0.70
+permanent_decompressed_source: false
+full_corpus_local_clustering: false
+diagnostic_sample: 1000000
+diagnostic_candidates_by_resource: [1000000, 250000, 100000, 10000]
+diagnostic_pilot: 10000
+diagnostic_extrapolation_slack: 4
+diagnostic_max_wall_seconds: 7200
+diagnostic_max_ram_bytes: 8589934592
+diagnostic_max_temp_bytes: 20000000000
+additional_databases: false
+training: false

@@ -1,0 +1,52 @@
+{
+  "allowed_simultaneous_bytes": 132728000921,
+  "assumptions": "No permanent decompression or full filtered FASTA. SHA256+offset index only, full-sequence collision checks by gzip source seek. At most 24M external sequences in SQLite. Screen 100000-sequence batches sequentially; at most one batch database/temp tree exists. No full corpus clustering. Compressed FASTA and zstd Parquet shards retained. Temporary index cleaned only after reservoir completion marker. Reservoir cleaned only after final independent homology verification, hashes, and certification marker.",
+  "cpu_threads": 8,
+  "mmseqs_version": "15-6f452+ds-2",
+  "pass": true,
+  "planned_peak_bytes": 79780552383,
+  "safety_fraction": 0.7,
+  "stage_components_bytes": {
+    "batched_protected_screen": {
+      "chunk_fasta_and_mmseqs_dbs_results_tmp": 8000000000,
+      "metadata_and_journals": 5000000000,
+      "raw": 8780552383,
+      "reservoir_sqlite": 30000000000
+    },
+    "finalization_and_verification": {
+      "canonical_gzip_max_length_allowance": 11000000000,
+      "metadata_and_indices": 5000000000,
+      "parquet_shards_max_length_allowance": 12000000000,
+      "raw": 8780552383,
+      "reservoir_sqlite": 30000000000,
+      "transactions_and_audit": 5000000000,
+      "verification_chunk_mmseqs": 8000000000
+    },
+    "sampled_diversity_after_certified_reservoir_cleanup": {
+      "audit": 1000000000,
+      "final_gzip_shards_metadata": 28000000000,
+      "one_million_sample_and_mmseqs_tmp": 20000000000,
+      "raw": 8780552383
+    },
+    "source_download": {
+      "metadata_allowance": 1000000000,
+      "source_and_retained_resumable_ranges": 17561104766
+    },
+    "stream_filter_reservoir": {
+      "hash_offset_index": 6000000000,
+      "journals_and_pages": 5000000000,
+      "raw": 8780552383,
+      "reservoir_sqlite_sequences_24m": 30000000000
+    }
+  },
+  "stage_totals_bytes": {
+    "batched_protected_screen": 51780552383,
+    "finalization_and_verification": 79780552383,
+    "sampled_diversity_after_certified_reservoir_cleanup": 57780552383,
+    "source_download": 18561104766,
+    "stream_filter_reservoir": 49780552383
+  },
+  "starting_free_bytes": 189611429888,
+  "timestamp": "2026-10-06T10:36:42.043630+00:00",
+  "training": false
+}
