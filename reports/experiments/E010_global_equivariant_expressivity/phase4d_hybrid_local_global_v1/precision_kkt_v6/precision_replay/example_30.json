@@ -1,0 +1,231 @@
+{
+  "index": 30,
+  "metrics": {
+    "aligned_rmsd": 2.070621573764192,
+    "chiral_error_sum": 58.97648189829867,
+    "chiral_loss_eligible": 448,
+    "chirality_assessability_gained": 0,
+    "chirality_assessability_lost": 0,
+    "chirality_assessable": 448,
+    "chirality_common_assessable": 448,
+    "chirality_common_baseline_inversions": 165,
+    "chirality_common_inversions": 140,
+    "chirality_inversions": 140,
+    "collapse": false,
+    "condition": 50,
+    "continuous_chiral_loss": 0.1316439328087024,
+    "displacement_max": 0.1599999999991552,
+    "displacement_mean_square": 0.025486474496725538,
+    "displacement_rms": 0.15964483861599013,
+    "finite": true,
+    "frame_assessability_preserved": true,
+    "frame_degenerate": 0,
+    "frame_eligible": 449,
+    "frame_interior": 449,
+    "input_frame_degenerate": 0,
+    "input_frame_eligible": 449,
+    "local_mse": {
+      "1": 1.2211056792679154,
+      "2": 1.8639123130763842,
+      "3": 2.2620443763037525
+    },
+    "local_rmse": {
+      "1": 1.105036505853049,
+      "2": 1.3652517398181128,
+      "3": 1.5040094335820346
+    },
+    "mean_local_rmse": 1.3247658930843988,
+    "radius_gyration": 25.987875555048824,
+    "raw_cartesian": 1.4643833096319556,
+    "sample_id": "6tzk_A",
+    "step_correction_max": 0.039999999999788954,
+    "step_correction_rms": 0.03991120965399749,
+    "stratum": "385-500"
+  },
+  "objective_arithmetic": "pure_float64_only_cartesian_cast_removed",
+  "optimizer": {
+    "closure_evaluations": 566,
+    "converged": true,
+    "history": [
+      {
+        "closure_evaluations": 24,
+        "coordinate_change_max_angstrom": 0.047738428442486526,
+        "iteration": 10,
+        "objective_contribution": 0.4491723138007693,
+        "projected_gradient_residual": 0.130146555177902,
+        "relative_objective_change": 0.00022100658192808487,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 44,
+        "coordinate_change_max_angstrom": 0.005303993997574153,
+        "iteration": 20,
+        "objective_contribution": 0.44879436569907133,
+        "projected_gradient_residual": 0.02063096829509146,
+        "relative_objective_change": 3.666456926953998e-06,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 64,
+        "coordinate_change_max_angstrom": 0.001058291433700871,
+        "iteration": 30,
+        "objective_contribution": 0.4487866362527892,
+        "projected_gradient_residual": 0.006314335017176211,
+        "relative_objective_change": 1.2132315746482547e-07,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 84,
+        "coordinate_change_max_angstrom": 0.00040765055050933307,
+        "iteration": 40,
+        "objective_contribution": 0.44878634427658753,
+        "projected_gradient_residual": 0.0008601870874411997,
+        "relative_objective_change": 2.4983083379837012e-09,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 104,
+        "coordinate_change_max_angstrom": 5.082708946374713e-06,
+        "iteration": 50,
+        "objective_contribution": 0.44878633844431315,
+        "projected_gradient_residual": 0.00012270526655105683,
+        "relative_objective_change": 3.026695560848225e-11,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 131,
+        "coordinate_change_max_angstrom": 2.411932068725158e-06,
+        "iteration": 60,
+        "objective_contribution": 0.4487863383101793,
+        "projected_gradient_residual": 7.545757963074091e-05,
+        "relative_objective_change": 2.8689828290850983e-12,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 159,
+        "coordinate_change_max_angstrom": 1.7043452970973815e-06,
+        "iteration": 70,
+        "objective_contribution": 0.44878633828572445,
+        "projected_gradient_residual": 5.113911831952703e-05,
+        "relative_objective_change": 4.405364961712621e-13,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 189,
+        "coordinate_change_max_angstrom": 1.5694006048280086e-06,
+        "iteration": 80,
+        "objective_contribution": 0.44878633827416736,
+        "projected_gradient_residual": 2.937171021506721e-05,
+        "relative_objective_change": 2.5107693701897915e-13,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 224,
+        "coordinate_change_max_angstrom": 2.3181170851220637e-06,
+        "iteration": 90,
+        "objective_contribution": 0.44878633826713443,
+        "projected_gradient_residual": 1.935529515137647e-05,
+        "relative_objective_change": 4.805045250577678e-13,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 258,
+        "coordinate_change_max_angstrom": 3.1206013886225885e-06,
+        "iteration": 100,
+        "objective_contribution": 0.4487863382647889,
+        "projected_gradient_residual": 1.693718602798135e-05,
+        "relative_objective_change": 4.340972026284362e-13,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 292,
+        "coordinate_change_max_angstrom": 6.823066124511306e-07,
+        "iteration": 110,
+        "objective_contribution": 0.4487863382632277,
+        "projected_gradient_residual": 1.3156579382954036e-05,
+        "relative_objective_change": 5.695444116327053e-14,
+        "stable_iterations": 1
+      },
+      {
+        "closure_evaluations": 329,
+        "coordinate_change_max_angstrom": 1.5939524420423652e-06,
+        "iteration": 120,
+        "objective_contribution": 0.44878633825865727,
+        "projected_gradient_residual": 1.1068703009023128e-05,
+        "relative_objective_change": 1.9589885269510887e-13,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 368,
+        "coordinate_change_max_angstrom": 5.891962965131297e-07,
+        "iteration": 130,
+        "objective_contribution": 0.44878633825584197,
+        "projected_gradient_residual": 6.222233212021151e-06,
+        "relative_objective_change": 2.2093438190040615e-14,
+        "stable_iterations": 1
+      },
+      {
+        "closure_evaluations": 412,
+        "coordinate_change_max_angstrom": 1.858417993273791e-07,
+        "iteration": 140,
+        "objective_contribution": 0.4487863382555688,
+        "projected_gradient_residual": 6.0022017303611495e-06,
+        "relative_objective_change": 6.772360450213455e-15,
+        "stable_iterations": 7
+      },
+      {
+        "closure_evaluations": 459,
+        "coordinate_change_max_angstrom": 2.848864348455377e-07,
+        "iteration": 150,
+        "objective_contribution": 0.44878633825535513,
+        "projected_gradient_residual": 5.894368750550202e-06,
+        "relative_objective_change": 9.603429163007604e-15,
+        "stable_iterations": 1
+      },
+      {
+        "closure_evaluations": 504,
+        "coordinate_change_max_angstrom": 1.923220839066297e-07,
+        "iteration": 160,
+        "objective_contribution": 0.44878633825494196,
+        "projected_gradient_residual": 4.928931965924741e-06,
+        "relative_objective_change": 6.217248937900877e-15,
+        "stable_iterations": 7
+      },
+      {
+        "closure_evaluations": 566,
+        "coordinate_change_max_angstrom": 4.484695641977432e-07,
+        "iteration": 170,
+        "objective_contribution": 0.4487863382542868,
+        "projected_gradient_residual": 4.285079350036668e-06,
+        "relative_objective_change": 1.0824674490095276e-14,
+        "stable_iterations": 17
+      }
+    ],
+    "iterations": 170,
+    "projected_gradient_residual": 4.285079350036668e-06,
+    "runtime_seconds": 11.452157029882073,
+    "stable_iterations": 17,
+    "termination": "registered_convergence"
+  },
+  "optimizer_settings_exactly_historical": true,
+  "record": {
+    "condition": 50,
+    "sample_id": "6tzk_A",
+    "stratum": "385-500"
+  },
+  "start": "original_zero",
+  "state_coordinate_sha256": [
+    "34f3b98a9939150a474c4683d449f52b2964d74d29b4c4df12820ff0c737e0a7",
+    "199c3578752b507b5b174e1540cf015c79b6460702670ff03cb7daf26f427a67",
+    "1b72289a016795f881643fcbb31a10d257d98064e2532e890a8f025d6f3cbec6",
+    "d2e82085529ccce13a6f3df6cc9f2d5c867f6458c21e97758f60b2b02de1551f",
+    "385679ca7090cdef6a125ad7e3f3fc533b82d6030c123b04a9a6c50d4fe6efc6"
+  ],
+  "step_correction_max": 0.039999999999788954,
+  "terms": {
+    "cartesian": 0.02440638849386593,
+    "chiral": 0.0045265547546472235,
+    "local": 0.029705902048044734,
+    "total": 0.4487863382542868
+  }
+}

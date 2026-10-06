@@ -1,0 +1,150 @@
+{
+  "index": 35,
+  "metrics": {
+    "aligned_rmsd": 15.72088359891387,
+    "chiral_error_sum": 89.37173072683248,
+    "chiral_loss_eligible": 180,
+    "chirality_assessability_gained": 0,
+    "chirality_assessability_lost": 0,
+    "chirality_assessable": 180,
+    "chirality_common_assessable": 180,
+    "chirality_common_baseline_inversions": 85,
+    "chirality_common_inversions": 86,
+    "chirality_inversions": 86,
+    "collapse": false,
+    "condition": 450,
+    "continuous_chiral_loss": 0.4965096151490693,
+    "displacement_max": 0.15999999999965422,
+    "displacement_mean_square": 0.025320218577866805,
+    "displacement_rms": 0.15912328106806622,
+    "finite": true,
+    "frame_assessability_preserved": true,
+    "frame_degenerate": 0,
+    "frame_eligible": 181,
+    "frame_interior": 181,
+    "input_frame_degenerate": 0,
+    "input_frame_eligible": 181,
+    "local_mse": {
+      "1": 5.051328186264411,
+      "2": 18.582929846066413,
+      "3": 42.00011573484136
+    },
+    "local_rmse": {
+      "1": 2.247516003561356,
+      "2": 4.3107922527148546,
+      "3": 6.480749627538573
+    },
+    "mean_local_rmse": 4.346352627938262,
+    "radius_gyration": 7.475509236362864,
+    "raw_cartesian": 91.13905862120292,
+    "sample_id": "8cmd_A",
+    "step_correction_max": 0.03999999999991398,
+    "step_correction_rms": 0.03978082026701658,
+    "stratum": "129-256"
+  },
+  "objective_arithmetic": "pure_float64_only_cartesian_cast_removed",
+  "optimizer": {
+    "closure_evaluations": 202,
+    "converged": true,
+    "history": [
+      {
+        "closure_evaluations": 23,
+        "coordinate_change_max_angstrom": 0.028007170717000873,
+        "iteration": 10,
+        "objective_contribution": 25.900536366136173,
+        "projected_gradient_residual": 0.11991014357241071,
+        "relative_objective_change": 5.5512544305952496e-05,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 43,
+        "coordinate_change_max_angstrom": 0.004096883822921656,
+        "iteration": 20,
+        "objective_contribution": 25.897376839125545,
+        "projected_gradient_residual": 0.035443097004565036,
+        "relative_objective_change": 1.3511189766247858e-06,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 63,
+        "coordinate_change_max_angstrom": 0.0009556702847000826,
+        "iteration": 30,
+        "objective_contribution": 25.8972927144799,
+        "projected_gradient_residual": 0.00601265119241673,
+        "relative_objective_change": 4.751269206159458e-08,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 83,
+        "coordinate_change_max_angstrom": 0.00012202241099319976,
+        "iteration": 40,
+        "objective_contribution": 25.897290747465824,
+        "projected_gradient_residual": 0.00026411024718734803,
+        "relative_objective_change": 7.553513736342339e-10,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 103,
+        "coordinate_change_max_angstrom": 1.705005506373312e-05,
+        "iteration": 50,
+        "objective_contribution": 25.897290717655196,
+        "projected_gradient_residual": 2.4553821253426304e-05,
+        "relative_objective_change": 1.1827109936947772e-11,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 125,
+        "coordinate_change_max_angstrom": 4.0892928514668927e-07,
+        "iteration": 60,
+        "objective_contribution": 25.897290717144962,
+        "projected_gradient_residual": 1.7610810688399294e-05,
+        "relative_objective_change": 3.6120747990389017e-13,
+        "stable_iterations": 6
+      },
+      {
+        "closure_evaluations": 161,
+        "coordinate_change_max_angstrom": 4.1459057567441227e-07,
+        "iteration": 70,
+        "objective_contribution": 25.897290717109673,
+        "projected_gradient_residual": 7.739736134672699e-06,
+        "relative_objective_change": 6.982704415927998e-14,
+        "stable_iterations": 6
+      },
+      {
+        "closure_evaluations": 202,
+        "coordinate_change_max_angstrom": 2.71987632476113e-07,
+        "iteration": 80,
+        "objective_contribution": 25.897290717104173,
+        "projected_gradient_residual": 5.419631632174673e-06,
+        "relative_objective_change": 2.1263638201750925e-14,
+        "stable_iterations": 16
+      }
+    ],
+    "iterations": 80,
+    "projected_gradient_residual": 5.419631632174673e-06,
+    "runtime_seconds": 4.058156336890534,
+    "stable_iterations": 16,
+    "termination": "registered_convergence"
+  },
+  "optimizer_settings_exactly_historical": true,
+  "record": {
+    "condition": 450,
+    "sample_id": "8cmd_A",
+    "stratum": "129-256"
+  },
+  "start": "original_zero",
+  "state_coordinate_sha256": [
+    "3f9ae35628cccc3ecdb3fc8433afe1ec6f13b5463f6cf41745d35df4fc2cc54b",
+    "1a40692907abd92a26820378603bb7401f1ba34f9b8ab4d4394982cef257f63a",
+    "83d3bc12fcc745f681ccaa94d64612e4bfe080a3a9f322b299da33fbf2bd4732",
+    "053ab64cd255bd8c1d33b229d1a79c0dcff016711dcd69c34ab7b5a207133a44",
+    "580f00e72ef51b601f0d38cfe3af5cb093256dad54958512dec00948b8fa966a"
+  ],
+  "step_correction_max": 0.03999999999991398,
+  "terms": {
+    "cartesian": 1.518984310353382,
+    "chiral": 0.006859446674866258,
+    "local": 0.3646354098176232,
+    "total": 25.897290717104173
+  }
+}

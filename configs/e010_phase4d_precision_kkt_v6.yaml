@@ -1,0 +1,33 @@
+schema: e010_phase4d_precision_kkt_v6
+source_result_commit: f846606e6784eda9517aba4d3c25d0c63266cb4c
+device: cpu
+workers: 4
+threads_each: 1
+stalled_indices: [4, 11, 18, 19, 21, 27, 28, 30, 34, 35, 36, 42, 49, 50, 53, 58]
+control_indices: [2, 6, 8, 9, 10, 25]
+control_rule: first_two_in_cached_index_order_per_condition_with_v5_converged_and_residual_at_most_0.0005
+fixed: {K: 4, s_max: 0.04, beta: 16.8, gamma: 2, examples_total: 60, quartets_total: 13029}
+recovery: requires_user_authorization_and_exact_historical_coordinate_hash_and_non_timing_record_parity
+boundary_relative_tolerance: 0.000001
+near_kkt_normalized_max_tolerance: 0.001
+precision_objective_relative_materiality: 0.000001
+precision_objective_absolute_materiality: 0.00000001
+precision_gradient_relative_materiality: 0.001
+precision_gradient_cosine_materiality: 0.999
+scientific_metric_relative_materiality: 0.0001
+finite_difference:
+  directions: [alternating_sign, sin_index, cos_index_times_1.7]
+  correction_epsilons_angstrom: [0.000001, 0.00001, 0.0001]
+  variable_relative_epsilons: [0.000001, 0.00001, 0.0001]
+  variable_scale: max_1_or_v_rms_over_eligible_scalar_components
+  absolute_error_tolerance: 0.0000000001
+  relative_error_tolerance: 0.00001
+  interpretation: at_least_one_epsilon_passes_per_direction_and_space
+shadow_steps_angstrom: [0.000001, 0.00001, 0.0001]
+shadow_material_relative_objective_decrease: 0.000001
+shadow_material_absolute_objective_decrease: 0.00000001
+shadow_direction_scaling: maximum_per_residue_direction_norm_equals_one
+shadow_eligibility: recompute_each_step_abort_comparison_if_masks_change
+optional_precision_replay: only_after_audit_sections_1_to_7
+neural_training: false
+cuda: false

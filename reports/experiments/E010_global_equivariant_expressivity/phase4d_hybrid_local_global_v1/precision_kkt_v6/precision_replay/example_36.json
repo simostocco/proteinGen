@@ -1,0 +1,222 @@
+{
+  "index": 36,
+  "metrics": {
+    "aligned_rmsd": 2.2837370470980396,
+    "chiral_error_sum": 45.14149791657062,
+    "chiral_loss_eligible": 297,
+    "chirality_assessability_gained": 0,
+    "chirality_assessability_lost": 0,
+    "chirality_assessable": 297,
+    "chirality_common_assessable": 297,
+    "chirality_common_baseline_inversions": 70,
+    "chirality_common_inversions": 59,
+    "chirality_inversions": 59,
+    "collapse": false,
+    "condition": 50,
+    "continuous_chiral_loss": 0.15199157547666875,
+    "displacement_max": 0.15999999999654682,
+    "displacement_mean_square": 0.025429333327887903,
+    "displacement_rms": 0.15946577478533724,
+    "finite": true,
+    "frame_assessability_preserved": true,
+    "frame_degenerate": 0,
+    "frame_eligible": 298,
+    "frame_interior": 298,
+    "input_frame_degenerate": 0,
+    "input_frame_eligible": 298,
+    "local_mse": {
+      "1": 1.7570963272243456,
+      "2": 2.3350085475912845,
+      "3": 2.5347304780813795
+    },
+    "local_rmse": {
+      "1": 1.325555101542122,
+      "2": 1.5280734758483587,
+      "3": 1.592083690664966
+    },
+    "mean_local_rmse": 1.4819040893518156,
+    "radius_gyration": 18.42584583004521,
+    "raw_cartesian": 1.7497544658932513,
+    "sample_id": "8cqx_A",
+    "step_correction_max": 0.039999999999136567,
+    "step_correction_rms": 0.03986644369633436,
+    "stratum": "257-384"
+  },
+  "objective_arithmetic": "pure_float64_only_cartesian_cast_removed",
+  "optimizer": {
+    "closure_evaluations": 494,
+    "converged": true,
+    "history": [
+      {
+        "closure_evaluations": 24,
+        "coordinate_change_max_angstrom": 0.056363330899643266,
+        "iteration": 10,
+        "objective_contribution": 0.534144917785645,
+        "projected_gradient_residual": 0.15870637581586908,
+        "relative_objective_change": 0.0001059009773567432,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 44,
+        "coordinate_change_max_angstrom": 0.008209373708716024,
+        "iteration": 20,
+        "objective_contribution": 0.5336846601858477,
+        "projected_gradient_residual": 0.016735478091792506,
+        "relative_objective_change": 5.02611791797225e-06,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 64,
+        "coordinate_change_max_angstrom": 0.0012200955694358381,
+        "iteration": 30,
+        "objective_contribution": 0.533676553798048,
+        "projected_gradient_residual": 0.0033269862873935296,
+        "relative_objective_change": 8.137388718409966e-08,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 84,
+        "coordinate_change_max_angstrom": 5.890162536738628e-05,
+        "iteration": 40,
+        "objective_contribution": 0.5336763958127912,
+        "projected_gradient_residual": 0.0008743894478292979,
+        "relative_objective_change": 1.7411067032568894e-09,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 105,
+        "coordinate_change_max_angstrom": 6.9851307617454e-06,
+        "iteration": 50,
+        "objective_contribution": 0.5336763906393729,
+        "projected_gradient_residual": 4.4718236587163124e-05,
+        "relative_objective_change": 3.509992296812925e-11,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 132,
+        "coordinate_change_max_angstrom": 1.4358585305464405e-05,
+        "iteration": 60,
+        "objective_contribution": 0.5336763904506548,
+        "projected_gradient_residual": 2.3090223994017847e-05,
+        "relative_objective_change": 6.6981975521684944e-12,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 158,
+        "coordinate_change_max_angstrom": 4.7510305878913e-06,
+        "iteration": 70,
+        "objective_contribution": 0.5336763904266095,
+        "projected_gradient_residual": 1.67994877575044e-05,
+        "relative_objective_change": 1.4636070133633439e-12,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 185,
+        "coordinate_change_max_angstrom": 5.30102791831445e-07,
+        "iteration": 80,
+        "objective_contribution": 0.5336763904090355,
+        "projected_gradient_residual": 1.2847938007772916e-05,
+        "relative_objective_change": 4.061750935591135e-12,
+        "stable_iterations": 1
+      },
+      {
+        "closure_evaluations": 215,
+        "coordinate_change_max_angstrom": 1.5261209038498572e-06,
+        "iteration": 90,
+        "objective_contribution": 0.53367639039915,
+        "projected_gradient_residual": 9.948556707789155e-06,
+        "relative_objective_change": 9.515721544062217e-13,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 249,
+        "coordinate_change_max_angstrom": 4.788599131689278e-07,
+        "iteration": 100,
+        "objective_contribution": 0.5336763903920156,
+        "projected_gradient_residual": 6.866819882402329e-06,
+        "relative_objective_change": 7.294165271787278e-14,
+        "stable_iterations": 2
+      },
+      {
+        "closure_evaluations": 284,
+        "coordinate_change_max_angstrom": 1.6285957711140106e-06,
+        "iteration": 110,
+        "objective_contribution": 0.5336763903892768,
+        "projected_gradient_residual": 5.99967517545434e-06,
+        "relative_objective_change": 2.0095036745715333e-13,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 322,
+        "coordinate_change_max_angstrom": 4.122641580073253e-06,
+        "iteration": 120,
+        "objective_contribution": 0.5336763903870708,
+        "projected_gradient_residual": 1.1730007990196825e-05,
+        "relative_objective_change": 5.261346913698617e-13,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 356,
+        "coordinate_change_max_angstrom": 1.5563501242897773e-06,
+        "iteration": 130,
+        "objective_contribution": 0.5336763903861156,
+        "projected_gradient_residual": 4.3873427509586945e-06,
+        "relative_objective_change": 1.7286172493413687e-13,
+        "stable_iterations": 0
+      },
+      {
+        "closure_evaluations": 399,
+        "coordinate_change_max_angstrom": 5.908695024967672e-07,
+        "iteration": 140,
+        "objective_contribution": 0.5336763903824943,
+        "projected_gradient_residual": 3.014549529760867e-06,
+        "relative_objective_change": 1.3666845433135677e-13,
+        "stable_iterations": 4
+      },
+      {
+        "closure_evaluations": 440,
+        "coordinate_change_max_angstrom": 7.884430489716183e-07,
+        "iteration": 150,
+        "objective_contribution": 0.5336763903794715,
+        "projected_gradient_residual": 2.17161881996301e-06,
+        "relative_objective_change": 5.340172748447003e-14,
+        "stable_iterations": 3
+      },
+      {
+        "closure_evaluations": 494,
+        "coordinate_change_max_angstrom": 4.07778634421004e-07,
+        "iteration": 160,
+        "objective_contribution": 0.5336763903785011,
+        "projected_gradient_residual": 1.7681076666658879e-06,
+        "relative_objective_change": 1.6764367671839864e-14,
+        "stable_iterations": 13
+      }
+    ],
+    "iterations": 160,
+    "projected_gradient_residual": 1.7681076666658879e-06,
+    "runtime_seconds": 9.371047172928229,
+    "stable_iterations": 13,
+    "termination": "registered_convergence"
+  },
+  "optimizer_settings_exactly_historical": true,
+  "record": {
+    "condition": 50,
+    "sample_id": "8cqx_A",
+    "stratum": "257-384"
+  },
+  "start": "original_zero",
+  "state_coordinate_sha256": [
+    "fefc9455f8a0d2f586c3d9134ead08c034e1d85a4637630a3d08ace27ebf8d96",
+    "29ec096878e206e23f5bdfb1dd5a6effdc3be4f0883019f01f2050dd94d1ecc8",
+    "2525c1cccc0949ee4f1b5d51ce51594d055563af640ce9cccbf69d06389a5073",
+    "5b77f64ebab1a0dc1d31d52b9c6ea818bfe7a3a5472bdb3669d2c6ec371bf55e",
+    "a1e725605bc64094d1786c36b0b650045911c50ed04ecfd2605dc247cbe8f30c"
+  ],
+  "step_correction_max": 0.039999999999136567,
+  "terms": {
+    "cartesian": 0.02916257443155419,
+    "chiral": 0.003464693983925905,
+    "local": 0.03681575196053895,
+    "total": 0.5336763903785011
+  }
+}
