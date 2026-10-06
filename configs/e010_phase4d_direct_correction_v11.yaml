@@ -1,0 +1,29 @@
+schema: e010_phase4d_direct_correction_v11
+historical_publication: c1a76f3d38af1bf02f47f8680529128942c3b28b
+K: 8
+s_max_angstrom: 0.04
+parameterization: delta_equals_s_max_times_z_with_explicit_closed_balls
+objective: local_mean_only
+solver_config_source: configs/e010_phase4d_no_new_inversion_v9.yaml
+physical_config_source: configs/e010_phase4d_conditioning_v9b.yaml
+physical_limits_source: reports/experiments/E010_global_equivariant_expressivity/phase4d_hybrid_local_global_v1/strict_constraint_conditioning_v9b/conclusion.json
+solver_override: {maxiter: 1000}
+solver_settings_changes_other_than_requested_cap: none
+initialization: zero
+workers: 4
+threads_each: 1
+device: cpu
+precision: float64
+preflight_lengths: [12, 32]
+deterministic_preflight_repeat_length: 12
+interior_equivalence_atol: 0.000000000001
+interior_equivalence_rtol: 0.000000000001
+classification_materiality:
+  physical_pass_increase_examples: 6
+  material_shadow_reduction_examples: 6
+  rationale: descriptive_predeclared_ten_percent_of_full_panel
+scientific_threshold_condition_450_pct: 5.0
+panel_certification_requires_all_60: true
+no_outcome_based_reruns: true
+no_cuda: true
+no_neural_training: true

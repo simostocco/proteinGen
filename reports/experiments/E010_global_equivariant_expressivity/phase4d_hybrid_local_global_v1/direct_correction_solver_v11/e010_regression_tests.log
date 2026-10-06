@@ -1,0 +1,524 @@
+........................................................................ [ 28%]
+..F.....F.........F......FF.F...FFF...FFFF..............F............... [ 56%]
+........................................................................ [ 84%]
+.......................................                                  [100%]
+=================================== FAILURES ===================================
+__________________ test_inconsistent_v1_contract_fails_closed __________________
+
+    def test_inconsistent_v1_contract_fails_closed():
+        with pytest.raises(ValueError, match="sha256 pin mismatch for input_validation_sha256"):
+>           lifecycle.validate_contract()
+
+tests/test_e010_phase4a_lifecycle.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/run_e010_phase4a_training.py:76: in validate_contract
+    prep = load_json(OUT / "preparation_manifest.json")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/run_e010_phase4a_training.py:61: in load_json
+    return json.loads(path.read_text())
+                      ^^^^^^^^^^^^^^^^
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v1/preparation_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v1/preparation_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+____ test_reconciled_v2_preparation_pins_remain_read_only_after_publication ____
+
+    def test_reconciled_v2_preparation_pins_remain_read_only_after_publication():
+        # The original assertion described an interrupted 115-update staging run.
+        # That run has since completed and published; verify immutable input pins,
+        # rather than treating publication as a failure or authorizing a new resume.
+        prep_path = lifecycle_v2.OUT / "preparation_manifest.json"
+>       before = lifecycle_v2.file_sha(prep_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_lifecycle.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/prepare_e010_phase4a.py:44: in file_sha
+    with Path(path).open("rb") as f:
+         ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v2/preparation_manifest.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v2/preparation_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_______ test_small_mocked_lifecycle_reaches_first_boundary_and_finishes ________
+
+tmp_path = PosixPath('/tmp/pytest-of-simostocco/pytest-832/test_small_mocked_lifecycle_re0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f2c920e0d10>
+
+    def test_small_mocked_lifecycle_reaches_first_boundary_and_finishes(tmp_path, monkeypatch):
+        monkeypatch.setattr(lifecycle_v2, "STAGING", tmp_path)
+        monkeypatch.setattr(lifecycle_v2, "JOURNAL", tmp_path / "journal.jsonl")
+        exposures = {"train_a": 0, "train_b": 0}
+        base = _mock_full_state(0, exposures)
+        # A two update mock schedule reaches exposure one from a fresh update-zero state.
+        for update, sid in ((1, "train_a"), (2, "train_b")):
+            exposures[sid] += 1
+            state = _mock_full_state(update, exposures)
+            pending = tmp_path / "pending.pt"
+            lifecycle_v2.save_checkpoint(pending, state)
+            digest = lifecycle_v2.file_sha(pending)
+            lifecycle_v2.append_event({"global_update": update, "checkpoint_sha256": digest})
+            __import__("os").replace(pending, tmp_path / "latest.pt")
+            if update == 1:
+                rows = [{"sample_id": "dev_a"}, {"sample_id": "dev_b"}]
+                lifecycle_v2.publish_boundary_record(
+                    1,
+                    {"path": tmp_path / "latest.pt", "sha256": digest},
+                    state,
+                    lambda rows=rows: rows,
+                    lambda d, b, c: {"mock_gate": "complete"},
+                    [{}, {}],
+                    [],
+                    {},
+                    tmp_path,
+                )
+        events = lifecycle_v2.journal_events()
+        recovered = lifecycle_v2.recover_state(events, base)
+        lifecycle_v2.validate_boundary_files(tmp_path)
+        assert recovered["global_update"] == 2 and events[-1]["global_update"] == 2
+        assert recovered["identity_exposures"] == {"train_a": 1, "train_b": 1}
+        assert lifecycle_v2.load_json(tmp_path / "development_exposure_01.json")["evaluation_complete"] is True
+        with pytest.raises(ValueError, match="sha256 pin mismatch for input_validation_sha256"):
+>           lifecycle.validate_contract()
+
+tests/test_e010_phase4a_lifecycle.py:330: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/run_e010_phase4a_training.py:76: in validate_contract
+    prep = load_json(OUT / "preparation_manifest.json")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/run_e010_phase4a_training.py:61: in load_json
+    return json.loads(path.read_text())
+                      ^^^^^^^^^^^^^^^^
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v1/preparation_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v1/preparation_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+________ test_real_v2_plan_has_revised_cohort_and_exact_source_samples _________
+
+    def test_real_v2_plan_has_revised_cohort_and_exact_source_samples():
+>       plan = json.loads((mc.OUT / "plan.json").read_text())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_multicorruption_v2.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/plan.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/plan.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+______________ test_training_loader_never_opens_excluded_archive _______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f2c92956ba0>
+
+    def test_training_loader_never_opens_excluded_archive(monkeypatch):
+>       seed = json.loads((mc.OUT / "training_seed_manifest.json").read_text())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_multicorruption_v2.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/training_seed_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/training_seed_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_____ test_fresh_state_saves_pinned_metadata_from_validated_real_contract ______
+
+tmp_path = PosixPath('/tmp/pytest-of-simostocco/pytest-832/test_fresh_state_saves_pinned_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f2c9204b110>
+
+    def test_fresh_state_saves_pinned_metadata_from_validated_real_contract(tmp_path, monkeypatch):
+        import torch
+    
+>       contract = _load_execution_contract()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_multicorruption_v2.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/run_e010_phase4a_multicorruption_v2.py:89: in _load_execution_contract
+    prep = mc.load_json(prep_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+scripts/e010_phase4a_multicorruption_v2.py:67: in load_json
+    return json.loads(Path(path).read_text())
+                      ^^^^^^^^^^^^^^^^^^^^^^
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/preparation_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/preparation_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_______________ test_v3_preparation_is_exact_and_non_authorizing _______________
+
+    def test_v3_preparation_is_exact_and_non_authorizing():
+>       manifest = json.loads((V3 / "preparation_manifest.json").read_text())
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_v3_extension.py:10: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_ test_extension_schedule_gives_each_training_identity_one_exposure_per_epoch __
+
+    def test_extension_schedule_gives_each_training_identity_one_exposure_per_epoch():
+>       data = json.loads((V3 / "extension_schedule.json").read_text())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_v3_extension.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/extension_schedule.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/extension_schedule.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_________ test_v2_final_and_scientific_review_match_the_preserved_pins _________
+
+    def test_v2_final_and_scientific_review_match_the_preserved_pins():
+        v2 = ROOT / "reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v2"
+        final = v2 / "phase4a_training_v2.final"
+>       expected = json.loads((V3 / "preparation_manifest.json").read_text())["pins"]["v2_final_recursive_inventory"]
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_v3_extension.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+__ test_real_preparation_record_separates_forward_permissions_from_execution ___
+
+    def test_real_preparation_record_separates_forward_permissions_from_execution():
+>       prep = json.loads((f.SOURCE / "preparation_manifest.json").read_text())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_v3_readonly_finalizer.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+__ test_historical_execution_and_repaired_reporting_hashes_share_runner_path ___
+
+tmp_path = PosixPath('/tmp/pytest-of-simostocco/pytest-832/test_historical_execution_and_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f2c921f3980>
+
+    def test_historical_execution_and_repaired_reporting_hashes_share_runner_path(tmp_path, monkeypatch):
+        # The working runner can evolve after the reviewed historical repair. Its
+        # old SHA must remain exact evidence, not be changed to match current code.
+        preserved = Path(__file__).parent / "fixtures/e010_phase4a_v3_reporting_repair.py.txt"
+        assert f.sha(preserved) == f.REPORTING_REPAIR_RUNNER_SHA256
+        runner = tmp_path / "scripts/run_e010_phase4a_v3_extension.py"
+        runner.parent.mkdir()
+        runner.write_bytes(preserved.read_bytes())
+        monkeypatch.setattr(f, "ROOT", tmp_path)
+>       prep = json.loads((f.SOURCE / "preparation_manifest.json").read_text())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_v3_readonly_finalizer.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_______ test_unreviewed_runner_bytes_fail_historical_lineage_validation ________
+
+tmp_path = PosixPath('/tmp/pytest-of-simostocco/pytest-832/test_unreviewed_runner_bytes_f0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f2c8ce66f30>
+
+    def test_unreviewed_runner_bytes_fail_historical_lineage_validation(tmp_path, monkeypatch):
+        runner = tmp_path / "scripts/run_e010_phase4a_v3_extension.py"
+        runner.parent.mkdir()
+        runner.write_bytes(b"unreviewed runner bytes\n")
+        monkeypatch.setattr(f, "ROOT", tmp_path)
+>       prep = json.loads((f.SOURCE / "preparation_manifest.json").read_text())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_v3_readonly_finalizer.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/preparation_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_______ test_real_v3_config_resolves_strata_from_its_pinned_base_config ________
+
+    def test_real_v3_config_resolves_strata_from_its_pinned_base_config():
+>       config = json.loads((f.SOURCE / "phase4a_v3_extension_config.json").read_text())
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4a_v3_readonly_finalizer.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/phase4a_v3_extension_config.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_supervised_generalization_v3/phase4a_v3_extension_config.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_____ test_real_schedule_reuses_exact_identities_and_is_timestep_balanced ______
+
+    def test_real_schedule_reuses_exact_identities_and_is_timestep_balanced():
+>       train, dev = pc.build_records()
+                     ^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_phase4b_real_denoiser.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+reports/experiments/E010_global_equivariant_expressivity/phase4b_real_denoiser_v1/prepare_cache.py:140: in build_records
+    train_obj = json.loads(_path(base["training_manifest"]).read_text())
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/training_seed_manifest.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/simostocco/proteinGen-hybrid-local-global/reports/experiments/E010_global_equivariant_expressivity/phase4a_multicorruption_v2/training_seed_manifest.json'
+
+../miniforge3/envs/proteingen/lib/python3.12/pathlib.py:1013: FileNotFoundError
+=============================== warnings summary ===============================
+tests/test_e010_local_feasibility_v7.py::test_constrained_synthetic_feasible_active_infeasible[0.0-False-0.0]
+  /home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/optimize/_trustregion_constr/equality_constrained_sqp.py:217: UserWarning: Singular Jacobian matrix. Using SVD decomposition to perform the factorizations.
+    Z, LS, Y = projections(A, factorization_method)
+
+tests/test_e010_local_feasibility_v7.py::test_constrained_synthetic_feasible_active_infeasible[0.0-False-0.0]
+  /home/simostocco/miniforge3/envs/proteingen/lib/python3.12/site-packages/scipy/optimize/_trustregion_constr/equality_constrained_sqp.py:81: UserWarning: Singular Jacobian matrix. Using SVD decomposition to perform the factorizations.
+    Z, LS, Y = projections(A, factorization_method)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_e010_phase4a_lifecycle.py::test_inconsistent_v1_contract_fails_closed
+FAILED tests/test_e010_phase4a_lifecycle.py::test_reconciled_v2_preparation_pins_remain_read_only_after_publication
+FAILED tests/test_e010_phase4a_lifecycle.py::test_small_mocked_lifecycle_reaches_first_boundary_and_finishes
+FAILED tests/test_e010_phase4a_multicorruption_v2.py::test_real_v2_plan_has_revised_cohort_and_exact_source_samples
+FAILED tests/test_e010_phase4a_multicorruption_v2.py::test_training_loader_never_opens_excluded_archive
+FAILED tests/test_e010_phase4a_multicorruption_v2.py::test_fresh_state_saves_pinned_metadata_from_validated_real_contract
+FAILED tests/test_e010_phase4a_v3_extension.py::test_v3_preparation_is_exact_and_non_authorizing
+FAILED tests/test_e010_phase4a_v3_extension.py::test_extension_schedule_gives_each_training_identity_one_exposure_per_epoch
+FAILED tests/test_e010_phase4a_v3_extension.py::test_v2_final_and_scientific_review_match_the_preserved_pins
+FAILED tests/test_e010_phase4a_v3_readonly_finalizer.py::test_real_preparation_record_separates_forward_permissions_from_execution
+FAILED tests/test_e010_phase4a_v3_readonly_finalizer.py::test_historical_execution_and_repaired_reporting_hashes_share_runner_path
+FAILED tests/test_e010_phase4a_v3_readonly_finalizer.py::test_unreviewed_runner_bytes_fail_historical_lineage_validation
+FAILED tests/test_e010_phase4a_v3_readonly_finalizer.py::test_real_v3_config_resolves_strata_from_its_pinned_base_config
+FAILED tests/test_e010_phase4b_real_denoiser.py::test_real_schedule_reuses_exact_identities_and_is_timestep_balanced
+14 failed, 241 passed, 2 warnings in 32.52s

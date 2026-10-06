@@ -1,0 +1,24 @@
+{
+  "focused_cpu_tests_passed": 26,
+  "broader_e010_passed": 241,
+  "inherited_missing_artifact_failures": [
+    "FAILED tests/test_e010_phase4a_lifecycle.py::test_inconsistent_v1_contract_fails_closed",
+    "FAILED tests/test_e010_phase4a_lifecycle.py::test_reconciled_v2_preparation_pins_remain_read_only_after_publication",
+    "FAILED tests/test_e010_phase4a_lifecycle.py::test_small_mocked_lifecycle_reaches_first_boundary_and_finishes",
+    "FAILED tests/test_e010_phase4a_multicorruption_v2.py::test_real_v2_plan_has_revised_cohort_and_exact_source_samples",
+    "FAILED tests/test_e010_phase4a_multicorruption_v2.py::test_training_loader_never_opens_excluded_archive",
+    "FAILED tests/test_e010_phase4a_multicorruption_v2.py::test_fresh_state_saves_pinned_metadata_from_validated_real_contract",
+    "FAILED tests/test_e010_phase4a_v3_extension.py::test_v3_preparation_is_exact_and_non_authorizing",
+    "FAILED tests/test_e010_phase4a_v3_extension.py::test_extension_schedule_gives_each_training_identity_one_exposure_per_epoch",
+    "FAILED tests/test_e010_phase4a_v3_extension.py::test_v2_final_and_scientific_review_match_the_preserved_pins",
+    "FAILED tests/test_e010_phase4a_v3_readonly_finalizer.py::test_real_preparation_record_separates_forward_permissions_from_execution",
+    "FAILED tests/test_e010_phase4a_v3_readonly_finalizer.py::test_historical_execution_and_repaired_reporting_hashes_share_runner_path",
+    "FAILED tests/test_e010_phase4a_v3_readonly_finalizer.py::test_unreviewed_runner_bytes_fail_historical_lineage_validation",
+    "FAILED tests/test_e010_phase4a_v3_readonly_finalizer.py::test_real_v3_config_resolves_strata_from_its_pinned_base_config",
+    "FAILED tests/test_e010_phase4b_real_denoiser.py::test_real_schedule_reuses_exact_identities_and_is_timestep_balanced"
+  ],
+  "all_failure_causes": "FileNotFoundError for absent historical Phase4A artifacts",
+  "historical_test_files_unchanged": true,
+  "ruff_passed": true,
+  "cuda_used": false
+}

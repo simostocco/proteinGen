@@ -1,0 +1,167 @@
+{
+  "cases": [
+    {
+      "direct_v11": {
+        "complementarity": 2.9064689473178465e-08,
+        "dual_negativity": 2.9067371032056133e-09,
+        "gates": {
+          "complementarity": true,
+          "derivatives": true,
+          "dual_feasibility": true,
+          "no_material_shadow_descent": true,
+          "primal_feasibility": true,
+          "stationarity": true
+        },
+        "iterations": 20,
+        "normalized_stationarity": 6.151510485298661e-08,
+        "physical_converged": true,
+        "primal": 0.0,
+        "projected_gradient": 1.1019493028415142e-07,
+        "raw_optimality": 1.6787567152071103e-08,
+        "shadow_steps": [
+          {
+            "feasible": true,
+            "material": false,
+            "normalized_loss_decrease": 3.2589486664846845e-12,
+            "step_angstrom": 1e-06
+          },
+          {
+            "feasible": true,
+            "material": false,
+            "normalized_loss_decrease": -8.890516101089929e-10,
+            "step_angstrom": 1e-05
+          },
+          {
+            "feasible": true,
+            "material": false,
+            "normalized_loss_decrease": -1.0104445893888148e-07,
+            "step_angstrom": 0.0001
+          }
+        ]
+      },
+      "historical_radial": {
+        "complementarity": 6.708058128188823e-10,
+        "dual_negativity": 0.0,
+        "gates": {
+          "complementarity": true,
+          "derivatives": true,
+          "dual_feasibility": true,
+          "no_material_shadow_descent": true,
+          "primal_feasibility": true,
+          "stationarity": true
+        },
+        "iterations": 39,
+        "normalized_stationarity": 6.1694483476480454e-09,
+        "physical_converged": true,
+        "primal": 0.0,
+        "projected_gradient": 6.169376679518598e-09,
+        "raw_optimality": 4.448412835335301e-13,
+        "shadow_steps": [
+          {
+            "feasible": true,
+            "material": false,
+            "normalized_loss_decrease": -1.7752882497390488e-11,
+            "step_angstrom": 1e-06
+          },
+          {
+            "feasible": true,
+            "material": false,
+            "normalized_loss_decrease": -1.85793999629702e-09,
+            "step_angstrom": 1e-05
+          },
+          {
+            "feasible": false,
+            "material": false,
+            "normalized_loss_decrease": -8.348911154920646e-07,
+            "step_angstrom": 0.0001
+          }
+        ]
+      },
+      "length": 12
+    },
+    {
+      "direct_v11": {
+        "complementarity": 4.804590820123846e-07,
+        "dual_negativity": 5.842495561734494e-07,
+        "gates": {
+          "complementarity": true,
+          "derivatives": true,
+          "dual_feasibility": false,
+          "no_material_shadow_descent": true,
+          "primal_feasibility": true,
+          "stationarity": false
+        },
+        "iterations": 1000,
+        "normalized_stationarity": 0.004521578348016299,
+        "physical_converged": false,
+        "primal": 0.0,
+        "projected_gradient": 0.004522620165245366,
+        "raw_optimality": 2.922804007630584e-06,
+        "shadow_steps": [
+          {
+            "feasible": true,
+            "material": false,
+            "normalized_loss_decrease": 7.031680748226243e-07,
+            "step_angstrom": 1e-06
+          },
+          {
+            "feasible": false,
+            "material": false,
+            "normalized_loss_decrease": 5.230458045735187e-06,
+            "step_angstrom": 1e-05
+          },
+          {
+            "feasible": false,
+            "material": false,
+            "normalized_loss_decrease": 7.129383615744889e-06,
+            "step_angstrom": 0.0001
+          }
+        ]
+      },
+      "historical_radial": {
+        "complementarity": 1.2948525432208848e-09,
+        "dual_negativity": 1.1221995365169286e-10,
+        "gates": {
+          "complementarity": true,
+          "derivatives": true,
+          "dual_feasibility": true,
+          "no_material_shadow_descent": true,
+          "primal_feasibility": true,
+          "stationarity": true
+        },
+        "iterations": 1807,
+        "normalized_stationarity": 1.3646105712488467e-07,
+        "physical_converged": true,
+        "primal": 0.0,
+        "projected_gradient": 1.3423396449820076e-07,
+        "raw_optimality": 3.872466951170198e-10,
+        "shadow_steps": [
+          {
+            "feasible": true,
+            "material": false,
+            "normalized_loss_decrease": 1.4872103548668747e-11,
+            "step_angstrom": 1e-06
+          },
+          {
+            "feasible": true,
+            "material": false,
+            "normalized_loss_decrease": -1.3986289904011073e-10,
+            "step_angstrom": 1e-05
+          },
+          {
+            "feasible": false,
+            "material": false,
+            "normalized_loss_decrease": -1.827886485505914e-07,
+            "step_angstrom": 0.0001
+          }
+        ]
+      },
+      "length": 32
+    }
+  ],
+  "direct_maximum_iterations": 1000,
+  "historical_maximum_iterations": 2000,
+  "historical_optimization_rerun": false,
+  "settings_tuned": false,
+  "valid_implementation": true
+}
