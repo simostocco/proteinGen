@@ -1,0 +1,40 @@
+schema: e010_phase4d_cartesian_oracle_v5
+source_result_commit: f9b42c36459f17c9f7fb42c20496b7c7b58a4ea6
+variables: independent_dimensionless_cartesian_vectors_per_example_per_step
+recurrence: {steps: 4, recompute_current_eligibility: true}
+bound: {s_max_angstrom: 0.04, cumulative_tolerance_angstrom: 0.160001}
+objective: {beta: 16.8, gamma: 2.0, examples_total: 60, quartets_total: 13029, exact_v3_reductions: true}
+optimizer:
+  name: LBFGS
+  learning_rate: 1.0
+  history_size: 20
+  line_search: strong_wolfe
+  maximum_iterations: 1000
+  stationarity_interval: 10
+  relative_objective_tolerance: 1.0e-8
+  coordinate_tolerance_angstrom: 1.0e-6
+  projected_gradient_tolerance: 0.001
+  absolute_gradient_tolerance: 1.0e-7
+  stable_iterations_required: 10
+initialization: exact_zero
+randomness: none
+precision: float64
+device: cpu
+threads: 1
+workers: 4
+safety:
+  raw_cartesian_relative_tolerance: 0.000001
+  aligned_rmsd_degradation_max: 0.01
+  continuous_chiral_relative_tolerance: 0.000001
+  inversions_non_increasing: true
+  assessability_preserved: true
+  every_offset_non_harmful: true
+strong_convergence: {overall_min: 48, condition_450_min: 18}
+paired_equivalence:
+  objective_relative_tolerance: 0.000001
+  local_rmse_absolute_angstrom: 0.00001
+  cartesian_absolute_angstrom_squared: 0.00001
+  chiral_loss_absolute: 0.00001
+  correction_rms_absolute_angstrom: 0.00001
+reproduction: all_60_from_exact_zero_with_identical_workers_and_threads
+neural_training: false
