@@ -1,0 +1,73 @@
+{
+  "available_ram_bytes": 11886161920,
+  "constraint_scaling_changed": false,
+  "dense_solver_invocations": 0,
+  "length": 500,
+  "process_peak_rss_bytes": 1024700416,
+  "reason": "Exact mandatory dense arrays exceed preregistered RAM budget before other solver/framework allocations",
+  "required_allocations": {
+    "buffer_bytes": 11378363864,
+    "buffer_elements": 1422295483,
+    "dense_normals_bytes": 527520000,
+    "inequalities": 5495,
+    "other_allocations_included": false,
+    "required_array_bytes": 11905883864,
+    "variables": 12000
+  },
+  "reserved_bytes": 2971540480,
+  "resource_feasible": false,
+  "runtime_seconds": 1.4606295339763165,
+  "science_constraint_magnitude": {
+    "max": 0.9999999999411716,
+    "min": -0.0
+  },
+  "science_jacobian_row_norm": {
+    "max": 1.2071308078214338,
+    "min": 0.005798110999799752
+  },
+  "solver_array_budget_bytes": 8914621440,
+  "source": "unchanged historical synthetic(500)",
+  "swap_used_for_budget": false,
+  "validation": {
+    "baseline_exact_feasible": true,
+    "directions": [
+      {
+        "maximum_scaled_errors": [
+          1.7363489685304165,
+          0.10272923677903963,
+          0.009354572040961594
+        ],
+        "passed": true,
+        "phase": 0.0
+      },
+      {
+        "maximum_scaled_errors": [
+          1.099798160206625,
+          0.11307717401460812,
+          0.01185326660545823
+        ],
+        "passed": true,
+        "phase": 0.7
+      },
+      {
+        "maximum_scaled_errors": [
+          1.356164004160154,
+          0.10605432983141866,
+          0.009318429954444275
+        ],
+        "passed": true,
+        "phase": 1.3
+      }
+    ],
+    "hvps_finite": true,
+    "interior_parity": true,
+    "quartets": {
+      "assessable": 497,
+      "correct": 282,
+      "inverted": 215
+    },
+    "zero_exact": true
+  },
+  "workspace_allocation_attempted": false,
+  "zero_initialization": true
+}

@@ -1,0 +1,31 @@
+schema: e010_phase4d_slsqp_v14
+branch: e010-phase4d-hybrid-local-global
+historical_v13_commit: 6eb6156a2ceffe290f9a86b706e4e1364294d167
+K: 8
+s_max_angstrom: 0.04
+solver: {method: SLSQP, maxiter: 2000, ftol: 0.000000000001, disp: false}
+constraint_scaling: none_beyond_unchanged_historical_normalization
+objective: unchanged_V11_Pg_normalized_local_only
+initialization: exact_zero
+physical_contract: unchanged_V9B_as_used_in_V11
+preflight_lengths: [12, 32]
+resource_smoke_length: 500
+resource_smoke_source: unchanged_recover_e010_conditioning_v9b.synthetic
+resource_policy:
+  reserve_fraction_available_ram: 0.25
+  minimum_reserve_bytes: 2147483648
+  include_swap: false
+  required_arrays: installed_SciPy_SLSQP_buffer_plus_dense_constraint_normals
+  action_if_required_arrays_exceed_budget: stop_before_dense_solver_allocation_SQP_E
+  longest_smoke_wall_cap_seconds: 600
+panel_workers: 1
+threads_each: 1
+precision: float64
+device: cpu
+panel_examples: 60
+solver_invocations_per_panel_example: 1
+classification_major_improvement: {physical_pass_at_least: 30, material_shadow_at_most: 25}
+certification_requires: {physical_pass: 60, condition_450_gain_at_least_pct: 5.0}
+no_outcome_based_reruns: true
+no_cuda: true
+no_neural_training: true
