@@ -1,0 +1,641 @@
+{
+  "baseline_feasible": true,
+  "fixed_checks": [
+    {
+      "constraint_failures": 32,
+      "epsilon": 1e-06,
+      "families": {
+        "aligned": {
+          "allowed_error": 1.001121466814976e-08,
+          "analytic_derivative": -1.1214668149758773e-06,
+          "failures": 0,
+          "finite_difference": -1.1219913886861832e-06,
+          "maximum_absolute_error": 5.245737103058676e-10,
+          "rows": 1,
+          "worst_constraint_index": 0,
+          "worst_tolerance_ratio": 0.052398607730865646
+        },
+        "bond_assessability": {
+          "allowed_error": 1.4283174111612174e-08,
+          "analytic_derivative": -0.0004283174111612172,
+          "failures": 19,
+          "finite_difference": -0.00042828984803122694,
+          "maximum_absolute_error": 3.447978576178595e-08,
+          "rows": 499,
+          "worst_constraint_index": 1317,
+          "worst_tolerance_ratio": 1.9297622345628858
+        },
+        "continuous_chiral": {
+          "allowed_error": 1.2562145070236736e-08,
+          "analytic_derivative": 0.00025621450702367364,
+          "failures": 0,
+          "finite_difference": 0.0002562149381546419,
+          "maximum_absolute_error": 4.31130968273942e-10,
+          "rows": 1,
+          "worst_constraint_index": 1,
+          "worst_tolerance_ratio": 0.03431985268944337
+        },
+        "frame_assessability": {
+          "allowed_error": 1.8924514612300136e-08,
+          "analytic_derivative": 0.0008924514612300137,
+          "failures": 0,
+          "finite_difference": 0.0008924658789766227,
+          "maximum_absolute_error": 1.891878284501075e-08,
+          "rows": 497,
+          "worst_constraint_index": 895,
+          "worst_tolerance_ratio": 0.7618555563712587
+        },
+        "signed": {
+          "allowed_error": 1.1673279622571196e-08,
+          "analytic_derivative": -0.00016732796225711963,
+          "failures": 9,
+          "finite_difference": -0.00016725421048136013,
+          "maximum_absolute_error": 1.0105995999765138e-07,
+          "rows": 282,
+          "worst_constraint_index": 194,
+          "worst_tolerance_ratio": 6.317999580588227
+        },
+        "unsigned_assessability": {
+          "allowed_error": 3.315933371448673e-08,
+          "analytic_derivative": -0.0023159333714486727,
+          "failures": 4,
+          "finite_difference": -0.0023158777118226226,
+          "maximum_absolute_error": 1.7567809892926611e-07,
+          "rows": 215,
+          "worst_constraint_index": 460,
+          "worst_tolerance_ratio": 1.6785507974713099
+        }
+      },
+      "objective_error": 3.653870198321984e-09,
+      "objective_pass": true,
+      "phase": 0.0
+    },
+    {
+      "constraint_failures": 0,
+      "epsilon": 1e-05,
+      "families": {
+        "aligned": {
+          "allowed_error": 1.001121466814976e-08,
+          "analytic_derivative": -1.1214668149758773e-06,
+          "failures": 0,
+          "finite_difference": -1.1214806860948556e-06,
+          "maximum_absolute_error": 1.3871118978295562e-11,
+          "rows": 1,
+          "worst_constraint_index": 0,
+          "worst_tolerance_ratio": 0.0013855580404669493
+        },
+        "bond_assessability": {
+          "allowed_error": 1.107840656537445e-08,
+          "analytic_derivative": 0.00010784065653744496,
+          "failures": 0,
+          "finite_difference": 0.00010784315662704101,
+          "maximum_absolute_error": 3.571028128149939e-09,
+          "rows": 499,
+          "worst_constraint_index": 1449,
+          "worst_tolerance_ratio": 0.22567230957815881
+        },
+        "continuous_chiral": {
+          "allowed_error": 1.2562145070236736e-08,
+          "analytic_derivative": 0.00025621450702367364,
+          "failures": 0,
+          "finite_difference": 0.0002562145273721228,
+          "maximum_absolute_error": 2.0348449162634064e-11,
+          "rows": 1,
+          "worst_constraint_index": 1,
+          "worst_tolerance_ratio": 0.0016198228128128593
+        },
+        "frame_assessability": {
+          "allowed_error": 1.085708611073154e-08,
+          "analytic_derivative": -8.570861107315398e-05,
+          "failures": 0,
+          "finite_difference": -8.57095616701997e-05,
+          "maximum_absolute_error": 1.726455362352497e-09,
+          "rows": 497,
+          "worst_constraint_index": 829,
+          "worst_tolerance_ratio": 0.08755544867488677
+        },
+        "signed": {
+          "allowed_error": 1.1480640481457373e-08,
+          "analytic_derivative": -0.00014806404814573734,
+          "failures": 0,
+          "finite_difference": -0.00014805717207799773,
+          "maximum_absolute_error": 1.0318952244764423e-08,
+          "rows": 282,
+          "worst_constraint_index": 168,
+          "worst_tolerance_ratio": 0.5989271897078872
+        },
+        "unsigned_assessability": {
+          "allowed_error": 3.1674286893007105e-08,
+          "analytic_derivative": -0.00216742868930071,
+          "failures": 0,
+          "finite_difference": -0.002167446755407809,
+          "maximum_absolute_error": 2.0205134662609758e-08,
+          "rows": 215,
+          "worst_constraint_index": 406,
+          "worst_tolerance_ratio": 0.5703713917870941
+        }
+      },
+      "objective_error": 1.9860369712730933e-10,
+      "objective_pass": true,
+      "phase": 0.0
+    },
+    {
+      "constraint_failures": 0,
+      "epsilon": 0.0001,
+      "families": {
+        "aligned": {
+          "allowed_error": 1.001121466814976e-08,
+          "analytic_derivative": -1.1214668149758773e-06,
+          "failures": 0,
+          "finite_difference": -1.1214612571919247e-06,
+          "maximum_absolute_error": 5.557783952644677e-12,
+          "rows": 1,
+          "worst_constraint_index": 0,
+          "worst_tolerance_ratio": 0.0005551558064503924
+        },
+        "bond_assessability": {
+          "allowed_error": 1.1387961371389374e-08,
+          "analytic_derivative": -0.00013879613713893742,
+          "failures": 0,
+          "finite_difference": -0.00013879643101510908,
+          "maximum_absolute_error": 4.0640991266771564e-10,
+          "rows": 499,
+          "worst_constraint_index": 1277,
+          "worst_tolerance_ratio": 0.025805863058137465
+        },
+        "continuous_chiral": {
+          "allowed_error": 1.2562145070236736e-08,
+          "analytic_derivative": 0.00025621450702367364,
+          "failures": 0,
+          "finite_difference": 0.0002562145140494465,
+          "maximum_absolute_error": 7.025772867132185e-12,
+          "rows": 1,
+          "worst_constraint_index": 1,
+          "worst_tolerance_ratio": 0.0005592813033005185
+        },
+        "frame_assessability": {
+          "allowed_error": 1.9191342407933787e-08,
+          "analytic_derivative": 0.0009191342407933788,
+          "failures": 0,
+          "finite_difference": 0.0009191343797176899,
+          "maximum_absolute_error": 3.740124390749777e-10,
+          "rows": 497,
+          "worst_constraint_index": 925,
+          "worst_tolerance_ratio": 0.007238905341850908
+        },
+        "signed": {
+          "allowed_error": 1.1480640481457373e-08,
+          "analytic_derivative": -0.00014806404814573734,
+          "failures": 0,
+          "finite_difference": -0.00014806495973740397,
+          "maximum_absolute_error": 1.31867704949995e-09,
+          "rows": 282,
+          "worst_constraint_index": 168,
+          "worst_tolerance_ratio": 0.07940250965088773
+        },
+        "unsigned_assessability": {
+          "allowed_error": 3.315933371448673e-08,
+          "analytic_derivative": -0.0023159333714486727,
+          "failures": 0,
+          "finite_difference": -0.0023159328410571334,
+          "maximum_absolute_error": 3.0799402611636495e-09,
+          "rows": 215,
+          "worst_constraint_index": 460,
+          "worst_tolerance_ratio": 0.015995241154393353
+        }
+      },
+      "objective_error": 3.762135855666163e-11,
+      "objective_pass": true,
+      "phase": 0.0
+    },
+    {
+      "constraint_failures": 50,
+      "epsilon": 1e-06,
+      "families": {
+        "aligned": {
+          "allowed_error": 1.0034810168865338e-08,
+          "analytic_derivative": 3.4810168865337195e-06,
+          "failures": 0,
+          "finite_difference": 3.4800495818387844e-06,
+          "maximum_absolute_error": 9.673046949351078e-10,
+          "rows": 1,
+          "worst_constraint_index": 0,
+          "worst_tolerance_ratio": 0.09639491715910391
+        },
+        "bond_assessability": {
+          "allowed_error": 1.0172987171207309e-08,
+          "analytic_derivative": 1.7298717120730876e-05,
+          "failures": 23,
+          "finite_difference": 1.7321699630201692e-05,
+          "maximum_absolute_error": 3.212052675661409e-08,
+          "rows": 499,
+          "worst_constraint_index": 1455,
+          "worst_tolerance_ratio": 2.2591702008495265
+        },
+        "continuous_chiral": {
+          "allowed_error": 1.2696029571963467e-08,
+          "analytic_derivative": 0.00026960295719634657,
+          "failures": 0,
+          "finite_difference": 0.0002696030065862942,
+          "maximum_absolute_error": 4.9389947643849186e-11,
+          "rows": 1,
+          "worst_constraint_index": 1,
+          "worst_tolerance_ratio": 0.003890188453319027
+        },
+        "frame_assessability": {
+          "allowed_error": 1.4143859143224949e-08,
+          "analytic_derivative": 0.00041438591432249486,
+          "failures": 1,
+          "finite_difference": 0.0004144019571938884,
+          "maximum_absolute_error": 1.6858972575611864e-08,
+          "rows": 497,
+          "worst_constraint_index": 857,
+          "worst_tolerance_ratio": 1.1342640810461537
+        },
+        "signed": {
+          "allowed_error": 2.1644549909386604e-08,
+          "analytic_derivative": -0.0011644549909386602,
+          "failures": 13,
+          "finite_difference": -0.0011645311381869305,
+          "maximum_absolute_error": 8.739631354726107e-08,
+          "rows": 282,
+          "worst_constraint_index": 186,
+          "worst_tolerance_ratio": 3.5180795437703782
+        },
+        "unsigned_assessability": {
+          "allowed_error": 2.3540563496839373e-08,
+          "analytic_derivative": -0.0013540563496839374,
+          "failures": 13,
+          "finite_difference": -0.0013538855592187815,
+          "maximum_absolute_error": 1.7079046515586227e-07,
+          "rows": 215,
+          "worst_constraint_index": 437,
+          "worst_tolerance_ratio": 7.255156197887664
+        }
+      },
+      "objective_error": 6.03076098884851e-09,
+      "objective_pass": true,
+      "phase": 0.7
+    },
+    {
+      "constraint_failures": 0,
+      "epsilon": 1e-05,
+      "families": {
+        "aligned": {
+          "allowed_error": 1.0034810168865338e-08,
+          "analytic_derivative": 3.4810168865337195e-06,
+          "failures": 0,
+          "finite_difference": 3.4810543336760698e-06,
+          "maximum_absolute_error": 3.744714235023538e-11,
+          "rows": 1,
+          "worst_constraint_index": 0,
+          "worst_tolerance_ratio": 0.003731724040622248
+        },
+        "bond_assessability": {
+          "allowed_error": 1.0165694522690325e-08,
+          "analytic_derivative": -1.656945226903258e-05,
+          "failures": 0,
+          "finite_difference": -1.6566725768996093e-05,
+          "maximum_absolute_error": 3.3964178080235496e-09,
+          "rows": 499,
+          "worst_constraint_index": 1303,
+          "worst_tolerance_ratio": 0.26820597750595376
+        },
+        "continuous_chiral": {
+          "allowed_error": 1.2696029571963467e-08,
+          "analytic_derivative": 0.00026960295719634657,
+          "failures": 0,
+          "finite_difference": 0.00026960301768852446,
+          "maximum_absolute_error": 6.049217789010075e-11,
+          "rows": 1,
+          "worst_constraint_index": 1,
+          "worst_tolerance_ratio": 0.004764653197066042
+        },
+        "frame_assessability": {
+          "allowed_error": 2.609367714525978e-08,
+          "analytic_derivative": 0.0016093677145259777,
+          "failures": 0,
+          "finite_difference": 0.0016093692711827143,
+          "maximum_absolute_error": 1.7354394362539827e-09,
+          "rows": 497,
+          "worst_constraint_index": 923,
+          "worst_tolerance_ratio": 0.059656472639179316
+        },
+        "signed": {
+          "allowed_error": 1.3775176711653245e-08,
+          "analytic_derivative": -0.00037751767116532455,
+          "failures": 0,
+          "finite_difference": -0.0003775125101412868,
+          "maximum_absolute_error": 8.871937417359588e-09,
+          "rows": 282,
+          "worst_constraint_index": 170,
+          "worst_tolerance_ratio": 0.3746611855369986
+        },
+        "unsigned_assessability": {
+          "allowed_error": 1.0886679478394189e-08,
+          "analytic_derivative": -8.866794783941889e-05,
+          "failures": 0,
+          "finite_difference": -8.866046230515677e-05,
+          "maximum_absolute_error": 1.9635479448984472e-08,
+          "rows": 215,
+          "worst_constraint_index": 478,
+          "worst_tolerance_ratio": 0.6875865388498402
+        }
+      },
+      "objective_error": 2.2499651474621254e-12,
+      "objective_pass": true,
+      "phase": 0.7
+    },
+    {
+      "constraint_failures": 0,
+      "epsilon": 0.0001,
+      "families": {
+        "aligned": {
+          "allowed_error": 1.0034810168865338e-08,
+          "analytic_derivative": 3.4810168865337195e-06,
+          "failures": 0,
+          "finite_difference": 3.4810138105356714e-06,
+          "maximum_absolute_error": 3.0759980481593154e-12,
+          "rows": 1,
+          "worst_constraint_index": 0,
+          "worst_tolerance_ratio": 0.00030653275910521053
+        },
+        "bond_assessability": {
+          "allowed_error": 1.0021687973913968e-08,
+          "analytic_derivative": -2.1687973913968187e-06,
+          "failures": 0,
+          "finite_difference": -2.169011636965479e-06,
+          "maximum_absolute_error": 3.53963735925944e-10,
+          "rows": 499,
+          "worst_constraint_index": 1459,
+          "worst_tolerance_ratio": 0.021378191899190418
+        },
+        "continuous_chiral": {
+          "allowed_error": 1.2696029571963467e-08,
+          "analytic_derivative": 0.00026960295719634657,
+          "failures": 0,
+          "finite_difference": 0.00026960295884670415,
+          "maximum_absolute_error": 1.6503575849674545e-12,
+          "rows": 1,
+          "worst_constraint_index": 1,
+          "worst_tolerance_ratio": 0.00012999005520685972
+        },
+        "frame_assessability": {
+          "allowed_error": 1.2049161448472257e-08,
+          "analytic_derivative": 0.00020491614484722566,
+          "failures": 0,
+          "finite_difference": 0.00020491604080241643,
+          "maximum_absolute_error": 3.7927604459864206e-10,
+          "rows": 497,
+          "worst_constraint_index": 956,
+          "worst_tolerance_ratio": 0.008635024907873283
+        },
+        "signed": {
+          "allowed_error": 1.126999879789575e-08,
+          "analytic_derivative": -0.000126999879789575,
+          "failures": 0,
+          "finite_difference": -0.00012700017981703837,
+          "maximum_absolute_error": 1.1806873395636686e-09,
+          "rows": 282,
+          "worst_constraint_index": 220,
+          "worst_tolerance_ratio": 0.026621783085995585
+        },
+        "unsigned_assessability": {
+          "allowed_error": 1.0886679478394189e-08,
+          "analytic_derivative": -8.866794783941889e-05,
+          "failures": 0,
+          "finite_difference": -8.866727851941647e-05,
+          "maximum_absolute_error": 2.6756250548487515e-09,
+          "rows": 215,
+          "worst_constraint_index": 478,
+          "worst_tolerance_ratio": 0.06148063821896123
+        }
+      },
+      "objective_error": 3.3011499892161844e-12,
+      "objective_pass": true,
+      "phase": 0.7
+    },
+    {
+      "constraint_failures": 36,
+      "epsilon": 1e-06,
+      "families": {
+        "aligned": {
+          "allowed_error": 1.006191698965918e-08,
+          "analytic_derivative": 6.191698965917866e-06,
+          "failures": 0,
+          "finite_difference": 6.191991364090654e-06,
+          "maximum_absolute_error": 2.923981727883434e-10,
+          "rows": 1,
+          "worst_constraint_index": 0,
+          "worst_tolerance_ratio": 0.02905988720527574
+        },
+        "bond_assessability": {
+          "allowed_error": 1.1512198436157915e-08,
+          "analytic_derivative": 0.00015121984361579144,
+          "failures": 16,
+          "finite_difference": 0.00015119128171647844,
+          "maximum_absolute_error": 3.835628200124508e-08,
+          "rows": 499,
+          "worst_constraint_index": 1396,
+          "worst_tolerance_ratio": 2.481011726074259
+        },
+        "continuous_chiral": {
+          "allowed_error": 1.1786251595906715e-08,
+          "analytic_derivative": 0.00017862515959067143,
+          "failures": 0,
+          "finite_difference": 0.00017862544776647837,
+          "maximum_absolute_error": 2.8817580694775677e-10,
+          "rows": 1,
+          "worst_constraint_index": 1,
+          "worst_tolerance_ratio": 0.024450165907525533
+        },
+        "frame_assessability": {
+          "allowed_error": 1.417845501102093e-08,
+          "analytic_derivative": 0.000417845501102093,
+          "failures": 1,
+          "finite_difference": 0.0004178615786720741,
+          "maximum_absolute_error": 1.8988099145106352e-08,
+          "rows": 497,
+          "worst_constraint_index": 877,
+          "worst_tolerance_ratio": 1.1339437173214852
+        },
+        "signed": {
+          "allowed_error": 2.7868450239051537e-08,
+          "analytic_derivative": 0.0017868450239051535,
+          "failures": 11,
+          "finite_difference": 0.0017869460355868227,
+          "maximum_absolute_error": 1.0224892896606996e-07,
+          "rows": 282,
+          "worst_constraint_index": 200,
+          "worst_tolerance_ratio": 3.6245891250788658
+        },
+        "unsigned_assessability": {
+          "allowed_error": 1.0163024110652117e-08,
+          "analytic_derivative": -1.630241106521158e-05,
+          "failures": 8,
+          "finite_difference": -1.6413426173755852e-05,
+          "maximum_absolute_error": 2.3163874441484156e-07,
+          "rows": 215,
+          "worst_constraint_index": 448,
+          "worst_tolerance_ratio": 10.92343256648512
+        }
+      },
+      "objective_error": 4.74981050937193e-10,
+      "objective_pass": true,
+      "phase": 1.3
+    },
+    {
+      "constraint_failures": 0,
+      "epsilon": 1e-05,
+      "families": {
+        "aligned": {
+          "allowed_error": 1.006191698965918e-08,
+          "analytic_derivative": 6.191698965917866e-06,
+          "failures": 0,
+          "finite_difference": 6.191752666140359e-06,
+          "maximum_absolute_error": 5.3700222493087706e-11,
+          "rows": 1,
+          "worst_constraint_index": 0,
+          "worst_tolerance_ratio": 0.005336977292525513
+        },
+        "bond_assessability": {
+          "allowed_error": 1.1252635937329633e-08,
+          "analytic_derivative": 0.00012526359373296326,
+          "failures": 0,
+          "finite_difference": 0.00012526051307304442,
+          "maximum_absolute_error": 3.3750166342216836e-09,
+          "rows": 499,
+          "worst_constraint_index": 1368,
+          "worst_tolerance_ratio": 0.27377229086577526
+        },
+        "continuous_chiral": {
+          "allowed_error": 1.1786251595906715e-08,
+          "analytic_derivative": 0.00017862515959067143,
+          "failures": 0,
+          "finite_difference": 0.00017862523682410367,
+          "maximum_absolute_error": 7.723343224187197e-11,
+          "rows": 1,
+          "worst_constraint_index": 1,
+          "worst_tolerance_ratio": 0.0065528409616416655
+        },
+        "frame_assessability": {
+          "allowed_error": 1.5542325399259024e-08,
+          "analytic_derivative": -0.0005542325399259023,
+          "failures": 0,
+          "finite_difference": -0.0005542336700692374,
+          "maximum_absolute_error": 1.5097919719986308e-09,
+          "rows": 497,
+          "worst_constraint_index": 943,
+          "worst_tolerance_ratio": 0.07271391546063892
+        },
+        "signed": {
+          "allowed_error": 2.4002921560879858e-08,
+          "analytic_derivative": -0.0014002921560879854,
+          "failures": 0,
+          "finite_difference": -0.0014002866755014052,
+          "maximum_absolute_error": 9.39623735242423e-09,
+          "rows": 282,
+          "worst_constraint_index": 271,
+          "worst_tolerance_ratio": 0.22832997918052253
+        },
+        "unsigned_assessability": {
+          "allowed_error": 1.0163024110652117e-08,
+          "analytic_derivative": -1.630241106521158e-05,
+          "failures": 0,
+          "finite_difference": -1.6308310257784342e-05,
+          "maximum_absolute_error": 1.9919926472211635e-08,
+          "rows": 215,
+          "worst_constraint_index": 448,
+          "worst_tolerance_ratio": 0.5804564181421049
+        }
+      },
+      "objective_error": 3.0891841073577876e-11,
+      "objective_pass": true,
+      "phase": 1.3
+    },
+    {
+      "constraint_failures": 0,
+      "epsilon": 0.0001,
+      "families": {
+        "aligned": {
+          "allowed_error": 1.006191698965918e-08,
+          "analytic_derivative": 6.191698965917866e-06,
+          "failures": 0,
+          "finite_difference": 6.191696599877616e-06,
+          "maximum_absolute_error": 2.3660402496356665e-12,
+          "rows": 1,
+          "worst_constraint_index": 0,
+          "worst_tolerance_ratio": 0.00023514805897000446
+        },
+        "bond_assessability": {
+          "allowed_error": 1.27907277138633e-08,
+          "analytic_derivative": 0.00027907277138633,
+          "failures": 0,
+          "finite_difference": 0.00027907309019248316,
+          "maximum_absolute_error": 3.5579503362623277e-10,
+          "rows": 499,
+          "worst_constraint_index": 1324,
+          "worst_tolerance_ratio": 0.024924786167044143
+        },
+        "continuous_chiral": {
+          "allowed_error": 1.1786251595906715e-08,
+          "analytic_derivative": 0.00017862515959067143,
+          "failures": 0,
+          "finite_difference": 0.00017862515799826895,
+          "maximum_absolute_error": 1.5924024794090885e-12,
+          "rows": 1,
+          "worst_constraint_index": 1,
+          "worst_tolerance_ratio": 0.00013510677813479896
+        },
+        "frame_assessability": {
+          "allowed_error": 1.4680568080654815e-08,
+          "analytic_derivative": 0.0004680568080654815,
+          "failures": 0,
+          "finite_difference": 0.00046805668008076395,
+          "maximum_absolute_error": 4.214004631353241e-10,
+          "rows": 497,
+          "worst_constraint_index": 833,
+          "worst_tolerance_ratio": 0.008717967645894203
+        },
+        "signed": {
+          "allowed_error": 1.44892441216391e-08,
+          "analytic_derivative": -0.00044892441216390984,
+          "failures": 0,
+          "finite_difference": -0.00044892484729608384,
+          "maximum_absolute_error": 1.3324741310327681e-09,
+          "rows": 282,
+          "worst_constraint_index": 104,
+          "worst_tolerance_ratio": 0.030031392275967145
+        },
+        "unsigned_assessability": {
+          "allowed_error": 1.1884797675893307e-08,
+          "analytic_derivative": 0.00018847976758933072,
+          "failures": 0,
+          "finite_difference": 0.00018848026805962093,
+          "maximum_absolute_error": 2.691419226374947e-09,
+          "rows": 215,
+          "worst_constraint_index": 486,
+          "worst_tolerance_ratio": 0.042110122852590845
+        }
+      },
+      "objective_error": 3.13626547150149e-12,
+      "objective_pass": true,
+      "phase": 1.3
+    }
+  ],
+  "length": 500,
+  "optimizer_invocations": 0,
+  "required_dense_arrays": {
+    "buffer_bytes": 225389864,
+    "buffer_elements": 28173733,
+    "dense_normals_bytes": 23940000,
+    "inequalities": 1995,
+    "other_allocations_included": false,
+    "required_array_bytes": 249329864,
+    "variables": 1500
+  },
+  "resource_smoke_completed": false,
+  "solver_settings_changed": false,
+  "tolerances_changed": false,
+  "variable_count": 1500
+}

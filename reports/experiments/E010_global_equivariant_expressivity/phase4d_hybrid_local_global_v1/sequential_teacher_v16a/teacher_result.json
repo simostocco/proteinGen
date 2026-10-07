@@ -1,0 +1,54 @@
+{
+  "K_max": 16,
+  "classification": "TEACH-E",
+  "cuda_used": false,
+  "headroom_use": null,
+  "length_500_derivative_checks": 9,
+  "length_500_failed_checks": 3,
+  "materiality": 1e-06,
+  "maximum_constraint_tolerance_ratio": 10.92343256648512,
+  "maximum_inward_guard_angstrom": 3.1140581556135944e-17,
+  "neural_training_launched": false,
+  "no_package_changes": true,
+  "panel_launched": false,
+  "parallel_workers": null,
+  "reason": "length-500 analytic constraint Jacobian finite-difference preflight did not pass frozen tolerances",
+  "recommended_next_experiment": "fixed-state float64 finite-difference resolution audit of the length-500 one-step constraint Jacobian, preserving the recorded tolerances and solver settings",
+  "s_max_angstrom": 0.1,
+  "scientific_condition_gains": null,
+  "scientific_safety": null,
+  "scipy": "1.18.1",
+  "settings": {
+    "disp": false,
+    "ftol": 1e-12,
+    "maxiter": 1000
+  },
+  "small_preflights": [
+    {
+      "action_sha256": "1f5a4594187159f6310552609e7f1e43750ee7c2e48fea9857461e89772b89d7",
+      "iterations": 72,
+      "length": 12,
+      "normalized_local": 0.6776586963441211,
+      "peak_rss_bytes": 721350656,
+      "runtime_seconds": 0.9681176410522312,
+      "safe": true,
+      "success": true
+    },
+    {
+      "action_sha256": "6348d40de4e1d6b41b31f579a9232af19f3c119dfb42a0fb231cbdbbd19e5af4",
+      "iterations": 143,
+      "length": 32,
+      "normalized_local": 0.721853250939344,
+      "peak_rss_bytes": 721293312,
+      "runtime_seconds": 2.3498602740000933,
+      "safe": true,
+      "success": true
+    }
+  ],
+  "teacher_frozen_for_distillation": false,
+  "teacher_solver": "SciPy SLSQP",
+  "tests": "42 focused CPU tests passed; scientific derivative preflight failed at length 500",
+  "trajectories_complete": 0,
+  "transition_slots": 0,
+  "zero_action_count": null
+}

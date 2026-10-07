@@ -1,0 +1,29 @@
+schema: sequential_privileged_teacher_v16a
+branch: e010-phase4d-hybrid-local-global
+K_max: 16
+s_max_angstrom: 0.10
+solver: SLSQP
+maxiter: 1000
+ftol: 1.0e-12
+precision: float64
+device: cpu
+threads_per_worker: 1
+objective: historical_local_MSE_divided_by_original_Pg_local_MSE
+safety: unchanged_V9_baseline_constraints_global_1e-8_extra_exact_nonpositive
+material_normalized_local_decrease: 1.0e-6
+materiality_provenance: configs/e010_phase4d_conditioning_v9b.yaml
+candidate_selection: every_objective_trial_callback_and_final_after_ball_projection
+candidate_order: [local_loss, correction_Frobenius_norm, iteration, evaluation]
+initialization: zero_each_step
+zero_action: no_best_feasible_improvement_above_materiality
+projection: radial_closed_ball_then_first_feasible_uniform_nextafter_factor
+classification_headroom_fraction: 0.01
+classification_late_gain: normalized_local_MSE_K8_minus_K16_gt_1e-6
+preflight_lengths: [12, 32, 500]
+resource_peak_budget_gib: 4.0
+resource_wall_cap_seconds: 3600
+calibration_workers: [1, 2, 4, 8]
+calibration_jobs: 8
+calibration_length: 32
+no_neural_training: true
+no_cuda: true
