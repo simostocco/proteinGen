@@ -133,4 +133,14 @@ class V2CTests(unittest.TestCase):
     def test_rejects_non_d_artifact_paths(self):
         with self.assertRaises(AssertionError):m.require_d(Path('C:/unsafe') if __import__('os').name=='nt' else Path('/tmp/unsafe'))
 
-if __name__=='__main__':unittest.main()
+if __name__=='__main__':
+    import time,sys
+    start=time.perf_counter()
+    with (ROOT/'logs/v2c_tests.log').open('a',encoding='utf-8') as log:
+        result=unittest.TextTestRunner(stream=log,verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(V2CTests))
+    summary={'tests':result.testsRun,'failures':len(result.failures),'errors':len(result.errors),
+        'passed':result.wasSuccessful(),'wall_seconds':time.perf_counter()-start,
+        'test_source_sha256':m.sha_file(__file__),'core_source_sha256':m.sha_file(Path(__file__).resolve().parents[1]/'scripts/e012_reservoir_v2c.py'),
+        'fixtures_and_logs_root':str(ROOT),'training_launched':False}
+    m.atomic_json(ROOT/'reports/TESTS.json',summary)
+    print(__import__('json').dumps(summary));sys.exit(0 if result.wasSuccessful() else 1)

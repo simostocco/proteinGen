@@ -51,6 +51,19 @@ def sequence_hash(seq):return hashlib.sha256(seq.encode('ascii')).digest()
 def fixed(value):return bytes(value).ljust(32,b'\0')
 def key_tuple(row):return fixed(row['p']),fixed(row['h']),int(row['off'])
 
+def historical_train_file(root,repo):
+    """Copy the frozen historical input to D: without changing its original bytes."""
+    expected='75b6861359f6e9526443fbf1d2b475e55086306df18d4144ca0c7b1afcc580a6'
+    target=require_d(root)/'preservation/historical_train.parquet'
+    if not target.exists():
+        source=Path(repo)/'outputs/e012_causal_rope_sequence/pilot_v1/train.parquet'
+        assert sha_file(source)==expected,'Historical TRAIN input changed'
+        partial=target.with_suffix('.partial');shutil.copyfile(source,partial)
+        assert sha_file(partial)==expected
+        partial.replace(target)
+    assert sha_file(target)==expected
+    return target
+
 class Bloom:
     """No false negatives; positive results always require exact string verification.
 

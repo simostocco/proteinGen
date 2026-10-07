@@ -49,11 +49,15 @@ def main():
     passed=len(cases)==2 and all(c['speedup_including_checkpoint']>=5 and c['processing_speedup']>=5 for c in cases)
     originals=[]
     if passed:
+        tests=json.loads((ROOT/'reports/TESTS.json').read_text())
+        assert tests['passed'] and tests['tests']>=9
+        assert tests['core_source_sha256']==m.sha_file(Path(__file__).with_name('e012_reservoir_v2c.py')),'Core changed after tests'
         for item in json.loads((ROOT/'preservation/FROZEN_FILES.json').read_text())['files']:
             path=m.require_d(item['original'])
             assert path.stat().st_size==item['bytes'] and m.sha_file(path)==item['sha256'],'Original V2B artifact changed'
             originals.append({'path':str(path),'sha256':item['sha256'],'unchanged':True})
     report={'cases':cases,'all_required_benchmarks_passed':passed,'minimum_speedup':5,'original_files_reverified':originals,
+        'tests_report_sha256':m.sha_file(ROOT/'reports/TESTS.json') if passed else None,
         'original_v2b_artifacts_modified':False,'scientific_continuation_launched':False,'training_launched':False}
     m.atomic_json(ROOT/'reports/BENCHMARK_EQUIVALENCE.json',report)
     if passed:

@@ -36,7 +36,7 @@ def run():
     pool=json.loads((Path(state['pool_root'])/'pool.json').read_text());c=pool['cutoff']
     cutoff=(bytes.fromhex(c[0]),bytes.fromhex(c[1]),c[2]) if c else None
     historical={}
-    for batch in pq.ParquetFile(legacy.REPO/'outputs/e012_causal_rope_sequence/pilot_v1/train.parquet').iter_batches(columns=['sample_id','sequence']):
+    for batch in pq.ParquetFile(m.historical_train_file(ROOT,legacy.REPO)).iter_batches(columns=['sample_id','sequence']):
         for item in batch.to_pylist():
             seq=item['sequence'];assert legacy.valid(seq)
             historical[seq]=min(str(item['sample_id']),historical.get(seq,str(item['sample_id'])))

@@ -20,6 +20,9 @@ def run():
     assert gate['report_sha256']==m.sha_file(ROOT/'reports/BENCHMARK_EQUIVALENCE.json')
     report=json.loads((ROOT/'reports/BENCHMARK_EQUIVALENCE.json').read_text())
     assert report['all_required_benchmarks_passed'] and len(report['cases'])==2
+    assert report['tests_report_sha256']==m.sha_file(ROOT/'reports/TESTS.json')
+    tests=json.loads((ROOT/'reports/TESTS.json').read_text())
+    assert tests['passed'] and tests['core_source_sha256']==m.sha_file(Path(__file__).with_name('e012_reservoir_v2c.py'))
     assert all(c['speedup_including_checkpoint']>=5 and c['processing_speedup']>=5 for c in report['cases'])
     ns=importlib.util.spec_from_file_location('native',Path(__file__).with_name('run_e012_v2b_native.py'))
     native=importlib.util.module_from_spec(ns);ns.loader.exec_module(native);legacy=native.load()
@@ -42,7 +45,7 @@ def run():
     bloom=m.Bloom();bloom.seed_file(ROOT/'exports/seen.bin',lambda *_:progress.emit(state['raw'],0,pool.base_count+len(pool.delta),0))
     m.seed_committed_delta(bloom,db)
     historical={}
-    for batch in pq.ParquetFile(legacy.REPO/'outputs/e012_causal_rope_sequence/pilot_v1/train.parquet').iter_batches(columns=['sample_id','sequence']):
+    for batch in pq.ParquetFile(m.historical_train_file(ROOT,legacy.REPO)).iter_batches(columns=['sample_id','sequence']):
         for row in batch.to_pylist():
             seq=row['sequence'];assert legacy.valid(seq)
             historical[seq]=min(str(row['sample_id']),historical.get(seq,str(row['sample_id'])))
