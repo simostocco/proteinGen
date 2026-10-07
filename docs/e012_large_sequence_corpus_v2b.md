@@ -134,6 +134,9 @@ buffers only at most 1M integer row IDs (about 40MB), and deletes in ascending
 SQLite row order. This avoids repeated random sequence-page access on HDD and
 preserves the single atomic WAL checkpoint and selected membership. A regression
 test covers priority ties, unchanged representative strings, and deletion order.
+Resume opens the active filter database directly in WAL mode rather than
+converting to DELETE and back, avoiding an unnecessary full checkpoint. A test
+verifies reopening preserves committed frames even with an existing reader.
 
 Native I/O adapter: scripts/run_e012_v2b_native.py uses the existing Windows
 Python 3.12.1 / SQLite 3.43.1 runtime for native NTFS reads and writes. No

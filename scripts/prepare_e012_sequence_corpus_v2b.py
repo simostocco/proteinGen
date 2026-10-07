@@ -124,11 +124,11 @@ def fasta_records(file, start=0):
 def valid(sequence):
     return 20 <= len(sequence) <= 500 and set(sequence) <= ALPHABET
 
-def connection(path):
+def connection(path, wal=False):
     db = sqlite3.connect(path)
-    db.execute('PRAGMA journal_mode=DELETE')
-    db.execute('PRAGMA synchronous=FULL')
     db.execute('PRAGMA cache_size=-524288')  # At most 512 MiB, allocated on demand.
+    db.execute('PRAGMA journal_mode=WAL' if wal else 'PRAGMA journal_mode=DELETE')
+    db.execute('PRAGMA synchronous=FULL')
     db.execute('PRAGMA temp_store=MEMORY')
     return db
 
@@ -401,7 +401,7 @@ class Build:
         import pyarrow.parquet as pq
         seen_path = self.root/'tmp/exact_hash_offsets.sqlite'
         state_path = self.root/'tmp/filter_checkpoint.json'
-        db = connection(self.reservoir)
+        db = connection(self.reservoir, wal=True)
         try:
             db.execute('PRAGMA cache_size=-5242880')  # Filter only: at most 5 GiB, on demand.
             db.execute('CREATE TABLE IF NOT EXISTS exact_hashes(h BLOB, off INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
@@ -1266,7 +1266,7 @@ class Build:
             'aa_frequencies':final['statistics']['aa_frequencies'],
             'selection_method':method,'final_fasta':final['fasta'],'final_manifest':final['manifest'],
             'shard_root':final['shard_root'],'shard_count':512,
-            'tests':'19 V2B integrity tests including real MMseqs policy boundary, collision, crash/resume, deterministic row-order trimming and loader parity; all frozen bytes independently verified.',
+            'tests':'20 V2B integrity tests including real MMseqs policy boundary, collision, WAL crash/resume, deterministic row-order trimming and loader parity; all frozen bytes independently verified.',
             'training_launched':False,'classification':final['classification'],
             'recommended_next_experiment':'One fixed-budget E012 causal-RoPE data-scaling comparison between a protected-clean historical unique TRAIN baseline and V2B, with unchanged architecture and evaluation panels.'}
         save(self.report/'chatgpt_handoff.json',report)

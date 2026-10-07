@@ -14,6 +14,28 @@ m=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(m)
 
 class V2BTests(unittest.TestCase):
+    def test_wal_resume_preserves_committed_frames_with_an_existing_reader(self):
+        from contextlib import ExitStack, closing
+        with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
+            path=Path(tmp)/'resume.sqlite'
+            writer=stack.enter_context(closing(m.connection(path,wal=True)))
+            writer.execute('PRAGMA wal_autocheckpoint=0')
+            writer.execute('CREATE TABLE population(value INTEGER)')
+            writer.execute('INSERT INTO population VALUES(0)')
+            writer.commit()
+            reader=stack.enter_context(closing(sqlite3.connect(path)))
+            reader.execute('BEGIN')
+            self.assertEqual(reader.execute('SELECT count(*) FROM population').fetchone()[0],1)
+            writer.execute('INSERT INTO population VALUES(1)')
+            writer.commit()
+            wal=Path(str(path)+'-wal')
+            before=wal.read_bytes()
+            resumed=stack.enter_context(closing(m.connection(path,wal=True)))
+            self.assertEqual(resumed.execute('PRAGMA journal_mode').fetchone()[0],'wal')
+            self.assertEqual(resumed.execute('SELECT count(*) FROM population').fetchone()[0],2)
+            self.assertEqual(wal.read_bytes(),before)
+            self.assertEqual(reader.execute('SELECT count(*) FROM population').fetchone()[0],1)
+
     def test_trim_keeps_exact_priority_prefix_and_deletes_in_row_order(self):
         with sqlite3.connect(':memory:') as db:
             db.execute('CREATE TABLE candidates(h BLOB,off INTEGER,p BLOB,seq TEXT,PRIMARY KEY(h,off))')
