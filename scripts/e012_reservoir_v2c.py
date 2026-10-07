@@ -4,7 +4,7 @@ All persistent files, checkpoints, caches and benchmark output are on D:.
 The original V2B database and 30M JSON mirror are never written.
 """
 from pathlib import Path
-from collections import Counter
+from collections import Counter,deque
 from contextlib import closing
 import hashlib, json, math, os, shutil, sqlite3, struct, time
 import numpy as np
@@ -145,17 +145,24 @@ class Progress:
         self.io0=self.proc.io_counters();self.disk0=psutil.disk_io_counters()
         self.log=require_d(root)/'progress.jsonl'
         self.phase='setup'
+        self.recent_raw=raw_start;self.recent_time=self.start
+        self.history=deque([(self.start,raw_start)],maxlen=256)
         self.free_before=shutil.disk_usage(require_d(root)).free
         self.minimum_free=self.free_before
 
     def begin_processing(self):
         self.phase='processing'
         self.start=time.perf_counter();self.last=self.start
+        self.recent_time=self.start
+        self.history=deque([(self.start,self.raw_start)],maxlen=256)
 
-    def emit(self,raw,canonical,reservoir,queries,force=False):
+    def emit(self,raw,canonical,reservoir,queries,force=False,**details):
         elapsed=time.perf_counter()-self.start
         if not force and raw%100_000 and time.perf_counter()-self.last<60:return
         done=raw-self.raw_start;rate=done/max(elapsed,1e-9)
+        now=time.perf_counter();self.history.append((now,raw))
+        while len(self.history)>2 and self.history[1][0]<now-120:self.history.popleft()
+        recent_rate=(raw-self.history[0][1])/max(now-self.history[0][0],1e-9)
         io=self.proc.io_counters();disk=self.psutil.disk_io_counters()
         free=shutil.disk_usage(self.log.parent).free;self.minimum_free=min(self.minimum_free,free)
         row={'phase':self.phase,'io_includes_setup':True,'raw':raw,'percent_of_38840027':100*raw/RAW_COUNT,'raw_per_second':rate,
@@ -164,12 +171,14 @@ class Progress:
             'rss_bytes':self.proc.memory_info().rss,'peak_rss_bytes':getattr(self.proc.memory_info(),'peak_wset',self.proc.memory_info().rss),
             'process_read_bytes':io.read_bytes-self.io0.read_bytes,'process_write_bytes':io.write_bytes-self.io0.write_bytes,
             'host_disk_read_bytes':disk.read_bytes-self.disk0.read_bytes,'host_disk_write_bytes':disk.write_bytes-self.disk0.write_bytes,
-            'database_queries':queries,'cpu_threads':self.psutil.cpu_count(),
+            'database_queries':queries,'raw_per_second_recent':recent_rate,'cpu_threads':self.psutil.cpu_count(),
             'd_free_bytes':free,'d_free_before_bytes':self.free_before,
             'd_peak_consumption_bytes_sampled':self.free_before-self.minimum_free,
             'disk_peak_includes_unrelated_activity':True,'durable':False,'training_launched':False}
+        row.update(details)
         with self.log.open('a',encoding='utf-8') as f:f.write(json.dumps(row,sort_keys=True)+'\n')
         print(json.dumps(row),flush=True);self.last=time.perf_counter()
+        self.recent_raw=raw;self.recent_time=self.last
 
 class ExactMembership:
     """Immutable baseline plus small sorted/batched delta index and current interval.
@@ -180,7 +189,7 @@ class ExactMembership:
     """
     def __init__(self,baseline,delta,bloom,sequence_at):
         self.base=baseline;self.delta=delta;self.bloom=bloom;self.sequence_at=sequence_at
-        self.current={};self.queries=0;self.negatives=0;self.positives=0
+        self.current={};self.queries=0;self.array_queries=0;self.negatives=0;self.positives=0
 
     def find(self,h,seq):
         if not self.bloom.possible(h):self.negatives+=1;return None
@@ -188,7 +197,8 @@ class ExactMembership:
         for off,previous in self.current.get(h,[]):
             if previous==seq:return off
         for db in [self.delta,self.base]:
-            self.queries+=1
+            if isinstance(db,ArrayBaseline):self.array_queries+=1
+            else:self.queries+=1
             for off, in db.execute('SELECT off FROM exact_hashes WHERE h=?',(h,)):
                 if self.sequence_at(h,off)==seq:return off
         return None
@@ -293,3 +303,37 @@ def seed_committed_delta(bloom,db):
     """Required on every resume; cache lag must never introduce false negatives."""
     for h, in db.execute('SELECT h FROM exact_hashes ORDER BY h,off'):
         bloom.add(h)
+
+class ArrayBaseline:
+    """Immutable exact (hash, offset) index; avoids opening the large frozen WAL.
+
+    Positives still verify full strings using the immutable source, never hash only.
+    Binary search operates on 32-byte keys; collisions retain every distinct offset.
+    """
+    def __init__(self,path):
+        self.rows=np.memmap(require_d(path),mode='r',dtype=SEEN_DTYPE)
+    def execute(self,sql,parameters):
+        assert sql=='SELECT off FROM exact_hashes WHERE h=?'
+        h=parameters[0];key=np.bytes_(h)
+        first=int(np.searchsorted(self.rows['h'],key,side='left'))
+        last=int(np.searchsorted(self.rows['h'],key,side='right'))
+        return ((int(row['off']),) for row in self.rows[first:last] if fixed(row['h'])==h)
+    def close(self):self.rows._mmap.close()
+
+def prepare_array_baseline(root):
+    root=require_d(root);source=root/'exports/seen.bin';out=root/'exports/seen_hash_sorted.bin'
+    cert=out.with_suffix('.complete.json')
+    if cert.exists():
+        metadata=json.loads(cert.read_text());assert out.stat().st_size==metadata['bytes']
+        assert metadata['source_sha256']==json.loads((root/'exports/export.complete.json').read_text())['outputs']['seen.bin']['sha256']
+        assert metadata['count']==24_715_247
+        assert sha_file(out)==metadata['sha256'];return out
+    import psutil
+    assert psutil.virtual_memory().available>=2*source.stat().st_size,'Insufficient RAM for bounded compact-key sort'
+    rows=np.fromfile(source,dtype=SEEN_DTYPE);rows.sort(order=['h','off'])
+    partial=out.with_suffix('.partial')
+    with partial.open('wb') as f:rows.tofile(f);f.flush();os.fsync(f.fileno())
+    partial.replace(out)
+    atomic_json(cert,{'source_sha256':sha_file(source),'sha256':sha_file(out),'bytes':out.stat().st_size,
+        'count':len(rows),'bounded_sort_array_bytes':rows.nbytes,'ordering':['h','off']})
+    return out

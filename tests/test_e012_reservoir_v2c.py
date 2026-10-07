@@ -9,6 +9,19 @@ m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 ROOT=m.configure_storage(Path('D:/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization') if __import__('os').name=='nt' else Path('/mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization'))
 
 class V2CTests(unittest.TestCase):
+    def test_array_baseline_retains_collisions_and_zero_bytes(self):
+        with tempfile.TemporaryDirectory(dir=ROOT/'tmp') as tmp:
+            root=Path(tmp);h=b'\0'*32;other=b'A'+b'\0'*31
+            path=root/'sorted.bin';np.array([(h,1),(h,2),(other,3)],dtype=m.SEEN_DTYPE).tofile(path)
+            base=m.ArrayBaseline(path)
+            with closing(m.open_delta(root/'delta.sqlite')) as delta:
+                bloom=m.Bloom(bits=1024);bloom.data[:]=255
+                seqs={1:'A'*20,2:'C'*20,3:'D'*20}
+                lookup=m.ExactMembership(base,delta,bloom,lambda _,off:seqs[off])
+                self.assertEqual(lookup.find(h,'A'*20),1);self.assertEqual(lookup.find(h,'C'*20),2)
+                self.assertIsNone(lookup.find(h,'E'*20));self.assertEqual(lookup.find(other,'D'*20),3)
+                self.assertEqual(lookup.array_queries,4)
+            base.close()
     def test_export_payload_stream_decodes_exact_sequences_and_metadata(self):
         script=Path(__file__).resolve().parents[1]/'scripts/union_e012_reservoir_v2c.py'
         spec=importlib.util.spec_from_file_location('union',script)
