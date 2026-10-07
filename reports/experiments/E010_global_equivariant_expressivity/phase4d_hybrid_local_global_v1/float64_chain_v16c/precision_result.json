@@ -1,0 +1,24 @@
+{
+  "additional_dtype_path": "PyTorch determinant backward default-dtype exact 0/1 temporaries; float64 differentiation scope with restoration",
+  "all_float64_assertions_pass": true,
+  "classification": "PRECISION-A",
+  "cuda_used": false,
+  "distinct_length_phase_checks": 9,
+  "historical_slots_passed_per_length": 9,
+  "historical_tolerances_unchanged": true,
+  "lengths": [
+    12,
+    32,
+    500
+  ],
+  "maximum_analytic_disagreement": 1.1102230246251565e-16,
+  "maximum_scalar_disagreement": 6.938893903907228e-17,
+  "neural_training_launched": false,
+  "optimization_launched": false,
+  "optimizer_guard_installed": true,
+  "primary_h": 0.0001,
+  "scientific_equations_unchanged": true,
+  "solver_settings_unchanged": true,
+  "teacher_panel_launched": false,
+  "values_bitwise_unchanged": true
+}

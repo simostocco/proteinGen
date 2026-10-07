@@ -1,0 +1,2571 @@
+{
+  "directions": [
+    {
+      "analytic_max_difference": 1.1102230246251565e-16,
+      "direction_sha256": "44b8eaae0f5a05ebd762555b9a949f8968efce6d9bafd705bb26880c25da5102",
+      "floating_trace_pass": true,
+      "historical_slot_mapping": [
+        {
+          "new_h": 0.0001,
+          "original_h": 1e-06,
+          "primary_pass": true
+        },
+        {
+          "new_h": 0.0001,
+          "original_h": 1e-05,
+          "primary_pass": true
+        },
+        {
+          "new_h": 0.0001,
+          "original_h": 0.0001,
+          "primary_pass": true
+        }
+      ],
+      "phase": 0.0,
+      "samples": [
+        {
+          "families": {
+            "aligned": {
+              "absolute_error": 2.226789523173539e-10,
+              "allowed_error": 1.4910072342363745e-08,
+              "analytic": -0.0004910072342363743,
+              "failures": 0,
+              "finite_difference": -0.0004910074569153267,
+              "maximum_absolute_error": 2.226789523173539e-10,
+              "relative_error": 4.5351460587677346e-07,
+              "rows": 1,
+              "worst_index": 1
+            },
+            "bond_assessability": {
+              "absolute_error": 5.067198375306725e-10,
+              "allowed_error": 4.754329673352592e-08,
+              "analytic": -0.003754329673352592,
+              "failures": 0,
+              "finite_difference": -0.0037543301800724294,
+              "maximum_absolute_error": 5.067198375306725e-10,
+              "relative_error": 1.3496945703177288e-07,
+              "rows": 11,
+              "worst_index": 30
+            },
+            "continuous_chiral": {
+              "absolute_error": 3.101403960037441e-10,
+              "allowed_error": 1.3862998689134174e-07,
+              "analytic": 0.01286299868913417,
+              "failures": 0,
+              "finite_difference": 0.012862998999274566,
+              "maximum_absolute_error": 3.101403960037441e-10,
+              "relative_error": 2.4111049336087598e-08,
+              "rows": 1,
+              "worst_index": 2
+            },
+            "frame_assessability": {
+              "absolute_error": 7.618742442483395e-11,
+              "allowed_error": 1.1427562514987963e-07,
+              "analytic": 0.010427562514987963,
+              "failures": 0,
+              "finite_difference": 0.010427562591175388,
+              "maximum_absolute_error": 2.558120937301567e-10,
+              "relative_error": 7.306350291866065e-09,
+              "rows": 9,
+              "worst_index": 17
+            },
+            "objective": {
+              "absolute_error": 6.438222585267162e-10,
+              "allowed_error": 6.97440432692105e-08,
+              "analytic": -0.005974404326921049,
+              "failures": 0,
+              "finite_difference": -0.005974404970743308,
+              "maximum_absolute_error": 6.438222585267162e-10,
+              "relative_error": 1.0776342264376245e-07,
+              "rows": 1,
+              "worst_index": 0
+            },
+            "signed": {
+              "absolute_error": 2.0959660656377777e-10,
+              "allowed_error": 2.909591250446141e-08,
+              "analytic": -0.0019095912504461408,
+              "failures": 0,
+              "finite_difference": -0.0019095910408495342,
+              "maximum_absolute_error": 9.673991052672193e-10,
+              "relative_error": 1.0975993240166416e-07,
+              "rows": 5,
+              "worst_index": 3
+            },
+            "unsigned_assessability": {
+              "absolute_error": 2.2117488535089436e-09,
+              "allowed_error": 1.0316960077099187e-06,
+              "analytic": 0.10216960077099187,
+              "failures": 0,
+              "finite_difference": 0.10216959855924301,
+              "maximum_absolute_error": 2.2117488535089436e-09,
+              "relative_error": 2.1647817323535108e-08,
+              "rows": 4,
+              "worst_index": 9
+            }
+          },
+          "h": 1e-06,
+          "passes": true,
+          "physical": {
+            "intended_max_angstrom": 2.9233982489251488e-08,
+            "intended_rms_angstrom": 2.642622029672656e-08,
+            "stored_max_angstrom": 2.9233982141837053e-08,
+            "stored_rms_angstrom": 2.6426220130457373e-08,
+            "unchanged_coordinate_fraction": 0.16666666666666666
+          },
+          "primary": false
+        },
+        {
+          "families": {
+            "aligned": {
+              "absolute_error": 1.2318254597777634e-11,
+              "allowed_error": 1.4910072342363745e-08,
+              "analytic": -0.0004910072342363743,
+              "failures": 0,
+              "finite_difference": -0.0004910072219181197,
+              "maximum_absolute_error": 1.2318254597777634e-11,
+              "relative_error": 2.5087725269333893e-08,
+              "rows": 1,
+              "worst_index": 1
+            },
+            "bond_assessability": {
+              "absolute_error": 7.708860893379521e-12,
+              "allowed_error": 4.517531896931021e-08,
+              "analytic": 0.0035175318969310203,
+              "failures": 0,
+              "finite_difference": 0.003517531904639881,
+              "maximum_absolute_error": 1.7797988777212836e-11,
+              "relative_error": 2.191553941587667e-09,
+              "rows": 11,
+              "worst_index": 29
+            },
+            "continuous_chiral": {
+              "absolute_error": 7.220508912997303e-13,
+              "allowed_error": 1.3862998689134174e-07,
+              "analytic": 0.01286299868913417,
+              "failures": 0,
+              "finite_difference": 0.01286299868841212,
+              "maximum_absolute_error": 7.220508912997303e-13,
+              "relative_error": 5.613394735938768e-11,
+              "rows": 1,
+              "worst_index": 2
+            },
+            "frame_assessability": {
+              "absolute_error": 5.873300110148527e-12,
+              "allowed_error": 1.1427562514987963e-07,
+              "analytic": 0.010427562514987963,
+              "failures": 0,
+              "finite_difference": 0.010427562520861263,
+              "maximum_absolute_error": 1.2589380926630866e-11,
+              "relative_error": 5.632476527190886e-10,
+              "rows": 9,
+              "worst_index": 17
+            },
+            "objective": {
+              "absolute_error": 7.508583164950178e-12,
+              "allowed_error": 6.97440432692105e-08,
+              "analytic": -0.005974404326921049,
+              "failures": 0,
+              "finite_difference": -0.005974404319412466,
+              "maximum_absolute_error": 7.508583164950178e-12,
+              "relative_error": 1.2567919334009619e-09,
+              "rows": 1,
+              "worst_index": 0
+            },
+            "signed": {
+              "absolute_error": 6.055718860392689e-12,
+              "allowed_error": 2.909591250446141e-08,
+              "analytic": -0.0019095912504461408,
+              "failures": 0,
+              "finite_difference": -0.001909591244390422,
+              "maximum_absolute_error": 3.450043029040728e-11,
+              "relative_error": 3.1712120900103003e-09,
+              "rows": 5,
+              "worst_index": 3
+            },
+            "unsigned_assessability": {
+              "absolute_error": 5.791618573613988e-11,
+              "allowed_error": 1.0316960077099187e-06,
+              "analytic": 0.10216960077099187,
+              "failures": 0,
+              "finite_difference": 0.10216960071307568,
+              "maximum_absolute_error": 5.791618573613988e-11,
+              "relative_error": 5.668631892372385e-10,
+              "rows": 4,
+              "worst_index": 9
+            }
+          },
+          "h": 3e-05,
+          "passes": true,
+          "physical": {
+            "intended_max_angstrom": 8.770194746775447e-07,
+            "intended_rms_angstrom": 7.927866089017969e-07,
+            "stored_max_angstrom": 8.770194745549357e-07,
+            "stored_rms_angstrom": 7.927866088462475e-07,
+            "unchanged_coordinate_fraction": 0.16666666666666666
+          },
+          "primary": false
+        },
+        {
+          "families": {
+            "aligned": {
+              "absolute_error": 6.740574027760959e-12,
+              "allowed_error": 1.4910072342363745e-08,
+              "analytic": -0.0004910072342363743,
+              "failures": 0,
+              "finite_difference": -0.0004910072409769484,
+              "maximum_absolute_error": 6.740574027760959e-12,
+              "relative_error": 1.372805441093766e-08,
+              "rows": 1,
+              "worst_index": 1
+            },
+            "bond_assessability": {
+              "absolute_error": 3.2806474550839404e-12,
+              "allowed_error": 3.8111213084602234e-08,
+              "analytic": -0.0028111213084602233,
+              "failures": 0,
+              "finite_difference": -0.002811121305179576,
+              "maximum_absolute_error": 3.2806474550839404e-12,
+              "relative_error": 1.1670245055631901e-09,
+              "rows": 11,
+              "worst_index": 31
+            },
+            "continuous_chiral": {
+              "absolute_error": 3.881721333254262e-13,
+              "allowed_error": 1.3862998689134174e-07,
+              "analytic": 0.01286299868913417,
+              "failures": 0,
+              "finite_difference": 0.012862998689522342,
+              "maximum_absolute_error": 3.881721333254262e-13,
+              "relative_error": 3.017742151006584e-11,
+              "rows": 1,
+              "worst_index": 2
+            },
+            "frame_assessability": {
+              "absolute_error": 1.5281872989270084e-12,
+              "allowed_error": 1.1427562514987963e-07,
+              "analytic": 0.010427562514987963,
+              "failures": 0,
+              "finite_difference": 0.010427562513459776,
+              "maximum_absolute_error": 4.346578652558719e-12,
+              "relative_error": 1.465526863761768e-10,
+              "rows": 9,
+              "worst_index": 17
+            },
+            "objective": {
+              "absolute_error": 2.3275418051249552e-12,
+              "allowed_error": 6.97440432692105e-08,
+              "analytic": -0.005974404326921049,
+              "failures": 0,
+              "finite_difference": -0.0059744043245935075,
+              "maximum_absolute_error": 2.3275418051249552e-12,
+              "relative_error": 3.8958558506609646e-10,
+              "rows": 1,
+              "worst_index": 0
+            },
+            "signed": {
+              "absolute_error": 1.3457681150019773e-12,
+              "allowed_error": 2.909591250446141e-08,
+              "analytic": -0.0019095912504461408,
+              "failures": 0,
+              "finite_difference": -0.001909591251791909,
+              "maximum_absolute_error": 1.1497081064959502e-11,
+              "relative_error": 7.047414543230461e-10,
+              "rows": 5,
+              "worst_index": 3
+            },
+            "unsigned_assessability": {
+              "absolute_error": 8.697195741369512e-12,
+              "allowed_error": 1.0316960077099187e-06,
+              "analytic": 0.10216960077099187,
+              "failures": 0,
+              "finite_difference": 0.10216960077968906,
+              "maximum_absolute_error": 1.8654966460474043e-11,
+              "relative_error": 8.512508295754085e-11,
+              "rows": 4,
+              "worst_index": 9
+            }
+          },
+          "h": 0.0001,
+          "passes": true,
+          "physical": {
+            "intended_max_angstrom": 2.9233982489251495e-06,
+            "intended_rms_angstrom": 2.6426220296726565e-06,
+            "stored_max_angstrom": 2.9233982483224238e-06,
+            "stored_rms_angstrom": 2.642622029561035e-06,
+            "unchanged_coordinate_fraction": 0.16666666666666666
+          },
+          "primary": true
+        }
+      ],
+      "scalar_checks": [
+        {
+          "absolute_difference": 0.0,
+          "family": "objective"
+        },
+        {
+          "absolute_difference": 7.589415207398531e-19,
+          "family": "aligned"
+        },
+        {
+          "absolute_difference": 5.204170427930421e-18,
+          "family": "continuous_chiral"
+        },
+        {
+          "absolute_difference": 2.7755575615628914e-17,
+          "family": "signed"
+        },
+        {
+          "absolute_difference": 0.0,
+          "family": "unsigned_assessability"
+        },
+        {
+          "absolute_difference": 1.3877787807814457e-17,
+          "family": "frame_assessability"
+        },
+        {
+          "absolute_difference": 2.168404344971009e-19,
+          "family": "bond_assessability"
+        }
+      ],
+      "state_sha256": "63cf77754ba14a2c25428143da0c635293c33b8218da985e3cf37e6ccab4440c"
+    },
+    {
+      "analytic_max_difference": 5.551115123125783e-17,
+      "direction_sha256": "f13398fbe74207d76b6e9965071b697365683f5cc1e4ff2ab45cf685a407f4ac",
+      "floating_trace_pass": true,
+      "historical_slot_mapping": [
+        {
+          "new_h": 0.0001,
+          "original_h": 1e-06,
+          "primary_pass": true
+        },
+        {
+          "new_h": 0.0001,
+          "original_h": 1e-05,
+          "primary_pass": true
+        },
+        {
+          "new_h": 0.0001,
+          "original_h": 0.0001,
+          "primary_pass": true
+        }
+      ],
+      "phase": 0.7,
+      "samples": [
+        {
+          "families": {
+            "aligned": {
+              "absolute_error": 2.8067996928407557e-11,
+              "allowed_error": 2.1704865129564768e-08,
+              "analytic": 0.0011704865129564767,
+              "failures": 0,
+              "finite_difference": 0.0011704865410244736,
+              "maximum_absolute_error": 2.8067996928407557e-11,
+              "relative_error": 2.3979769623754082e-08,
+              "rows": 1,
+              "worst_index": 1
+            },
+            "bond_assessability": {
+              "absolute_error": 4.38739478775263e-10,
+              "allowed_error": 1.483204561464945e-07,
+              "analytic": 0.013832045614649447,
+              "failures": 0,
+              "finite_difference": 0.013832045175909968,
+              "maximum_absolute_error": 4.38739478775263e-10,
+              "relative_error": 3.1719059566330255e-08,
+              "rows": 11,
+              "worst_index": 24
+            },
+            "continuous_chiral": {
+              "absolute_error": 1.5847900509263768e-10,
+              "allowed_error": 3.57823757593956e-08,
+              "analytic": -0.0025782375759395596,
+              "failures": 0,
+              "finite_difference": -0.0025782377344185647,
+              "maximum_absolute_error": 1.5847900509263768e-10,
+              "relative_error": 6.146796035073876e-08,
+              "rows": 1,
+              "worst_index": 2
+            },
+            "frame_assessability": {
+              "absolute_error": 2.0697814642756107e-10,
+              "allowed_error": 4.511243422205834e-08,
+              "analytic": 0.0035112434222058335,
+              "failures": 0,
+              "finite_difference": 0.00351124362918398,
+              "maximum_absolute_error": 2.0697814642756107e-10,
+              "relative_error": 5.8947250742739235e-08,
+              "rows": 9,
+              "worst_index": 15
+            },
+            "objective": {
+              "absolute_error": 4.2716109642515487e-10,
+              "allowed_error": 9.656120359110133e-08,
+              "analytic": -0.008656120359110132,
+              "failures": 0,
+              "finite_difference": -0.008656119931949036,
+              "maximum_absolute_error": 4.2716109642515487e-10,
+              "relative_error": 4.934786933450957e-08,
+              "rows": 1,
+              "worst_index": 0
+            },
+            "signed": {
+              "absolute_error": 5.370054470543728e-10,
+              "allowed_error": 6.348997726630229e-08,
+              "analytic": 0.005348997726630229,
+              "failures": 0,
+              "finite_difference": 0.005348997189624782,
+              "maximum_absolute_error": 5.528014712652407e-10,
+              "relative_error": 1.0039365774654692e-07,
+              "rows": 5,
+              "worst_index": 4
+            },
+            "unsigned_assessability": {
+              "absolute_error": 1.2036930757686193e-09,
+              "allowed_error": 3.899040617181689e-07,
+              "analytic": -0.037990406171816885,
+              "failures": 0,
+              "finite_difference": -0.03799040737550996,
+              "maximum_absolute_error": 1.9895621261589724e-09,
+              "relative_error": 3.1684132839347655e-08,
+              "rows": 4,
+              "worst_index": 10
+            }
+          },
+          "h": 1e-06,
+          "passes": true,
+          "physical": {
+            "intended_max_angstrom": 2.9670428693648116e-08,
+            "intended_rms_angstrom": 2.632947557948956e-08,
+            "stored_max_angstrom": 2.9670428391609614e-08,
+            "stored_rms_angstrom": 2.6329475259724614e-08,
+            "unchanged_coordinate_fraction": 0.16666666666666666
+          },
+          "primary": false
+        },
+        {
+          "families": {
+            "aligned": {
+              "absolute_error": 2.162792948207093e-12,
+              "allowed_error": 2.1704865129564768e-08,
+              "analytic": 0.0011704865129564767,
+              "failures": 0,
+              "finite_difference": 0.0011704865151192696,
+              "maximum_absolute_error": 2.162792948207093e-12,
+              "relative_error": 1.8477726349398048e-09,
+              "rows": 1,
+              "worst_index": 1
+            },
+            "bond_assessability": {
+              "absolute_error": 1.3516169086735808e-11,
+              "allowed_error": 7.296664843797816e-08,
+              "analytic": -0.006296664843797816,
+              "failures": 0,
+              "finite_difference": -0.006296664830281647,
+              "maximum_absolute_error": 1.4939851439299545e-11,
+              "relative_error": 2.1465600317045885e-09,
+              "rows": 11,
+              "worst_index": 31
+            },
+            "continuous_chiral": {
+              "absolute_error": 4.353705330278901e-12,
+              "allowed_error": 3.57823757593956e-08,
+              "analytic": -0.0025782375759395596,
+              "failures": 0,
+              "finite_difference": -0.0025782375715858543,
+              "maximum_absolute_error": 4.353705330278901e-12,
+              "relative_error": 1.6886362106069013e-09,
+              "rows": 1,
+              "worst_index": 2
+            },
+            "frame_assessability": {
+              "absolute_error": 8.897205888702686e-12,
+              "allowed_error": 2.2500351889244516e-07,
+              "analytic": 0.021500351889244512,
+              "failures": 0,
+              "finite_difference": 0.021500351880347306,
+              "maximum_absolute_error": 1.04485795016096e-11,
+              "relative_error": 4.13816756792408e-10,
+              "rows": 9,
+              "worst_index": 12
+            },
+            "objective": {
+              "absolute_error": 1.5756042304193585e-12,
+              "allowed_error": 9.656120359110133e-08,
+              "analytic": -0.008656120359110132,
+              "failures": 0,
+              "finite_difference": -0.008656120357534528,
+              "maximum_absolute_error": 1.5756042304193585e-12,
+              "relative_error": 1.820219873399882e-10,
+              "rows": 1,
+              "worst_index": 0
+            },
+            "signed": {
+              "absolute_error": 1.4003503218118496e-11,
+              "allowed_error": 2.2955523842380125e-07,
+              "analytic": 0.02195552384238012,
+              "failures": 0,
+              "finite_difference": 0.021955523856383625,
+              "maximum_absolute_error": 3.839814577411005e-11,
+              "relative_error": 6.378123026647141e-10,
+              "rows": 5,
+              "worst_index": 6
+            },
+            "unsigned_assessability": {
+              "absolute_error": 3.05574107684059e-11,
+              "allowed_error": 3.899040617181689e-07,
+              "analytic": -0.037990406171816885,
+              "failures": 0,
+              "finite_difference": -0.037990406202374295,
+              "maximum_absolute_error": 6.754430348365759e-11,
+              "relative_error": 8.043454610673487e-10,
+              "rows": 4,
+              "worst_index": 10
+            }
+          },
+          "h": 3e-05,
+          "passes": true,
+          "physical": {
+            "intended_max_angstrom": 8.901128608094436e-07,
+            "intended_rms_angstrom": 7.898842673846869e-07,
+            "stored_max_angstrom": 8.901128611696899e-07,
+            "stored_rms_angstrom": 7.898842673047727e-07,
+            "unchanged_coordinate_fraction": 0.16666666666666666
+          },
+          "primary": false
+        },
+        {
+          "families": {
+            "aligned": {
+              "absolute_error": 4.128470785721983e-12,
+              "allowed_error": 2.1704865129564768e-08,
+              "analytic": 0.0011704865129564767,
+              "failures": 0,
+              "finite_difference": 0.0011704865088280059,
+              "maximum_absolute_error": 4.128470785721983e-12,
+              "relative_error": 3.5271408427373275e-09,
+              "rows": 1,
+              "worst_index": 1
+            },
+            "bond_assessability": {
+              "absolute_error": 2.5989757221345222e-12,
+              "allowed_error": 7.296664843797816e-08,
+              "analytic": -0.006296664843797816,
+              "failures": 0,
+              "finite_difference": -0.00629666484119884,
+              "maximum_absolute_error": 3.087467781437425e-12,
+              "relative_error": 4.127543368763704e-10,
+              "rows": 11,
+              "worst_index": 31
+            },
+            "continuous_chiral": {
+              "absolute_error": 8.273355958654527e-13,
+              "allowed_error": 3.57823757593956e-08,
+              "analytic": -0.0025782375759395596,
+              "failures": 0,
+              "finite_difference": -0.0025782375767668952,
+              "maximum_absolute_error": 8.273355958654527e-13,
+              "relative_error": 3.2089191608494634e-10,
+              "rows": 1,
+              "worst_index": 2
+            },
+            "frame_assessability": {
+              "absolute_error": 1.743782201968358e-12,
+              "allowed_error": 4.511243422205834e-08,
+              "analytic": 0.0035112434222058335,
+              "failures": 0,
+              "finite_difference": 0.0035112434204620513,
+              "maximum_absolute_error": 4.966034528042229e-12,
+              "relative_error": 4.966281149692775e-10,
+              "rows": 9,
+              "worst_index": 15
+            },
+            "objective": {
+              "absolute_error": 9.156552252531647e-12,
+              "allowed_error": 9.656120359110133e-08,
+              "analytic": -0.008656120359110132,
+              "failures": 0,
+              "finite_difference": -0.008656120368266684,
+              "maximum_absolute_error": 9.156552252531647e-12,
+              "relative_error": 1.0578124925093994e-09,
+              "rows": 1,
+              "worst_index": 0
+            },
+            "signed": {
+              "absolute_error": 1.322837672734778e-12,
+              "allowed_error": 6.348997726630229e-08,
+              "analytic": 0.005348997726630229,
+              "failures": 0,
+              "finite_difference": 0.005348997725307392,
+              "maximum_absolute_error": 1.0252187987447314e-11,
+              "relative_error": 2.4730570853469805e-10,
+              "rows": 5,
+              "worst_index": 4
+            },
+            "unsigned_assessability": {
+              "absolute_error": 1.3111359220552288e-11,
+              "allowed_error": 3.899040617181689e-07,
+              "analytic": -0.037990406171816885,
+              "failures": 0,
+              "finite_difference": -0.037990406158705525,
+              "maximum_absolute_error": 1.3111359220552288e-11,
+              "relative_error": 3.4512290185196613e-10,
+              "rows": 4,
+              "worst_index": 10
+            }
+          },
+          "h": 0.0001,
+          "passes": true,
+          "physical": {
+            "intended_max_angstrom": 2.967042869364812e-06,
+            "intended_rms_angstrom": 2.6329475579489567e-06,
+            "stored_max_angstrom": 2.967042869884342e-06,
+            "stored_rms_angstrom": 2.6329475579126626e-06,
+            "unchanged_coordinate_fraction": 0.16666666666666666
+          },
+          "primary": true
+        }
+      ],
+      "scalar_checks": [
+        {
+          "absolute_difference": 0.0,
+          "family": "objective"
+        },
+        {
+          "absolute_difference": 0.0,
+          "family": "aligned"
+        },
+        {
+          "absolute_difference": 4.336808689942018e-19,
+          "family": "continuous_chiral"
+        },
+        {
+          "absolute_difference": 2.7755575615628914e-17,
+          "family": "signed"
+        },
+        {
+          "absolute_difference": 2.7755575615628914e-17,
+          "family": "unsigned_assessability"
+        },
+        {
+          "absolute_difference": 1.0408340855860843e-17,
+          "family": "frame_assessability"
+        },
+        {
+          "absolute_difference": 6.505213034913027e-19,
+          "family": "bond_assessability"
+        }
+      ],
+      "state_sha256": "63cf77754ba14a2c25428143da0c635293c33b8218da985e3cf37e6ccab4440c"
+    },
+    {
+      "analytic_max_difference": 5.551115123125783e-17,
+      "direction_sha256": "68bfd4775a07fe2188998f661e8b2615853481362e5dec005049da13708eafd2",
+      "floating_trace_pass": true,
+      "historical_slot_mapping": [
+        {
+          "new_h": 0.0001,
+          "original_h": 1e-06,
+          "primary_pass": true
+        },
+        {
+          "new_h": 0.0001,
+          "original_h": 1e-05,
+          "primary_pass": true
+        },
+        {
+          "new_h": 0.0001,
+          "original_h": 0.0001,
+          "primary_pass": true
+        }
+      ],
+      "phase": 1.3,
+      "samples": [
+        {
+          "families": {
+            "aligned": {
+              "absolute_error": 3.22211097646824e-10,
+              "allowed_error": 3.216066618852035e-08,
+              "analytic": 0.002216066618852035,
+              "failures": 0,
+              "finite_difference": 0.002216066941063133,
+              "maximum_absolute_error": 3.22211097646824e-10,
+              "relative_error": 1.4539774883380333e-07,
+              "rows": 1,
+              "worst_index": 1
+            },
+            "bond_assessability": {
+              "absolute_error": 1.2868029211632326e-10,
+              "allowed_error": 7.991233574388353e-08,
+              "analytic": -0.006991233574388352,
+              "failures": 0,
+              "finite_difference": -0.0069912337030686444,
+              "maximum_absolute_error": 2.0657234256482582e-10,
+              "relative_error": 1.840594950049015e-08,
+              "rows": 11,
+              "worst_index": 31
+            },
+            "continuous_chiral": {
+              "absolute_error": 1.1826515114443659e-10,
+              "allowed_error": 1.6534134985588399e-07,
+              "analytic": -0.015534134985588397,
+              "failures": 0,
+              "finite_difference": -0.015534134867323246,
+              "maximum_absolute_error": 1.1826515114443659e-10,
+              "relative_error": 7.613243431588282e-09,
+              "rows": 1,
+              "worst_index": 2
+            },
+            "frame_assessability": {
+              "absolute_error": 1.507536205244686e-10,
+              "allowed_error": 4.714869427865708e-08,
+              "analytic": 0.003714869427865708,
+              "failures": 0,
+              "finite_difference": 0.0037148695786193286,
+              "maximum_absolute_error": 3.2103823766060913e-10,
+              "relative_error": 4.0581135744273145e-08,
+              "rows": 9,
+              "worst_index": 13
+            },
+            "objective": {
+              "absolute_error": 1.8884335935276386e-11,
+              "allowed_error": 8.703170638018734e-08,
+              "analytic": -0.007703170638018733,
+              "failures": 0,
+              "finite_difference": -0.007703170656903069,
+              "maximum_absolute_error": 1.8884335935276386e-11,
+              "relative_error": 2.451501702698029e-09,
+              "rows": 1,
+              "worst_index": 0
+            },
+            "signed": {
+              "absolute_error": 5.74329889202474e-10,
+              "allowed_error": 1.7355936699843668e-06,
+              "analytic": -0.1725593669984367,
+              "failures": 0,
+              "finite_difference": -0.17255936757276658,
+              "maximum_absolute_error": 5.74329889202474e-10,
+              "relative_error": 3.328303175843692e-09,
+              "rows": 5,
+              "worst_index": 7
+            },
+            "unsigned_assessability": {
+              "absolute_error": 1.617132885933792e-09,
+              "allowed_error": 6.36992400148032e-07,
+              "analytic": 0.06269924001480319,
+              "failures": 0,
+              "finite_difference": 0.06269924163193608,
+              "maximum_absolute_error": 1.617132885933792e-09,
+              "relative_error": 2.5791905700164617e-08,
+              "rows": 4,
+              "worst_index": 11
+            }
+          },
+          "h": 1e-06,
+          "passes": true,
+          "physical": {
+            "intended_max_angstrom": 2.9188269415831535e-08,
+            "intended_rms_angstrom": 2.6265438271780786e-08,
+            "stored_max_angstrom": 2.9188269687363312e-08,
+            "stored_rms_angstrom": 2.626543826716913e-08,
+            "unchanged_coordinate_fraction": 0.16666666666666666
+          },
+          "primary": false
+        },
+        {
+          "families": {
+            "aligned": {
+              "absolute_error": 3.4543227653283104e-12,
+              "allowed_error": 3.216066618852035e-08,
+              "analytic": 0.002216066618852035,
+              "failures": 0,
+              "finite_difference": 0.0022160666153977124,
+              "maximum_absolute_error": 3.4543227653283104e-12,
+              "relative_error": 1.5587630515899001e-09,
+              "rows": 1,
+              "worst_index": 1
+            },
+            "bond_assessability": {
+              "absolute_error": 5.4638429197728655e-12,
+              "allowed_error": 8.402171259186954e-08,
+              "analytic": -0.007402171259186954,
+              "failures": 0,
+              "finite_difference": -0.007402171253723111,
+              "maximum_absolute_error": 7.494475526281796e-12,
+              "relative_error": 7.381405709833587e-10,
+              "rows": 11,
+              "worst_index": 25
+            },
+            "continuous_chiral": {
+              "absolute_error": 1.5863699243112706e-13,
+              "allowed_error": 1.6534134985588399e-07,
+              "analytic": -0.015534134985588397,
+              "failures": 0,
+              "finite_difference": -0.015534134985747034,
+              "maximum_absolute_error": 1.5863699243112706e-13,
+              "relative_error": 1.0212154882025975e-11,
+              "rows": 1,
+              "worst_index": 2
+            },
+            "frame_assessability": {
+              "absolute_error": 9.768596521964046e-13,
+              "allowed_error": 4.714869427865708e-08,
+              "analytic": 0.003714869427865708,
+              "failures": 0,
+              "finite_difference": 0.0037148694268888485,
+              "maximum_absolute_error": 6.3231642144501166e-12,
+              "relative_error": 2.6295935056797854e-10,
+              "rows": 9,
+              "worst_index": 13
+            },
+            "objective": {
+              "absolute_error": 2.2585078772452416e-11,
+              "allowed_error": 8.703170638018734e-08,
+              "analytic": -0.007703170638018733,
+              "failures": 0,
+              "finite_difference": -0.007703170660603812,
+              "maximum_absolute_error": 2.2585078772452416e-11,
+              "relative_error": 2.9319198332417223e-09,
+              "rows": 1,
+              "worst_index": 0
+            },
+            "signed": {
+              "absolute_error": 4.9856750672372385e-12,
+              "allowed_error": 2.4537037340085205e-07,
+              "analytic": -0.023537037340085203,
+              "failures": 0,
+              "finite_difference": -0.02353703734507088,
+              "maximum_absolute_error": 2.1489809931551918e-11,
+              "relative_error": 2.1182254143542054e-10,
+              "rows": 5,
+              "worst_index": 5
+            },
+            "unsigned_assessability": {
+              "absolute_error": 7.309500227314913e-12,
+              "allowed_error": 6.36992400148032e-07,
+              "analytic": 0.06269924001480319,
+              "failures": 0,
+              "finite_difference": 0.06269924002211269,
+              "maximum_absolute_error": 3.192451858424761e-11,
+              "relative_error": 1.1658036406165613e-10,
+              "rows": 4,
+              "worst_index": 11
+            }
+          },
+          "h": 3e-05,
+          "passes": true,
+          "physical": {
+            "intended_max_angstrom": 8.756480824749463e-07,
+            "intended_rms_angstrom": 7.879631481534237e-07,
+            "stored_max_angstrom": 8.756480824260525e-07,
+            "stored_rms_angstrom": 7.879631479514078e-07,
+            "unchanged_coordinate_fraction": 0.16666666666666666
+          },
+          "primary": false
+        },
+        {
+          "families": {
+            "aligned": {
+              "absolute_error": 4.6873126040292146e-12,
+              "allowed_error": 3.216066618852035e-08,
+              "analytic": 0.002216066618852035,
+              "failures": 0,
+              "finite_difference": 0.002216066623539348,
+              "maximum_absolute_error": 4.6873126040292146e-12,
+              "relative_error": 2.1151496819429247e-09,
+              "rows": 1,
+              "worst_index": 1
+            },
+            "bond_assessability": {
+              "absolute_error": 2.3077182526032303e-12,
+              "allowed_error": 8.402171259186954e-08,
+              "analytic": -0.007402171259186954,
+              "failures": 0,
+              "finite_difference": -0.007402171261494672,
+              "maximum_absolute_error": 2.3541515958847015e-12,
+              "relative_error": 3.117623426692653e-10,
+              "rows": 11,
+              "worst_index": 25
+            },
+            "continuous_chiral": {
+              "absolute_error": 5.287124904551632e-13,
+              "allowed_error": 1.6534134985588399e-07,
+              "analytic": -0.015534134985588397,
+              "failures": 0,
+              "finite_difference": -0.01553413498611711,
+              "maximum_absolute_error": 5.287124904551632e-13,
+              "relative_error": 3.4035528270204276e-11,
+              "rows": 1,
+              "worst_index": 2
+            },
+            "frame_assessability": {
+              "absolute_error": 1.902045361490412e-12,
+              "allowed_error": 4.714869427865708e-08,
+              "analytic": 0.003714869427865708,
+              "failures": 0,
+              "finite_difference": 0.0037148694259636628,
+              "maximum_absolute_error": 1.902045361490412e-12,
+              "relative_error": 5.120086717511328e-10,
+              "rows": 9,
+              "worst_index": 13
+            },
+            "objective": {
+              "absolute_error": 3.3412135905241946e-12,
+              "allowed_error": 8.703170638018734e-08,
+              "analytic": -0.007703170638018733,
+              "failures": 0,
+              "finite_difference": -0.0077031706413599466,
+              "maximum_absolute_error": 3.3412135905241946e-12,
+              "relative_error": 4.337452391400692e-10,
+              "rows": 1,
+              "worst_index": 0
+            },
+            "signed": {
+              "absolute_error": 3.71106964602852e-12,
+              "allowed_error": 2.4537037340085205e-07,
+              "analytic": -0.023537037340085203,
+              "failures": 0,
+              "finite_difference": -0.023537037336374134,
+              "maximum_absolute_error": 7.578021543608315e-12,
+              "relative_error": 1.5766936137320525e-10,
+              "rows": 5,
+              "worst_index": 5
+            },
+            "unsigned_assessability": {
+              "absolute_error": 6.013176068186965e-12,
+              "allowed_error": 6.36992400148032e-07,
+              "analytic": 0.06269924001480319,
+              "failures": 0,
+              "finite_difference": 0.06269924000879001,
+              "maximum_absolute_error": 6.389389017869007e-12,
+              "relative_error": 9.590508699574769e-11,
+              "rows": 4,
+              "worst_index": 11
+            }
+          },
+          "h": 0.0001,
+          "passes": true,
+          "physical": {
+            "intended_max_angstrom": 2.9188269415831544e-06,
+            "intended_rms_angstrom": 2.626543827178079e-06,
+            "stored_max_angstrom": 2.9188269415170278e-06,
+            "stored_rms_angstrom": 2.6265438271293966e-06,
+            "unchanged_coordinate_fraction": 0.16666666666666666
+          },
+          "primary": true
+        }
+      ],
+      "scalar_checks": [
+        {
+          "absolute_difference": 0.0,
+          "family": "objective"
+        },
+        {
+          "absolute_difference": 4.336808689942018e-19,
+          "family": "aligned"
+        },
+        {
+          "absolute_difference": 0.0,
+          "family": "continuous_chiral"
+        },
+        {
+          "absolute_difference": 2.7755575615628914e-17,
+          "family": "signed"
+        },
+        {
+          "absolute_difference": 4.163336342344337e-17,
+          "family": "unsigned_assessability"
+        },
+        {
+          "absolute_difference": 1.9081958235744878e-17,
+          "family": "frame_assessability"
+        },
+        {
+          "absolute_difference": 2.168404344971009e-18,
+          "family": "bond_assessability"
+        }
+      ],
+      "state_sha256": "63cf77754ba14a2c25428143da0c635293c33b8218da985e3cf37e6ccab4440c"
+    }
+  ],
+  "dtype_intermediates": {
+    "bonds": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [
+        1,
+        11
+      ],
+      "type": "torch.Tensor"
+    },
+    "eligibility_arithmetic": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [
+        1,
+        12
+      ],
+      "type": "torch.Tensor"
+    },
+    "eligibility_boolean": {
+      "device": "cpu",
+      "dtype": "torch.bool",
+      "shape": [
+        1,
+        12
+      ],
+      "type": "torch.Tensor"
+    },
+    "epsilon_cubed_python": {
+      "device": null,
+      "dtype": "binary64",
+      "type": "builtins.float",
+      "value": 9.999999999999999e-19
+    },
+    "epsilon_python": {
+      "device": null,
+      "dtype": "binary64",
+      "type": "builtins.float",
+      "value": 1e-06
+    },
+    "mask": {
+      "device": "cpu",
+      "dtype": "torch.bool",
+      "shape": [
+        1,
+        12
+      ],
+      "type": "torch.Tensor"
+    },
+    "optimizer_z_numpy": {
+      "device": "CPU",
+      "dtype": "float64",
+      "shape": [
+        36
+      ],
+      "type": "numpy.ndarray"
+    },
+    "optimizer_z_torch": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [
+        36
+      ],
+      "type": "torch.Tensor"
+    },
+    "pg": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [
+        1,
+        12,
+        3
+      ],
+      "type": "torch.Tensor"
+    },
+    "prediction": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [
+        1,
+        12,
+        3
+      ],
+      "type": "torch.Tensor"
+    },
+    "q": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [
+        1,
+        9
+      ],
+      "type": "torch.Tensor"
+    },
+    "s_max_active_tensor": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [],
+      "type": "torch.Tensor"
+    },
+    "s_max_python": {
+      "device": null,
+      "dtype": "binary64",
+      "type": "builtins.float",
+      "value": 0.1
+    },
+    "safety_constraints_numpy": {
+      "device": "CPU",
+      "dtype": "float64",
+      "shape": [
+        31
+      ],
+      "type": "numpy.ndarray"
+    },
+    "source": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [
+        1,
+        12,
+        3
+      ],
+      "type": "torch.Tensor"
+    },
+    "target": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [
+        1,
+        12,
+        3
+      ],
+      "type": "torch.Tensor"
+    },
+    "tau_python": {
+      "device": null,
+      "dtype": "binary64",
+      "type": "builtins.float",
+      "value": 1.0000000000000002e-06
+    },
+    "term_aligned": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [],
+      "type": "torch.Tensor"
+    },
+    "term_cartesian": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [],
+      "type": "torch.Tensor"
+    },
+    "term_chiral": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [],
+      "type": "torch.Tensor"
+    },
+    "term_local": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [],
+      "type": "torch.Tensor"
+    },
+    "term_local_1": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [],
+      "type": "torch.Tensor"
+    },
+    "term_local_2": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [],
+      "type": "torch.Tensor"
+    },
+    "term_local_3": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [],
+      "type": "torch.Tensor"
+    },
+    "turn": {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "shape": [
+        1,
+        9
+      ],
+      "type": "torch.Tensor"
+    }
+  },
+  "length": 12,
+  "new_floating_violations": [],
+  "new_operation_trace": {
+    "aten._linalg_det.default": {
+      "calls": 5,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten._linalg_svd.default": {
+      "calls": 5,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten._local_scalar_dense.default": {
+      "calls": 23,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten._to_copy.default": {
+      "calls": 64,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.abs.default": {
+      "calls": 14,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.add.Tensor": {
+      "calls": 109,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.all.default": {
+      "calls": 2,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.any.default": {
+      "calls": 9,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.arange.default": {
+      "calls": 9,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.bitwise_and.Tensor": {
+      "calls": 270,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.bitwise_not.default": {
+      "calls": 21,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.bmm.default": {
+      "calls": 54,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.cat.default": {
+      "calls": 25,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.clamp_min.default": {
+      "calls": 152,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.clone.default": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.copy_.default": {
+      "calls": 162,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.cumsum.default": {
+      "calls": 9,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.detach.default": {
+      "calls": 76,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.diag_embed.default": {
+      "calls": 9,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.diagonal.default": {
+      "calls": 7,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.div.Scalar": {
+      "calls": 5,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.div.Tensor": {
+      "calls": 278,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.eq.Scalar": {
+      "calls": 28,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.expand.default": {
+      "calls": 34,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.fill_.Scalar": {
+      "calls": 3,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.ge.Scalar": {
+      "calls": 11,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.gt.Scalar": {
+      "calls": 125,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.index.Tensor": {
+      "calls": 39,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.index_put.default": {
+      "calls": 11,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.le.Scalar": {
+      "calls": 2,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.lift_fresh.default": {
+      "calls": 12,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.linalg_cross.default": {
+      "calls": 60,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.linalg_lu_solve.default": {
+      "calls": 2,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.linalg_vector_norm.default": {
+      "calls": 200,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.lt.Scalar": {
+      "calls": 4,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.masked_fill_.Scalar": {
+      "calls": 26,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mean.default": {
+      "calls": 21,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mean.dim": {
+      "calls": 21,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.min.default": {
+      "calls": 5,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mm.default": {
+      "calls": 51,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mul.Scalar": {
+      "calls": 8,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mul.Tensor": {
+      "calls": 302,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.neg.default": {
+      "calls": 49,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.new_zeros.default": {
+      "calls": 12,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.nonzero.default": {
+      "calls": 3,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.ones_like.default": {
+      "calls": 3,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.permute.default": {
+      "calls": 277,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.pow.Tensor_Scalar": {
+      "calls": 47,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.rsub.Scalar": {
+      "calls": 16,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.scalar_tensor.default": {
+      "calls": 220,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.select.int": {
+      "calls": 24,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.sign.default": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.slice.Tensor": {
+      "calls": 543,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.slice_backward.default": {
+      "calls": 44,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.split_with_sizes.default": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.sqrt.default": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.squeeze.dim": {
+      "calls": 2,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.squeeze.dims": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.stack.default": {
+      "calls": 55,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.sub.Tensor": {
+      "calls": 263,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.sum.default": {
+      "calls": 17,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.sum.dim_IntList": {
+      "calls": 123,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.t.default": {
+      "calls": 28,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.transpose.int": {
+      "calls": 10,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.unbind.int": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.unsqueeze.default": {
+      "calls": 297,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.view.default": {
+      "calls": 235,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.where.self": {
+      "calls": 218,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.zeros.default": {
+      "calls": 2,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.zeros_like.default": {
+      "calls": 162,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    }
+  },
+  "old_dtype_violations": [
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.scalar_tensor.default",
+      "shape": []
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.scalar_tensor.default",
+      "shape": []
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.where.self",
+      "shape": []
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.where.self",
+      "shape": []
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.where.self",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.diag_embed.default",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.diag_embed.default",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.add.Tensor",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.scalar_tensor.default",
+      "shape": []
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.scalar_tensor.default",
+      "shape": []
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.where.self",
+      "shape": []
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.where.self",
+      "shape": []
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.where.self",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.diag_embed.default",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.diag_embed.default",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.add.Tensor",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.mul.Tensor",
+      "shape": [
+        1,
+        12,
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.view.default",
+      "shape": [
+        1,
+        12,
+        3
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "output",
+      "operation": "aten.view.default",
+      "shape": [
+        36
+      ]
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "location": "input",
+      "operation": "aten.mul.Tensor",
+      "shape": [
+        36
+      ]
+    }
+  ],
+  "old_operation_trace": {
+    "aten._linalg_det.default": {
+      "calls": 3,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten._linalg_svd.default": {
+      "calls": 3,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten._local_scalar_dense.default": {
+      "calls": 9,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten._to_copy.default": {
+      "calls": 35,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.abs.default": {
+      "calls": 6,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.add.Tensor": {
+      "calls": 101,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64",
+        "torch.float32"
+      ]
+    },
+    "aten.all.default": {
+      "calls": 1,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.any.default": {
+      "calls": 5,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.arange.default": {
+      "calls": 5,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.bitwise_and.Tensor": {
+      "calls": 148,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.bitwise_not.default": {
+      "calls": 11,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.bmm.default": {
+      "calls": 30,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.cat.default": {
+      "calls": 14,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.clamp_min.default": {
+      "calls": 84,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.clone.default": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.copy_.default": {
+      "calls": 90,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.cumsum.default": {
+      "calls": 5,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.detach.default": {
+      "calls": 73,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.diag_embed.default": {
+      "calls": 7,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64",
+        "torch.float32"
+      ]
+    },
+    "aten.diagonal.default": {
+      "calls": 7,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.div.Scalar": {
+      "calls": 5,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.div.Tensor": {
+      "calls": 192,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.eq.Scalar": {
+      "calls": 28,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.expand.default": {
+      "calls": 30,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.fill_.Scalar": {
+      "calls": 3,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.ge.Scalar": {
+      "calls": 11,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.gt.Scalar": {
+      "calls": 69,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.index.Tensor": {
+      "calls": 18,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.index_put.default": {
+      "calls": 11,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.lift_fresh.default": {
+      "calls": 7,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.linalg_cross.default": {
+      "calls": 38,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.linalg_lu_solve.default": {
+      "calls": 2,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.linalg_vector_norm.default": {
+      "calls": 111,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.lt.Scalar": {
+      "calls": 2,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.masked_fill_.Scalar": {
+      "calls": 26,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mean.default": {
+      "calls": 12,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mean.dim": {
+      "calls": 12,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mm.default": {
+      "calls": 41,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mul.Scalar": {
+      "calls": 8,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.mul.Tensor": {
+      "calls": 216,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64",
+        "torch.float32"
+      ]
+    },
+    "aten.neg.default": {
+      "calls": 49,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.new_zeros.default": {
+      "calls": 12,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.nonzero.default": {
+      "calls": 3,
+      "devices": [],
+      "floating_dtypes": []
+    },
+    "aten.ones_like.default": {
+      "calls": 3,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.permute.default": {
+      "calls": 155,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.pow.Tensor_Scalar": {
+      "calls": 30,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.rsub.Scalar": {
+      "calls": 8,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.scalar_tensor.default": {
+      "calls": 134,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64",
+        "torch.float32"
+      ]
+    },
+    "aten.select.int": {
+      "calls": 20,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.sign.default": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.slice.Tensor": {
+      "calls": 316,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.slice_backward.default": {
+      "calls": 44,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.split_with_sizes.default": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.squeeze.dim": {
+      "calls": 2,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.squeeze.dims": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.stack.default": {
+      "calls": 32,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.sub.Tensor": {
+      "calls": 148,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.sum.default": {
+      "calls": 9,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.sum.dim_IntList": {
+      "calls": 73,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.t.default": {
+      "calls": 28,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.transpose.int": {
+      "calls": 10,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.unbind.int": {
+      "calls": 1,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.unsqueeze.default": {
+      "calls": 197,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.view.default": {
+      "calls": 137,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64",
+        "torch.float32"
+      ]
+    },
+    "aten.where.self": {
+      "calls": 132,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64",
+        "torch.float32"
+      ]
+    },
+    "aten.zeros.default": {
+      "calls": 2,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    },
+    "aten.zeros_like.default": {
+      "calls": 90,
+      "devices": [
+        "cpu"
+      ],
+      "floating_dtypes": [
+        "torch.float64"
+      ]
+    }
+  },
+  "parity": {
+    "assessability_exact": true,
+    "bond_max_difference": 0.0,
+    "constraints_max_difference": 0.0,
+    "coordinate_max_difference": 0.0,
+    "eligibility_exact": true,
+    "inversion_exact": true,
+    "q_max_difference": 0.0,
+    "safety_exact": true,
+    "terms": {
+      "aligned": 0.0,
+      "cartesian": 0.0,
+      "chiral": 0.0,
+      "local": 0.0,
+      "local_1": 0.0,
+      "local_2": 0.0,
+      "local_3": 0.0
+    },
+    "turn_max_difference": 0.0
+  },
+  "scoped_default_restored": true
+}

@@ -1,0 +1,84 @@
+{
+  "EPS": {
+    "storage": "binary64",
+    "type": "builtins.float",
+    "value": 1e-06
+  },
+  "active_s_max": "torch.float64 CPU scalar created from current.new_tensor(0.10)",
+  "eligibility": "torch.bool until explicit current.dtype arithmetic cast",
+  "functions": [
+    {
+      "consuming_floating_Torch_operations_verified_CPU_float64": true,
+      "floating_literals": [
+        {
+          "device": null,
+          "storage": "binary64",
+          "type": "builtins.float",
+          "value": 1e-05
+        }
+      ],
+      "function": "protein_distance_diffusion.training.e010_local_feasibility_v7.terms"
+    },
+    {
+      "consuming_floating_Torch_operations_verified_CPU_float64": true,
+      "floating_literals": [
+        {
+          "device": null,
+          "storage": "binary64",
+          "type": "builtins.float",
+          "value": 1.0
+        }
+      ],
+      "function": "protein_distance_diffusion.training.e010_local_feasibility_v7.aligned_rmsd"
+    },
+    {
+      "consuming_floating_Torch_operations_verified_CPU_float64": true,
+      "floating_literals": [
+        {
+          "device": null,
+          "storage": "binary64",
+          "type": "builtins.float",
+          "value": 1.01
+        }
+      ],
+      "function": "protein_distance_diffusion.training.e010_local_feasibility_v7.normalized_constraints"
+    },
+    {
+      "consuming_floating_Torch_operations_verified_CPU_float64": true,
+      "floating_literals": [],
+      "function": "protein_distance_diffusion.training.e010_phase4d_objective_v2.signed_triple"
+    },
+    {
+      "consuming_floating_Torch_operations_verified_CPU_float64": true,
+      "floating_literals": [],
+      "function": "protein_distance_diffusion.training.e010_phase4d_objective_v2.freeze_chirality"
+    },
+    {
+      "consuming_floating_Torch_operations_verified_CPU_float64": true,
+      "floating_literals": [],
+      "function": "protein_distance_diffusion.training.e010_phase4d_objective_v2.chiral_sum"
+    },
+    {
+      "consuming_floating_Torch_operations_verified_CPU_float64": true,
+      "floating_literals": [],
+      "function": "protein_distance_diffusion.training.e010_no_new_inversion_v9.quantities"
+    },
+    {
+      "consuming_floating_Torch_operations_verified_CPU_float64": true,
+      "floating_literals": [],
+      "function": "protein_distance_diffusion.training.e010_no_new_inversion_v9.QuartetConstraints"
+    },
+    {
+      "consuming_floating_Torch_operations_verified_CPU_float64": true,
+      "floating_literals": [],
+      "function": "protein_distance_diffusion.models.e010_hybrid_local.local_representation"
+    }
+  ],
+  "numpy_projection_arrays": "explicit/default NumPy float64; integer iteration counts remain integer",
+  "tau": {
+    "construction": "NumPy nextafter on explicit np.float64 then Python float",
+    "storage": "binary64",
+    "type": "builtins.float",
+    "value": 1.0000000000000002e-06
+  }
+}
