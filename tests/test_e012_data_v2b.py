@@ -14,6 +14,23 @@ m=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(m)
 
 class V2BTests(unittest.TestCase):
+    def test_trim_keeps_exact_priority_prefix_and_deletes_in_row_order(self):
+        with sqlite3.connect(':memory:') as db:
+            db.execute('CREATE TABLE candidates(h BLOB,off INTEGER,p BLOB,seq TEXT,PRIMARY KEY(h,off))')
+            db.execute('CREATE INDEX priority_index ON candidates(p,h,off,length(seq))')
+            db.execute('CREATE TABLE trail(position INTEGER PRIMARY KEY,deleted_rowid INTEGER)')
+            db.execute('CREATE TRIGGER deletion_order AFTER DELETE ON candidates BEGIN INSERT INTO trail(deleted_rowid) VALUES(old.rowid); END')
+            for i,value in enumerate([8,3,6,1,7,2,5,4]):
+                db.execute('INSERT INTO candidates VALUES(?,?,?,?)',(b"same_hash",10-i,bytes([value%3]),m.AA+'A'*i))
+            expected=list(db.execute('SELECT rowid,seq FROM candidates ORDER BY p,h,off LIMIT 4'))
+            all_ids={r[0] for r in db.execute('SELECT rowid FROM candidates')}
+            expected_removed=sorted(all_ids-{r[0] for r in expected})
+            self.assertEqual(m.trim_candidates(db,8,4),4)
+            self.assertEqual(list(db.execute('SELECT rowid,seq FROM candidates ORDER BY p,h,off')),expected)
+            self.assertEqual([r[0] for r in db.execute('SELECT deleted_rowid FROM trail ORDER BY position')],expected_removed)
+            self.assertEqual(m.trim_candidates(db,4,4),4)
+            self.assertEqual(db.execute('SELECT count(*) FROM trail').fetchone()[0],4)
+
     def test_sorted_cursor_preserves_empty_shard_boundaries(self):
         db=sqlite3.connect(':memory:')
         rows=m.ShardRows(db.execute("SELECT 'a',0 UNION ALL SELECT 'b',0 UNION ALL SELECT 'c',2"))

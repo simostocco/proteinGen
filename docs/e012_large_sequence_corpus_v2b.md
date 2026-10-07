@@ -129,6 +129,12 @@ python scripts/prepare_e012_sequence_corpus_v2b.py handoff
 Only code, configs, official small metadata, protocol, hashes and summaries enter Git.
 All large artifacts and MMseqs temp data stay under the D-disk versioned root.
 
+Reservoir cap trimming selects exactly the same rejected frozen-priority suffix,
+buffers only at most 1M integer row IDs (about 40MB), and deletes in ascending
+SQLite row order. This avoids repeated random sequence-page access on HDD and
+preserves the single atomic WAL checkpoint and selected membership. A regression
+test covers priority ties, unchanged representative strings, and deletion order.
+
 Native I/O adapter: scripts/run_e012_v2b_native.py uses the existing Windows
 Python 3.12.1 / SQLite 3.43.1 runtime for native NTFS reads and writes. No
 dependencies are installed or upgraded. The scientific stage implementation is

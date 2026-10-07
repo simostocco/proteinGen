@@ -7,6 +7,7 @@ raw_md5: 0492e3cf4093276ae4319ba24d52514f
 filter_checkpoint_records: 1000000
 reservoir_cap: 24000000
 target: 20000000
+reservoir_trim_order: ascending_sqlite_rowid
 minimum_useful: 10000000
 seed: 12014
 alphabet: ACDEFGHIKLMNPQRSTVWY

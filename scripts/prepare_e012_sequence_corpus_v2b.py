@@ -63,6 +63,26 @@ def priority(sequence):
 def sequence_digest(sequence):
     return hashlib.sha256(sequence.encode('ascii')).digest()
 
+def trim_candidates(db, count, cap):
+    """Keep the frozen priority prefix; delete rejected rows in physical row order.
+
+    Only bounded integer row IDs are buffered, never full sequence strings. Random
+    priority-order deletion needlessly revisits large sequence-table pages on HDD.
+    The caller's single WAL transaction still commits records, hashes and cursor.
+    """
+    if count <= cap:
+        return count
+    excess = count-cap
+    assert excess <= CHECKPOINT_EVERY, 'Reservoir overshoot exceeds checkpoint bound'
+    boundary = db.execute(
+        'SELECT p,h,off FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1 OFFSET ?',
+        (excess-1,)).fetchone()
+    rejected = sorted(row[0] for row in db.execute(
+        'SELECT rowid FROM candidates WHERE (p,h,off)>=(?,?,?)', boundary))
+    assert len(rejected) == excess
+    db.executemany('DELETE FROM candidates WHERE rowid=?', ((rowid,) for rowid in rejected))
+    return cap
+
 def fasta_records(file, start=0):
     """Yield (header offset, full header, sequence, malformed) without loading FASTA.
 
@@ -463,9 +483,9 @@ class Build:
                     nonlocal count,cutoff
                     # Trim one bounded batch above cap using an indexed priority order.
                     if count>self.cap:
-                        boundary=db.execute('SELECT p,h,off FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1 OFFSET ?', (count-self.cap-1,)).fetchone()
-                        db.execute('DELETE FROM candidates WHERE (p,h,off)>=(?,?,?)',boundary)
-                        count=self.cap
+                        print(json.dumps({'stage':'reservoir_trim','discarding':count-self.cap,
+                            'order':'ascending_rowid','durable':False}),flush=True)
+                        count=trim_candidates(db,count,self.cap)
                     cutoff = db.execute('SELECT p FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1').fetchone()
                     cutoff = cutoff[0] if cutoff and count>=self.cap else None
                     state.update(offset=next_offset,raw_stats=raw_stats.checkpoint(),valid_stats=valid_stats.checkpoint())
@@ -1246,9 +1266,9 @@ class Build:
             'aa_frequencies':final['statistics']['aa_frequencies'],
             'selection_method':method,'final_fasta':final['fasta'],'final_manifest':final['manifest'],
             'shard_root':final['shard_root'],'shard_count':512,
-            'tests':'15 V2B integrity tests including real MMseqs policy boundary, collision, crash/resume and loader parity; all frozen bytes independently verified.',
+            'tests':'19 V2B integrity tests including real MMseqs policy boundary, collision, crash/resume, deterministic row-order trimming and loader parity; all frozen bytes independently verified.',
             'training_launched':False,'classification':final['classification'],
-            'recommended_next_experiment':'One fixed-budget E012 causal-RoPE data-scaling comparison against historical unique TRAIN, with unchanged architecture and protected evaluation panels.'}
+            'recommended_next_experiment':'One fixed-budget E012 causal-RoPE data-scaling comparison between a protected-clean historical unique TRAIN baseline and V2B, with unchanged architecture and evaluation panels.'}
         save(self.report/'chatgpt_handoff.json',report)
         checksums={'source_sha256':source['sha256'],'official_md5':source['md5'],
             'protected_fasta_sha256':protected['fasta_sha256'],
@@ -1278,7 +1298,7 @@ class Build:
             'See resource_telemetry.jsonl, cleanup.jsonl, PROTOCOL.md and machine-readable chatgpt_handoff.json.',
             'Historical E012 and DATA-E artifacts remain unchanged. Training launched: NO.', '',
             'Recommended next experiment: '+report['recommended_next_experiment']]
-        (self.report/'FINAL_REPORT.md').write_text('\n'.join(lines)+'\n')
+        (self.report/'FINAL_REPORT.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
         print(json.dumps(report,indent=2),flush=True)
 
 def main():
