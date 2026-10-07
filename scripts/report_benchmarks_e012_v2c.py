@@ -27,6 +27,14 @@ def main():
                 assert bloom.possible(h),'Resume Bloom false negative'
         baseline_total=b['processing_seconds']+b['checkpoint_seconds']
         optimized_total=o['processing_seconds']+o['checkpoint_seconds']
+        def phase_io(path):
+            rows=[json.loads(x) for x in path.read_text().splitlines()]
+            first,last=rows[0],rows[-1]
+            keys=['process_read_bytes','process_write_bytes','host_disk_read_bytes','host_disk_write_bytes']
+            return {'processing_and_checkpoint_minus_first_record':{k:last[k]-first[k] for k in keys},
+                'first_record_raw':first['raw'],'last_record_raw':last['raw'],
+                'method':'Subtract first post-setup progress counter from final counter; excludes first record. Process counters are logical I/O; host counters include unrelated disks/activity.',
+                'persistent_data_paths':'D: only'}
         case={'records':n,'all_equivalence_fields_match':True,'fields':matches,
             'v2b_result_sha256':m.sha_file(bp),'v2c_result_sha256':m.sha_file(op),
             'resume_checkpoint_and_delta_reseed_verified':True,'v2b_seconds':baseline_total,
@@ -35,6 +43,7 @@ def main():
             'v2b_setup_seconds':b['setup_seconds'],'v2c_setup_seconds':o['setup_seconds'],
             'v2b_metrics':json.loads((bp.parent/'progress.jsonl').read_text().splitlines()[-1]),
             'v2c_metrics':json.loads((op.parent/'progress.jsonl').read_text().splitlines()[-1]),
+            'v2b_phase_io':phase_io(bp.parent/'progress.jsonl'),'v2c_phase_io':phase_io(op.parent/'progress.jsonl'),
             'training_launched':False}
         cases.append(case)
     passed=len(cases)==2 and all(c['speedup_including_checkpoint']>=5 and c['processing_speedup']>=5 for c in cases)
