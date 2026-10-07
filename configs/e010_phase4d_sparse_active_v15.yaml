@@ -1,0 +1,28 @@
+K: 8
+backend: installed_SciPy_sparse_products_L-BFGS-B_dual
+constraint_changes: false
+initialization: zero
+objective: historical_local_only
+peak_rss_limit_bytes: 8912057139
+preflight_requires_small_physical_convergence: true
+resource_smoke_outer_steps: 25
+s_max_angstrom: 0.04
+solver:
+  active_ball_relative: 0.0001
+  active_science_slack: 1.0e-05
+  armijo: 0.0001
+  backtrack_factor: 0.5
+  curvature_initial: 0.01
+  curvature_max: 1000.0
+  curvature_min: 1.0e-06
+  inward_linearization_margin: 1.0e-12
+  max_backtracks: 50
+  maximum_direction_vector_norm: 1.0
+  outer_maxiter: 2000
+  physical_check_interval: 20
+  qp_ftol: 1.0e-15
+  qp_gtol: 1.0e-11
+  qp_maxiter: 500
+  qp_primal_tolerance: 1.0e-08
+  qp_projected_gradient_tolerance: 1.0e-08
+  science_slack_fraction: 0.5

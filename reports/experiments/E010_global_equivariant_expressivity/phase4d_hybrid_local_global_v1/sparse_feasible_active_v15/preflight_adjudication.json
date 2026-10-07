@@ -1,0 +1,43 @@
+{
+  "gates": {
+    "exact_primal_feasibility": true,
+    "implementation_valid": true,
+    "independent_reproduction": true,
+    "memory": true,
+    "objective_decrease": true,
+    "small_cases_physical_convergence": true
+  },
+  "independent_reproduction": [
+    {
+      "certificate_exact": true,
+      "constraints_exact": true,
+      "coordinates_exact": true,
+      "corrections_exact": true,
+      "hashes_exact": true,
+      "name": "preflight_12",
+      "objective_exact": true,
+      "optimizer_invocations": 0
+    },
+    {
+      "certificate_exact": true,
+      "constraints_exact": true,
+      "coordinates_exact": true,
+      "corrections_exact": true,
+      "hashes_exact": true,
+      "name": "preflight_32",
+      "objective_exact": true,
+      "optimizer_invocations": 0
+    },
+    {
+      "certificate_exact": true,
+      "constraints_exact": true,
+      "coordinates_exact": true,
+      "corrections_exact": true,
+      "hashes_exact": true,
+      "name": "preflight_500",
+      "objective_exact": true,
+      "optimizer_invocations": 0
+    }
+  ],
+  "passed": true
+}

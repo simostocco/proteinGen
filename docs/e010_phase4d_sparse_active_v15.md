@@ -1,0 +1,15 @@
+# Phase 4D V15 sparse feasible active-set benchmark
+
+The scientific problem, data, derivative conventions and V9B physical certificate are unchanged. K=8; each physical correction is 0.04*z. No radial map, neural model, environment change or CUDA is used.
+
+No external sparse QP backend is installed. The convex local QP uses B=hI, initialized at h=0.01; subsequent positive secant curvature s·y/s·s is clipped to [1e-6,1000]. Its nonnegative multiplier dual is solved with the installed SciPy L-BFGS-B, using CSR products only. No dense Hessian, Gram or KKT matrix is formed. This is an inner convex QP solver, not the scientific optimizer. Positive scalar curvature guarantees a well-posed primal QP. Physical certification retains historical rectangular Jacobians and independent multiplier reconstruction.
+
+Scientific rows within historical normalized slack 1e-5 are included; balls within relative boundary distance 1e-4 are included. Local linearized scientific RHS is half the existing slack minus 1e-12; this numerical direction margin does not change the feasible set. Inactive constraints are checked exactly at every trial. Curvature, dual tolerances, outer budget 2000, direction cap, Armijo and backtracking settings are frozen in the YAML.
+
+Each trial applies closed-ball radial projection. Already feasible float64 vectors remain bitwise unchanged. For rounded projected vectors, start with uniform factor 1 and decrement toward zero with nextafter until both the stored physical norm <=0.04 and dimensionless squared norm <=1. The first feasible representable uniform factor is used. This guard only shrinks the ball; its maximum physical adjustment is measured. It is part of the line search, never a final scientific-output repair.
+
+Accept only truly feasible trials with strict objective decrease and Armijo coefficient 1e-4; halve alpha at most 50 times. Constraints retain historical global tolerance 1e-8, exact strict-quartet feasibility, and exact closed-ball feasibility. No penalty permits infeasible acceptance.
+
+Before scientific outcomes, freeze code/config/data hashes and verify all 60 baseline derivative records against V11. Synthetic lengths 12 and 32 run the complete solver from zero. The length-500 synthetic resource smoke runs at most 25 outer steps, with full final physical certification. Preflight gates require both small cases to pass the unchanged physical contract, all cases to retain exact primal feasibility, objective decrease, independent state/certificate reproduction, and peak RSS below 8.30 GiB. The <4 GiB target is engineering telemetry. If any gate fails, stop without launching real examples and publish ACTIVE-D / SPARSE-D. No settings are changed from outcomes.
+
+Only if all gates pass, run all 60 real examples once from zero with outer cap 2000. Success is the historical physical contract, not dual/QP solver success. SPARSE-A requires 60/60; SPARSE-B requires >=30/60 and <=25 material shadow cases. Raw variables are serialized before optional telemetry; final failure states remain available. Independent reproduction performs no optimization.
