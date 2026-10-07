@@ -1,0 +1,63 @@
+..FF                                                                     [100%]
+=================================== FAILURES ===================================
+____________________ test_physical_scale_and_analytic_paths ____________________
+
+    def test_physical_scale_and_analytic_paths():
+        torch.set_num_threads(1)
+        b=synthetic(12); s=fd.historical.OneStep(fd.historical.Context(b),b['pg'])
+        x,d=fd.state(12),fd.direction(12,.7)
+        h=1e-6
+        p=fd.physical(s,x,d,h)
+        direct=.1*h*d.reshape(s.shape)*s.eligible.numpy()[...,None]
+        assert p['intended_max_angstrom']==float(np.linalg.norm(direct,axis=-1).max())
+        exact=np.r_[s.jac(x)@d,s.cjac(x)@d]
+>       assert np.allclose(exact,fd.direct_analytic(s,x,d),atol=1e-12,rtol=1e-10)
+E       assert False
+E        +  where False = <function allclose at 0x78159b9bbe30>(array([-0.00865612,  0.00117049, -0.00257824,  0.0982045 ,  0.005349  ,\n       -0.10680246,  0.02195552, -0.21476576, ...  0.01383205,\n       -0.01393322,  0.02084583, -0.02554059,  0.02107272, -0.01147068,\n        0.00687409, -0.00629666]), array([-0.00865612,  0.00117049, -0.00257824,  0.09820449,  0.005349  ,\n       -0.10680245,  0.02195552, -0.21476576, ...  0.01383205,\n       -0.01393322,  0.02084583, -0.02554059,  0.02107272, -0.01147068,\n        0.00687409, -0.00629666]), atol=1e-12, rtol=1e-10)
+E        +    where <function allclose at 0x78159b9bbe30> = np.allclose
+E        +    and   array([-0.00865612,  0.00117049, -0.00257824,  0.09820449,  0.005349  ,\n       -0.10680245,  0.02195552, -0.21476576, ...  0.01383205,\n       -0.01393322,  0.02084583, -0.02554059,  0.02107272, -0.01147068,\n        0.00687409, -0.00629666]) = <function direct_analytic at 0x7814d1e0e520>(<protein_distance_diffusion.training.e010_sequential_teacher_v16a.OneStep object at 0x7814d227dc70>, array([ 0.        ,  0.01932653,  0.02956349,  0.02589628,  0.01004964,\n       -0.0105235 , -0.02614727, -0.02947358, ...  0.02045891,  0.02978299,\n        0.02509967,  0.00861158, -0.01192667, -0.02685562, -0.02915395,\n       -0.01774073]), array([ 0.18107222, -0.03050323, -0.21403415, -0.20078306, -0.00293295,\n        0.1976137 ,  0.21647523,  0.03631043, ... -0.21561839, -0.0342383 ,\n        0.17862032,  0.22725624,  0.06695382, -0.15490564, -0.23434556,\n       -0.09832926]))
+E        +      where <function direct_analytic at 0x7814d1e0e520> = fd.direct_analytic
+
+tests/test_e010_derivative_resolution_v16b.py:32: AssertionError
+______________________ test_no_optimizer_and_no_mutation _______________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7814c444e0c0>
+
+    def test_no_optimizer_and_no_mutation(monkeypatch):
+        torch.set_num_threads(1)
+        def forbidden(*a,**k): raise AssertionError('Optimizer forbidden')
+        monkeypatch.setattr(fd.historical,'minimize',forbidden)
+        b=synthetic(12); copies={k:v.clone() for k,v in b.items()}
+        s=fd.historical.OneStep(fd.historical.Context(b),b['pg'])
+>       row,arrays=fd.audit_direction(s,fd.state(12),fd.direction(12,0.),0.)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e010_derivative_resolution_v16b.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+step = <protein_distance_diffusion.training.e010_sequential_teacher_v16a.OneStep object at 0x7814c444dd60>
+x = array([ 0.        ,  0.01932653,  0.02956349,  0.02589628,  0.01004964,
+       -0.0105235 , -0.02614727, -0.02947358, ...  0.02045891,  0.02978299,
+        0.02509967,  0.00861158, -0.01192667, -0.02685562, -0.02915395,
+       -0.01774073])
+d = array([ 0.23229097,  0.12550735, -0.09666715, -0.22996632, -0.15183551,
+        0.06589216,  0.22303889,  0.17512469, ... -0.22360465, -0.17376701,
+        0.03583122,  0.21248639,  0.19378255, -0.00308407, -0.19711521,
+       -0.20991954])
+phase = 0.0
+
+    def audit_direction(step,x,d,phase):
+        exact=np.r_[step.jac(x)@d, step.cjac(x)@d]
+        independently=direct_analytic(step,x,d)
+        disagreement=np.abs(exact-independently)
+        families={'objective':(0,1),'aligned':(1,2),'continuous_chiral':(2,3),
+                  **{k:(lo+3,hi+3) for k,(lo,hi) in step.context.quartets.slices.items()}}
+>       assert np.all(disagreement<=1e-12+1e-10*np.abs(exact)), 'Analytic directional paths disagree'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Analytic directional paths disagree
+
+src/protein_distance_diffusion/training/e010_derivative_resolution_v16b.py:73: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_e010_derivative_resolution_v16b.py::test_physical_scale_and_analytic_paths
+FAILED tests/test_e010_derivative_resolution_v16b.py::test_no_optimizer_and_no_mutation
+2 failed, 2 passed in 2.21s

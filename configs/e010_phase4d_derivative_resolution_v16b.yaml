@@ -1,0 +1,25 @@
+schema: e010_phase4d_derivative_resolution_v16b
+historical_commit: 584c32d326889607fe4ba40fee5c76fa210039ad
+lengths: [12, 32, 500]
+phases: [0.0, 0.7, 1.3]
+historical_epsilons: [1.0e-6, 1.0e-5, 1.0e-4]
+epsilon_grid: [1.0e-10, 3.0e-10, 1.0e-9, 3.0e-9, 1.0e-8, 3.0e-8, 1.0e-7, 3.0e-7, 1.0e-6, 3.0e-6, 1.0e-5, 3.0e-5, 1.0e-4]
+richardson: every_grid_h_with_independent_half_h_evaluation
+absolute_tolerance: 1.0e-8
+relative_tolerance: 1.0e-5
+analytic_consistency_absolute_tolerance: 1.0e-12
+analytic_consistency_relative_tolerance: 1.0e-10
+state: sin(arange(3N)*0.7)*0.03
+fixed_direction: cos(arange(3N)+phase)_divided_by_L2_norm
+relative_error_denominator_floor: 1.0e-300
+significant_digits: max(0,min(16,-log10(max(relative_error,1e-16))))
+physical_scale: linear_delta_0.10_times_dimensionless_z_times_current_eligibility
+proposed_rule:
+  h: 1.0e-4
+  representation: historical_dimensionless_z
+  justification: physically_small_displacements_resolved_above_coordinate_ULPs_at_historical_length500_scale
+  status: proposal_only_not_applied_to_V16A
+no_optimization: true
+no_panel: true
+no_cuda: true
+no_neural_training: true
