@@ -403,7 +403,7 @@ class Build:
         state_path = self.root/'tmp/filter_checkpoint.json'
         db = connection(self.reservoir, wal=True)
         try:
-            db.execute('PRAGMA cache_size=-5242880')  # Filter only: at most 5 GiB, on demand.
+            db.execute('PRAGMA cache_size=-7340032')  # Filter only: at most 7 GiB, on demand.
             db.execute('CREATE TABLE IF NOT EXISTS exact_hashes(h BLOB, off INTEGER, PRIMARY KEY(h,off)) WITHOUT ROWID')
             if seen_path.exists():
                 migrated=db.execute("SELECT name FROM sqlite_master WHERE name='exact_index_migration'").fetchone()
@@ -464,7 +464,12 @@ class Build:
                 raise RuntimeError('historical unique count changed')
             state.setdefault('historical_matches',{})
             raw_stats,valid_stats = Stats(state['raw_stats']),Stats(state['valid_stats'])
-            count = db.execute('SELECT count(*) FROM candidates').fetchone()[0]
+            # The committed cursor and dedup/reservoir changes are one transaction.
+            # Before historical union, its count is min(external unique, cap).
+            # Recounting the whole index on every resume adds costly HDD random reads.
+            count = (state.get('reservoir_count', min(state['unique'], self.cap))
+                if state['stage']=='external'
+                else db.execute('SELECT count(*) FROM candidates').fetchone()[0])
             cutoff = db.execute('SELECT p FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1').fetchone()
             cutoff = cutoff[0] if cutoff and count>=self.cap else None
             with self.stage('stream_filter_reservoir'), \
@@ -488,7 +493,8 @@ class Build:
                         count=trim_candidates(db,count,self.cap)
                     cutoff = db.execute('SELECT p FROM candidates ORDER BY p DESC,h DESC,off DESC LIMIT 1').fetchone()
                     cutoff = cutoff[0] if cutoff and count>=self.cap else None
-                    state.update(offset=next_offset,raw_stats=raw_stats.checkpoint(),valid_stats=valid_stats.checkpoint())
+                    state.update(offset=next_offset,reservoir_count=count,
+                        raw_stats=raw_stats.checkpoint(),valid_stats=valid_stats.checkpoint())
                     db.execute("INSERT OR REPLACE INTO progress VALUES('checkpoint',?)",(json.dumps(state),))
                     db.commit()  # One durable WAL transaction checkpoints hashes, records and cursor.
                     save(state_path,state)
@@ -1070,7 +1076,7 @@ class Build:
             audit_path=fasta.parent/'audit_10000.parquet'
             dataset=ProteinSequenceDataset(audit_path)
             assert len(dataset)==AUDIT_SAMPLE_N and dataset.audit['exact_duplicate_count']==0
-            started=time.monotonic()
+            started=time.perf_counter()
             audit_residues=0
             for first in range(0,len(dataset),128):
                 items=[dataset[i] for i in range(first,min(first+128,len(dataset)))]
@@ -1085,7 +1091,7 @@ class Build:
                     assert collated['attention_mask'][j].sum()==length
                     audit_residues+=length
                     audit_seqs.add(item['sequence'])
-            elapsed=time.monotonic()-started
+            elapsed=time.perf_counter()-started
             assert len(audit_seqs)==AUDIT_SAMPLE_N
             # Audit sequences are a verified subset of independently screened final inputs.
             audit_hashes=[sequence_digest(s) for s in audit_seqs]
@@ -1106,7 +1112,7 @@ class Build:
                 'audit_sample_n':AUDIT_SAMPLE_N,'audit_sha256':digest(audit_path),'tokenizer_compatible':True,
                 'causal_collate_historical_parity':True,'bos_target_shift':True,
                 'loader_sequences_per_second':AUDIT_SAMPLE_N/elapsed,'loader_residues_per_second':audit_residues/elapsed,
-                'loader_audit_wall_seconds':elapsed,'large_git_tracked':bulk,
+                'loader_audit_wall_seconds':elapsed,'loader_audit_clock':'time.perf_counter','large_git_tracked':bulk,
                 'historical_reports_unchanged':True,'training_launched':False}
             cp=self.root/'corpus/certification.json'
             save(cp,cert)
@@ -1266,7 +1272,7 @@ class Build:
             'aa_frequencies':final['statistics']['aa_frequencies'],
             'selection_method':method,'final_fasta':final['fasta'],'final_manifest':final['manifest'],
             'shard_root':final['shard_root'],'shard_count':512,
-            'tests':'20 V2B integrity tests including real MMseqs policy boundary, collision, WAL crash/resume, deterministic row-order trimming and loader parity; all frozen bytes independently verified.',
+            'tests':'21 V2B integrity tests including real MMseqs policy boundary, collision, atomic WAL/cursor/count resume, deterministic row-order trimming and loader parity; all frozen bytes independently verified.',
             'training_launched':False,'classification':final['classification'],
             'recommended_next_experiment':'One fixed-budget E012 causal-RoPE data-scaling comparison between a protected-clean historical unique TRAIN baseline and V2B, with unchanged architecture and evaluation panels.'}
         save(self.report/'chatgpt_handoff.json',report)

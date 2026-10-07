@@ -1,4 +1,5 @@
 import gzip
+from contextlib import closing
 import hashlib
 import importlib.util
 import io
@@ -14,6 +15,40 @@ m=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(m)
 
 class V2BTests(unittest.TestCase):
+    def test_external_checkpoint_resume_does_not_recount_candidate_index(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            b,records=self.fixture(root,cap=5)
+            real_save=m.save
+            def crash(path,value):
+                if Path(path).name=='filter_checkpoint.json' and value['raw']==6:
+                    raise RuntimeError('interrupt after atomic checkpoint')
+                return real_save(path,value)
+            with patch.object(m,'RAW_COUNT',len(records)),patch.object(m,'HISTORICAL_UNIQUE',3),patch.object(m,'CHECKPOINT_EVERY',3):
+                with patch.object(m,'save',crash):
+                    with self.assertRaisesRegex(RuntimeError,'atomic checkpoint'):
+                        b.filter_reservoir()
+                # Previous versions lacked an explicit count; SQL progress is authoritative.
+                with closing(m.connection(b.reservoir,wal=True)) as db:
+                    state=json.loads(db.execute("SELECT v FROM progress WHERE k='checkpoint'").fetchone()[0])
+                    state.pop('reservoir_count',None)
+                    db.execute("UPDATE progress SET v=? WHERE k='checkpoint'",(json.dumps(state),))
+                    db.commit()
+                traces=[]
+                real_connection=m.connection
+                def tracked(*args,**kwargs):
+                    db=real_connection(*args,**kwargs)
+                    db.set_trace_callback(traces.append)
+                    return db
+                with patch.object(m,'connection',tracked):
+                    b.filter_reservoir()
+            queries=[q.lower().strip() for q in traces]
+            first_insert=next(i for i,q in enumerate(queries) if q.startswith('insert into exact_hashes'))
+            self.assertTrue(all(i>first_insert for i,q in enumerate(queries) if q=='select count(*) from candidates'))
+            stats=json.loads((root/'stats/filtering_stats.json').read_text())
+            self.assertEqual(stats['external_reservoir_count'],5)
+            self.assertEqual(stats['external_exact_unique_encountered'],8)
+
     def test_wal_resume_preserves_committed_frames_with_an_existing_reader(self):
         from contextlib import ExitStack, closing
         with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
@@ -391,7 +426,7 @@ class V2BTests(unittest.TestCase):
                     with self.assertRaisesRegex(RuntimeError,'simulated shard interruption'):
                         b.final()
                 b.final()
-                with patch.object(m.subprocess,'check_output',git_stub):
+                with patch.object(m.subprocess,'check_output',git_stub),patch.object(m.time,'monotonic',return_value=1000.0):
                     b.certify()
             cert=json.loads((root/'corpus/certification.json').read_text())
             self.assertTrue(cert['shard_exclusivity'])

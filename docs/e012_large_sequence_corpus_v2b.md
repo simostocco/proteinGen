@@ -25,7 +25,7 @@ index; its 2 GB allowance is included in the 8 GB search-stage budget. A measure
 10k historical search pilot projects 3.32 GB for 100k batches with 4x disk slack. Runtime floor is 30% of starting free
 capacity. Free-space monitoring every 10s, with checks at transaction boundaries
 and during subprocesses, stops before that reserve is breached.
-SQLite caches are bounded at 512 MiB per ordinary connection, 5 GiB total for the
+SQLite caches are bounded at 512 MiB per ordinary connection, 7 GiB total for the
 single active filter database including its compact hash index, and 64 MiB for
 exclusions, allocated only on demand. Full external
 sequences are never held as an in-memory corpus. These caps fit inspected available RAM.
@@ -137,6 +137,15 @@ test covers priority ties, unchanged representative strings, and deletion order.
 Resume opens the active filter database directly in WAL mode rather than
 converting to DELETE and back, avoiding an unnecessary full checkpoint. A test
 verifies reopening preserves committed frames even with an existing reader.
+External-stage reservoir count is restored from the same atomic checkpoint,
+including compatibility with prior checkpoints lacking an explicit count, rather
+than scanning the whole index on every resume. The frozen count remains
+min(external unique, cap) before historical union. A regression test covers this
+recovery path. The 7GiB cache cap is on demand; measured available RAM plus current
+worker RSS was 12.71GB, above the estimated 8.37GB parent peak after this change.
+Loader throughput uses high-resolution time.perf_counter to avoid zero elapsed
+time in tiny audits on Windows; the finalization regression freezes the coarse
+monotonic clock and still requires successful throughput certification.
 
 Native I/O adapter: scripts/run_e012_v2b_native.py uses the existing Windows
 Python 3.12.1 / SQLite 3.43.1 runtime for native NTFS reads and writes. No
