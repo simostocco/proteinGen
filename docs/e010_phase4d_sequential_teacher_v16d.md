@@ -1,0 +1,13 @@
+# V16D corrected sequential privileged teacher replay
+
+The V16A/B/C history is immutable. This new execution imports the validated V16C float64 teacher implementation unchanged. K_max=16, radius0.10 Å, CPU float64 SLSQP maxiter1000/ftol1e-12, exact historical local-only objective and original-Pg safety remain fixed. This is a safe privileged policy trajectory, not a globally optimal oracle. The teacher sees target X; the future student will not.
+
+Before any optimizer call, fixed synthetic lengths12/32/500 must pass centered h=1e-4 derivative validation under unchanged tolerances. Fresh one-step optimization follows for all three lengths. Serialize selected preflight action/coordinates before telemetry; all nonlinear safety checks follow the inherited ball projection and inward ULP guard. Report full radial adjustments separately from the minimum representable inward guard. No chirality/RMSD/assessability repair occurs.
+
+Preflight preserves the V16A 4 GiB per-worker peak and3600s length500 wall gate. Eight deterministic length32 calibration jobs are tested at1/2/4/8 workers subject to CPU/RAM, with one numeric thread per worker. The fastest safe measured configuration freezes before the scientific panel. Repeated synthetic action hashes/iterations must match across worker counts. No real-panel outcome tunes settings.
+
+All60 fixed trajectories start at Pg; each step optimizes one zero-initialized3N action against X from frozen current state, recomputing eligibility and geometry between steps. Original Pg owns all safety and quartet classifications. Best true-feasible candidate, objective/norm/iteration/evaluation tie break and zero-action threshold1e-6 baseline-normalized local MSE are inherited unchanged. No shared neural parameters, joint future-step variables or warm starts.
+
+Save P0–P16, Cartesian/local-frame actions, frames, masks/eligibility, safety, histories and hashes outside Git. Reproduce each coordinate update, action bound, eligibility/frame, local-target reconstruction, metric and safety decision without optimization. If all corpus safety/quality gates pass, freeze960 slots including no-ops with state/action/local-action/eligibility/source-trajectory hashes.
+
+Utility classification retains the V16A descriptive thresholds: >1% of eligible actions above.04 Å or mean normalized local-MSE gain afterK8 above1e-6 gives TEACH16-C when all scientific gates pass. Otherwise TEACH16-B applies if gains plateau and headroom is unused. Neither overrides all-step per-example safety, >=5% condition450 final gain, or all offsets improving in each condition. Failures block the corpus. No CUDA, package changes or student training. Stop after publication.
