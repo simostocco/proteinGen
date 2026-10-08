@@ -29,6 +29,7 @@ themselves establish physically meaningful generated structures.
 | E008 | Can a fixed-bond internal-coordinate decoder repair structures? | Corrected tiny-overfit RMSE 3.591 Å exceeds the 0.5 Å gate. | Decoder pilot remains blocked. |
 | E009 | Can a Bayesian geometry-prior refiner resolve the error? | Bounded overfit/objective diagnostics do not establish a useful generalizing refiner. | Test global coordinate expressivity in E010. |
 | E010 | Can global coordinate refinement transfer to real denoiser outputs? | Phase 4B optimizes successfully but gains only ~1.25% aligned RMSD while local geometry regresses; weight-only diagnostics fail the final decision gates. | No validated final generator; stop weight-only tuning. |
+| [E013](docs/e013_unconditional_equivariant_denoiser.md) | Does an unconditional scalar/vector residue model improve E007 coordinate-v denoising? | Matched 400-update pilot: validation v-MSE -7.0%, local-distance MSE +35.6%; near-maximal-noise reconstruction collapse gate fails. | Stage C fails; sampler exposure and de novo sampling not run. |
 
 ### Completed / established findings
 

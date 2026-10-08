@@ -13,9 +13,10 @@ could conflict with Cartesian descent; its auxiliary diagnostic did not establis
 sustained training benefit. E013 asks whether directional residue states and a
 parity-sensitive local branch improve the same E007 coordinate-v target.
 
-Architecture implemented; eight CPU tests passed including N=500 backward.
-Preflight, training, evaluation and conditional sampling status are recorded below
-as execution proceeds. One-step denoising cannot establish de novo generation,
+Architecture implemented; twelve CPU tests passed including N=500 backward.
+CUDA preflight passed; matched training and one-step evaluation completed.
+Stage C **failed**; Stage D/E **not run because gates did not authorize them**.
+One-step denoising cannot establish de novo generation,
 foldability, stability or function.
 
 ## Inference information and tensors
@@ -190,4 +191,146 @@ twice this. Require >=5% local-distance or torsion MSE improvement, finite outpu
 and no reconstruction with radius less than 25% of its reference. Freeze these
 values in protocol.json before any prospective validation inference. This is a
 feasibility gate, not a claim of statistical superiority or training convergence.
-Training and validation are not yet executed at this documentation boundary.
+The pre-execution protocol was committed at
+`669a7aeecf74d34095a853d3ba7ebbc37afe1111`. Training and prospective validation
+were subsequently completed at this fixed boundary; results follow.
+
+Additional block shapes for one unpadded protein: edge list `[E]`, edge scalar
+features `[E,22]`, units `[E,3]`, invariant vector/unit dots `[E,32]`, message
+MLP input `[E,374]`, output `[E,193]`, scalar messages `[E,128]`, vector
+messages `[E,32,3]`, attention weights `[E]`. Coarse tensors are `[M,128]`,
+`[M,32,3]`, `[M,3]`; M=63 for N=500. Local tensors are `[N,32]`, frame
+`[N,3,3]`, hidden `[N,128]`, frame coefficients `[N,3]`, scalar gate `[N]`.
+Channel-linear broadcast reproduces `[N,128]` and `[N,32,3]` before output.
+
+## Completed Stage C result
+
+Both models trained for 400 updates with identical exposure. E007 control has
+7,586,505 parameters; E013 has 980,794. Calibration froze aggregate tolerance
+0.02 and per-length tolerance 0.04 before validation inference. Training-only
+paired-noise SD was 0.048276843988062174. Neither hyperparameters nor checkpoints
+were selected from validation; no held-out test was accessed. Training/evaluation
+wall time was 340.65 seconds, excluding source preparation and initial calibration.
+Boundary files are `one_step_v1/protocol.json`, `panel_provenance.json`,
+`training.jsonl`, `metrics.json`, `report.json`, and both final checkpoints.
+
+Aggregate validation v-MSE: 0.644456 -> 0.599271 (**-7.01%**).
+Reconstructed X0 component MSE: 40.6944 -> 39.1650 Å²; aligned RMSD:
+8.1791 -> 8.1475 Å. Mean offsets-1/2/3 distance MSE:
+9.12348 -> 12.36856 Å² (**+35.57%**). Torsion sine/cosine MSE:
+1.53014 -> 1.49875 (**-2.05%**), below the predeclared 5% improvement requirement.
+Triple-product sign inversion: 0.39582 -> 0.39268, with explicit assessability
+counts retained per identity/timestep. Aggregate non-neighbor clash fraction
+increased 0.02461 -> 0.06339. These are equal-protein means across five timesteps.
+
+Gate decision: finite **pass**, aggregate non-inferiority **pass**, length-v
+non-regression **pass**, predeclared local/chirality improvement **fail**,
+reconstruction radius/collapse **fail**. The latter fails at t=490 for 10/17
+E013 validation proteins versus 2/17 controls. Minimum E013 radius/reference
+ratio was 0.07553. Near-maximal-noise posterior-mean reconstruction can shrink;
+this gate does not by itself diagnose reverse-trajectory collapse. No reverse
+trajectory, exposure-gap measurement or de novo sample was produced.
+
+Important limits: this is a bounded pilot, not a convergence study. Parameter
+count differs by 7.73x, so the result does not isolate representation from capacity.
+Only one validation protein occupies 385–500. The original historical panel had
+already been used in historical work; it was fixed before E013 training and is
+prospective only with respect to this new model, not a newly collected population.
+No population-level long-chain or biochemical claim is justified. Low-noise local
+distance MSE did improve at t=5, but this does not rescue the aggregate gate.
+
+Future low-noise local/torsion/clash helper functions are prepared and tested,
+but remain inactive. Source formatting and these unused helpers were finalized
+after the frozen training run; they do not alter its primary loss or model math.
+
+## Recommended next experiment (proposed, not run)
+
+**E014 unconditional coordinate-v local-branch ablation v1:** compare the same
+E013 trunk with the local branch enabled versus disabled, starting from matched
+initializations and identical training exposure. Keep centered VP, scale, v target,
+schedule, objective and sampler fixed. Use training-only noise-resolved head
+contributions/geometry diagnostics to investigate t=250/400 local regression and
+the global-only near-maximal-noise shrinkage, then freeze fresh prospective gates.
+Retain p(X|N); no sequence conditioning or auxiliary loss in this ablation. It is
+not a proposed full-generation campaign and is not authorized by this failed gate.
+
+## Validation metrics by noise and length
+
+All entries are equal-protein means; local MSE is in Å². Detailed bond
+quantiles, offsets, chirality assessability counts, contact/clash/radius metrics
+and split-specific records remain in metrics.json and report.json.
+
+### Noise strata
+
+| Stratum | Control v-MSE | E013 v-MSE | Control local MSE | E013 local MSE | Control torsion MSE | E013 torsion MSE |
+|---|---:|---:|---:|---:|---:|---:|
+| 5 | 1.095715 | 0.961120 | 0.2725 | 0.2472 | 0.0706 | 0.0669 |
+| 50 | 0.606754 | 0.557722 | 3.7447 | 3.7467 | 1.4735 | 1.4076 |
+| 250 | 0.270493 | 0.288559 | 8.2217 | 14.6531 | 1.9762 | 1.9765 |
+| 400 | 0.479174 | 0.462675 | 17.3557 | 25.7120 | 2.1031 | 2.0165 |
+| 490 | 0.770146 | 0.726280 | 16.0229 | 17.4839 | 2.0273 | 2.0262 |
+
+### Length strata
+
+| Stratum | Control v-MSE | E013 v-MSE | Control local MSE | E013 local MSE | Control torsion MSE | E013 torsion MSE |
+|---|---:|---:|---:|---:|---:|---:|
+| 20-64 | 0.595332 | 0.561738 | 6.1042 | 11.5324 | 1.5675 | 1.5084 |
+| 65-128 | 0.561429 | 0.536496 | 7.0014 | 12.9062 | 1.5603 | 1.5108 |
+| 129-256 | 0.643760 | 0.603369 | 8.8233 | 13.6433 | 1.5112 | 1.4894 |
+| 257-384 | 0.692998 | 0.636820 | 11.4887 | 12.3083 | 1.4965 | 1.4959 |
+| 385-500 | 0.981684 | 0.833918 | 21.4286 | 8.7048 | 1.4699 | 1.4608 |
+
+## Post-training symmetry and matched resource audit
+
+The trained checkpoint passed ten proper-rotation/translation checks over
+N=20/500 and all five noise steps. Maximum absolute error 9.54e-7, maximum
+relative L2 error 2.54e-7, maximum centroid magnitude 2.38e-8.
+Both are below the 5e-5 symmetry tolerance. Initial reflection and geometry
+tests passed; trained symmetry checks here concern proper rotations/translations.
+
+| Model | N | Forward ms | Forward/backward ms | Peak allocated MiB | Reserved MiB |
+|---|---:|---:|---:|---:|---:|
+| e007_control | 64 | 68.89 | 484.60 | 151.58 | 186 |
+| e007_control | 128 | 50.34 | 380.62 | 410.42 | 488 |
+| e007_control | 256 | 57.52 | 461.76 | 1370.12 | 1622 |
+| e007_control | 384 | 44.68 | 335.98 | 3006.87 | 3568 |
+| e007_control | 500 | 79.52 | 359.43 | 5213.79 | 6918 |
+| e013 | 64 | 86.89 | 295.98 | 108.68 | 142 |
+| e013 | 128 | 101.38 | 235.60 | 153.24 | 182 |
+| e013 | 256 | 73.88 | 347.57 | 242.68 | 276 |
+| e013 | 384 | 45.52 | 258.93 | 343.40 | 374 |
+| e013 | 500 | 54.77 | 234.15 | 433.75 | 480 |
+
+Report: trained_boundary_audit_v2.json. The first audit retained a closure
+reference to the previous model during allocator reset; it is preserved as
+trained_boundary_audit.json. Version 2 explicitly releases that reference.
+Reported runtime remains sensitive to concurrent host CPU load and allocator
+history; memory and latency are empirical measurements, not asymptotic proofs.
+
+Twelve final tests passed; JUnit record is unit_tests_final.xml. Ruff and diff
+whitespace checks passed. Historical model/diffusion/loss/config hashes match
+the base commit; normalization hash is unchanged. The MMseqs production job
+remained active on 16 threads at the post-training audit and was never stopped
+or modified. Runtime paths, caches, scratch, panel, logs and checkpoints were
+audited under /mnt/d. All accessed immutable source hashes are checked again
+after execution in source_preservation_after.json.
+
+## Files and reproducibility records
+
+New source: models/e013_unconditional_equivariant_denoiser.py,
+training/e013_losses.py, evaluation/e013_one_step_benchmark.py under
+src/protein_distance_diffusion; scripts/run_e013_unconditional_equivariant_denoiser.py,
+scripts/run_e013_one_step_benchmark.py, scripts/audit_e013_trained_boundary.py;
+configs/e013_unconditional_equivariant_denoiser_v1.yaml; both test_e013 files;
+this document. Only existing README.md and docs/experiment_timeline.md receive
+concise E013 status additions. No existing scientific implementation changed.
+
+Stage commits: architecture 5dd02cd5475133ab51ca36a37b69dad454926e43;
+preflight/config/docs 4299d4e; frozen benchmark 669a7aeecf74d34095a853d3ba7ebbc37afe1111.
+Config SHA256: 301fddb0e47ba8caa09082cfde5baa85a570581364c365cdb136cbfb7c81f07f.
+Panel provenance SHA256: 067ab8469dab6c103f15c1bb61edb24ddd69ed02d9db18c28f3af4b279912fb8.
+E013 checkpoint SHA256: 2c1b9ae06e88f08fdf7ecbb7a66173f8048b1ae0144c61e91eced6972392bd9e.
+Exact selected identities and every accessed dataset/source hash are in
+panel_provenance.json. Final commit and artifact hashes are recorded after
+closeout in /mnt/d/Simone/proteinGen/e013_artifacts/completion_manifest.json.
+No Stage D/E execution commits exist because their prerequisites failed.

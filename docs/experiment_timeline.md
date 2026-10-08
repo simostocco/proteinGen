@@ -208,3 +208,17 @@ confirmed both objectives improve. Classification L1 is confined to the frozen
 panels; condition-50 Cartesian and short-identity local regressions persist.
 See [the reviewed record](e010_local_geometry_auxiliary.md). Next: one short
 matched continuation with fixed lambda and full evaluation, not more weight tuning.
+
+## E013 unconditional scalar/vector coordinate-v pilot — 2026-10-09
+
+Implemented the structure-only p(X|N) denoiser with four sparse scalar/vector
+blocks, two coarse global blocks and a parity-sensitive local branch. Twelve
+unit tests and CUDA N=500 preflight passed. The matched E007 v-only control and
+E013 each received 400 updates on 20 historical training identities; validation
+used 17 identities after the conservative homology-clean intersection.
+Validation aggregate v-MSE decreased 7.0%, but local-distance MSE increased 35.6%,
+torsion MSE improved only 2.1%, and 10/17 near-maximal-noise reconstructions failed
+the predeclared radius gate. Stage C failed; Stage D/E were not run. No sequence
+input or historical evidence mutation occurred. See the
+[technical record](e013_unconditional_equivariant_denoiser.md) for strata,
+provenance, limits and the proposed next architecture ablation.
