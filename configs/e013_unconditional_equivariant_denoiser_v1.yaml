@@ -1,0 +1,30 @@
+experiment: e013_unconditional_se3_coordinate_generator_v1
+base_commit: bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e
+seed: 13013
+output_dir: /mnt/d/Simone/proteinGen/e013_artifacts
+coordinate_scale_angstrom: 12.22820347644835
+normalization_required_sha256: 1be9ef05c82110861482eb46e61ef433045fa9678b9cdfffd921f0defebb03cd
+normalization_artifact: /mnt/d/Simone/proteinGen/reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1/normalization.json
+diffusion_steps: 500
+model:
+  scalar_channels: 128
+  vector_channels: 32
+  spatial_k: 24
+  coarse_stride: 8
+  diffusion_steps: 500
+objective: equal_protein_coordinate_v_mse
+auxiliary_weights: {local: 0.0, chiral: 0.0, clash: 0.0}
+self_conditioning: false
+preflight:
+  equivariance_atol: 0.00005
+  equivariance_relative_l2: 0.00005
+  max_peak_reserved_bytes: 5368709120
+stage_c:
+  status: blocked_until_normalization_and_homology_provenance_verified
+  noise_timesteps: [5, 50, 250, 400, 490]
+  length_strata: [[20, 64], [65, 128], [129, 256], [257, 384], [385, 500]]
+  control: matched_E007_architecture_v_only_training
+  numeric_thresholds: null
+  threshold_policy: freeze_from_training_only_before_validation
+stage_d: conditional_on_stage_c_pass
+stage_e: conditional_on_stage_c_and_d_pass
