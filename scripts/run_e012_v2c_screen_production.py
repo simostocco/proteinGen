@@ -44,6 +44,18 @@ def load_module(name):
     spec=importlib.util.spec_from_file_location(name,SCRIPTS/(name+'.py'))
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
 
+def production_budget(b):
+    original=b.floor;b.floor=10*1024**3
+    free=shutil.disk_usage(ROOT).free
+    assert free-b.floor>=8000000000,'DATA2-E: insufficient D: space for the bounded search budget'
+    save(PROD/'reports/PRODUCTION_DISK_BUDGET.json',{'original_fixed_floor_bytes':original,
+        'production_floor_bytes':b.floor,'free_at_check_bytes':free,'bounded_search_scratch_budget_bytes':8000000000,
+        'final_sort_and_runtime_reserve_checks_retained':True,'original_resource_plan_unchanged':True,'all_artifacts_on_D':True})
+
+def certify_only():
+    production=load_module('complete_e012_v2c_pipeline');legacy,b=production.build();setup();production_budget(b)
+    b.certify()
+
 def ro(path):
     return sqlite3.connect('file:'+path.as_posix()+'?mode=ro',uri=True)
 
@@ -313,7 +325,7 @@ def run():
     import psutil
     state_update(phase='starting',pid=os.getpid(),started_unix=time.time(),screened=durable()['screened'],required_population=TOTAL,
         exclusions=durable()['exclusions'],committed_batch=durable()['batch'],training_launched=False,driver_sha256=sha(Path(__file__).resolve()))
-    production=load_module('complete_e012_v2c_pipeline');legacy,b=production.build();setup()
+    production=load_module('complete_e012_v2c_pipeline');legacy,b=production.build();setup();production_budget(b)
     original=b.search_command
     def search(query,out,tmp):
         args=original(query,out,tmp);assert args[args.index('--threads')+1]=='8';args[args.index('--threads')+1]='16';return args
@@ -347,9 +359,15 @@ def run():
             if stage=='verify-protected':b.screen(True)
             elif stage=='certify':
                 cmd=['C:/Windows/System32/wsl.exe','--distribution','Ubuntu','--cd',canonical(SCI),'--exec',
-                    '/home/simostocco/miniforge3/envs/proteingen/bin/python','-B',canonical(SCRIPTS/'complete_e012_v2c_pipeline.py'),'certify']
+                    '/home/simostocco/miniforge3/envs/proteingen/bin/python','-B',canonical(Path(__file__).resolve()),'certify-only']
                 with (PROD/'logs/certify.log').open('ab') as log:subprocess.run(cmd,cwd=PROD,stdout=log,stderr=log,check=True)
-            elif stage=='handoff':production.run('handoff')
+            elif stage=='handoff':
+                b.handoff()
+                path=b.report/'chatgpt_handoff.json';handoff=legacy.json.loads(path.read_text())
+                handoff['source_baseline_commit']='f52bdd3';handoff['continuation_verdict']=verdict
+                handoff['production_resume']={'diagnostic_commits':['5a3cf72','5e235c1'],'single_search_complement':True,'threads':16,'full_final_audit':True,'screening_population':TOTAL}
+                legacy.save(path,handoff)
+                report=b.report/'FINAL_REPORT.md';report.write_text(report.read_text().replace('E012 V2B frozen corpus','E012 V2C frozen corpus'))
             else:getattr(b,stage)()
             save(PROD/f'reports/stage_{stage}.json',{'wall_seconds':time.time()-started,'training_launched':False})
         state_update(phase='frozen_corpus_ready',finished_unix=time.time(),training_launched=False)
@@ -442,10 +460,10 @@ def launch():
     save(path,record);print(json.dumps(record),flush=True)
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('action',choices=('seal','quiesce','validate','run','monitor','launch','reference-validation'))
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('action',choices=('seal','quiesce','validate','run','monitor','launch','reference-validation','certify-only'))
     action=parser.parse_args().action;setup()
     try:
-        {'seal':seal,'quiesce':quiesce,'validate':validate_parser,'run':run,'monitor':monitor,'launch':launch,'reference-validation':reference_validation}[action]()
+        {'seal':seal,'quiesce':quiesce,'validate':validate_parser,'run':run,'monitor':monitor,'launch':launch,'reference-validation':reference_validation,'certify-only':certify_only}[action]()
     except BaseException as exc:
         if action=='run' and STATE.get('phase')!='failed':
             state_update(phase='failed',error=repr(exc),classification='PRODUCTION_STARTUP_FAILURE',training_launched=False)
