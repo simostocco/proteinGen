@@ -53,6 +53,12 @@ def build():
             assert p.returncode==0,f'Command failed ({p.returncode}); see {log}'
         match=re.search(r'Maximum resident set size \(kbytes\):\s*(\d+)',rss.read_text());assert match
         b.last_command_metrics={'wall_seconds':time.monotonic()-started,'maxrss_kib':int(match[1]),'method':'GNU time -v; D: cwd/TMPDIR/TMP/TEMP/cache'}
+        # Legacy batch cleanup removes the command directory after committing.
+        # Preserve full MMseqs and GNU-time evidence independently on D:.
+        archive=SCI/'reports/command_logs'/Path(log).relative_to(SCI)
+        archive.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(log,archive)
+        shutil.copyfile(rss,archive.with_suffix('.rss.txt'))
     b.run=command_on_d
     return legacy,b
 
