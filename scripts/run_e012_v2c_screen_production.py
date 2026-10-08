@@ -202,6 +202,27 @@ def step(b,label,argv,outputs):
     assert files,'MMseqs output missing'
     save(marker,{'request':pin,'outputs':{canonical(p):sha(p) for p in set(files)},'gnu_time_exit_zero':True})
 
+def reusable_job(folder,row_hash):
+    """Use only checksum-verified DBs; an interrupted search is not completed."""
+    active=folder/'active_job.json';job=json.loads(active.read_text()) if active.exists() else None
+    reusable=None
+    if job:
+        assert job['input_rows_sha256']==row_hash
+        prev=Path(job['generation'].replace('/mnt/d','D:')) if os.name=='nt' else Path(job['generation'])
+        prior_query=Path(job['query_db'].replace('/mnt/d','D:')) if os.name=='nt' else Path(job['query_db'])
+        if (prior_query.parent/'createdb.complete.json').exists():
+            ready=json.loads((prior_query.parent/'createdb.complete.json').read_text())
+            for name,digest in ready['outputs'].items():
+                p=Path(name.replace('/mnt/d','D:')) if os.name=='nt' else Path(name)
+                assert sha(p)==digest
+            reusable=prior_query
+        for label in ('createdb','search','convert'):
+            pending=(prev/(label+'.request.json')).exists() and not (prev/(label+'.complete.json')).exists()
+            timer=prev/(label+'.rss.txt')
+            finished_time=timer.exists() and re.search(r'Exit status:\s*0\s*$',timer.read_text())
+            if pending and not finished_time:job=None;break
+    return job,reusable
+
 def screen(legacy,b):
     reservoir=legacy.json.loads(b.marker('reservoir').read_text())
     inputs={'reservoir_sha256':reservoir['outputs'][str(b.reservoir)],'protected_sha256':legacy.digest(b.protected),
@@ -229,23 +250,7 @@ def screen(legacy,b):
             row_hash=hashlib.sha256(b''.join(h+str(off).encode()+b'\0' for h,off,*rest in rows)).hexdigest()
             # Every incomplete attempt has its own D: generation. An unfinished
             # search preserves its evidence; a completed query DB is reusable.
-            active=folder/'active_job.json';job=json.loads(active.read_text()) if active.exists() else None
-            reusable=None
-            if job:
-                assert job['input_rows_sha256']==row_hash
-                prev=Path(job['generation'].replace('/mnt/d','D:')) if os.name=='nt' else Path(job['generation'])
-                prior_query=Path(job['query_db'].replace('/mnt/d','D:')) if os.name=='nt' else Path(job['query_db'])
-                if (prior_query.parent/'createdb.complete.json').exists():
-                    ready=json.loads((prior_query.parent/'createdb.complete.json').read_text())
-                    for name,digest in ready['outputs'].items():
-                        p=Path(name.replace('/mnt/d','D:')) if os.name=='nt' else Path(name)
-                        assert sha(p)==digest
-                    reusable=prior_query
-                for label in ('createdb','search','convert'):
-                    pending=(prev/(label+'.request.json')).exists() and not (prev/(label+'.complete.json')).exists()
-                    timer=prev/(label+'.rss.txt')
-                    finished_time=timer.exists() and re.search(r'Exit status:\s*0\s*$',timer.read_text())
-                    if pending and not finished_time:job=None;break
+            active=folder/'active_job.json';job,reusable=reusable_job(folder,row_hash)
             if not job:
                 gen=folder/('generation-'+str(time.time_ns()));gen.mkdir()
                 fasta=gen/'query.fasta'

@@ -3,10 +3,119 @@ from pathlib import Path
 from contextlib import closing
 import hashlib, importlib.util, sqlite3, tempfile, unittest
 import numpy as np
+import json, os, subprocess, types
+from contextlib import nullcontext
+from unittest.mock import patch
 
 spec=importlib.util.spec_from_file_location('v2c',Path(__file__).resolve().parents[1]/'scripts/e012_reservoir_v2c.py')
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 ROOT=m.configure_storage(Path('D:/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization') if __import__('os').name=='nt' else Path('/mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization'))
+
+def production_module(name):
+    spec=importlib.util.spec_from_file_location(name,Path(__file__).resolve().parents[1]/'scripts'/(name+'.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
+
+class ProductionRecoveryTests(unittest.TestCase):
+    def test_control_c_exit_cannot_publish_a_search_completion(self):
+        p=production_module('run_e012_v2c_screen_production')
+        with tempfile.TemporaryDirectory(dir=ROOT/'tmp') as tmp:
+            folder=Path(tmp);output=folder/'result'
+            def interrupted(args,log):
+                log.write_text('MMseqs parameters emitted; WSL bridge terminated\n')
+                log.with_suffix('.rss.txt').write_bytes(b'')
+                raise AssertionError('Command failed (3221225786) [STATUS_CONTROL_C_EXIT]')
+            with patch.multiple(p,PROD=folder,STATE={}):
+                with self.assertRaisesRegex(AssertionError,'3221225786'):
+                    p.step(types.SimpleNamespace(run=interrupted),'search',['mmseqs','search'],[output])
+            self.assertTrue((folder/'search.request.json').exists())
+            self.assertFalse((folder/'search.complete.json').exists())
+            self.assertFalse(output.exists())
+
+    def test_windows_control_c_isolation(self):
+        pipeline=production_module('complete_e012_v2c_pipeline')
+        options=pipeline.command_process_options(windows=True)
+        self.assertEqual(options['stdin'],subprocess.DEVNULL)
+        self.assertEqual(options['creationflags'],0x200|0x08000000)
+        self.assertTrue(pipeline.command_process_options(windows=False)['start_new_session'])
+
+    def test_partial_search_reuses_verified_db_and_commit_restart_skips_prefix(self):
+        p=production_module('run_e012_v2c_screen_production')
+        with tempfile.TemporaryDirectory(dir=ROOT/'tmp') as tmp:
+            base=Path(tmp);sci=base/'scientific';prod=base/'production'
+            for path in (sci/'manifests',sci/'filtered',sci/'protected',prod):path.mkdir(parents=True)
+            sequences=['ACDEFGHIKLMNPQRSTVWY','Y'*20,'C'*20,'G'*20]
+            rows=[(hashlib.sha256(seq.encode()).digest(),i+1,seq,0,1) for i,seq in enumerate(sequences)]
+            protected=sci/'protected/protected.fasta';protected.write_text('>p_known\n'+sequences[0]+'\n')
+            reservoir=sci/'filtered/reservoir.sqlite'
+            with sqlite3.connect(reservoir) as db:
+                db.execute('CREATE TABLE candidates(h BLOB,off INTEGER,seq TEXT,historical INTEGER,external INTEGER)')
+                db.executemany('INSERT INTO candidates VALUES(?,?,?,?,?)',rows);db.commit()
+            inputs={'reservoir_sha256':p.sha(reservoir),'protected_sha256':p.sha(protected),'policy':{'identity':.30,'coverage':.80,'cov_mode':0,'sensitivity':7.5},'verification':False,'batch_order':'append-table scan; independent hash-priority cutoff'}
+            p.save(sci/'manifests/reservoir.complete.json',{'outputs':{str(reservoir):inputs['reservoir_sha256']}})
+            cp={'inputs':inputs,'batch':1,'screened':2,'last_rowid':2,'exclusions':1,'slow_batches':0}
+            ex=sci/'manifests/exclusions.sqlite'
+            with sqlite3.connect(ex) as db:
+                db.execute('CREATE TABLE removed(h BLOB,off INTEGER,protected TEXT,identity REAL,PRIMARY KEY(h,off)) WITHOUT ROWID')
+                db.execute('CREATE TABLE batches(name TEXT,batch INTEGER,n INTEGER,marker TEXT,PRIMARY KEY(name,batch))')
+                db.execute('CREATE TABLE production_progress(k TEXT PRIMARY KEY,v TEXT)')
+                db.execute('INSERT INTO removed VALUES(?,?,?,?)',(rows[0][0],1,'p_known',1.0))
+                db.execute('INSERT INTO batches VALUES(?,?,?,?)',('screen',1,2,'committed-original'))
+                db.execute('INSERT INTO production_progress VALUES(?,?)',('checkpoint',json.dumps(cp)));db.commit()
+            original=sci/'manifests/screen-batch-0001.json';original.write_bytes(b'original committed certificate')
+            folder=sci/'mmseqs/screen_production/batch-0002';gen=folder/'interrupted';gen.mkdir(parents=True)
+            fasta=gen/'query.fasta';fasta.write_text(''.join(f'>s_{h.hex()}_{off}\n{seq}\n' for h,off,seq,*_ in rows[2:]))
+            query=gen/'query_db';query.write_bytes(b'verified persistent candidate DB')
+            p.save(gen/'createdb.complete.json',{'outputs':{p.canonical(query):p.sha(query)}})
+            (gen/'search.request.json').write_text('{}');(gen/'search.rss.txt').write_bytes(b'')
+            row_hash=hashlib.sha256(b''.join(h+str(off).encode()+b'\0' for h,off,*_ in rows[2:])).hexdigest()
+            p.save(folder/'active_job.json',{'generation':p.canonical(gen),'query_db':p.canonical(query),'input_rows_sha256':row_hash,'query_sha256':p.sha(fasta)})
+            self.assertEqual(p.reusable_job(folder,row_hash),(None,query))
+            original_hash=p.sha(original);db_hash=p.sha(query);calls=[]
+            def connect(path):
+                db=sqlite3.connect(path);db.execute('PRAGMA synchronous=FULL');db.execute('PRAGMA temp_store=FILE');return db
+            legacy=types.SimpleNamespace(json=json,digest=p.sha,connection=connect,save=p.save,now=lambda:'bounded-fixture')
+            def run(command,log):
+                calls.append(command[1]);log.write_text('bounded simulated transport\n')
+                if command[1]=='search':
+                    self.assertEqual(Path(command[2]),query);Path(command[4]).write_bytes(b'complete result DB')
+                elif command[1]=='convertalis':
+                    h,off,*_=rows[2];Path(command[5]).write_text(f's_{h.hex()}_{off}\tp_known\t0.500\t1.000\t1.000\t1E-20\n')
+                else:raise AssertionError('A committed work unit or reusable DB was recomputed')
+                log.with_suffix('.rss.txt').write_text('Exit status: 0\n')
+            def crash_after_commit(*args):raise RuntimeError('crash after durable batch commit')
+            b=types.SimpleNamespace(reservoir=reservoir,protected=protected,report=sci/'reports',marker=lambda name:sci/'manifests'/(name+'.complete.json'),completed=lambda *args:False,
+                stage=lambda *args:nullcontext(),cleanup=crash_after_commit,complete=lambda *args,**kwargs:None,run=run,
+                search_command=lambda fa,out,tmp:['mmseqs','easy-search',fa,'protected_db',out,tmp,'--threads','16','--format-output','query,target,fident,qcov,tcov,evalue'])
+            with patch.multiple(p,ROOT=base,SCI=sci,PROD=prod,TOTAL=4,SIZE=2,STATE={}):
+                with self.assertRaisesRegex(RuntimeError,'durable batch'):p.screen(legacy,b)
+                self.assertEqual(p.durable(),{'batch':2,'screened':4,'exclusions':2})
+                before_calls=list(calls);cert=sci/'manifests/screen-batch-0002.json';cert_hash=p.sha(cert)
+                p.screen(legacy,b)
+                self.assertEqual(calls,before_calls);self.assertEqual(p.sha(cert),cert_hash)
+                self.assertEqual(p.sha(original),original_hash);self.assertEqual(p.sha(query),db_hash)
+                self.assertEqual(calls,['search','convertalis'])
+                self.assertTrue(gen.exists(),'Interrupted evidence remains preserved before production cleanup')
+
+    def test_bounded_real_frozen_relation_replay(self):
+        p=production_module('run_e012_v2c_screen_production')
+        first=ROOT/'screen_optimization'
+        expected=json.loads((first/'equivalence.expected-original-order.json').read_text())
+        sequences=dict(p.rows_from_fasta(first/'equivalence.fasta'))
+        hit_ids=list(dict.fromkeys(line.split('\t')[0] for line in expected))[:6]
+        nonhits=[sid for sid in sequences if sid not in {line.split('\t')[0] for line in expected}][:6]
+        selected=set(hit_ids+nonhits)
+        with tempfile.TemporaryDirectory(dir=ROOT/'tmp') as tmp:
+            folder=Path(tmp);fasta=folder/'query.fasta';output=folder/'hits.tsv'
+            fasta.write_text(''.join(f'>{sid}\n{sequences[sid]}\n' for sid in hit_ids+nonhits))
+            command=['mmseqs','easy-search',str(fasta),str(ROOT.parent/'mmseqs/protected_index/db'),str(output),str(folder/'mmseqs_tmp'),
+                '--min-seq-id','0.30','-c','0.80','--cov-mode','0','-s','7.5','--seq-id-mode','0','--alignment-mode','3','--threads','16',
+                '--split-memory-limit','4G','--max-seqs','1000','--remove-tmp-files','0','--format-output','query,target,fident,qcov,tcov,evalue']
+            with (folder/'mmseqs.log').open('w') as log:subprocess.run(command,cwd=folder,stdout=log,stderr=log,check=True)
+            actual=output.read_text().splitlines();reference=[line for line in expected if line.split('\t')[0] in selected]
+            self.assertEqual(set(actual),set(reference))
+            rows=[(bytes.fromhex(sid.split('_')[1]),int(sid.split('_')[2]),sequences[sid]) for sid in hit_ids+nonhits]
+            protected={seq:sid for sid,seq in p.rows_from_fasta(p.SCI/'protected/protected.fasta')}
+            self.assertEqual(p.decisions(rows,actual,protected),p.decisions(rows,reference,protected))
 
 class V2CTests(unittest.TestCase):
     def test_array_baseline_retains_collisions_and_zero_bytes(self):

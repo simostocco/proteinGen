@@ -7,6 +7,14 @@ ROOT=Path('D:/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v
 m.configure_storage(ROOT)
 SCI=ROOT/'scientific';ORIGINAL=ROOT.parent
 
+def command_process_options(windows=None):
+    """Background searches must not inherit a console's CTRL+C lifetime."""
+    if windows is None:windows=os.name=='nt'
+    if windows:
+        return {'stdin':subprocess.DEVNULL,
+            'creationflags':getattr(subprocess,'CREATE_NEW_PROCESS_GROUP',0x200)|getattr(subprocess,'CREATE_NO_WINDOW',0x08000000)}
+    return {'stdin':subprocess.DEVNULL,'start_new_session':True}
+
 def build():
     for name in ['stats','reports','manifests','filtered','protected','mmseqs','clusters','corpus','tmp','checksums']:(SCI/name).mkdir(parents=True,exist_ok=True)
     m.configure_storage(SCI)
@@ -45,12 +53,14 @@ def build():
         if os.name=='nt':argv=['C:/Windows/System32/wsl.exe','--distribution','Ubuntu','--cd',native.canonical(str(SCI)),'--exec']+argv
         with Path(log).open('a') as handle:
             handle.write(json.dumps({'command':argv,'cwd':str(SCI),'all_scratch_on_D':True})+'\n');handle.flush()
-            p=subprocess.Popen(argv,cwd=SCI,stdout=handle,stderr=subprocess.STDOUT)
+            p=subprocess.Popen(argv,cwd=SCI,stdout=handle,stderr=subprocess.STDOUT,**command_process_options())
             while p.poll() is None:
                 try:b.guard()
                 except BaseException:p.terminate();p.wait();raise
                 time.sleep(1)
-            assert p.returncode==0,f'Command failed ({p.returncode}); see {log}'
+            interrupted=os.name=='nt' and (p.returncode & 0xffffffff)==0xc000013a
+            status=' [STATUS_CONTROL_C_EXIT: WSL bridge interrupted; no search completion]' if interrupted else ''
+            assert p.returncode==0,f'Command failed ({p.returncode}){status}; see {log}'
         match=re.search(r'Maximum resident set size \(kbytes\):\s*(\d+)',rss.read_text());assert match
         b.last_command_metrics={'wall_seconds':time.monotonic()-started,'maxrss_kib':int(match[1]),'method':'GNU time -v; D: cwd/TMPDIR/TMP/TEMP/cache'}
         # Legacy batch cleanup removes the command directory after committing.
