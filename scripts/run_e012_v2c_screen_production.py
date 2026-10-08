@@ -18,6 +18,9 @@ def canonical(value):
     return '/mnt/d'+value[2:] if value.startswith('D:/') else value
 
 def setup():
+    global TOTAL
+    stats=SCI/'stats/filtering_stats.json'
+    if stats.exists():TOTAL=int(json.loads(stats.read_text())['union_count'])
     assert PROD.resolve().drive.upper() == 'D:' if os.name == 'nt' else PROD.resolve().is_relative_to('/mnt/d')
     for name in ('tmp','logs','reports'): (PROD/name).mkdir(parents=True, exist_ok=True)
     for key in ('TMP','TEMP','TMPDIR','XDG_CACHE_HOME'): os.environ[key] = str(PROD/'tmp')
@@ -383,7 +386,7 @@ def monitor():
                     'eta_screen_seconds':max(0,(TOTAL-screened)/rate),'eta_basis':'observed committed throughput' if cumulative else 'validated benchmark',
                     'cpu_percent':sum(p['cpu_percent'] for p in workers),'rss_bytes':state.get('native_rss_bytes',0)+sum(p['rss_bytes'] for p in workers),
                     'system_ram':psutil.virtual_memory()._asdict(),'d_free_bytes':shutil.disk_usage(ROOT).free,'mmseqs_workers':workers,
-                    'raw':38840027,'raw_target':38840027,'reservoir_count':TOTAL,
+                    'raw':38840027,'raw_target':38840027,'reservoir_count':24000000,'historical_union_population':TOTAL,
                     'screen':{'stage':'screen','batch':state['committed_batch'],'screened':screened,'hits':state['exclusions']},'training_launched':False}
                 row['active_log']=state.get('active_log');row['audit_active_batch']=state.get('audit_active_batch')
                 if phase=='verify-protected':
@@ -413,9 +416,18 @@ def launch():
             p=psutil.Process(prior['worker_pid'])
             assert not any(str(a).endswith(Path(__file__).name) for a in p.cmdline()),'A production owner is still alive'
         shutil.copyfile(path,PROD/f'reports/previous_launch_{time.time_ns()}.json')
+        for name in ('STATE.json','reports/FAILURE.json'):
+            previous=PROD/name
+            if previous.exists():shutil.copyfile(previous,PROD/f'reports/previous_{Path(name).name}_{time.time_ns()}.json')
+    # Publish a nonterminal state BEFORE the child/observer are spawned; otherwise
+    # an observer could see the prior failed startup and terminate immediately.
+    current=durable()
+    save(PROD/'STATE.json',{'phase':'launching','started_unix':time.time(),'screened':current['screened'],
+        'exclusions':current['exclusions'],'committed_batch':current['batch'],'required_population':TOTAL,'training_launched':False})
     save(PROD/'reports/PRODUCTION_DECISION.json',{'minimum_5x_gate_required':False,'user_authorized_resume':True,
         'frozen_diagnostic_commits':['5a3cf72','5e235c1'],'direction':'candidate_to_protected','threads':16,
         'batch_size':SIZE,'required_screening_population':TOTAL,'start_at_batch':33,
+        'external_reservoir_population':24000000,'historical_additions':85944,
         'decision_method':'single_search_complete_returned_relation_complement',
         'nearest_semantics':'exact strings override at 1.0; strict greater fident update in returned order',
         'final_independent_full_audit_retained':True,'audit_disagreement_action':'DATA2-D; stop and preserve evidence',
