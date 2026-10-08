@@ -188,7 +188,7 @@ def step(b,label,argv,outputs):
     save(marker,{'request':pin,'outputs':{canonical(p):sha(p) for p in set(files)},'gnu_time_exit_zero':True})
 
 def screen(legacy,b):
-    reservoir=json.loads(b.marker('reservoir').read_text())
+    reservoir=legacy.json.loads(b.marker('reservoir').read_text())
     inputs={'reservoir_sha256':reservoir['outputs'][str(b.reservoir)],'protected_sha256':legacy.digest(b.protected),
         'policy':{'identity':.30,'coverage':.80,'cov_mode':0,'sensitivity':7.5},'verification':False,
         'batch_order':'append-table scan; independent hash-priority cutoff'}
