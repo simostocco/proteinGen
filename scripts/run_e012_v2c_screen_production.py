@@ -13,6 +13,8 @@ TOTAL = 24000000; INITIAL = 3200000; INITIAL_HITS = 178888; SIZE = 100000
 
 def canonical(value):
     value = str(value).replace('\\','/')
+    for prefix in ('//wsl.localhost/Ubuntu','//wsl$/Ubuntu'):
+        if value.lower().startswith(prefix.lower()+'/'):return value[len(prefix):]
     return '/mnt/d'+value[2:] if value.startswith('D:/') else value
 
 def setup():
