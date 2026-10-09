@@ -2,6 +2,7 @@
 
 # ruff: noqa: I001
 from e014_bootstrap import ROOT
+from coordinate_execution_policy import execution_policy, sequence_status
 import argparse
 import json
 import os
@@ -102,6 +103,7 @@ def symmetry_check(model):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--allow-concurrent-sequence", action="store_true")
     parser.add_argument("--model", choices=["e014", "e007_control"], default="e014")
     parser.add_argument("--probe-only", action="store_true")
     args = parser.parse_args()
@@ -152,6 +154,7 @@ def main():
         model=args.model,
         source_hashes={str(p): sha(p) for p in runtime_sources},
     )
+    policy = execution_policy(contract, args.allow_concurrent_sequence)
     run = ROOT / args.model
     if run.exists() and not args.resume:
         raise FileExistsError("existing primary run; exact --resume required")
@@ -296,6 +299,7 @@ def main():
         )
         payload["pending_boundary"] = pending_boundary
         payload["contention_baseline"] = before
+        payload["execution_policy"] = policy
         path = atomic_checkpoint(checkpoints, name, payload, rolling=rolling)
         last_checkpoint = time.monotonic()
         atomic_json(
@@ -489,7 +493,7 @@ def main():
                     save(f"recovery_{recovery_slot}", rolling=True)
                 if now - last_guard >= 30:
                     last_guard = now
-                    status = compare(before, cfg["contention"]) if before else None
+                    status = sequence_status(compare, before, cfg["contention"], args.allow_concurrent_sequence)
                     if status:
                         atomic_json(run / "CONTENTION_CURRENT.json", status)
                         screen_finished = status["phase"] in ("completed", "complete", "screen_complete", "finished")
@@ -498,7 +502,9 @@ def main():
                             "stale_heartbeat_seconds"
                         ]
                         phase_changed = status["phase_changed"] and not screen_finished
-                        if status["persistent_material_degradation"] or stale or phase_changed:
+                        if (
+                            status["persistent_material_degradation"] or stale or phase_changed
+                        ) and not args.allow_concurrent_sequence:
                             save(f"contention_pause_{attempt}_{updates}")
                             heartbeat(
                                 "paused_sequence_phase_changed"
