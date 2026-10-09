@@ -87,3 +87,42 @@ def test_contention_persistent_not_single_noisy_batch(tmp_path):
         for i in (7, 8):
             stream.write(json.dumps(dict(committed_batch=i, recent_candidates_s=700, timestamp_unix=i)) + "\n")
     assert compare(before, cfg)["persistent_material_degradation"]
+
+
+def test_verification_phase_uses_native_audit_timing(tmp_path):
+    production = tmp_path / "screen_production"
+    production.mkdir()
+    state = production / "STATE.json"
+    log = production / "HEARTBEAT.jsonl"
+    archive = tmp_path / "scientific/reports/command_logs/mmseqs/verify_protected"
+    records = []
+    for batch in range(1, 7):
+        records.append(
+            dict(
+                phase="verify-protected",
+                timestamp_unix=batch,
+                recent_candidates_s=99999,
+                committed_batch=241,
+                audit=dict(batch=batch, screened=batch * 100000),
+            )
+        )
+        directory = archive / f"batch-{batch:04d}"
+        directory.mkdir(parents=True)
+        (directory / "command.rss.txt").write_text(
+            "Elapsed (wall clock) time (h:mm:ss or m:ss): 1:40.00\nExit status: 0\n"
+        )
+    log.write_text("\n".join(json.dumps(r) for r in records) + "\n")
+    state.write_text(json.dumps(dict(phase="verify-protected", timestamp_unix=6)))
+    cfg = dict(
+        heartbeat_log=str(log),
+        state_path=str(state),
+        rolling_completed_batches=5,
+        minimum_completed_batches=3,
+        degradation_fraction=0.10,
+    )
+    before = baseline(cfg)
+    assert before["phase"] == "verify-protected"
+    assert before["median_candidates_s"] == 1000
+    assert before["committed_batch"] == 6
+    state.write_text(json.dumps(dict(phase="unknown-new-phase", timestamp_unix=7)))
+    assert compare(before, cfg)["phase_changed"]

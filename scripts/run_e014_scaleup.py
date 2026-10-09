@@ -496,14 +496,19 @@ def main():
                         stale = (not screen_finished) and time.time() - status["timestamp_unix"] > cfg["contention"][
                             "stale_heartbeat_seconds"
                         ]
-                        if status["persistent_material_degradation"] or stale:
+                        phase_changed = status["phase_changed"] and not screen_finished
+                        if status["persistent_material_degradation"] or stale or phase_changed:
                             save(f"contention_pause_{attempt}_{updates}")
                             heartbeat(
-                                "paused_sequence_contention" if not stale else "paused_sequence_heartbeat_uncertain"
+                                "paused_sequence_phase_changed"
+                                if phase_changed
+                                else "paused_sequence_contention"
+                                if not stale
+                                else "paused_sequence_heartbeat_uncertain"
                             )
                             return
                     if not probe_passed and now - probe_start >= cfg["contention"]["probe_seconds"]:
-                        if not status["enough_completed_batches"]:
+                        if not status["enough_completed_batches"] and not screen_finished:
                             save(f"probe_inconclusive_{attempt}_{updates}")
                             heartbeat("paused_contention_probe_inconclusive")
                             return

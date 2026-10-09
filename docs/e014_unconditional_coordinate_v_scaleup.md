@@ -179,6 +179,10 @@ pending-batch reports. Baseline is the median of the last five completed batches
 The first **600 seconds of actual full-population training** is a contention
 probe and counts as legitimate epoch exposure. Require at least three completed
 sequence batches during the probe. A single noisy batch cannot trigger pause.
+When the active phase is protected verification, the screening-rate field is
+stale: instead use completed audit population deltas and native archived
+`command.rss.txt` wall times. These sequence files are read-only. An unsupported
+active phase or phase transition pauses E014 rather than mixing rate definitions.
 Pause E014 when three consecutive completed-batch throughputs are below both
 90% of the baseline median and baseline minus twice its median absolute deviation.
 An inconclusive probe or stale nonterminal sequence heartbeat also pauses E014
@@ -259,7 +263,9 @@ and AdamW steps. N=500 with optimizer state allocated 1,204,750,336 bytes and
 reserved 1,421,869,056 bytes; warmed full-update latency was 361.07 ms under
 CPU contention. All 19 frozen E013 artifact hashes were verified. There is no
 TRAIN/clean-validation identity, homology-cluster or PDB-entry overlap.
-Focused tests: **23 passed, 1 deselected**. The deselected historical cache-env
+Focused suite: **23 passed, 1 deselected**; the subsequent active-phase monitor
+scope passed **4 tests**, including the new verification-timing regression.
+The deselected historical cache-env
 test would select E013 runtime directories; equivalent E014 D-path rejection
 tests passed. The focused unit scope includes E013 regression, N=20/500,
 padding/degeneracy/parity, full-epoch coverage, mid-epoch exposure/optimizer/RNG
