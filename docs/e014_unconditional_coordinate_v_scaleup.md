@@ -188,7 +188,20 @@ Pause E014 when three consecutive completed-batch throughputs are below both
 An inconclusive probe or stale nonterminal sequence heartbeat also pauses E014
 with a checkpoint. This is a conservative priority guard, not proof of causation
 for every later sequence slowdown. Explicit terminal sequence completion removes
-the stale-heartbeat check. The sequence job is never interrupted.
+the stale-heartbeat check. The native driver terminates with
+`frozen_corpus_ready`; this state is explicitly recognized. A persistent
+supervisor waits through unsupported finalization phases and resumes only when
+the sequence corpus is ready. It never restarts a numerical/provenance/runtime
+hard failure. The sequence job is never interrupted.
+
+The initial probe ran from `e7fb20e6a65f504e16206bd80c245d57fd27457a`.
+A narrowly audited checkpoint handoff recognizes the native terminal phase:
+the entire runner diff must be exactly one added terminal-guard line. Preserve
+the original probe checkpoint and write a new, fully verified checkpoint with
+the replacement runner hash. Model, optimizer, RNG, schedule, losses and
+per-identity exposure state remain unchanged. Standard arbitrary source/config/
+data mismatch refusal remains active. The handoff record is
+`e014/TERMINAL_GUARD_HANDOFF.json`; its existence establishes execution.
 
 ## Evaluation boundaries and metrics
 
@@ -265,6 +278,8 @@ CPU contention. All 19 frozen E013 artifact hashes were verified. There is no
 TRAIN/clean-validation identity, homology-cluster or PDB-entry overlap.
 Focused suite: **23 passed, 1 deselected**; the subsequent active-phase monitor
 scope passed **4 tests**, including the new verification-timing regression.
+The operational/reporting scope passed **3 tests**, including refusal of any
+unrelated handoff source change and effective-gate agreement with live hooks.
 The deselected historical cache-env
 test would select E013 runtime directories; equivalent E014 D-path rejection
 tests passed. The focused unit scope includes E013 regression, N=20/500,
@@ -282,6 +297,14 @@ passing probe. Both primary and matched control finish with final reports and
 factual documentation updates; no sampler is launched. Live records are
 `e014/HEARTBEAT.json`, `COMMITTED.json`, `CURVES.json`, `TRAINING.jsonl`,
 `checkpoints/LATEST.json` and `evaluation/`. No claims about folds/stability/function.
+
+`scripts/launch_e014_background.py` starts persistent guarded continuation after
+a passing probe. `SUPERVISOR.json` records training/waiting/hard-stop status.
+Post-training `scripts/report_e014_effective_gates.py` evaluates only the frozen
+checkpoint time/gate modules on paired current noisy coordinates, adding the
+exact mean/median of `sigmoid_gate * reliability * noise_envelope`. The main
+evaluator already reports learned sigmoid gates and effective vector norms.
+This supplemental pass never changes the model, optimizer or training objective.
 
 Next scientific experiment is **not preselected as a local-branch ablation**:
 choose it from the adequately trained A–E result. Before that boundary, the next

@@ -493,6 +493,7 @@ def main():
                     if status:
                         atomic_json(run / "CONTENTION_CURRENT.json", status)
                         screen_finished = status["phase"] in ("completed", "complete", "screen_complete", "finished")
+                        screen_finished = screen_finished or status["phase"] == "frozen_corpus_ready"
                         stale = (not screen_finished) and time.time() - status["timestamp_unix"] > cfg["contention"][
                             "stale_heartbeat_seconds"
                         ]
