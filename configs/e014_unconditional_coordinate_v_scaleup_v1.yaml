@@ -1,0 +1,52 @@
+experiment: E014_unconditional_coordinate_v_scaleup_v1
+base_commit: dd421bde2a6b3a9b5eb549f72b874ae2ca875bac
+output_dir: /mnt/d/Simone/proteinGen/e014_artifacts
+seed: 14014
+coordinate_scale_angstrom: 12.22820347644835
+normalization_artifact: /mnt/d/Simone/proteinGen/reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1/normalization.json
+normalization_sha256: 1be9ef05c82110861482eb46e61ef433045fa9678b9cdfffd921f0defebb03cd
+dataset_root: /mnt/d/Users/Simone Stocco/proteinGen_audits/e006_rich_geometry_sidecars_v2
+dataset_protocol_sha256: 653d1a88c4366401345287d6c3eea2267c363945bac429374db2058015913b8b
+dataset_inventory_sha256: a3331f8df4a15e42f10611395d41672f8c7e282050e7b77e10081436548884c0
+assignments: /mnt/d/Simone/proteinGen/reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/mmseqs/identity_30/cluster_assignments.parquet
+assignments_sha256: 1bf1c53d3021e4fc31b819727296da9256149a569ff8a0292c9ee737a3ebf50e
+clean_validation: /mnt/d/Simone/proteinGen/reports/experiments/E007_matrix_sequence_cogeneration/split_homology_audit_v1_publication_correction_v1/mmseqs/identity_30/clean_validation_manifest.parquet
+clean_validation_sha256: a847fbf36497df7a015dd4cb3c683f47ec6c2d3217b1b6eaebdddcf7af0adb11
+historical_panel: /mnt/d/Simone/proteinGen/e013_artifacts/one_step_v1/panel_provenance.json
+historical_panel_sha256: 067ab8469dab6c103f15c1bb61edb24ddd69ed02d9db18c28f3af4b279912fb8
+diffusion_steps: 500
+minimum_epochs: 2
+maximum_epochs: 4
+batch_sizes: [4, 2, 1, 1, 1]
+optimizer: {family: AdamW, learning_rate: 0.0002, weight_decay: 0.01, gradient_clip: 1.0}
+cpu_threads: 1
+loader_workers: 0
+noise_timesteps: [5, 50, 250, 400, 490]
+development_per_stratum: 100
+prospective_per_stratum: 400
+preflight: {equivariance_tolerance: 0.00005, max_peak_reserved_bytes: 5368709120}
+plateau: {relative_improvement: 0.01, consecutive_completed_epochs: 2}
+checkpoint_fractions: [0.25, 0.5, 0.75, 1.0]
+extra_recovery_checkpoint_seconds: 900
+minimum_free_disk_gib: 20
+hard_loss_maximum: 1000000
+contention:
+  state_path: /mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization/screen_production/STATE.json
+  heartbeat_log: /mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization/screen_production/reports/HEARTBEAT.jsonl
+  probe_seconds: 600
+  degradation_fraction: 0.10
+  minimum_completed_batches: 3
+  rolling_completed_batches: 5
+  stale_heartbeat_seconds: 180
+scientific_adjudication:
+  minimum_complete_epochs: 2
+  substantially_improved_fraction: 0.10
+  acceptable_adjacent_valid_fraction: 0.90
+  adjacent_valid_range_angstrom: [3.4, 4.2]
+  max_high_noise_collapse_fraction: 0.05
+  max_high_noise_clash_fraction: 0.01
+  reference: paired_E014_initialization
+sequence_conditioning: false
+self_conditioning: false
+geometry_auxiliaries: false
+sampler_exposure: false

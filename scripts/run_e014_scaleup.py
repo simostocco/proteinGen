@@ -11,6 +11,7 @@ import fcntl
 import subprocess
 import sys
 import time
+import random
 from pathlib import Path
 import numpy as np
 import pyarrow.parquet as pq
@@ -115,10 +116,15 @@ def main():
         raise RuntimeError("CUDA unavailable")
     capacity = json.loads((ROOT / "capacity_selection.json").read_text())
     population = json.loads((ROOT / "population/population.json").read_text())
+    batch_preflight = json.loads((ROOT / "EXECUTION_BOUNDARY_PREFLIGHT.json").read_text())
     if (
         not capacity["passed"]
         or capacity["config_sha256"] != sha(cfgpath)
         or capacity["population_hash"] != population["train_sample_id_hash"]
+        or not batch_preflight["passed"]
+        or batch_preflight["config_hash"] != sha(cfgpath)
+        or batch_preflight["train_population_hash"] != population["train_sample_id_hash"]
+        or batch_preflight["selected_parameters"] != capacity["selected"]["parameters"]
     ):
         raise ValueError("capacity/config/population prerequisite mismatch")
     for path, digest in population["manifest_hashes"].items():
@@ -169,6 +175,7 @@ def main():
     lengths = np.asarray([r["length"] for r in train])
     torch.manual_seed(cfg["seed"])
     np.random.seed(cfg["seed"])
+    random.seed(cfg["seed"])
     if args.model == "e014":
         model = E014CapacityDenoiser(**capacity["selected"]["config"]).cuda()
     else:
@@ -242,6 +249,10 @@ def main():
                 capacity=capacity["selected"],
                 torch_version=str(torch.__version__),
                 cuda_version=torch.version.cuda,
+                python_version=sys.version,
+                numpy_version=np.__version__,
+                rng_seed=cfg["seed"],
+                physical_batch_preflight_hash=sha(ROOT / "EXECUTION_BOUNDARY_PREFLIGHT.json"),
                 optimizer=cfg["optimizer"],
                 train_population=population,
                 minimum_epochs=2,

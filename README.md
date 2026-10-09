@@ -30,6 +30,7 @@ themselves establish physically meaningful generated structures.
 | E009 | Can a Bayesian geometry-prior refiner resolve the error? | Bounded overfit/objective diagnostics do not establish a useful generalizing refiner. | Test global coordinate expressivity in E010. |
 | E010 | Can global coordinate refinement transfer to real denoiser outputs? | Phase 4B optimizes successfully but gains only ~1.25% aligned RMSD while local geometry regresses; weight-only diagnostics fail the final decision gates. | No validated final generator; stop weight-only tuning. |
 | [E013](docs/e013_unconditional_equivariant_denoiser.md) | Does an unconditional scalar/vector residue model improve E007 coordinate-v denoising? | Matched 400-update pilot: validation v-MSE -7.0%, local-distance MSE +35.6%; near-maximal-noise reconstruction collapse gate fails. | Stage C fails; sampler exposure and de novo sampling not run. |
+| [E014](docs/e014_unconditional_coordinate_v_scaleup.md) | Do capacity, full structural TRAIN coverage and complete epochs resolve E013's pilot discrepancy? | 5,119,069-parameter LARGE selected; 230,132 TRAIN identities and disjoint 500/2,000 validation panels verified. | Full-scale execution pending coexistence probe; no architectural adjudication before two epochs. |
 
 ### Completed / established findings
 

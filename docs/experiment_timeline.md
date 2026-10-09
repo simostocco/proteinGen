@@ -222,3 +222,14 @@ the predeclared radius gate. Stage C failed; Stage D/E were not run. No sequence
 input or historical evidence mutation occurred. See the
 [technical record](e013_unconditional_equivariant_denoiser.md) for strata,
 provenance, limits and the proposed next architecture ablation.
+
+## E014 unconditional coordinate-v full-scale training — 2026-10-09
+
+Based on frozen E013 `dd421bde2a6b3a9b5eb549f72b874ae2ca875bac`, this experiment
+tests capacity/data/duration rather than a new representation. LARGE selected by
+parameter count/memory only: 5,119,069 parameters, six sparse and three coarse
+global blocks. Full accepted TRAIN: 230,132 identities; new disjoint development
+and prospective panels: 500 and 2,000. Exact epochs, checkpoint/resume and
+read-only UniRef50 contention guard are implemented. E013 remains a bounded
+pilot; no architectural conclusion is permitted before two complete epochs.
+See [the E014 execution record](e014_unconditional_coordinate_v_scaleup.md).

@@ -1,0 +1,282 @@
+# E014 unconditional coordinate-v scale-up v1
+
+Base: frozen E013 commit `dd421bde2a6b3a9b5eb549f72b874ae2ca875bac`.
+Branch: `e014_unconditional_coordinate_v_scaleup_v1`.
+Worktree: `/mnt/d/Simone/proteinGen/.e014_worktree`.
+Generated artifacts: `/mnt/d/Simone/proteinGen/e014_artifacts` exclusively.
+
+## Motivation and interpretation boundary
+
+E013 was a bounded pilot: 980,794 parameters, 400 matched updates, 20 training
+identities and 17 homology-clean validation identities. Its checkpoint improved
+aggregate v-MSE about 7%, but local-distance MSE worsened 35.6%, torsion MSE
+improved only 2.1%, and timestep-490 reconstruction collapse occurred in 10/17
+versus 2/17 controls. These historical results remain frozen. They establish that
+the **400-update checkpoint** failed its structural gates, not that the
+representation or local branch is incapable. E014 tests capacity, data coverage
+and optimization duration together; it cannot separately attribute those factors.
+
+No architectural conclusion is permitted before **two complete TRAIN epochs**.
+Poor early geometry is an outcome to track, not an early-stop condition.
+No de novo generation or biochemical claim follows from reconstruction metrics.
+
+## Unchanged representation and inference contract
+
+The model remains **p(X|N)**. Inference accepts only current noisy C-alpha
+coordinates `[B,N,3]`, timestep `[B]`, requested length `[B]` and a chain-order
+mask `[B,N]`. Polymer order and current geometry provide all derived features.
+No amino-acid sequence, target, target RMSD, teacher, SLSQP, safety shield,
+self-conditioning or external correction enters inference.
+
+E014 subclasses E013 without editing its source. The subclass only replaces
+ModuleLists/local projections to configure widths and depths; it inherits the
+entire frozen forward computation. Default E014-small initialization/state and
+forward output match E013 exactly with a fixed seed and 980,794 parameters.
+The scaled model retains time width 64, length width 16, five position scalars,
+85 raw node scalars, 22 edge scalars, 32 local features, 32-dimensional RoPE q/k,
+zero-initialized vectors, k=24 current-coordinate spatial neighbors, polymer
+offsets +/-1/2/3, and coarse stride 8. The two local residual blocks are unchanged
+in number; local hidden width scales with capacity. Channel scalar/vector updates,
+frame construction, chirality features, reliability and the `(1-t/499)^2` local
+envelope retain their E013 definitions.
+
+RBF: 16 overlapping Gaussians, centers 0..5 normalized units, gamma equal to
+inverse squared center spacing. Frozen scale is **12.22820347644835 Å**. No
+validation/test normalization fitting occurs. Normalization SHA256:
+`1be9ef05c82110861482eb46e61ef433045fa9678b9cdfffd921f0defebb03cd`.
+
+## Capacity ladder and selection (completed before scientific training)
+
+| Candidate | Scalars | Vectors | Sparse blocks | Global blocks | Local width | Parameters |
+|---|---:|---:|---:|---:|---:|---:|
+| MEDIUM |192|48|5|2|192|2,378,155|
+| LARGE |256|64|6|3|256|5,119,069|
+| XL, conditional |320|80|6|3|320|7,867,597|
+
+**LARGE selected**: the smallest predeclared member in 5M–10M that passes finite
+gradients, symmetry and N=500 memory comfort. XL's parameter count was checked,
+but its CUDA preflight was unnecessary because LARGE met the target. No
+validation quality informed selection. E007's unchanged architecture has
+7,586,505 parameters; E014 is in the requested broad capacity range, with fewer
+parameters than E007. This capacity difference must be retained in interpretation.
+
+LARGE module counts: time 8,320; length 336; input 22,016; sparse blocks 3,019,014;
+global blocks 1,509,507; scalar broadcast 65,792; vector broadcast 4,096; global
+head 82,240; local input 8,448; local residuals 394,240; local head 771; gate 4,289.
+
+Scalar/vector states are `[B,N,256]` and `[B,N,64,3]`. Coarse states are
+`[B,ceil(N/8),256]`, `[B,ceil(N/8),64,3]`; M=63 at N=500. Local hidden state
+is `[B,N,256]`. Final centered coordinate-v remains `[B,N,3]`.
+
+Sparse message complexity is O((k+6)N), coarse communication O((N/8)^2), and
+local features/messages O(N). The inherited kNN discovery still uses dense cdist
+and stable sorting: O(N² log N) time and O(N²) storage. It is not a fully linear
+algorithm. Variable-length proteins are processed separately inside the inherited
+forward method; physical batching saves optimizer overhead but does not vectorize
+the residue message computation.
+
+## Verified full population and frozen panels
+
+TRAIN is derived from the hash-verified authoritative accepted-coordinate
+identity-30 cluster assignments, not a random-draw panel: **230,132 identities**.
+The canonical sorted TRAIN sample-ID SHA256 is
+`d3f2ee345d0e4e9a27d0136aad1eca9dfe87821a3a82d90aa4c3194bd928a3f9`, matching
+the frozen normalization's fitted identity hash. Definition: SHA256 of compact,
+sorted-key JSON encoding of the sorted sample-ID string list. Train manifest hash:
+`28500b3b23a2d1ffab8ce5e5e17271fcd2e9514c4b9708e483af5f86e3cd476d`.
+
+| TRAIN length stratum | Identities |
+|---|---:|
+|20–64|21,390|
+|65–128|66,547|
+|129–256|90,077|
+|257–384|38,489|
+|385–500|13,629|
+
+Clean validation contains 21,583 identities under the frozen conservative
+30%-identity/80%-coverage exclusion. Train and clean validation have no shared
+identity, homology cluster or PDB entry. From validation, rank
+`SHA256(e014-panel-v1|sample_id)` within each stratum. Exclude the historical
+panel; select first 100 per stratum for development (**500**), then next 400 for
+prospective final validation (**2,000**). The panels are disjoint and metric-blind.
+No test is accessed. Development identity hash:
+`3a36bccfee801b618674594762ed2e6e394220ca21db94260ccb5becf7328dcf`;
+prospective identity hash:
+`373cb7c0b2f0f7b64fdd5d47d742cf7f07b8b0ddbc0da8683032375cd8dec25b`.
+Exact selections and all source/manifest hashes are in `population/`.
+
+A D-resident read-only packed float32 coordinate cache contains 232,649 unique
+identities (TRAIN plus both panels and 17 historical validation identities),
+42,769,187 residues, and 247 source-shard hashes. The cache has no sequence
+column. Every accessed source shard was hash-verified; accepted coordinates,
+masks, continuity and lengths were checked before caching. Full TRAIN loader
+indexing uses only the TRAIN manifest, never the validation rows sharing the
+physical cache. Packed-coordinate SHA256:
+`c1b7e2f52db9194587becf35dd1639a0b464c93eae755795d1d5a876dd11f723`.
+
+## Complete epochs, optimizer and objective
+
+An epoch exposes every TRAIN identity exactly once. PCG64(seed+epoch*1000003)
+shuffles indices within length buckets; then shuffles the resulting batches.
+Batch sizes are `[4,2,1,1,1]` for the five strata. No identity resampling or length
+weighting is introduced. All schedules are persisted on D and regenerated/hash
+checked on resume. Epoch 1 has **180,817 optimizer updates**, no duplicates or
+missing identities, min/max scheduled exposure both one. Schedule hash:
+`9a32c939108db08ae8ad11599ce6c62a8f9edae31a63be5dac519b002cd5f2c1`.
+Completed epochs assert min=max=epoch over all identities and persist exposure
+counts/hash. Pending updates remain provisional until checkpoint commitment.
+
+Reuse unchanged E007 CoordinateVPDiffusion(500):
+`X_t=alpha_t X0+sigma_t epsilon`, centered Gaussian epsilon;
+`v*=alpha_t epsilon-sigma_t X0`;
+`X0_hat=alpha_t X_t-sigma_t v_hat`. The sole objective is equal-protein masked
+coordinate-component MSE, normalized by 3N per protein then averaged over batch.
+AdamW: lr=2e-4, weight decay=0.01, default betas/eps matching E013's PyTorch stack,
+gradient clip=1.0. Uniform integer timestep sampling and all diffusion semantics
+are unchanged. No LR schedule, warmup, EMA, geometry objective or AMP. TF32 is off.
+Per-identity/epoch deterministic RNG streams make corruptions reproducible across
+batching and a future comparator without changing the uniform sampling law.
+
+Train for **at least two, at most four** complete epochs. At an epoch >=2, plateau
+stopping requires primary development v-MSE relative improvement <1% for two
+consecutive completed epochs. Initialization is the epoch-zero reference. Poor
+local geometry/radius/torsion cannot stop training. Technical hard stops are
+nonfinite/exploding loss or gradients, data/provenance/checkpoint corruption,
+GPU/runtime failure, symmetry regression, D free space below 20 GiB, or sequence
+contention. A hard-stop result before epoch 2 has no architectural interpretation.
+
+## Atomic checkpoint and exact resume contract
+
+Permanent verified snapshots at initialization and 25/50/75/100% of each epoch.
+Two rolling recovery slots also limit at-risk provisional work to about 15
+minutes. Save model, optimizer, all RNG states, epoch, next schedule position,
+next batch, schedule hash, per-identity exposure accounting, losses, curves,
+pending evaluation boundary, contention state, config/population/cache/source/
+normalization hashes and git SHA. Write `.partial` on D, fsync, reload and compare
+the entire payload (including optimizer/RNG tensors), hash, then atomic rename.
+Publish LATEST.json atomically; never replace the currently referenced rolling
+slot before committing its successor. A failure-injection test preserves the
+previous committed checkpoint if pointer publication fails.
+
+One advisory owner lock refuses concurrent trainers/resumes. Resume verifies all
+contracts, exact next batch and exact expected exposure vector. Records beyond
+LATEST are explicitly provisional and rollback is recorded in RESUME_<attempt>.
+json; committed optimizer updates are never silently replayed. A pending metric
+boundary is completed before resumed optimization. Clean SIGINT/SIGTERM and
+contention pauses save a verified checkpoint at the current completed update.
+
+GPU atomics retain E013's numerical behavior; exact next identities/corruptions
+and serialized optimizer/RNG state are guaranteed, not cross-hardware bitwise
+floating-point trajectories. CPU optimizer/RNG continuation tests are bitwise.
+
+## UniRef50 coexistence
+
+UniRef50 production files are read-only inputs for contention monitoring. Never
+stop, restart, renice or modify the sequence job. OMP/MKL/OpenBLAS/NumExpr threads
+are one; loader workers zero. All scratch/cache/temp paths are explicitly on D.
+Read recent native completed-batch candidates/sec from the heartbeat, not repeated
+pending-batch reports. Baseline is the median of the last five completed batches.
+The first **600 seconds of actual full-population training** is a contention
+probe and counts as legitimate epoch exposure. Require at least three completed
+sequence batches during the probe. A single noisy batch cannot trigger pause.
+Pause E014 when three consecutive completed-batch throughputs are below both
+90% of the baseline median and baseline minus twice its median absolute deviation.
+An inconclusive probe or stale nonterminal sequence heartbeat also pauses E014
+with a checkpoint. This is a conservative priority guard, not proof of causation
+for every later sequence slowdown. Explicit terminal sequence completion removes
+the stale-heartbeat check. The sequence job is never interrupted.
+
+## Evaluation boundaries and metrics
+
+Freeze paired noises at t=5/50/250/400/490 using hash(namespace|identity|t),
+unchanged across checkpoints. Development at initialization and every quarter
+boundary (including the required 0.25/0.5/1/2/3/4 exposures reached). Historical
+20/17 panel at initialization, epoch 1 and final uses E013's exact split-specific
+index noise seeds `1300000+index*500+t`; it never selects checkpoints. Prospective
+2,000-identity final validation is disjoint from development; its initialization
+comparison is evaluated only after training, with the frozen initialization model.
+
+Record equal-protein v-MSE; unaligned X0 component MSE; proper Kabsch RMSD;
+offset-1/2/3 distance MSE and mean; adjacent mean/RMSE/quantiles and [3.4,4.2] Å
+valid fraction/count; pseudo-torsion sine/cosine MSE and wrapped angular MAE;
+normalized signed-triple MSE, inversion counts/rates with assessable denominators;
+Rg predicted/reference and ratio quantiles; exact E013 collapse (Rg_hat<0.25Rg_ref)
+with count/denominator; clashes at <3 Å excluding separations <=3; long-range
+contacts <8 Å at separations >=12, with pair denominators; finite status.
+All metrics retain noise, length and length×noise strata. Rates never omit counts.
+Continuous Rg-ratio distributions prevent a binary collapse gate hiding scale.
+
+Read-only temporary hooks capture global vector output and effective gated local
+output; center each so their sum matches prediction. Report both norms, their
+ratio rho and cosine, raw sigmoid gate mean/median, reliability mean/median and
+frame assessability count/fraction. Hooks are absent during training and change
+no output. Per-update total raw gradient norm/clipping, and bounded 500-update
+parameter/gradient/optimizer-step norms by trunk/local/heads, are logged without
+tensor dumps. Boundary summaries include parameter norms and clipping fraction.
+
+## Predeclared final interpretations and sampler authorization
+
+Only after >=2 complete epochs: A: substantial v and structural improvement;
+B: v improves but structural discrepancy persists; C: v does not improve;
+D: high-noise behavior becomes acceptable but low-noise refinement remains poor;
+E: low-noise geometry improves but high-noise collapse remains. Quantitative
+operationalization is frozen in config before training: >=10% improvement versus
+paired E014 initialization, low-noise adjacent valid fraction >=90%, t490 collapse
+<=5%, and t490 non-neighbor clash fraction <=1%. These are operational feasibility
+criteria, not biochemical validation. E013/E007 historical context is non-matched.
+Only case A authorizes a later sampler-exposure study; even then this runner does
+not automatically run reverse trajectories. All other cases stop after reporting.
+
+## E007 comparator and resource estimates
+
+An adapter and separate entrypoint prepare the unchanged E007 architecture with
+the same full data, schedules, identity noise streams, optimizer and panels.
+Primary E014 must complete first. A post-primary resource assessment is required
+before launching it. E007 CUDA preflight passed numerics but N=500 reserved about
+6.76 GiB, above the declared comfortable 5 GiB envelope. Thus its matched full
+run is prepared, **not executed**. Historical E007 comparisons remain non-matched.
+
+Cold/noisy preflight estimates (excluding loader/evaluation) were E014 LARGE
+28.64 hours/epoch, 57.28–114.55 hours for 2–4 epochs; E007 13.58 hours/epoch,
+27.16–54.31 hours for 2–4 epochs. These are conservative extrapolations from one
+backward per representative length under CPU contention, not promised completion
+times. The live contention probe provides measured full-pipeline throughput.
+
+## Implementation and verification status
+
+Implemented: new capacity subclass, full-population manifests/packed cache,
+complete-epoch schedule, resumable trainer, atomic checkpoints/owner lock,
+paired evaluation, component/gradient telemetry, contention guard, matched E007
+adapter/entrypoint, final reporting. E013 source/results and E007/E010 sources
+are unchanged. No final experiment interpretation is available yet.
+
+CUDA capacity preflight passed: proper rotation/translation tolerance 5e-5,
+maximum LARGE absolute error 3.58e-7, relative L2 3.53e-7; parity-sensitive
+reflection gaps 3.14..8.75. N=500 LARGE: 1,163,598,336 allocated bytes,
+1,369,440,256 reserved bytes; forward 32.44 ms; forward/backward 108.92 ms.
+The selected physical batches `[4,2,1,1,1]` also passed CUDA forward/backward
+and AdamW steps. N=500 with optimizer state allocated 1,204,750,336 bytes and
+reserved 1,421,869,056 bytes; warmed full-update latency was 361.07 ms under
+CPU contention. All 19 frozen E013 artifact hashes were verified. There is no
+TRAIN/clean-validation identity, homology-cluster or PDB-entry overlap.
+Focused tests: **23 passed, 1 deselected**. The deselected historical cache-env
+test would select E013 runtime directories; equivalent E014 D-path rejection
+tests passed. The focused unit scope includes E013 regression, N=20/500,
+padding/degeneracy/parity, full-epoch coverage, mid-epoch exposure/optimizer/RNG
+resume, hash refusals, atomic failure injection, deterministic panels/noises,
+D-only paths, metric denominators and contention persistence.
+
+Preflight commands executed from this worktree with PYTHONDONTWRITEBYTECODE=1
+and D TMPDIR: `scripts/preflight_e014_scaleup.py --stage population|capacity|cache`
+and `scripts/audit_e014_execution_boundary.py`.
+Training entrypoints (execution status below):
+`scripts/run_e014_scaleup.py --probe-only` for a checkpointed initial probe;
+`scripts/run_e014_scaleup.py --resume` to continue the exact full run after a
+passing probe. Both primary and matched control finish with final reports and
+factual documentation updates; no sampler is launched. Live records are
+`e014/HEARTBEAT.json`, `COMMITTED.json`, `CURVES.json`, `TRAINING.jsonl`,
+`checkpoints/LATEST.json` and `evaluation/`. No claims about folds/stability/function.
+
+Next scientific experiment is **not preselected as a local-branch ablation**:
+choose it from the adequately trained A–E result. Before that boundary, the next
+action is continuing E014's complete-epoch training subject to coexistence.
