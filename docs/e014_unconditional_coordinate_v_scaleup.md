@@ -330,3 +330,13 @@ TRAIN population: 230132; sample-ID hash `d3f2ee345d0e4e9a27d0136aad1eca9dfe8782
 Optimizer updates: 2980; protein exposures: 3791; exposure min/max: 0/1.
 
 **The required minimum two complete TRAIN epochs has not yet completed. No architectural conclusion is available.** E013’s v-MSE/geometry divergence remains an open question. No sampler exposure or de novo sampling is authorized at this stage.
+
+## Execution throughput optimization
+
+2026-10-09: audited and benchmarked; **not deployed**. Five-minute live baseline: 4.576 proteins/s, 3.593 updates/s, GPU utilization mean 11.55%, approximately 2.68 GiB total device memory. CPU dispatch of thousands of small kernels per update is the leading bottleneck. Rolling checkpoints occur every 900 seconds in addition to quarter-epoch/guard/signal checkpoints.
+
+The original coexistence guard saved `contention_pause_1791527258268763959_8113.pt` (SHA256 `66e0712279172ff60dc01360090329db7e599f1aa82209824bd61060bbfa8d1c`) at update 8,113 / 10,262 exposures, then paused for uncertain sequence heartbeat. The unchanged supervisor waits for sequence CPU availability. No switchover/rollback occurred.
+
+An inactive execution-cache candidate met output/loss/gradient limits but missed the frozen 5e-7 parameter limit across five actual paired TRAIN batches. Original-versus-original also missed it, so required tight equivalence is unresolved; cache-specific harm is not established. UniRef throughput subsequently decreased substantially, preventing deployment pending coexistence clearance. Larger batches fit memory but change effective optimizer batches because accumulation is one. No production speedup is claimed. Model, objective, precision, optimizer, corruption, grouping and schedule remain unchanged.
+
+See [full profiling, checkpoint and memory report](/mnt/d/Simone/proteinGen/e014_artifacts/throughput_optimization/REPORT.md) and adjacent bounded JSON evidence. Next engineering step: alternating warmed static-only cache trials after sequence availability, with an explicitly justified CUDA-repeatability acceptance contract, exact optimizer-state/resume audit and sustained throughput window.
