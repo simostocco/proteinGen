@@ -203,6 +203,17 @@ per-identity exposure state remain unchanged. Standard arbitrary source/config/
 data mismatch refusal remains active. The handoff record is
 `e014/TERMINAL_GUARD_HANDOFF.json`; its existence establishes execution.
 
+Executed: 604.02-second probe, 2,198 optimizer updates and 2,802 TRAIN exposures.
+Before/during verification medians: 994.13/1,074.92 candidates/s (ratio 1.0813);
+no persistent material degradation. Handoff execution preserved all original
+scientific payload fields. The first resumed update was 2,199, identity
+`7mfn_AAA`; no committed optimizer update was replayed. Live proof:
+`e014/LIVE_RESUME_VERIFICATION.json`. Persistent supervisor/child resumed from
+training source commit `f86b1f997d147b50fe1445b2939a63accf4d88ea`.
+The original E013 evidence and original E014 probe checkpoint are preserved.
+Measured probe TRAIN exposure throughput was 4.64 proteins/s: about 13.8 hours
+per full epoch if sustained, excluding evaluation and sequence-priority pauses.
+
 ## Evaluation boundaries and metrics
 
 Freeze paired noises at t=5/50/250/400/490 using hash(namespace|identity|t),
@@ -309,3 +320,13 @@ This supplemental pass never changes the model, optimizer or training objective.
 Next scientific experiment is **not preselected as a local-branch ablation**:
 choose it from the adequately trained A–E result. Before that boundary, the next
 action is continuing E014's complete-epoch training subject to coexistence.
+
+## Execution status (automatically refreshed)
+
+Updated unix timestamp: 1791527466.235. Phase: **training**.
+
+TRAIN population: 230132; sample-ID hash `d3f2ee345d0e4e9a27d0136aad1eca9dfe87821a3a82d90aa4c3194bd928a3f9`. Selected model: 5,119,069 parameters, {'scalar_channels': 256, 'vector_channels': 64, 'sparse_blocks': 6, 'global_blocks': 3, 'local_hidden': 256}.
+
+Optimizer updates: 2980; protein exposures: 3791; exposure min/max: 0/1.
+
+**The required minimum two complete TRAIN epochs has not yet completed. No architectural conclusion is available.** E013’s v-MSE/geometry divergence remains an open question. No sampler exposure or de novo sampling is authorized at this stage.

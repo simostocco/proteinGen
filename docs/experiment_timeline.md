@@ -233,3 +233,8 @@ and prospective panels: 500 and 2,000. Exact epochs, checkpoint/resume and
 read-only UniRef50 contention guard are implemented. E013 remains a bounded
 pilot; no architectural conclusion is permitted before two complete epochs.
 See [the E014 execution record](e014_unconditional_coordinate_v_scaleup.md).
+
+Initialization diagnostics and a 604-second full-data contention probe executed:
+2,198 updates and 2,802 exposures checkpointed. UniRef50 verification showed no
+persistent degradation (median throughput ratio 1.081). Persistent training
+resumed at the exact next identity; completed-epoch adjudication remains pending.
