@@ -43,6 +43,7 @@ def build():
         return ['mmseqs','easy-search',query,ORIGINAL/'mmseqs/protected_index/db',out,tmp,
             '--min-seq-id','0.30','-c','0.80','--cov-mode','0','-s','7.5','--seq-id-mode','0','--alignment-mode','3',
             '--threads','8','--split-memory-limit','4G','--max-seqs','1000','--remove-tmp-files','0',
+            '--dbtype','1','--search-type','1',
             '--format-output','query,target,fident,qcov,tcov,evalue']
     b.search_command=search
     def command_on_d(command,log):
@@ -138,7 +139,10 @@ if __name__=='__main__':
         legacy,b=build();old=legacy.Build.__new__(legacy.Build);old.root=ORIGINAL;old.protected=ORIGINAL/'protected/protected.fasta'
         args=[SCI/'tmp/policy_query.fasta',SCI/'tmp/policy_hits.tsv',SCI/'tmp/policy_search']
         expected=list(map(str,legacy.Build.search_command(old,*args)));actual=list(map(str,b.search_command(*args)))
-        assert actual==expected
-        m.atomic_json(ROOT/'reports/POLICY_PREFLIGHT.json',{'passed':True,'original_command':expected,'v2c_command':actual,'protected_sha256':m.sha_file(b.protected),'all_generated_paths_on_D':True})
+        baseline=actual[:]
+        for flag in ('--dbtype','--search-type'):
+            i=baseline.index(flag);assert baseline[i+1]=='1';del baseline[i:i+2]
+        assert baseline==expected
+        m.atomic_json(ROOT/'reports/POLICY_PREFLIGHT.json',{'passed':True,'original_command':expected,'v2c_command':actual,'protein_representation_explicit':True,'protected_sha256':m.sha_file(b.protected),'all_generated_paths_on_D':True})
         print('Historical MMseqs command/coverage policy and D: storage preflight passed')
     else:run(stage)

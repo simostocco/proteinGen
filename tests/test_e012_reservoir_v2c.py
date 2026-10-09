@@ -50,7 +50,7 @@ class ProductionRecoveryTests(unittest.TestCase):
             with sqlite3.connect(reservoir) as db:
                 db.execute('CREATE TABLE candidates(h BLOB,off INTEGER,seq TEXT,historical INTEGER,external INTEGER)')
                 db.executemany('INSERT INTO candidates VALUES(?,?,?,?,?)',rows);db.commit()
-            inputs={'reservoir_sha256':p.sha(reservoir),'protected_sha256':p.sha(protected),'policy':{'identity':.30,'coverage':.80,'cov_mode':0,'sensitivity':7.5},'verification':False,'batch_order':'append-table scan; independent hash-priority cutoff'}
+            inputs={'reservoir_sha256':p.sha(reservoir),'protected_sha256':p.sha(protected),'policy':{'identity':.30,'coverage':.80,'cov_mode':0,'sensitivity':7.5},'verification':False,'batch_order':'append-table scan; independent hash-priority cutoff','query_dbtype':1}
             p.save(sci/'manifests/reservoir.complete.json',{'outputs':{str(reservoir):inputs['reservoir_sha256']}})
             cp={'inputs':inputs,'batch':1,'screened':2,'last_rowid':2,'exclusions':1,'slow_batches':0}
             ex=sci/'manifests/exclusions.sqlite'
@@ -65,6 +65,7 @@ class ProductionRecoveryTests(unittest.TestCase):
             folder=sci/'mmseqs/screen_production/batch-0002';gen=folder/'interrupted';gen.mkdir(parents=True)
             fasta=gen/'query.fasta';fasta.write_text(''.join(f'>s_{h.hex()}_{off}\n{seq}\n' for h,off,seq,*_ in rows[2:]))
             query=gen/'query_db';query.write_bytes(b'verified persistent candidate DB')
+            Path(str(query)+'.dbtype').write_bytes(b'\0\0\0\0')
             p.save(gen/'createdb.complete.json',{'outputs':{p.canonical(query):p.sha(query)}})
             (gen/'search.request.json').write_text('{}');(gen/'search.rss.txt').write_bytes(b'')
             row_hash=hashlib.sha256(b''.join(h+str(off).encode()+b'\0' for h,off,*_ in rows[2:])).hexdigest()

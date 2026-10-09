@@ -9,6 +9,8 @@ import argparse, gzip, hashlib, importlib.util, json, os, re, shutil, sqlite3, s
 SCRIPTS = Path(__file__).resolve().parent
 ROOT = Path('D:/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization') if os.name == 'nt' else Path('/mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization')
 PROD = ROOT/'screen_production'; SCI = ROOT/'scientific'
+HISTORICAL_SCI = SCI
+CORRECTION = False
 TOTAL = 24000000; INITIAL = 3200000; INITIAL_HITS = 178888; SIZE = 100000
 
 def canonical(value):
@@ -16,6 +18,48 @@ def canonical(value):
     for prefix in ('//wsl.localhost/Ubuntu','//wsl$/Ubuntu'):
         if value.lower().startswith(prefix.lower()+'/'):return value[len(prefix):]
     return '/mnt/d'+value[2:] if value.startswith('D:/') else value
+
+def correction_args():
+    return ['--correction-root',canonical(SCI)] if CORRECTION else []
+
+def configure_correction(root):
+    global SCI,PROD,CORRECTION
+    selected=Path(str(root).replace('/mnt/d','D:')) if os.name=='nt' else Path(root)
+    assert canonical(selected)==canonical(ROOT/'scientific_corrected_protein_v1')
+    protocol=json.loads((selected/'CORRECTION_PROTOCOL.json').read_text())
+    assert protocol['validated'] and protocol['query_dbtype']==1 and protocol['search_type']==1
+    assert protocol['max_seqs_production']==protocol['max_seqs_independent_audit']==53615
+    assert protocol['population']==24085944 and protocol['adopted_batches']==[]
+    assert protocol['driver_sha256']==sha(Path(__file__).resolve())
+    assert protocol['pipeline_sha256']==sha(SCRIPTS/'complete_e012_v2c_pipeline.py')
+    SCI=selected;PROD=SCI/'production';CORRECTION=True
+
+def reject_historical_data2d():
+    failure=ROOT/'screen_production/reports/FAILURE.json'
+    if not CORRECTION and failure.exists() and json.loads(failure.read_text()).get('classification')=='DATA2-D':
+        raise RuntimeError('DATA2-D: historical results are frozen; use only the validated corrected namespace')
+
+def assert_aminoacid_db(prefix):
+    """createdb --dbtype 1 means protein; its serialized DBTYPE is zero."""
+    p=Path(str(prefix)+'.dbtype')
+    if not p.is_file() or p.read_bytes()!=b'\0\0\0\0':
+        raise RuntimeError(f'DATA2-D: expected an uncompressed amino-acid query database: {p}')
+
+def build_pipeline():
+    production=load_module('complete_e012_v2c_pipeline')
+    production.SCI=SCI
+    legacy,b=production.build()
+    if CORRECTION:
+        b.reservoir=HISTORICAL_SCI/'filtered/reservoir.sqlite'
+        connection=legacy.connection
+        def corrected_connection(path,wal=False):
+            db=ro(Path(path)) if Path(path)==b.reservoir else connection(path,wal)
+            db.execute('PRAGMA cache_size=-524288')
+            db.execute('PRAGMA temp_store=FILE')
+            db.execute("PRAGMA temp_store_directory='"+str(PROD/'tmp').replace("'","''")+"'")
+            return db
+        legacy.connection=corrected_connection
+    return legacy,b
 
 def setup():
     global TOTAL
@@ -53,7 +97,8 @@ def production_budget(b):
         'final_sort_and_runtime_reserve_checks_retained':True,'original_resource_plan_unchanged':True,'all_artifacts_on_D':True})
 
 def certify_only():
-    production=load_module('complete_e012_v2c_pipeline');legacy,b=production.build();setup();production_budget(b)
+    reject_historical_data2d()
+    legacy,b=build_pipeline();setup();production_budget(b)
     b.certify()
 
 def ro(path):
@@ -63,7 +108,7 @@ def durable():
     with ro(SCI/'manifests/exclusions.sqlite') as db:
         batch,n=db.execute("SELECT max(batch),sum(n) FROM batches WHERE name='screen'").fetchone()
         hits=db.execute('SELECT count(*) FROM removed').fetchone()[0]
-    return dict(batch=batch,screened=n,exclusions=hits)
+    return dict(batch=batch or 0,screened=n or 0,exclusions=hits)
 
 def validate_boundary():
     state=durable(); assert state==dict(batch=32,screened=INITIAL,exclusions=INITIAL_HITS),state
@@ -227,12 +272,14 @@ def screen(legacy,b):
     reservoir=legacy.json.loads(b.marker('reservoir').read_text())
     inputs={'reservoir_sha256':reservoir['outputs'][str(b.reservoir)],'protected_sha256':legacy.digest(b.protected),
         'policy':{'identity':.30,'coverage':.80,'cov_mode':0,'sensitivity':7.5},'verification':False,
-        'batch_order':'append-table scan; independent hash-priority cutoff'}
+        'batch_order':'append-table scan; independent hash-priority cutoff','query_dbtype':1}
+    if CORRECTION:inputs['max_seqs']=53615
     if b.completed('screen',inputs):return
     protected={seq:sid for sid,seq in rows_from_fasta(b.protected)}
     db=ro(b.reservoir);ex=legacy.connection(SCI/'manifests/exclusions.sqlite')
     ex.execute('CREATE TABLE IF NOT EXISTS production_progress(k TEXT PRIMARY KEY,v TEXT)');ex.commit()
     old=ex.execute("SELECT v FROM production_progress WHERE k='checkpoint'").fetchone()
+    if CORRECTION and not old:raise RuntimeError('DATA2-D: corrected screening checkpoint must be initialized explicitly')
     current=json.loads(old[0]) if old else {'inputs':inputs,'batch':32,'screened':INITIAL,'last_rowid':INITIAL,'exclusions':INITIAL_HITS,'slow_batches':0}
     assert current['inputs']==inputs
     assert durable()=={k:current[k] for k in ('batch','screened','exclusions')}
@@ -263,9 +310,14 @@ def screen(legacy,b):
             gen=Path(job['generation'].replace('/mnt/d','D:')) if os.name=='nt' else Path(job['generation'])
             query=Path(job['query_db'].replace('/mnt/d','D:')) if os.name=='nt' else Path(job['query_db'])
             assert sha(gen/'query.fasta')==job['query_sha256']
-            if reusable is None:step(b,'createdb',['mmseqs','createdb',gen/'query.fasta',query,'--dbtype','0','--shuffle','1','--createdb-mode','0','--write-lookup','0'],[query])
+            if reusable is None:step(b,'createdb',['mmseqs','createdb',gen/'query.fasta',query,'--dbtype','1','--shuffle','1','--createdb-mode','0','--write-lookup','0'],[query])
+            assert_aminoacid_db(query)
             command=b.search_command(gen/'query.fasta',gen/'matches.tsv',gen/'tmp')
-            search=['mmseqs','search',query,command[3],gen/'result',gen/'tmp']+command[6:command.index('--format-output')]
+            # --dbtype is a FASTA creation option, not a search-module option.
+            options=command[6:command.index('--format-output')]
+            if '--dbtype' in options:
+                i=options.index('--dbtype');assert options[i+1]=='1';options=options[:i]+options[i+2:]
+            search=['mmseqs','search',query,command[3],gen/'result',gen/'tmp']+options
             step(b,'search',search,[gen/'result'])
             step(b,'convert',['mmseqs','convertalis',query,command[3],gen/'result',gen/'matches.tsv','--format-output','query,target,fident,qcov,tcov,evalue','--threads','16'],[gen/'matches.tsv'])
             with (gen/'matches.tsv').open() as f:mapping,nearest,survivors=decisions(rows,f,protected)
@@ -325,15 +377,44 @@ def screen(legacy,b):
         ex.close();legacy.save(SCI/'stats/screen.json',info);legacy.save(b.report/'screen.json',info)
         b.complete('screen',inputs,[SCI/'stats/screen.json',SCI/'manifests/exclusions.sqlite'],statistics=info)
 
+def assert_full_corrected_audit(b):
+    """A fresh, complete, zero-hit audit is mandatory before corrected finalization."""
+    if not CORRECTION:return
+    marker=b.marker('verify_protected')
+    if not marker.exists():raise RuntimeError('DATA2-D: corrected full audit marker missing')
+    record=json.loads(marker.read_text());b.completed('verify_protected',record['inputs'])
+    stats=json.loads((SCI/'stats/verify_protected.json').read_text())
+    expected=min(json.loads((SCI/'stats/screen.json').read_text())['clean_pool'],b.target)
+    if not stats['zero_detected_violations'] or stats['candidates_screened']!=expected:
+        raise RuntimeError('DATA2-D: incomplete corrected full audit')
+    with ro(SCI/'manifests/verification_progress.sqlite') as db:
+        batches=db.execute("SELECT batch,n,marker FROM batches WHERE name='verify_protected' ORDER BY batch").fetchall()
+        removed=db.execute('SELECT count(*) FROM removed').fetchone()[0]
+    if removed or sum(n for _,n,_ in batches)!=expected or [x[0] for x in batches]!=list(range(1,(expected+SIZE-1)//SIZE+1)):
+        raise RuntimeError('DATA2-D: corrected audit checkpoint is incomplete or nonzero')
+    for batch,n,_ in batches:
+        cert=json.loads((SCI/f'manifests/verify_protected-batch-{batch:04d}.json').read_text())
+        args=cert['command'];retained=SCI/f'manifests/verify_protected-batch-{batch:04d}.tsv.gz'
+        if cert['n']!=n or cert['hits'] or sha(retained)!=cert['retained_result_sha256']:
+            raise RuntimeError('DATA2-D: corrected audit certificate mismatch')
+        for flag,value in (('--dbtype','1'),('--search-type','1'),('--threads','16'),('--min-seq-id','0.30'),('-c','0.80'),('--cov-mode','0'),('-s','7.5'),('--seq-id-mode','0'),('--alignment-mode','3'),('--max-seqs','53615')):
+            if flag not in args or args[args.index(flag)+1]!=value:raise RuntimeError('DATA2-D: corrected audit protocol mismatch')
+        with gzip.open(retained,'rb') as f:
+            if f.read(1):raise RuntimeError('DATA2-D: corrected audit retained relation is nonzero')
+    save(PROD/'reports/FULL_CORRECTED_AUDIT_GATE.json',{'passed':True,'population':expected,'batches':len(batches),'zero_detected_violations':True,'verification_marker_sha256':sha(marker),'training_launched':False})
+
 def run():
     assert os.name=='nt'
+    reject_historical_data2d()
     import psutil
     state_update(phase='starting',pid=os.getpid(),started_unix=time.time(),screened=durable()['screened'],required_population=TOTAL,
         exclusions=durable()['exclusions'],committed_batch=durable()['batch'],training_launched=False,driver_sha256=sha(Path(__file__).resolve()))
-    production=load_module('complete_e012_v2c_pipeline');legacy,b=production.build();setup();production_budget(b)
+    legacy,b=build_pipeline();setup();production_budget(b)
     original=b.search_command
     def search(query,out,tmp):
-        args=original(query,out,tmp);assert args[args.index('--threads')+1]=='8';args[args.index('--threads')+1]='16';return args
+        args=original(query,out,tmp);assert args[args.index('--threads')+1]=='8';args[args.index('--threads')+1]='16'
+        if CORRECTION:args[args.index('--max-seqs')+1]='53615'
+        return args
     b.search_command=search
     original_run=b.run
     def tracked_run(args,log):
@@ -344,13 +425,14 @@ def run():
     b.run=tracked_run
     version=subprocess.check_output(['mmseqs','version'],cwd=PROD,text=True).strip();assert version=='15-6f452+ds-2'
     subprocess.check_call(['C:/Windows/System32/wsl.exe','--distribution','Ubuntu','--cd',canonical(PROD),'--exec',
-        '/usr/bin/python3','-B',canonical(Path(__file__).resolve()),'reference-validation'],cwd=PROD)
+        '/usr/bin/python3','-B',canonical(Path(__file__).resolve()),'reference-validation']+correction_args(),cwd=PROD)
     verdict=json.loads((ROOT/'V2C_VERDICT.json').read_text());assert verdict['verdict']=='V2C-GO' and all(verdict['gates'].values())
     validate_parser()
     # SQLite sorts/journals/cache spill paths also stay on D:.
     connection=legacy.connection
     def on_d(path,wal=False):
-        db=connection(path,wal);db.execute('PRAGMA temp_store=FILE')
+        db=ro(Path(path)) if CORRECTION and Path(path)==b.reservoir else connection(path,wal)
+        db.execute('PRAGMA temp_store=FILE')
         db.execute("PRAGMA temp_store_directory='"+str(PROD/'tmp').replace("'","''")+"'");return db
     legacy.connection=on_d
     state_update(phase='starting',pid=os.getpid(),started_unix=time.time(),screened=durable()['screened'],required_population=TOTAL,
@@ -361,16 +443,18 @@ def run():
         for stage in ('verify-protected','final','certify','diversity','handoff'):
             state_update(phase=stage,phase_started_unix=time.time(),active_command=None)
             started=time.time()
-            if stage=='verify-protected':b.screen(True)
+            if stage=='verify-protected':
+                b.screen(True);assert_full_corrected_audit(b)
             elif stage=='certify':
                 cmd=['C:/Windows/System32/wsl.exe','--distribution','Ubuntu','--cd',canonical(SCI),'--exec',
-                    '/home/simostocco/miniforge3/envs/proteingen/bin/python','-B',canonical(Path(__file__).resolve()),'certify-only']
+                    '/home/simostocco/miniforge3/envs/proteingen/bin/python','-B',canonical(Path(__file__).resolve()),'certify-only']+correction_args()
                 with (PROD/'logs/certify.log').open('ab') as log:subprocess.run(cmd,cwd=PROD,stdout=log,stderr=log,check=True)
             elif stage=='handoff':
                 b.handoff()
                 path=b.report/'chatgpt_handoff.json';handoff=legacy.json.loads(path.read_text())
                 handoff['source_baseline_commit']='f52bdd3';handoff['continuation_verdict']=verdict
                 handoff['production_resume']={'diagnostic_commits':['5a3cf72','5e235c1'],'single_search_complement':True,'threads':16,'full_final_audit':True,'screening_population':TOTAL}
+                if CORRECTION:handoff['scientific_correction']=json.loads((SCI/'CORRECTION_PROTOCOL.json').read_text())
                 legacy.save(path,handoff)
                 report=b.report/'FINAL_REPORT.md';report.write_text(report.read_text().replace('E012 V2B frozen corpus','E012 V2C frozen corpus'))
             else:getattr(b,stage)()
@@ -401,7 +485,7 @@ def monitor():
                     except psutil.NoSuchProcess:pass
                 elapsed=max(.001,time.time()-state.get('screen_started_unix',state['started_unix']))
                 screened=state['screened'];recent=state.get('recent_candidates_s',0)
-                cumulative=(screened-state.get('resume_screened',INITIAL))/elapsed
+                cumulative=max(0,screened-state.get('resume_screened',0 if CORRECTION else INITIAL))/elapsed
                 rate=cumulative or recent or state.get('benchmark_candidates_s',366.41213747885496)
                 row={'timestamp_unix':time.time(),'phase':phase,'screened':screened,'required_population':TOTAL,'percentage':100*screened/TOTAL,
                     'exclusions':state['exclusions'],'recent_candidates_s':recent,'cumulative_candidates_s_since_resume':cumulative,
@@ -412,6 +496,7 @@ def monitor():
                     'raw':38840027,'raw_target':38840027,'reservoir_count':24000000,'historical_union_population':TOTAL,
                     'screen':{'stage':'screen','batch':state['committed_batch'],'screened':screened,'hits':state['exclusions']},'training_launched':False}
                 row['active_log']=state.get('active_log');row['audit_active_batch']=state.get('audit_active_batch')
+                if CORRECTION:row['result_namespace']=canonical(SCI);row['historical_result_reused']=False
                 if phase=='verify-protected':
                     with (PROD/'logs/production.log').open('rb') as f:
                         f.seek(max(0,f.seek(0,2)-65536));lines=f.read().splitlines()
@@ -423,13 +508,19 @@ def monitor():
                     row['audit_required_population']=min(stats['clean_pool'],20000000)
                     for process in workers:
                         row['audit_active_subcommand']=process['subcommand']
-                save(PROD/'reports/HEARTBEAT.json',row);save(ROOT/'reports/RECOVERY_HEARTBEAT.json',row)
+                save(PROD/'reports/HEARTBEAT.json',row);save((SCI if CORRECTION else ROOT)/'reports/RECOVERY_HEARTBEAT.json',row)
                 history.write(json.dumps(row)+'\n');history.flush();print(json.dumps(row),flush=True);last=time.monotonic()
                 if phase in ('failed','frozen_corpus_ready'):return
             time.sleep(1)
 
 def launch():
+    reject_historical_data2d()
     assert os.name=='nt'
+    import psutil
+    for proc in psutil.process_iter(['pid','cmdline']):
+        args=proc.info['cmdline'] or []
+        if any(str(a).endswith(Path(__file__).name) for a in args) and 'run' in args:
+            raise RuntimeError(f'A production owner is still alive: {proc.pid}')
     assert (PROD/'reports/OLD_OWNERS_STOPPED.json').exists() and (PROD/'reports/FROZEN_DIAGNOSTICS.json').exists()
     path=PROD/'LAUNCH.json'
     if path.exists():
@@ -449,24 +540,31 @@ def launch():
         'exclusions':current['exclusions'],'committed_batch':current['batch'],'required_population':TOTAL,'training_launched':False})
     save(PROD/'reports/PRODUCTION_DECISION.json',{'minimum_5x_gate_required':False,'user_authorized_resume':True,
         'frozen_diagnostic_commits':['5a3cf72','5e235c1'],'direction':'candidate_to_protected','threads':16,
-        'batch_size':SIZE,'required_screening_population':TOTAL,'start_at_batch':33,
+        'batch_size':SIZE,'required_screening_population':TOTAL,'start_at_batch':durable()['batch']+1,
         'external_reservoir_population':24000000,'historical_additions':85944,
         'decision_method':'single_search_complete_returned_relation_complement',
+        'query_dbtype':1,'search_type':1,'corrected_namespace':CORRECTION,
+        'production_max_seqs':53615 if CORRECTION else 1000,
+        'independent_audit_max_seqs':53615 if CORRECTION else 1000,
         'nearest_semantics':'exact strings override at 1.0; strict greater fident update in returned order',
         'final_independent_full_audit_retained':True,'audit_disagreement_action':'DATA2-D; stop and preserve evidence',
         'automatic_stages':['screen','verify-protected','final','certify','diversity','handoff'],'training_launched':False})
     flags=subprocess.DETACHED_PROCESS|subprocess.CREATE_NEW_PROCESS_GROUP
     with (PROD/'logs/production.log').open('ab') as log:
-        worker=subprocess.Popen([sys.executable,'-B',str(Path(__file__).resolve()),'run'],cwd=PROD,stdin=subprocess.DEVNULL,stdout=log,stderr=log,creationflags=flags)
+        worker=subprocess.Popen([sys.executable,'-B',str(Path(__file__).resolve()),'run']+correction_args(),cwd=PROD,stdin=subprocess.DEVNULL,stdout=log,stderr=log,creationflags=flags)
     with (PROD/'logs/heartbeat.log').open('ab') as log:
         observer=subprocess.Popen(['C:/Windows/System32/wsl.exe','--distribution','Ubuntu','--cd',canonical(PROD),'--exec',
-            '/usr/bin/python3','-B',canonical(Path(__file__).resolve()),'monitor'],cwd=PROD,stdin=subprocess.DEVNULL,stdout=log,stderr=log,creationflags=flags)
+            '/usr/bin/python3','-B',canonical(Path(__file__).resolve()),'monitor']+correction_args(),cwd=PROD,stdin=subprocess.DEVNULL,stdout=log,stderr=log,creationflags=flags)
     record={'worker_pid':worker.pid,'observer_controller_pid':observer.pid,'starting_boundary':durable(),'training_launched':False}
     save(path,record);print(json.dumps(record),flush=True)
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('action',choices=('seal','quiesce','validate','run','monitor','launch','reference-validation','certify-only'))
-    action=parser.parse_args().action;setup()
+    parser.add_argument('--correction-root')
+    arguments=parser.parse_args();action=arguments.action
+    if arguments.correction_root:configure_correction(arguments.correction_root)
+    if action in ('launch','run','certify-only'):reject_historical_data2d()
+    setup()
     try:
         {'seal':seal,'quiesce':quiesce,'validate':validate_parser,'run':run,'monitor':monitor,'launch':launch,'reference-validation':reference_validation,'certify-only':certify_only}[action]()
     except BaseException as exc:
