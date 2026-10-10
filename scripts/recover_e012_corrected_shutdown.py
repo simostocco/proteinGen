@@ -30,6 +30,14 @@ def read(path):
 def ro(path):
     return sqlite3.connect(Path(path).as_uri() + '?mode=ro', uri=True)
 
+def regular(path):
+    # WSL symlinks use a reparse tag Windows pathlib does not recognize.
+    # lstat can inspect that tag without following an inaccessible target.
+    st = path.lstat()
+    if getattr(st, 'st_file_attributes', 0) & 0x400:
+        return False
+    return path.is_file() and not path.is_symlink()
+
 def audit():
     protocol = read(ROOT / 'CORRECTION_PROTOCOL.json')
     assert protocol['validated'] and protocol['failure_action'] == 'DATA2-D; stop'
@@ -123,7 +131,7 @@ def audit():
     historical = BASE / 'v2c_optimization'
     for folder in [historical / 'data2d_batch200_diagnostic', historical / 'scientific/manifests', historical / 'screen_production/reports']:
         for path in folder.rglob('*'):
-            if path.is_file() and not path.is_symlink():
+            if regular(path):
                 pin(path)
     print('All read-only recovery checks passed', flush=True)
     return dict(timestamp_unix=time.time(), last_durable_batch=36, first_uncommitted_batch=37,
@@ -140,7 +148,7 @@ def prepare():
     for filename in ['production/STATE.json', 'production/LAUNCH.json', 'production/reports/HEARTBEAT.json', 'manifests/verification_progress.sqlite']:
         shutil.copy2(ROOT / filename, destination / Path(filename).name)
     active = ROOT / 'mmseqs/verify_protected/batch-0037'
-    evidence['preserved_batch37_files'] = {str(p.relative_to(active)): sha(p) for p in active.rglob('*') if p.is_file() and not p.is_symlink()}
+    evidence['preserved_batch37_files'] = {str(p.relative_to(active)): sha(p) for p in active.rglob('*') if regular(p)}
     # Same-volume rename preserves all uncommitted evidence. The unchanged
     # legacy transaction recovery recreates batch 37 from the pinned population.
     active.rename(destination / 'uncommitted_batch-0037')
