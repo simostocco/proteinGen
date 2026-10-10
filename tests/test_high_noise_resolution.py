@@ -135,3 +135,14 @@ def test_generated_path_requires_d():
     assert str(d_path("/mnt/d/Simone/proteinGen/e014_artifacts/e014/high_noise_75pct_v1")).startswith("/mnt/d/")
     with pytest.raises(ValueError):
         d_path("/tmp/high_noise_75pct_v1")
+
+
+def test_oracle_sensitivity_control_never_loads_or_calls_a_model():
+    source = Path("scripts/calibrate_e014_high_noise_resolution.py").read_text()
+    tree = ast.parse(source)
+    calls = [ast.unparse(n.func) for n in ast.walk(tree) if isinstance(n, ast.Call)]
+    assert "torch.load" not in calls
+    assert "model" not in calls
+    assert "E014CapacityDenoiser" not in source
+    assert "diffusion.deterministic_reverse_step" in calls
+    assert "oracle_targets_never_enter_model_inference_or_rollout=True" in source
