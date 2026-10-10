@@ -56,3 +56,61 @@ def test_runtime_storage_and_allocator():
 def test_invalid_resume_cursor_refused():
     with pytest.raises(AssertionError):
         expected_exposures([64, 500], 2, 99, [4, 2, 1, 1, 1], 14014)
+
+
+def test_supervisor_orders_epoch_diagnostics_and_stops(tmp_path, monkeypatch):
+    import supervise_e007_fullscale as supervisor
+
+    monkeypatch.setattr(supervisor, "RUN", tmp_path)
+    (tmp_path / "REPORT.md").write_text("Test workflow\n")
+    commands = []
+
+    class Process:
+        pid = 12345
+
+        def __init__(self, command, **_kwargs):
+            self.command = command
+            commands.append(command)
+
+        def wait(self):
+            if "scripts/run_e007_fullscale.py" in self.command:
+                phase = (
+                    "epoch2_training_complete_awaiting_comparison"
+                    if "--resume" in self.command
+                    else "epoch1_complete_awaiting_diagnostics"
+                )
+                (tmp_path / "STATE.json").write_text(json.dumps(dict(phase=phase)))
+            return 0
+
+    monkeypatch.setattr(supervisor.subprocess, "Popen", Process)
+    supervisor.workflow(False)
+    assert [c[2] for c in commands] == [
+        "scripts/run_e007_fullscale.py",
+        "scripts/evaluate_e007_fullscale.py",
+        "scripts/run_e007_fullscale.py",
+        "scripts/evaluate_e007_fullscale.py",
+    ]
+    assert commands[1][-1] == "1" and commands[3][-1] == "2"
+    assert "--resume" in commands[2]
+    assert json.loads((tmp_path / "STATE.json").read_text())["phase"] == "complete_epoch2_evaluated"
+
+
+def test_supervisor_does_not_retry_failed_training(tmp_path, monkeypatch):
+    import supervise_e007_fullscale as supervisor
+
+    monkeypatch.setattr(supervisor, "RUN", tmp_path)
+    commands = []
+
+    class Process:
+        pid = 12345
+
+        def __init__(self, command, **_kwargs):
+            commands.append(command)
+
+        def wait(self):
+            return 1
+
+    monkeypatch.setattr(supervisor.subprocess, "Popen", Process)
+    supervisor.workflow(False)
+    assert len(commands) == 1
+    assert json.loads((tmp_path / "SUPERVISOR.json").read_text())["phase"] == "stopped_child_error"

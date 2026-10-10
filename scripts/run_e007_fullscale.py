@@ -275,6 +275,22 @@ def main():
         if epoch >= 2:
             status("epoch2_training_complete_awaiting_comparison")
             return
+        if not (RUN / "EPOCH_1_DIAGNOSTICS_COMPLETE.json").exists():
+            assert np.all(exposures == 1)
+            atomic_json(
+                RUN / "EXPOSURE_EPOCH_1.json",
+                dict(
+                    epoch=1,
+                    identities=len(train),
+                    total_exposures=int(exposures.sum()),
+                    duplicates=0,
+                    missing=0,
+                    updates=updates,
+                    exposure_hash=canonical_hash(exposures.tolist()),
+                ),
+            )
+            status("epoch1_complete_awaiting_diagnostics")
+            return
         epoch += 1
         position, epoch_sum, epoch_count = 0, 0.0, 0
     logdir = RUN / "logs"

@@ -92,6 +92,8 @@ def workflow(resume):
     while True:
         state = json.loads((RUN / "STATE.json").read_text()) if (RUN / "STATE.json").exists() else {}
         phase = state.get("phase", "new")
+        if phase == "complete_epoch2_evaluated":
+            return
         if phase.startswith("paused_"):
             atomic_json(
                 RUN / "SUPERVISOR.json",
