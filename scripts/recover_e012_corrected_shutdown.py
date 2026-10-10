@@ -40,6 +40,11 @@ def regular(path):
     return path.is_file() and not path.is_symlink()
 
 def audit():
+    import psutil
+    for process in psutil.process_iter(['pid', 'name', 'cmdline']):
+        argv = process.info['cmdline'] or []
+        if any(str(arg).endswith('run_e012_v2c_screen_production.py') for arg in argv) and 'run' in argv:
+            raise RuntimeError(f'Refuse recovery while production owner {process.pid} is alive')
     protocol = read(ROOT / 'CORRECTION_PROTOCOL.json')
     assert protocol['validated'] and protocol['failure_action'] == 'DATA2-D; stop'
     for key, filename in [('driver_sha256', 'run_e012_v2c_screen_production.py'), ('pipeline_sha256', 'complete_e012_v2c_pipeline.py')]:
