@@ -1,0 +1,80 @@
+experiment: E015_integrated_multiscale_parity_selfconditioned_v1
+output_dir: /mnt/d/Simone/proteinGen/e015_artifacts/e015_integrated_multiscale_parity_selfconditioned_v1
+population_root: /mnt/d/Simone/proteinGen/e014_artifacts
+base_e014_commit: 053ec32dd256349a6ff8504a0f796167f5c1c727
+base_evidence_commit: 7e0ab0804deb06b8344d51659a7acb079dee3123
+seed: 15015
+coordinate_scale_angstrom: 12.22820347644835
+population_hash: d3f2ee345d0e4e9a27d0136aad1eca9dfe87821a3a82d90aa4c3194bd928a3f9
+development_hash: 3a36bccfee801b618674594762ed2e6e394220ca21db94260ccb5becf7328dcf
+prospective_hash: 373cb7c0b2f0f7b64fdd5d47d742cf7f07b8b0ddbc0da8683032375cd8dec25b
+gaussian_subset_hash: c3e94b415bd7a13269bbb7f3a26372764cbba33b91b16589c7f6906a563020a0
+normalization_artifact: /mnt/d/Simone/proteinGen/reports/experiments/E007_matrix_sequence_cogeneration/coordinate_normalization_v1/normalization.json
+normalization_sha256: 1be9ef05c82110861482eb46e61ef433045fa9678b9cdfffd921f0defebb03cd
+diffusion_steps: 500
+model:
+  scalar_channels: 384
+  vector_channels: 96
+  pseudoscalar_channels: 48
+  axial_channels: 48
+  fine_blocks: 8
+  medium_blocks: 4
+  coarse_blocks: 4
+  mlp_ratio: 2
+  k_current: 24
+  k_self: 16
+  activation_checkpointing: true
+  chiral_head: true
+  parity: true
+  multiscale: true
+  self_conditioning: true
+  gate_width: 1.0
+features:
+  snr_balancing: true
+  snr_weighting: true
+  geometry_losses: true
+  pcgrad: true
+  rollout_states: true
+  ema: true
+  global_scale_regularizer: false
+optimizer: {learning_rate: 0.0002, weight_decay: 0.01, gradient_clip: 1.0}
+ema_decay: 0.9999
+self_conditioning_probability: 0.5
+rollout_probability: 0.1
+rollout_warmup_exposures: 115066
+rollout_steps: [1, 2, 3]
+minimum_epochs: 2
+maximum_epochs: 4
+continuation_relative_improvement: 0.01
+checkpoint_fractions: [0.25, 0.5, 0.75, 1.0]
+rolling_checkpoint_seconds: 900
+loader_workers: 0
+cpu_threads: 2
+residue_budget: 4096
+alternative_residue_budget: 2048
+preflight:
+  precision: auto
+  repetitions: 3
+  max_reserved_fraction: 0.90
+  hard_reserved_fraction: 0.92
+  free_margin_bytes: 805306368
+  smoke_updates: [100, 1000]
+  maximum_microbatch: 256
+calibration:
+  per_stratum: 20
+  noise_grid: [0, 5, 20, 50, 100, 150, 200, 250, 300, 350, 400, 450, 490, 498]
+  gate_width_logsnr: 1.0
+  distance_correlation_threshold: 0.25
+  torsion_correlation_threshold: 0.15
+  chirality_sign_threshold: 0.60
+  gradient_examples_per_bin: 2
+  coefficient_cap: 100.0
+  relative_gradient_targets: {distance: 0.15, torsion: 0.10, chirality: 0.10, clash: 0.05}
+resources:
+  e012_original_reserve_bytes: 56883428966
+  peak_artifact_budget_bytes: 17179869184
+  e007_root: /mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1
+  e012_root: /mnt/d/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization/scientific_corrected_protein_v1
+noise_timesteps: [5, 50, 250, 400, 490]
+prospective_validation_authorized: false
+full_t0_sampling_authorized: false
