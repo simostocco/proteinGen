@@ -74,12 +74,17 @@ def graph(x, previous, k, k_self, dense=False):
         ],
         -1,
     )
-    return i, j, features, unit
+    sc_unit = (
+        torch.zeros_like(unit)
+        if previous is None
+        else (previous[j] - previous[i]) / prev_distance[:, None].clamp_min(1e-6)
+    )
+    return i, j, features, torch.stack([unit, sc_unit], 1)
 
 
-def rope(values):
+def rope(values, positions=None):
     n, width = values.shape
-    angle = torch.arange(n, device=values.device).float()[:, None] / (
+    angle = (torch.arange(n, device=values.device) if positions is None else positions).float()[:, None] / (
         10000 ** (torch.arange(0, width, 2, device=values.device).float() / width)
     )
     pairs = values.float().reshape(n, -1, 2)
@@ -118,13 +123,24 @@ class TypedBlock(nn.Module):
             self.key = nn.Linear(cs, 64, bias=False)
             self.attention_bias = nn.Linear(39, 1)
 
-    def forward(self, h, v, p, a, i, j, features, unit, time, gate):
+    def forward(self, h, v, p, a, i, j, features, unit, time, gate, positions=None):
         cs, cv, cp, ca = self.widths
         # Normalizations are even, scalar-valued and computed in FP32.
         vn = v.float().square().sum(-1).add(1e-8).sqrt()
         an = a.float().square().sum(-1).add(1e-8).sqrt()
         hv = self.norm(h)
-        inputs = torch.cat([hv[i], hv[j], features, time.expand(len(i), -1), vn[j], an[j], p[j].float().square()], -1)
+        inputs = torch.cat(
+            [
+                hv[i],
+                hv[j],
+                features,
+                (time.expand(len(i), -1) if time.ndim == 1 else time[j]),
+                vn[j],
+                an[j],
+                p[j].float().square(),
+            ],
+            -1,
+        )
         weights = self.message(inputs)
         hs, vs, vr, ps, av, ar = weights.split((cs, cv, cv, cp, ca, ca), -1)
         vv = vector_linear(self.vmix, v)
@@ -135,14 +151,18 @@ class TypedBlock(nn.Module):
         pv = self.p_to_a(p)
         vi = vector_linear(self.v_to_a, v)
         parity_gate = gate[i, None]
-        vm = vs[..., None].tanh() * vv[j] + vr[..., None].tanh() * unit[:, None]
+        vm = (
+            vs[..., None].tanh() * vv[j]
+            + vr[..., None].tanh() * unit[:, :1]
+            + 0.5 * vs[..., None].tanh() * unit[:, 1:2]
+        )
         vm = vm + parity_gate[..., None] * pa[j, :, None] * va[j]
         am = av[..., None].tanh() * aa[j] + ar[..., None].tanh() * torch.linalg.cross(vi[i], vi[j])
-        am = am + parity_gate[..., None] * pv[j, :, None] * unit[:, None]
+        am = am + parity_gate[..., None] * pv[j, :, None] * unit[:, :1]
         pseudoscalar = (vector_linear(self.v_to_p, v)[i] * vector_linear(self.a_to_p, a)[j]).sum(-1)
         pm = ps.tanh() * pp[j] + parity_gate * pseudoscalar
         if self.attention:
-            query, key = rope(self.query(hv)), rope(self.key(hv))
+            query, key = rope(self.query(hv), positions), rope(self.key(hv), positions)
             logits = (query[i] * key[j]).sum(-1) / 8 + self.attention_bias(features)[:, 0].float()
             maxes = logits.new_full((len(h),), -torch.inf).scatter_reduce(
                 0, i, logits, reduce="amax", include_self=True
@@ -277,7 +297,7 @@ class E015MultiscaleParityDenoiser(nn.Module):
             state = State(*outputs)
         return state
 
-    def trunk_single(self, x, t, previous=None):
+    def prepare_single(self, x, t, previous=None):
         x = x.float() - x.float().mean(0)
         if previous is not None:
             previous = previous.float() - previous.float().mean(0)
@@ -303,7 +323,13 @@ class E015MultiscaleParityDenoiser(nn.Module):
         p = self.pinit(features[:, [25, 27]])
         gate = self.gate(t, reliability) if self.parity_enabled else torch.zeros_like(reliability)
         a, p = a * gate[:, None, None], p * gate[:, None]
-        state = self.run_blocks(State(h, v, p, a), self.fine, x, previous, time, gate)
+        return State(h, v, p, a), frame, reliability, gate, time
+
+    def trunk_single(self, x, t, previous=None):
+        x = x.float() - x.float().mean(0)
+        previous = None if previous is None else previous.float() - previous.float().mean(0)
+        state, frame, reliability, gate, time = self.prepare_single(x, t, previous)
+        state = self.run_blocks(state, self.fine, x, previous, time, gate)
         shapes = [len(x)]
         if self.multiscale_enabled:
             mx, mp = pool_mean(x), None if previous is None else pool_mean(previous)
@@ -319,6 +345,9 @@ class E015MultiscaleParityDenoiser(nn.Module):
 
     def single(self, x, t, previous=None):
         state, frame, reliability, gate, shapes = self.trunk_single(x, t, previous)
+        return self.output_head(state, frame, reliability, gate, shapes)
+
+    def output_head(self, state, frame, reliability, gate, shapes):
         h, v, p, a = state.h, state.v, state.p, state.a
         polar = (self.polar_v(h)[..., None] * v).sum(1) / math.sqrt(self.widths[1])
         polar = polar + (self.polar_p(p)[..., None] * a).sum(1) / math.sqrt(self.widths[3])
@@ -346,23 +375,79 @@ class E015MultiscaleParityDenoiser(nn.Module):
     def forward(self, noisy_coordinates, timesteps, lengths, residue_mask, x0_prev=None, sc_available=None):
         return self.with_components(noisy_coordinates, timesteps, lengths, residue_mask, x0_prev, sc_available)[0]
 
+    def packed_blocks(self, states, blocks, coords, previous, times, gates, dense=False):
+        counts = [len(state.h) for state in states]
+        packed = State(*(torch.cat([getattr(state, name) for state in states]) for name in ("h", "v", "p", "a")))
+        graphs = []
+        offset = 0
+        for x, prev in zip(coords, previous, strict=True):
+            i, j, features, unit = graph(
+                x, prev, self.k_current if not dense else 0, self.k_self if prev is not None else 0, dense
+            )
+            graphs.append((i + offset, j + offset, features, unit))
+            offset += len(x)
+        i, j, features, unit = (torch.cat([g[z] for g in graphs]) for z in range(4))
+        time = torch.cat([t.expand(n, -1) for t, n in zip(times, counts, strict=True)])
+        gate = torch.cat(gates)
+        positions = torch.cat([torch.arange(n, device=i.device) for n in counts])
+        for block in blocks:
+            args = (packed.h, packed.v, packed.p, packed.a, i, j, features, unit, time, gate, positions)
+            outputs = (
+                checkpoint(block, *args, use_reentrant=False)
+                if self.training and self.activation_checkpointing and torch.is_grad_enabled()
+                else block(*args)
+            )
+            packed = State(*outputs)
+        parts = [value.split(counts) for value in (packed.h, packed.v, packed.p, packed.a)]
+        return [State(*(part[b] for part in parts)) for b in range(len(states))]
+
     def with_components(self, noisy_coordinates, timesteps, lengths, residue_mask, x0_prev=None, sc_available=None):
         if noisy_coordinates.shape[-1] != 3 or not torch.equal(lengths, residue_mask.sum(1)):
             raise ValueError("Invalid coordinate mask/length contract")
-        output = torch.zeros_like(noisy_coordinates, dtype=torch.float32)
-        components = []
+        coords, previous, states, frames, reliabilities, gates, times = [], [], [], [], [], [], []
         for b, n in enumerate(lengths.tolist()):
             if not torch.all(residue_mask[b, :n]) or torch.any(residue_mask[b, n:]):
                 raise ValueError("E015 requires contiguous prefix masks")
-            previous = None
+            x = noisy_coordinates[b, :n].float()
+            x = x - x.mean(0)
+            prev = None
             if (
                 self.self_conditioning_enabled
                 and x0_prev is not None
                 and sc_available is not None
                 and bool(sc_available[b])
             ):
-                previous = x0_prev[b, :n].detach()
-            value, component = self.single(noisy_coordinates[b, :n], timesteps[b], previous)
+                prev = x0_prev[b, :n].detach().float()
+                prev = prev - prev.mean(0)
+            state, frame, reliability, gate, time = self.prepare_single(x, timesteps[b], prev)
+            coords.append(x)
+            previous.append(prev)
+            states.append(state)
+            frames.append(frame)
+            reliabilities.append(reliability)
+            gates.append(gate)
+            times.append(time)
+        states = self.packed_blocks(states, self.fine, coords, previous, times, gates)
+        if self.multiscale_enabled:
+            medium_coords = [pool_mean(x) for x in coords]
+            medium_prev = [None if x is None else pool_mean(x) for x in previous]
+            medium_gate = [pool_mean(g) for g in gates]
+            medium = self.packed_blocks(
+                [pool_state(s) for s in states], self.medium, medium_coords, medium_prev, times, medium_gate
+            )
+            coarse_coords = [pool_mean(x) for x in medium_coords]
+            coarse_prev = [None if x is None else pool_mean(x) for x in medium_prev]
+            coarse_gate = [pool_mean(g) for g in medium_gate]
+            coarse = self.packed_blocks(
+                [pool_state(s) for s in medium], self.coarse, coarse_coords, coarse_prev, times, coarse_gate, True
+            )
+            medium = [self.up_medium(m, c) for m, c in zip(medium, coarse, strict=True)]
+            states = [self.up_fine(f, m) for f, m in zip(states, medium, strict=True)]
+        output = torch.zeros_like(noisy_coordinates, dtype=torch.float32)
+        components = []
+        for b, n in enumerate(lengths.tolist()):
+            shapes = [n, math.ceil(n / 4), math.ceil(n / 16)] if self.multiscale_enabled else [n]
+            value, component = self.output_head(states[b], frames[b], reliabilities[b], gates[b], shapes)
             output[b, :n] = value
             components.append(component)
         return center_coordinates(output, residue_mask), components
