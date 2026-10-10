@@ -147,3 +147,7 @@ The source-bound smoke stream is shared between100 and1000 updates. It starts fr
 Smokes require all8SNR bins, finite objectives/projection, nonzero polar/chiral/local gradient flow, observed EMA/induced updates, exact identity accounting and symmetry checks every100updates. Loss/gate/norm summaries weight proteins equally within their actual SNR bins. The1000 boundary evaluates only the existing frozen development panel; prospective holdout remains unopened. Production starts at0updates/0exposures and retains the frozen half-epoch induced-state warmup.
 
 The supervisor rejects stale source/config/precision certificates and duplicate GPU workers; no free-space or E012 reserve condition is used for waiting, admission or checkpoints. Real numerical or filesystem-write failures stop E015 and preserve available failure evidence.
+
+### Immutable certification replay attempts
+
+A source-triggered recertification encountered the already committed BF16 replay boundary and incorrectly entered precision fallback. The supervisor and only its E015 probe descendants were stopped. Certification now allocates an immutable contract/attempt-specific replay directory; old checkpoints and failure records remain intact. This is a certification bookkeeping correction, not a numerical failure or changed tolerance. All source-bound gates are rerun before production.

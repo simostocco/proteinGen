@@ -2,6 +2,7 @@
 
 import gc
 import json
+import time
 
 import e015_bootstrap
 import numpy as np
@@ -10,7 +11,13 @@ import torch
 from protein_distance_diffusion.evaluation.e014_evaluation import coordinate_batch
 from protein_distance_diffusion.evaluation.marginal_distribution_diagnostic import descriptor
 from protein_distance_diffusion.models.e015_multiscale_parity_denoiser import stable_knn
-from protein_distance_diffusion.training.e014_runtime import atomic_checkpoint, load_checkpoint, restore_rng, rng_state
+from protein_distance_diffusion.training.e014_runtime import (
+    atomic_checkpoint,
+    canonical_hash,
+    load_checkpoint,
+    restore_rng,
+    rng_state,
+)
 from protein_distance_diffusion.training.e015_engine import Engine
 from protein_distance_diffusion.training.e015_replay import replay_snapshot
 from protein_distance_diffusion.training.e015_runtime import GPULease, Runtime
@@ -131,7 +138,8 @@ def candidate(runtime, calibration, precision):
         position=dict(update=1, epoch=0, exposures=1, cursor=1),
         exposures=[1],
     )
-    directory = runtime.path(f"continuation_v2/cuda_replay_{precision}/checkpoints")
+    attempt = f"{canonical_hash(contract)[:12]}_{time.time_ns()}"
+    directory = runtime.path(f"continuation_v2/cuda_replay_{precision}/{attempt}/checkpoints")
     directory.mkdir(parents=True, exist_ok=True)
     cp = atomic_checkpoint(directory, "resume_state", payload)
     expected = step()
@@ -144,7 +152,9 @@ def candidate(runtime, calibration, precision):
     restore_rng(saved["rng"])
     actual = step()
     if expected != actual:
-        runtime.write(f"continuation_v2/replay_failure_{precision}.json", dict(expected=expected, actual=actual))
+        runtime.write(
+            f"continuation_v2/replay_failure_{precision}_{attempt}.json", dict(expected=expected, actual=actual)
+        )
         raise RuntimeError("Strict CUDA scientific replay is not bitwise exact")
     # Independent descriptor replay retains the historical unchanged5e-6 rule.
     row = next(r for r in runtime.train if r["length"] == 64)
@@ -227,7 +237,7 @@ def main():
             return
         except Exception as exc:
             failures.append(dict(precision=precision, error=str(exc)))
-            runtime.write(f"continuation_v2/certification_failure_{precision}.json", failures[-1])
+            runtime.write(f"continuation_v2/certification_failure_{precision}_{time.time_ns()}.json", failures[-1])
             gc.collect()
             torch.cuda.empty_cache()
     raise RuntimeError(f"All selected precision candidates failed closed: {failures}")
