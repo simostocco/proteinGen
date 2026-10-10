@@ -151,3 +151,21 @@ The supervisor rejects stale source/config/precision certificates and duplicate 
 ### Immutable certification replay attempts
 
 A source-triggered recertification encountered the already committed BF16 replay boundary and incorrectly entered precision fallback. The supervisor and only its E015 probe descendants were stopped. Certification now allocates an immutable contract/attempt-specific replay directory; old checkpoints and failure records remain intact. This is a certification bookkeeping correction, not a numerical failure or changed tolerance. All source-bound gates are rerun before production.
+
+### Certified precision, renewed batches and first training smoke
+
+The renewed source-bound certificate selected BF16, with all FP32 geometry islands enabled. The original flawed fixture first exceeds1% error at `initial.h`. With that rounded fixture, frozen graphs still give5.8497% versus5.8502% dynamic; graph mismatch is secondary. Under true FP32 transforms all edge sets/provenance match exactly, and no layer exceeds1%.
+
+| Length bucket | Batch | Peak allocated GiB | Peak reserved GiB | Estimated total device used GiB | Free MiB | Worst-path residues/s |
+|---|---:|---:|---:|---:|---:|---:|
+| 20-64 | 68 | 5.370 | 5.615 | 7.040 | 941.5 | 333.7 |
+| 65-128 | 30 | 5.422 | 5.592 | 7.009 | 973.4 | 440.6 |
+| 129-256 | 14 | 5.392 | 5.580 | 6.948 | 1035.3 | 513.1 |
+| 257-384 | 9 | 5.299 | 5.531 | 6.909 | 1075.9 | 546.3 |
+| 385-500 | 7 | 5.419 | 5.598 | 6.959 | 1024.9 | 571.3 |
+
+All selected batches passed three repeated complete-path probes and improved measured throughput over the adjacent smaller batch. Estimated total device memory includes CUDA/display overhead; PyTorch reserved is reported separately. Target residue budget remains4096, with whole physical microbatches accumulated until reached; actual protein/residue counts are logged per update.
+
+The100-update real-TRAIN smoke passed at2938 distinct exposures. Self-conditioning fraction0.530; induced-state fraction0.085; PCGrad conflict/projection fraction0.260. Polar/chiral/local gradients were nonzero. Update100 raw proper-rotation error0.00132438834. A new process reproduced update101 bitwise, including outputs, individual losses, gradients, parameters, EMA, AdamW/scaler and next RNG state. The1000-update continuation is still pending; production has not launched.
+
+Supervisor508655 owns the continuation. Previous supervisor506528 and only its E015 descendants were terminated for replay-path bookkeeping correction; E007/E014/E012 were not signalled. Historical first-launch evidence remains preserved.
