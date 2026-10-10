@@ -16,7 +16,7 @@ def rotation():
     return q
 
 
-@pytest.mark.parametrize("kind", ["random", "symmetric", "equal", "near_tied"])
+@pytest.mark.parametrize("kind", ["random", "symmetric", "equal", "near_tied", "repeated"])
 def test_stable_knn_proper_rotations_translations_and_ties(kind):
     torch.manual_seed(12)
     if kind == "random":
@@ -25,6 +25,8 @@ def test_stable_knn_proper_rotations_translations_and_ties(kind):
         x = torch.tensor([[1.0, 0, 0], [-1.0, 0, 0], [0, 1.0, 0], [0, -1.0, 0], [0, 0, 1.0], [0, 0, -1.0]])
     else:
         x = torch.tensor([[0.0, 0, 0], [1.0, 0, 0], [0, 1.0, 0], [-1.0, 0, 0], [0, -1.0, 0]])
+        if kind == "repeated":
+            x[1] = x[0]
         if kind == "near_tied":
             x[1, 0] += 1e-7
     q = rotation()

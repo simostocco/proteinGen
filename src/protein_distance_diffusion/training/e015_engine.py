@@ -1,6 +1,7 @@
 """Integrated microbatch engine and update-level PCGrad accumulator."""
 
 import contextlib
+import time
 
 import torch
 
@@ -24,10 +25,26 @@ class Engine:
         self.optimizer = torch.optim.AdamW(
             self.model.parameters(), lr=cfg["optimizer"]["learning_rate"], weight_decay=cfg["optimizer"]["weight_decay"]
         )
-        self.precision = precision or (
-            "bf16" if device == "cuda" and torch.cuda.is_bf16_supported() else "fp16" if device == "cuda" else "fp32"
+        requested = precision or cfg.get("preflight", {}).get("precision", "auto")
+        if device != "cuda" and precision is None:
+            requested = "fp32"
+        self.precision = (
+            requested
+            if requested != "auto"
+            else (
+                "bf16"
+                if device == "cuda" and torch.cuda.is_bf16_supported()
+                else "fp16"
+                if device == "cuda"
+                else "fp32"
+            )
         )
+        if self.precision not in ("fp32", "bf16", "fp16"):
+            raise ValueError("Unsupported E015 precision")
         self.scaler = torch.amp.GradScaler("cuda", enabled=self.precision == "fp16")
+        self.capture_replay = False
+        self.last_microbatch_timing = {}
+        self.last_finish_timing = {}
         self.sampler = SNRBinSampler(cfg["seed"])
         self.sc_rng = torch.Generator().manual_seed(cfg["seed"] + 1)
         self.rollout_rng = torch.Generator().manual_seed(cfg["seed"] + 2)
@@ -44,6 +61,7 @@ class Engine:
 
     def begin(self):
         self.optimizer.zero_grad(set_to_none=True)
+        self.replay_microbatches = []
         self.gv = [None for _ in self.model.parameters()]
         self.gs = [None for _ in self.model.parameters()]
 
@@ -59,6 +77,7 @@ class Engine:
         force_rollout_steps=None,
         force_sc_context=None,
     ):
+        started = time.perf_counter()
         times, bins = self.sampler.sample(
             len(x), self.device, self.cfg["features"].get("snr_balancing", True), shared_bin=True
         )
@@ -120,6 +139,9 @@ class Engine:
             sl = sl + self.cfg["global_scale_coefficient"] * global_scale_regularizer(xhat, x, mask)
         if not torch.isfinite(vl) or not torch.isfinite(sl):
             raise FloatingPointError("Nonfinite E015 objective")
+        if self.device == "cuda":
+            torch.cuda.synchronize()
+        forward_finished = time.perf_counter()
         params = tuple(self.model.parameters())
         scale = self.scaler.get_scale()
         gv = torch.autograd.grad(self.scaler.scale(vl), params, retain_graph=True, allow_unused=True)
@@ -137,12 +159,44 @@ class Engine:
                     destination[i] = g
                 else:
                     destination[i].add_(g)
+        named = tuple(self.model.named_parameters())
+        branch_gradient_norms = {}
+        for branch, prefixes in (
+            ("chiral", ("chiral_a.", "chiral_p.")),
+            ("local", ("local.",)),
+            ("polar", ("polar_v.", "polar_p.")),
+        ):
+            squared = sum(
+                (v.float() / scale).square().sum() + (s.float() / scale).square().sum()
+                for (name, _), v, s in zip(named, gv, gs, strict=True)
+                if name.startswith(prefixes) and v is not None and s is not None
+            )
+            branch_gradient_norms[branch] = float(squared.sqrt()) if isinstance(squared, torch.Tensor) else 0.0
+        if self.capture_replay:
+            from protein_distance_diffusion.training.e015_replay import fingerprint
+
+            self.replay_microbatches.append(
+                dict(
+                    output=fingerprint(prediction),
+                    components=fingerprint(losses),
+                    gv=fingerprint(gv),
+                    gs=fingerprint(gs),
+                    inputs=fingerprint((xt, target, times, previous, available)),
+                )
+            )
+        if self.device == "cuda":
+            torch.cuda.synchronize()
+        self.last_microbatch_timing = dict(
+            forward_seconds=forward_finished - started, backward_seconds=time.perf_counter() - forward_finished
+        )
         self.actual_t_hist += torch.bincount(times.detach().cpu(), minlength=500)
         self.total_sc += int(do_sc)
         self.total_rollout += int(do_rollout)
         self.total_batches += 1
         telemetry = dict(
             v_loss=float(vl.detach()),
+            total_loss=float((vl + sl).detach()),
+            branch_gradient_norms=branch_gradient_norms,
             struct_loss=float(sl.detach()),
             self_conditioned=do_sc,
             rollout=do_rollout,
@@ -153,6 +207,34 @@ class Engine:
             timesteps=times.tolist(),
             state_family="induced" if do_rollout else "forward",
             geometry={name: float(value.detach().mean()) for name, value in losses.items()},
+            protein_metrics=[
+                dict(
+                    snr_bin=int(bins[b]),
+                    v_loss=float(
+                        (
+                            (
+                                (prediction[b].detach().float() - target[b].detach().float()).square()
+                                * mask[b, :, None]
+                            ).sum()
+                            / (3 * mask[b].sum())
+                        )
+                        * weights[b]
+                    ),
+                    struct_loss=float(
+                        sum(
+                            losses[name][b].detach() * gates[name][b] * self.calibration["coefficients"][name]
+                            for name in ("distance", "torsion", "chirality", "clash")
+                        )
+                    ),
+                    **{name: float(value[b].detach()) for name, value in losses.items()},
+                    gates={name: float(value[b]) for name, value in gates.items()},
+                    gate=float(components[b]["gate"].detach().mean()),
+                    polar_norm=float(components[b]["global_v"].detach().norm()),
+                    chiral_norm=float(components[b]["chiral_effective"].detach().norm()),
+                    local_norm=float(components[b]["local_effective"].detach().norm()),
+                )
+                for b in range(len(x))
+            ],
             branch_by_timestep=[
                 dict(
                     timestep=int(times[b]),
@@ -175,6 +257,7 @@ class Engine:
         return telemetry
 
     def finish(self):
+        started = time.perf_counter()
         if torch.distributed.is_initialized() and torch.distributed.get_world_size() > 1:
             raise RuntimeError(
                 "Distributed PCGrad reduction/exposure contract not certified; refuse rank-local projection"
@@ -184,6 +267,13 @@ class Engine:
         else:
             gradients = [s if v is None else v if s is None else v + s for v, s in zip(self.gv, self.gs, strict=True)]
             telemetry = dict(conflict=False, disabled_by_config=True)
+        if self.device == "cuda":
+            torch.cuda.synchronize()
+        projected = time.perf_counter()
+        if self.capture_replay:
+            from protein_distance_diffusion.training.e015_replay import fingerprint
+
+            self.replay_combined_gradient = fingerprint(gradients)
         scale = self.scaler.get_scale()
         for p, g in zip(self.model.parameters(), gradients, strict=True):
             if g is not None:
@@ -192,6 +282,8 @@ class Engine:
         norm = torch.nn.utils.clip_grad_norm_(
             self.model.parameters(), self.cfg["optimizer"]["gradient_clip"], error_if_nonfinite=True
         )
+        if self.capture_replay:
+            self.replay_clipped_gradient = fingerprint([p.grad for p in self.model.parameters()])
         before = [p.detach().clone() for p in self.model.parameters()]
         self.scaler.step(self.optimizer)
         self.scaler.update()
@@ -207,6 +299,11 @@ class Engine:
             update_ema(self.ema, self.model, self.cfg["ema_decay"])
         else:
             self.ema.load_state_dict(self.model.state_dict())
+        if self.device == "cuda":
+            torch.cuda.synchronize()
+        self.last_finish_timing = dict(
+            pcgrad_seconds=projected - started, optimizer_seconds=time.perf_counter() - projected
+        )
         self.gv = self.gs = None
         telemetry["combined_preclip_norm"] = float(norm)
         self.optimizer.zero_grad(set_to_none=True)

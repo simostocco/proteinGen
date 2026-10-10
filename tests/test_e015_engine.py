@@ -66,3 +66,18 @@ def test_integrated_step_and_exact_resume():
         assert torch.equal(a, b)
     for a, b in zip(engine.ema.parameters(), resumed.ema.parameters(), strict=True):
         assert torch.equal(a, b)
+
+
+def test_self_conditioned_autocast_preserves_chiral_weight_gradients():
+    engine = small_engine()
+    engine.precision = "bf16"
+    engine.sampler.sample = lambda batch, device, *args, **kwargs: (
+        torch.full((batch,), 5, device=device),
+        torch.full((batch,), 7, device=device),
+    )
+    mask = torch.ones(1, 12, dtype=torch.bool)
+    x = center_coordinates(torch.randn(1, 12, 3).cumsum(1), mask)
+    engine.begin()
+    result = engine.microbatch(x, mask.sum(1), mask, 0, 1.0, force_sc=True, force_rollout=False)
+    assert result["branch_gradient_norms"]["chiral"] > 0
+    assert result["branch_gradient_norms"]["local"] > 0
