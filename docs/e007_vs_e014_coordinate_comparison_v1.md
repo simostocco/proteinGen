@@ -53,6 +53,14 @@ Gaussian noise toward the noisy-protein marginal within the bounded prefixes;
 no population/length-stratum scale collapse was observed through t=350. Direct
 X0 estimator collapse is recorded separately and is not rollout-state collapse.
 
+At N=500, the fresh disposable-copy backward probe used 5.12 GiB peak allocated
+memory for E007 versus 1.08 GiB for E014. Forward-plus-backward wall medians were
+259 ms and 224 ms; forward-only medians were 82.5 ms and 86.6 ms. Results at
+N=64/128/256/500 are retained in the report. E014 has a clear long-sequence memory
+advantage and 32.53% fewer parameters. Latency varies by length and is subject to
+host contention; it does not establish a general speedup. Matched-exposure
+training curves are unavailable, so learning speed per exposure is unidentified.
+
 ## Limits and next experiment
 
 A matched E007 control remains necessary for architecture attribution. Its
@@ -70,6 +78,9 @@ The archived E014 descriptor replay envelope (~8.96e−6) exceeds its unchanged
 5e−6 tolerance. That test concerns the epoch-1 50% checkpoint, not a new epoch-2
 certification. E007 replay envelopes are reported separately. Scientific
 uncertainty and exact replay certification remain distinct.
+Both E007 checkpoints had zero measured coordinate/descriptor spread across ten
+current repetitions at the frozen 6nof_A/t=440 prefix. This certifies repeatability
+within that test, not exact historical replay against an unavailable old prefix.
 
 ## Durable evidence
 

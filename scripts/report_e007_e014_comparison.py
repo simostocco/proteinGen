@@ -321,12 +321,12 @@ def report():
         "",
         "## Statistical design",
         "",
-        "Frozen 500 validation identities,100 each in 20–64/65–128/129–256/257–384/385–500; panel hash 3a36bccfee801b618674594762ed2e6e394220ca21db94260ccb5becf7328dcf. Frozen Gaussian subset 100/20 per stratum, hash c3e94b415bd7a13269bbb7f3a26372764cbba33b91b16589c7f6906a563020a0. Noise namespaces, schedule, normalization, masks and Gaussian initial states are identical. Model-free paired no-op values and Gaussian held-state/reference descriptors are checked across all comparators.",
+        "Frozen 500 validation identities, 100 each in 20–64/65–128/129–256/257–384/385–500; panel hash 3a36bccfee801b618674594762ed2e6e394220ca21db94260ccb5becf7328dcf. Frozen Gaussian subset 100/20 per stratum, hash c3e94b415bd7a13269bbb7f3a26372764cbba33b91b16589c7f6906a563020a0. Noise namespaces, schedule, normalization, masks and Gaussian initial states are identical. Model-free paired no-op values and Gaussian held-state/reference descriptors are checked across all comparators.",
         "",
         "Primary family has six predeclared statistics. Scalar metrics average timesteps within protein, then weight proteins equally; inversion primary is mean protein-level fraction, with pooled counts separately. Paired length-stratified bootstrap uses 5,000 draws and 95% intervals, plus Bonferroni 99.1667% intervals across six primary tests. Secondary scalar/distribution summaries use 500 draws and are descriptive. Distribution preprocessing/kernel/projections are reference-only and fixed during bootstrap; intervals are conditional on this panel and fit. Paired indices do not turn population distance into coordinate-paired distances.",
         "",
         mdtable(
-            ["primary statistic", "E007 10k", "E014epoch 2", "E014−E007", "95% paired CI", "99.1667% familywise CI"],
+            ["primary statistic", "E007 10k", "E014 epoch 2", "E014−E007", "95% paired CI", "99.1667% familywise CI"],
             [
                 [r["metric"], r["e007"], r["e014"], r["difference"], r["ci95"], r["ci_familywise"]]
                 for r in data["primary"]
@@ -461,7 +461,7 @@ def report():
                 "ref-ref floor",
                 "no-op/ref",
                 "E007 10k/ref",
-                "E014epoch 2/ref",
+                "E014 epoch 2/ref",
                 "E014−E007",
                 "95% paired CI",
                 "E007−no-op",
@@ -525,7 +525,7 @@ def report():
         ),
         "",
         mdtable(
-            ["endpoint", "metric", "E007 10k", "E014epoch 2", "E014−E007", "95% paired CI"],
+            ["endpoint", "metric", "E007 10k", "E014 epoch 2", "E014−E007", "95% paired CI"],
             [
                 [r["timestep"], r["metric"], r["e007"], r["e014"], r["difference"], r["ci95"]]
                 for r in data["distribution_comparisons"]
