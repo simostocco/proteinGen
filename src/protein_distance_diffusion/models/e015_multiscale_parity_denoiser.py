@@ -6,12 +6,18 @@ enter inference. Cartesian components never enter scalar MLPs.
 
 import math
 from dataclasses import dataclass
+from functools import wraps
 
 import torch
 from torch import nn
 from torch.utils.checkpoint import checkpoint
 
-from protein_distance_diffusion.models.e013_unconditional_equivariant_denoiser import local_geometry, radial_basis
+from protein_distance_diffusion.models.e013_unconditional_equivariant_denoiser import (
+    local_geometry as historical_local_geometry,
+)
+from protein_distance_diffusion.models.e013_unconditional_equivariant_denoiser import (
+    radial_basis,
+)
 from protein_distance_diffusion.training.coordinate_diffusion import CoordinateVPDiffusion, center_coordinates
 
 
@@ -23,11 +29,47 @@ class State:
     a: torch.Tensor
 
 
+def fp32_geometry(function):
+    @wraps(function)
+    def guarded(x, *args, **kwargs):
+        with torch.autocast(x.device.type, enabled=False):
+            return function(x.float(), *args, **kwargs)
+
+    return guarded
+
+
+@fp32_geometry
+def local_geometry(x):
+    return historical_local_geometry(x)
+
+
+def stable_knn(x, k):
+    """FP64 direct distances; boundary ties use residue-index order.
+
+    A numerical tie is within 32 FP32 ulps of the boundary squared distance.
+    Only that boundary cluster is tied; ordinary distance order is unchanged.
+    Coordinates entering this function are FP32, never autocast-quantized.
+    """
+    with torch.autocast(x.device.type, enabled=False), torch.no_grad():
+        delta = x.double()[:, None] - x.double()[None]
+        squared = delta.square().sum(-1)
+        squared.fill_diagonal_(float("inf"))
+        k = min(k, len(x) - 1)
+        if k <= 0:
+            return torch.empty((len(x), 0), device=x.device, dtype=torch.long)
+        boundary = squared.sort(stable=True).values[:, k - 1]
+        tolerance = 32 * torch.finfo(torch.float32).eps * boundary.clamp_min(1)
+        tied = (squared - boundary[:, None]).abs() <= tolerance[:, None]
+        keys = torch.where(tied, boundary[:, None], squared)
+        return torch.argsort(keys, stable=True)[:, :k]
+
+
 def vector_linear(layer, vector):
     return layer(vector.transpose(-1, -2)).transpose(-1, -2)
 
 
 def pool_mean(value, stride=4):
+    value = value.float()
     n = len(value)
     padding = (-n) % stride
     padded = torch.cat([value, value.new_zeros((padding, *value.shape[1:]))])
@@ -40,6 +82,7 @@ def pool_state(state):
     return State(*(pool_mean(value) for value in (state.h, state.v, state.p, state.a)))
 
 
+@fp32_geometry
 def graph(x, previous, k, k_self, dense=False):
     n = len(x)
     ids = torch.arange(n, device=x.device)
@@ -51,11 +94,10 @@ def graph(x, previous, k, k_self, dense=False):
         if dense:
             current = separation != 0
         elif k:
-            distances = torch.cdist(x.float(), x.float()).masked_fill(separation == 0, float("inf"))
-            current.scatter_(1, torch.argsort(distances, stable=True)[:, : min(k, n - 1)], True)
+            current.scatter_(1, stable_knn(x, k), True)
         if previous is not None and k_self:
-            distances = torch.cdist(previous.float(), previous.float()).masked_fill(separation == 0, float("inf"))
-            sc.scatter_(1, torch.argsort(distances, stable=True)[:, : min(k_self, n - 1)], True)
+            previous = previous.float()
+            sc.scatter_(1, stable_knn(previous, k_self), True)
     i, j = (polymer | current | sc).nonzero(as_tuple=True)
     relative = x[j] - x[i]
     distance = relative.norm(dim=-1)
@@ -143,13 +185,15 @@ class TypedBlock(nn.Module):
         )
         weights = self.message(inputs)
         hs, vs, vr, ps, av, ar = weights.split((cs, cv, cv, cp, ca, ca), -1)
-        vv = vector_linear(self.vmix, v)
-        aa = vector_linear(self.amix, a)
-        pp = self.pmix(p)
-        va = vector_linear(self.a_to_v, a)
-        pa = self.p_to_v(p)
-        pv = self.p_to_a(p)
-        vi = vector_linear(self.v_to_a, v)
+        # Learned GEMMs stay autocast; geometric algebra/reductions use FP32.
+        hs, vs, vr, ps, av, ar = (z.float() for z in (hs, vs, vr, ps, av, ar))
+        vv = vector_linear(self.vmix, v).float()
+        aa = vector_linear(self.amix, a).float()
+        pp = self.pmix(p).float()
+        va = vector_linear(self.a_to_v, a).float()
+        pa = self.p_to_v(p).float()
+        pv = self.p_to_a(p).float()
+        vi = vector_linear(self.v_to_a, v).float()
         parity_gate = gate[i, None]
         vm = (
             vs[..., None].tanh() * vv[j]
@@ -159,7 +203,7 @@ class TypedBlock(nn.Module):
         vm = vm + parity_gate[..., None] * pa[j, :, None] * va[j]
         am = av[..., None].tanh() * aa[j] + ar[..., None].tanh() * torch.linalg.cross(vi[i], vi[j])
         am = am + parity_gate[..., None] * pv[j, :, None] * unit[:, :1]
-        pseudoscalar = (vector_linear(self.v_to_p, v)[i] * vector_linear(self.a_to_p, a)[j]).sum(-1)
+        pseudoscalar = (vector_linear(self.v_to_p, v).float()[i] * vector_linear(self.a_to_p, a).float()[j]).sum(-1)
         pm = ps.tanh() * pp[j] + parity_gate * pseudoscalar
         if self.attention:
             query, key = rope(self.query(hv), positions), rope(self.key(hv), positions)
@@ -348,18 +392,21 @@ class E015MultiscaleParityDenoiser(nn.Module):
         return self.output_head(state, frame, reliability, gate, shapes)
 
     def output_head(self, state, frame, reliability, gate, shapes):
-        h, v, p, a = state.h, state.v, state.p, state.a
-        polar = (self.polar_v(h)[..., None] * v).sum(1) / math.sqrt(self.widths[1])
-        polar = polar + (self.polar_p(p)[..., None] * a).sum(1) / math.sqrt(self.widths[3])
-        chiral = (self.chiral_a(h)[..., None] * a).sum(1) / math.sqrt(self.widths[3])
-        chiral = chiral + (self.chiral_p(p)[..., None] * v).sum(1) / math.sqrt(self.widths[1])
-        local = torch.einsum("nac,nc->na", frame, self.local(h).float())
+        h, v, p, a = state.h, state.v.float(), state.p, state.a.float()
+        polar = (self.polar_v(h).float()[..., None] * v).sum(1) / math.sqrt(self.widths[1])
+        polar = polar + (self.polar_p(p).float()[..., None] * a).sum(1) / math.sqrt(self.widths[3])
+        chiral = (self.chiral_a(h).float()[..., None] * a).sum(1) / math.sqrt(self.widths[3])
+        chiral = chiral + (self.chiral_p(p).float()[..., None] * v).sum(1) / math.sqrt(self.widths[1])
+        local_coefficients = self.local(h).float()
+        with torch.autocast(frame.device.type, enabled=False):
+            local = torch.einsum("nac,nc->na", frame.float(), local_coefficients)
         if not self.chiral_enabled:
             chiral, local = torch.zeros_like(chiral), torch.zeros_like(local)
         effective_chiral, effective_local = gate[:, None] * chiral, gate[:, None] * local
 
         def center(z):
-            return z - z.mean(0)
+            with torch.autocast(z.device.type, enabled=False):
+                return z.float() - z.float().mean(0)
 
         polar, effective_chiral, effective_local = map(center, (polar, effective_chiral, effective_local))
         return polar + effective_chiral + effective_local, dict(

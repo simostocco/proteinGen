@@ -37,3 +37,16 @@ def test_entrypoints_bootstrap_before_scientific_imports():
         for i, name in enumerate(names):
             if name in ("torch", "numpy", "pyarrow", "matplotlib") or name.startswith("protein_distance_diffusion"):
                 assert i > bootstrap
+
+
+def test_disk_reserve_is_telemetry_only(monkeypatch):
+    from collections import namedtuple
+
+    from protein_distance_diffusion.training.e015_storage import disk_budget
+
+    Usage = namedtuple("Usage", "total used free")
+    monkeypatch.setattr("shutil.disk_usage", lambda _: Usage(100, 99, 1))
+    report = disk_budget(ROOT, 100000000000, 200000000000)
+    assert report["passed"]
+    assert not report["reserve_enforced"]
+    assert report["would_cross_historical_reserve"]

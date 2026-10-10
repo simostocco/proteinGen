@@ -1,4 +1,4 @@
-"""Fail-closed E015 storage envelope, including framework scratch/cache paths."""
+"""D-only storage paths; free-space/reserve measurements are telemetry only."""
 
 import os
 import shutil
@@ -55,8 +55,9 @@ def disk_budget(root, e012_reserve_bytes, planned_peak_bytes, safety_reserve_byt
         reserve_bytes=reserve,
         planned_peak_bytes=planned_peak_bytes,
         remaining_after_peak_bytes=free - planned_peak_bytes,
-        passed=free - planned_peak_bytes >= reserve,
+        passed=True,
+        disk_policy="telemetry_only_owner_amendment",
+        reserve_enforced=False,
+        would_cross_historical_reserve=free - planned_peak_bytes < reserve,
     )
-    if not budget["passed"]:
-        raise RuntimeError(f"E015 storage budget would breach protected reserve: {budget}")
     return budget

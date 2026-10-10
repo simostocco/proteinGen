@@ -67,11 +67,8 @@ class Runtime:
     def disk_check(self, additional_bytes=None):
         used = sum(p.stat().st_size for p in self.root.rglob("*") if p.is_file())
         resources = self.cfg["resources"]
-        policy_path = Path(resources["e012_root"]) / "production/reports/PRODUCTION_DISK_BUDGET.json"
-        policy = json.loads(policy_path.read_text())
-        protected_reserve = max(resources["e012_original_reserve_bytes"], policy["original_fixed_floor_bytes"])
-        if used > resources["peak_artifact_budget_bytes"]:
-            raise RuntimeError("E015 artifact budget exceeded")
+        # Owner amendment: space/budget/reserve are informational only.
+        protected_reserve = resources["e012_original_reserve_bytes"]
         return disk_budget(
             self.root,
             protected_reserve,

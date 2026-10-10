@@ -28,6 +28,8 @@ def certify(runtime):
     available = torch.tensor([True], device="cuda")
     r, _ = torch.linalg.qr(torch.randn(3, 3, device="cuda"))
     r[:, 0] *= torch.det(r)
+    # Construct exact geometric transforms outside model autocast.
+    rotated_x, rotated_context = x @ r.T + 3, context @ r.T - 4
     tests = []
     for name, model in [("raw", engine.model), ("ema", engine.ema)]:
         model.eval()
@@ -39,8 +41,9 @@ def certify(runtime):
                 ),
             ):
                 a = model(x, t, n, m, context, available)
-                b = model(x @ r.T + 3, t, n, m, context @ r.T - 4, available)
-                error = float((b - a @ r.T).norm() / a.norm().clamp_min(1e-8))
+                b = model(rotated_x, t, n, m, rotated_context, available)
+            # The expected output rotation also uses FP32.
+            error = float((b.float() - a.float() @ r.T).norm() / a.float().norm().clamp_min(1e-8))
             tolerance = 5e-5 if precision == "fp32" else 0.03
             if error > tolerance:
                 raise RuntimeError(f"{name} {precision} rotation relative error {error}>{tolerance}")
