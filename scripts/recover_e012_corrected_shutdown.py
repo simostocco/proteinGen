@@ -8,6 +8,7 @@ from pathlib import Path
 import shutil
 import sqlite3
 import subprocess
+import sys
 import time
 
 REPO = Path(__file__).resolve().parents[1]
@@ -192,12 +193,26 @@ def post():
                  replay_query_hash_unchanged=True, replay_input_rows_hash_unchanged=True,
                  first_new_certificate_sha256=sha(ROOT / 'manifests/verify_protected-batch-0037.json'),
                  training_launched=False)
+    stats['resume'] = read(destination / 'RESUME.json')
     (destination / 'POST_RESUME.json').write_text(json.dumps(stats, indent=2))
     print(json.dumps({k:v for k,v in stats.items() if k!='heartbeat'}), flush=True)
 
+def record_launch():
+    destination = sorted((ROOT / 'production/reports').glob('shutdown_recovery_*'))[-1]
+    launch = read(ROOT / 'production/LAUNCH.json')
+    record = dict(timestamp_unix=time.time(), launch=launch,
+                  corrected_scientific_commit='8b091a76c932f27c387941d4afcdfbdd7830d300',
+                  recovery_commit=subprocess.check_output(['C:/Windows/System32/wsl.exe','--distribution','Ubuntu','--cd','/home/simostocco/proteinGen-causal-rope','--exec','git','rev-parse','HEAD'], text=True).strip(),
+                  resume_argv=[sys.executable,'-B',str(REPO/'scripts/run_e012_v2c_screen_production.py'),'launch','--correction-root',str(ROOT)],
+                  resume_shell_command="'/mnt/c/Users/Simone Stocco/AppData/Local/Programs/Python/Python312/python.exe' -B '\\\\wsl.localhost\\Ubuntu\\home\\simostocco\\proteinGen-causal-rope\\scripts\\run_e012_v2c_screen_production.py' launch --correction-root 'D:/Simone/proteinGen_data/sequence_foundation/uniref50_2026_03_e012_v2/v2c_optimization/scientific_corrected_protein_v1'",
+                  worker_pid=launch['worker_pid'], observer_controller_pid=launch['observer_controller_pid'],
+                  d_free_bytes=shutil.disk_usage(ROOT).free, training_launched=False)
+    (destination/'RESUME.json').write_text(json.dumps(record,indent=2))
+    print(json.dumps(record),flush=True)
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
-    p.add_argument('action', choices=['audit', 'prepare', 'post'])
+    p.add_argument('action', choices=['audit', 'prepare', 'post', 'record-launch'])
     args = p.parse_args()
     if args.action == 'audit':
         result = audit()
@@ -205,5 +220,7 @@ if __name__ == '__main__':
         print(json.dumps(result), flush=True)
     elif args.action == 'prepare':
         prepare()
-    else:
+    elif args.action == 'post':
         post()
+    else:
+        record_launch()
