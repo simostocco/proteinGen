@@ -250,6 +250,15 @@ class Trainer:
             self.exposures += proteins
             self.processed_residues += residues
             self.audit()
+            free, _ = torch.cuda.mem_get_info()
+            total = torch.cuda.get_device_properties(0).total_memory
+            if (
+                torch.cuda.max_memory_reserved() > self.cfg["preflight"]["hard_reserved_fraction"] * total
+                or free < 512 * 1024**2
+            ):
+                self.save(f"memory_guard_update_{self.update}")
+                self.heartbeat("paused_memory_guard")
+                return
             combined = observations[-1]
             combined["v_loss"] = sum(o["v_loss"] * len(g) / proteins for o, g in zip(observations, groups, strict=True))
             combined["struct_loss"] = sum(

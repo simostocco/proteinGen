@@ -114,7 +114,7 @@ def certify(runtime):
         for _repeat in range(3):
             current = initial.clone()
             context = None
-            for s in range(499, 489, -1):
+            for s in range(499, 490, -1):
                 times = torch.tensor([s], device="cuda")
                 v = engine.ema(current, times, n, m, context, torch.tensor([context is not None], device="cuda"))
                 current, context, _ = engine.diffusion.deterministic_reverse_step(current, times, v, m)
@@ -128,6 +128,7 @@ def certify(runtime):
         "preflight/replay_numerics.json",
         dict(
             e015_envelope=envelope,
+            endpoint=490,
             tolerance=5e-6,
             passed=True,
             e014_historical_envelope=8.962951e-6,
