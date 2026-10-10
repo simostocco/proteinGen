@@ -71,6 +71,7 @@ calibration:
   coefficient_cap: 100.0
   relative_gradient_targets: {distance: 0.15, torsion: 0.10, chirality: 0.10, clash: 0.05}
 resources:
+  disk_policy: telemetry_only_owner_amendment
   e012_original_reserve_bytes: 56883428966
   peak_artifact_budget_bytes: 17179869184
   e007_root: /mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1

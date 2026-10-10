@@ -3,6 +3,7 @@
 import argparse
 import gc
 import json
+import subprocess
 import time
 
 import e015_bootstrap
@@ -10,6 +11,7 @@ import torch
 
 from protein_distance_diffusion.evaluation.e014_evaluation import coordinate_batch
 from protein_distance_diffusion.models.e015_multiscale_parity_denoiser import E015MultiscaleParityDenoiser
+from protein_distance_diffusion.training.e014_runtime import canonical_hash
 from protein_distance_diffusion.training.e015_engine import Engine
 from protein_distance_diffusion.training.e015_runtime import GPULease, Runtime, e007_active, status
 
@@ -35,7 +37,10 @@ def profile(runtime, n, batch, repeats, name, precision=None):
     torch.manual_seed(runtime.cfg["seed"])
     path = runtime.path("calibration/frozen.json")
     calibration = json.loads(path.read_text()) if path.exists() else fallback_calibration(runtime)
+    selection = json.loads(runtime.path("precision_selection.json").read_text())
+    precision = precision or selection["precision"]
     engine = Engine(runtime.cfg, calibration, precision=precision)
+    probe_contract_hash = canonical_hash(dict(contract=runtime.contract(calibration), precision=precision))
     # Real TRAIN shape for each endpoint, padded to the declared worst length.
     rows = sorted((r for r in runtime.train if r["length"] <= n), key=lambda r: (-r["length"], r["sample_id"]))[:batch]
     if any(row["length"] != n for row in rows):
@@ -51,6 +56,7 @@ def profile(runtime, n, batch, repeats, name, precision=None):
     torch.cuda.reset_peak_memory_stats()
     forward, backward, optimizer = [], [], []
     conflicts = 0
+    training_forward, pure_backward, pcgrad, pure_optimizer, utilization = [], [], [], [], []
     for i in range(repeats + 1):
         if e007_active(runtime.cfg):
             raise RuntimeError("E007 became active; stop E015 probe")
@@ -67,12 +73,27 @@ def profile(runtime, n, batch, repeats, name, precision=None):
             lengths,
             mask,
             115066,
-            1.0,
+            0.5,
             force_sc=True,
             force_rollout=True,
             force_rollout_steps=3,
             force_sc_context=stress_context,
         )
+        first_timing = engine.last_microbatch_timing.copy()
+        # A subsequent physical batch runs with existing FP32 objective buffers.
+        # This bounds mixed-bucket accumulation paths, not just an empty update.
+        result = engine.microbatch(
+            x,
+            lengths,
+            mask,
+            115066,
+            0.5,
+            force_sc=True,
+            force_rollout=True,
+            force_rollout_steps=3,
+            force_sc_context=stress_context,
+        )
+        second_timing = engine.last_microbatch_timing.copy()
         torch.cuda.synchronize()
         b = time.perf_counter() - start
         start = time.perf_counter()
@@ -84,6 +105,17 @@ def profile(runtime, n, batch, repeats, name, precision=None):
             forward.append(f)
             backward.append(b)
             optimizer.append(o)
+            training_forward.append(first_timing["forward_seconds"] + second_timing["forward_seconds"])
+            pure_backward.append(first_timing["backward_seconds"] + second_timing["backward_seconds"])
+            pcgrad.append(engine.last_finish_timing["pcgrad_seconds"])
+            pure_optimizer.append(engine.last_finish_timing["optimizer_seconds"])
+            sample = subprocess.run(
+                ["nvidia-smi", "--query-gpu=utilization.gpu", "--format=csv,noheader,nounits"],
+                capture_output=True,
+                text=True,
+            )
+            if sample.returncode == 0:
+                utilization.append(float(sample.stdout.strip()))
         runtime.write(
             f"preflight/{name}.heartbeat.json",
             status("probe", n=n, batch=batch, repetition=i, v_loss=result["v_loss"], struct_loss=result["struct_loss"]),
@@ -95,7 +127,9 @@ def profile(runtime, n, batch, repeats, name, precision=None):
     passed = reserved <= limits["max_reserved_fraction"] * total and peak_free_estimate >= limits["free_margin_bytes"]
     elapsed = sum(backward) + sum(optimizer)
     output = dict(
-        profile_version=3,
+        profile_version=4,
+        fp32_geometry_islands=True,
+        probe_contract_hash=probe_contract_hash,
         independent_model_generated_graph_stress=True,
         n=n,
         physical_batch=batch,
@@ -111,9 +145,17 @@ def profile(runtime, n, batch, repeats, name, precision=None):
         repetitions=repeats,
         forward_seconds=sum(forward) / len(forward),
         backward_pcgrad_seconds=sum(backward) / len(backward),
-        optimizer_seconds=sum(optimizer) / len(optimizer),
-        proteins_per_second=batch * repeats / elapsed,
-        residues_per_second=batch * n * repeats / elapsed,
+        optimizer_seconds=sum(pure_optimizer) / len(pure_optimizer),
+        forward_with_sc_rollout_seconds=sum(training_forward) / len(training_forward),
+        backward_seconds=sum(pure_backward) / len(pure_backward),
+        pcgrad_seconds=sum(pcgrad) / len(pcgrad),
+        probe_accumulation_steps=2,
+        total_device_used_bytes=total - free,
+        estimated_peak_total_device_used_bytes=total - peak_free_estimate,
+        free_device_bytes=free,
+        gpu_utilization_percent=sum(utilization) / max(len(utilization), 1),
+        proteins_per_second=2 * batch * repeats / elapsed,
+        residues_per_second=2 * batch * n * repeats / elapsed,
         pcgrad_conflict_fraction=conflicts / (repeats + 1),
         paths_tested=[
             "AdamW",

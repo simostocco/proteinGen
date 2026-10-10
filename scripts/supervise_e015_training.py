@@ -12,7 +12,9 @@ from pathlib import Path
 import e015_bootstrap
 import yaml
 
+from protein_distance_diffusion.training.e014_runtime import canonical_hash
 from protein_distance_diffusion.training.e015_runtime import Runtime, e007_active, status
+from protein_distance_diffusion.training.e015_trainer import smoke_folder
 
 CONFIG = e015_bootstrap.WORKTREE / "configs/e015_integrated_multiscale_parity_selfconditioned_v1.yaml"
 
@@ -57,6 +59,7 @@ def main():
                                 b"profile_e015_capacity.py",
                                 b"run_e015_integrated.py",
                                 b"preflight_e015.py",
+                                b"diagnose_e015_symmetry.py",
                             )
                         )
                         for part in parts[1:]
@@ -108,19 +111,30 @@ def main():
             child("calibrate_e015.py", ["reliability"], "reliability_calibration")
         if not runtime.path("calibration/frozen.json").exists():
             child("calibrate_e015.py", ["gradients"], "gradient_calibration")
-        if not runtime.path("batch_autotuning.json").exists() or any(
-            r.get("profile_version") != 3
-            for r in json.loads(runtime.path("batch_autotuning.json").read_text())["selected"].values()
+        certificate = runtime.path("preflight/full_certification.json")
+        if not certificate.exists() or json.loads(certificate.read_text()).get("calibration_contract") != contract:
+            child("preflight_e015.py", [], "full_cuda_certification")
+        precision = json.loads(runtime.path("precision_selection.json").read_text())["precision"]
+        current_probe_hash = canonical_hash(dict(contract=contract, precision=precision))
+        if (
+            not runtime.path("batch_autotuning.json").exists()
+            or json.loads(runtime.path("batch_autotuning.json").read_text()).get("probe_contract_hash")
+            != current_probe_hash
+            or any(
+                r.get("profile_version") != 4
+                for r in json.loads(runtime.path("batch_autotuning.json").read_text())["selected"].values()
+            )
         ):
             child("autotune_e015_batches.py", [], "batch_autotuning")
-        if not runtime.path("preflight/full_certification.json").exists():
-            child("preflight_e015.py", [], "full_cuda_certification")
+        batching = json.loads(runtime.path("batch_autotuning.json").read_text())
+        smoke_path = smoke_folder(dict(**contract, batching_hash=canonical_hash(batching)))
         for updates in (100, 1000):
             folder = f"preflight/smoke_{updates}"
-            if runtime.path(folder + "/PASSED.json").exists():
+            passed_path = runtime.path(folder + "/PASSED.json")
+            if passed_path.exists() and json.loads(passed_path.read_text()).get("contract") == contract:
                 continue
             command = ["--smoke-updates", str(updates)]
-            if runtime.path(folder + "/checkpoints/LATEST.json").exists():
+            if runtime.path(smoke_path + "/checkpoints/LATEST.json").exists():
                 command += ["--resume"]
             child("run_e015_integrated.py", command, f"train_smoke_{updates}")
             if not runtime.path(folder + "/PASSED.json").exists():

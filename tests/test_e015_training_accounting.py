@@ -34,3 +34,11 @@ def test_paired_bootstrap_equal_protein_means_and_known_delta():
     result = paired_scalar_comparison(new, old, "metric", (5, 50))
     assert result["paired_proteins"] == 4 and result["difference"] == -2
     assert np.allclose(result["ci95"], [-2, -2])
+
+
+def test_smoke_namespace_is_shared_across100_and1000_but_changes_with_source():
+    from protein_distance_diffusion.training.e015_trainer import smoke_folder
+
+    contract = {"source": "fixed", "batching_hash": "same"}
+    assert smoke_folder(contract) == smoke_folder(dict(contract))
+    assert smoke_folder(contract) != smoke_folder(dict(contract, source="changed"))
