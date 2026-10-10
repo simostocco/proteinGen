@@ -103,3 +103,11 @@ PYTHONDONTWRITEBYTECODE=1 /home/simostocco/miniforge3/envs/proteingen/bin/python
 ```
 
 After an interrupted existing production run, use the same command with `--resume`. The supervisor automatically completes mandatory remaining stages before production. Actual PID, phase, batch measurements, first durable checkpoint and launch commits are recorded in D-resident `LAUNCH.json`, `SUPERVISOR.json`, `COMMITTED.json`, `HEARTBEAT.json` and the launch record below. A prepared config or running supervisor alone is not described as production training.
+
+## Persistent launch record — 2026-10-10
+
+Implementation commit: `6c3adca3ec7a3de0d4586eecbb2af42d529bbcd6`. The 25 focused CPU tests and lint passed against the exact source/config hashes stored in `preflight/cpu_tests.json`. Supervisor PID **426110** was detached with the command above. It is completing repeated batch autotuning, CUDA numerical/symmetry/resume certification and the mandatory 100/1,000-update TRAIN smokes before production. Production training is **not yet certified or started at this record**; monitor the live artifacts for the subsequent phase.
+
+Current repeated stress probes select physical batches 39/18/12/9 for the four longer buckets; the short bucket is being expanded beyond the preliminary batch64. N500 batch9 uses 5,594,851,840 allocated and 5,888,802,816 reserved bytes, retaining 1,155,112,960 free bytes. This is 68.9% PyTorch-reserved memory, because display/context overhead prevents the requested 85–90% reservation from coexisting with the free-memory safety margin. Selection remains training-only and never pads allocations. These are engineering measurements, not scientific validation results.
+
+E007 remains paused under its own E012 contention policy; it has not been resumed, stopped or recorded as normally complete by E015. Historical tracked files remain unchanged relative to the frozen comparison base. No prospective holdout or full t0 sampling has been run.
