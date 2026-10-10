@@ -111,3 +111,11 @@ Implementation commit: `6c3adca3ec7a3de0d4586eecbb2af42d529bbcd6`. The 25 focuse
 Current repeated stress probes select physical batches 39/18/12/9 for the four longer buckets; the short bucket is being expanded beyond the preliminary batch64. N500 batch9 uses 5,594,851,840 allocated and 5,888,802,816 reserved bytes, retaining 1,155,112,960 free bytes. This is 68.9% PyTorch-reserved memory, because display/context overhead prevents the requested 85–90% reservation from coexisting with the free-memory safety margin. Selection remains training-only and never pads allocations. These are engineering measurements, not scientific validation results.
 
 E007 remains paused under its own E012 contention policy; it has not been resumed, stopped or recorded as normally complete by E015. Historical tracked files remain unchanged relative to the frozen comparison base. No prospective holdout or full t0 sampling has been run.
+
+## Launch stopped at mandatory gates — 2026-10-10
+
+All five repeated engineering probes completed: physical batches **88/39/18/12/9**, BF16 candidate, across ascending length strata. This is not a certified production precision or batch configuration. Full CUDA symmetry certification then failed: raw BF16 proper-rotation relative error **0.058351509273052216 > 0.03**. The bound was not relaxed; no production worker launched.
+
+An authorized FP16 fallback probe was attempted but stopped at runtime disk admission before any CUDA work. D free space had fallen to **68,677,283,840 bytes**; the remaining E015 16 GiB budget would leave **51,499,079,333 bytes**, below E012's protected **56,883,428,966-byte** reserve. Both the precision-certification and disk-admission gates remain closed. Neither reserve nor planned retention budget was reduced. FP16 remains untested.
+
+Supervisor426110 exited failed-closed. Production exposures/updates remain **0/0**; there is no production checkpoint, no epoch result and no claim of training success. The mandatory100/1000-update smokes have not run. `LAUNCH_BLOCKERS.json`, `STATE.json` and `HEARTBEAT.json` record the stopped status; old `LAUNCH.json` records the initial attempt, not a live supervisor. Restart requires adequate disk admission and a certified precision followed by new affected memory probes and mandatory smokes. Historical E007/E014/E012 evidence and workers were not modified.
