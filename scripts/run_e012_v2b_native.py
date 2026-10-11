@@ -56,6 +56,20 @@ class PortableJSON:
 def install(module):
     module.json=PortableJSON()
 
+def install_corrected_cleanup(module):
+    """Keep the corrected runner's borrowed historical reservoir read only."""
+    original=module.Build.cleanup
+    def cleanup(build,paths,certificate):
+        paths=list(paths)
+        historical=build.root.parent/'scientific/filtered/reservoir.sqlite'
+        if (build.root.name=='scientific_corrected_protein_v1'
+                and canonical(str(build.reservoir))==canonical(str(historical))):
+            paths=[p for p in paths if canonical(str(p))!=canonical(str(historical))]
+        # Retain the scientific core's certificate and namespace guards for
+        # every other path; never authorize deletion outside the corrected root.
+        return original(build,paths,certificate)
+    module.Build.cleanup=cleanup
+
 def load():
     if os.name=='nt':
         import psutil
@@ -92,6 +106,7 @@ def load():
     spec.loader.exec_module(module)
     module.DEFAULT_ROOT=Path(native(LINUX_ROOT))
     install(module)
+    install_corrected_cleanup(module)
     return module
 
 def main():
