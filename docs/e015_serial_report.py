@@ -155,14 +155,20 @@ def main():
         def counters(q):
             return {line.split(":")[0]: int(line.split(":")[1]) for line in q["trainer_io"].splitlines()}
 
-        first_io, last_io = counters(ios[0]), counters(ios[-1])
-        resource_summary["initial_training_io"] = dict(
-            trainer_pid=ios[0]["trainer_pid"],
-            payload_write_bytes=last_io["wchar"] - first_io["wchar"],
-            linux_charged_disk_write_bytes=last_io["write_bytes"] - first_io["write_bytes"],
-            interval_seconds=ios[-1]["timestamp_unix"] - ios[0]["timestamp_unix"],
-            note="Linux/WSL process accounting;DrvFS host writes may not be charged to Linux write_bytes. Raw counters preserved in monitor.",
-        )
+        io_groups = []
+        for pid in sorted({q["trainer_pid"] for q in ios}):
+            group = sorted((q for q in ios if q["trainer_pid"] == pid), key=lambda q: q["timestamp_unix"])
+            first_io, last_io = counters(group[0]), counters(group[-1])
+            io_groups.append(
+                dict(
+                    trainer_pid=pid,
+                    payload_write_bytes=last_io["wchar"] - first_io["wchar"],
+                    linux_charged_disk_write_bytes=last_io["write_bytes"] - first_io["write_bytes"],
+                    interval_seconds=group[-1]["timestamp_unix"] - group[0]["timestamp_unix"],
+                    note="Linux/WSL process accounting;DrvFS host writes may not be charged to Linux write_bytes. Raw counters preserved in monitor.",
+                )
+            )
+        resource_summary["training_io_by_pid"] = io_groups
     r.write(OUT / "logs/resource_summary.json", resource_summary)
     # Preserve historical inventory and distinguish overwritten rolling paths from snapshots.
     old = read("checkpoint_inventory.json", {})
