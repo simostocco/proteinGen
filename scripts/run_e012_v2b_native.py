@@ -73,6 +73,17 @@ def install_corrected_cleanup(module):
 def install_diagnostic_lf(module):
     """Write corrected diagnostic subsets with LF without changing frozen core."""
     class DiagnosticPath(type(Path())):
+        def is_file(self):
+            try:
+                return super().is_file()
+            except OSError as exc:
+                # WSL symlink reparse tags cannot be followed by Windows stat.
+                # Count retained regular files, excluding these aliases.
+                if (getattr(exc,'winerror',None)==1920
+                        and getattr(self.lstat(),'st_file_attributes',0)&0x400):
+                    return False
+                raise
+
         def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None):
             subset=re.fullmatch(r'(pilot_10000|diagnostic_(10000|100000|250000|1000000))\.fasta',self.name)
             corrected=(self.parent.name in {'identity_50','identity_30'}

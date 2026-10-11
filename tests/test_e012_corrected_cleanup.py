@@ -11,6 +11,17 @@ SPEC.loader.exec_module(native)
 
 
 class CorrectedCleanupTests(unittest.TestCase):
+    def test_windows_inaccessible_reparse_alias_is_not_a_regular_file(self):
+        module=types.SimpleNamespace(Path=Path)
+        native.install_diagnostic_lf(module)
+        p=module.Path('/mnt/d/clusters/pilot_tmp/latest')
+        error=OSError(22,'inaccessible WSL reparse link')
+        error.winerror=1920
+        with patch.object(type(Path()),'is_file',side_effect=error),patch.object(type(Path()),'lstat',return_value=types.SimpleNamespace(st_file_attributes=0x400)):
+            self.assertFalse(p.is_file())
+        with patch.object(type(Path()),'is_file',side_effect=error),patch.object(type(Path()),'lstat',return_value=types.SimpleNamespace(st_file_attributes=0)):
+            with self.assertRaises(OSError):p.is_file()
+
     def test_only_corrected_diagnostic_writers_force_lf(self):
         module=types.SimpleNamespace(Path=Path)
         native.install_diagnostic_lf(module)
