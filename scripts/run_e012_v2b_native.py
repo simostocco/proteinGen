@@ -70,6 +70,19 @@ def install_corrected_cleanup(module):
         return original(build,paths,certificate)
     module.Build.cleanup=cleanup
 
+def install_diagnostic_lf(module):
+    """Write corrected diagnostic subsets with LF without changing frozen core."""
+    class DiagnosticPath(type(Path())):
+        def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None):
+            subset=re.fullmatch(r'(pilot_10000|diagnostic_(10000|100000|250000|1000000))\.fasta',self.name)
+            corrected=(self.parent.name in {'identity_50','identity_30'}
+                and self.parent.parent.name=='clusters'
+                and self.parent.parent.parent.name=='scientific_corrected_protein_v1')
+            if mode=='w' and subset and corrected and newline is None:
+                newline='\n'
+            return super().open(mode,buffering,encoding,errors,newline)
+    module.Path=DiagnosticPath
+
 def load():
     if os.name=='nt':
         import psutil
@@ -107,6 +120,7 @@ def load():
     module.DEFAULT_ROOT=Path(native(LINUX_ROOT))
     install(module)
     install_corrected_cleanup(module)
+    install_diagnostic_lf(module)
     return module
 
 def main():
