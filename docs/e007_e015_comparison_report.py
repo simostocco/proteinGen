@@ -189,6 +189,71 @@ for ax, metric in zip(axs, ["adjacent_mean_angstrom", "adjacent_valid_fraction",
     ax.legend(fontsize=7)
 fig.savefig(C / "comparison_plots/generation_geometry.png", dpi=140)
 plt.close(fig)
+import e007_epoch1_analysis as shared
+
+real = []
+for n in b.LENGTHS:
+    real += shared.refs(n)
+fig, axs = plt.subplots(1, 3, figsize=(14, 4), layout="constrained")
+for ax, key in zip(axs, ["radius_of_gyration_angstrom", "long_range_contact_density", "anisotropy_largest_fraction"]):
+    for label, gs in [("real heldout", real), ("E007epoch1", g7), ("E015epoch1", gm), ("E015u10382;unmatched", gl)]:
+        values = sorted(r[key] for r in gs if isinstance(r.get(key), (int, float)))
+        if values:
+            ax.step(values, np.arange(1, len(values) + 1) / len(values), where="post", label=label)
+    ax.set(xlabel=key, ylabel="Equal-protein CDF")
+    ax.legend(fontsize=7)
+fig.savefig(C / "comparison_plots/global_geometry.png", dpi=140)
+plt.close(fig)
+fig, axs = plt.subplots(1, 3, figsize=(14, 4), layout="constrained")
+cache = b.CoordinateCache(pathlib.Path(b.cfg["population_root"]), verify_payload=False)
+collections = [("real heldout", [cache.get(r["sample_id"]) for r in real])]
+collections.append(
+    ("E007epoch1", [np.load(C / "e007_samples" / r["sample_key"] / "final_coordinates.npz")["coordinates"] for r in g7])
+)
+if gm:
+    collections.append(
+        (
+            "E015epoch1",
+            [
+                np.load(C / "e015_epoch1_context/samples" / r["sample_key"] / "final_coordinates.npz")[
+                    "coordinates_angstrom"
+                ]
+                for r in gm
+            ],
+        )
+    )
+for label, chains in collections:
+    hist = [[], [], []]
+    bins = [np.linspace(0, 12, 61), np.linspace(-np.pi, np.pi, 61), np.linspace(-1, 1, 61)]
+    for xyz in chains:
+        feat, _, _ = b.local_geometry(b.torch.tensor(xyz, dtype=b.torch.float32))
+        f = feat.numpy()
+        mask = f[:, 29] > 0
+        values = [np.linalg.norm(np.diff(xyz, axis=0), axis=-1), np.arctan2(f[mask, 25], f[mask, 26]), f[mask, 27]]
+        for j, v in enumerate(values):
+            hist[j].append(np.histogram(v, bins[j])[0] / max(len(v), 1))
+    for j, ax in enumerate(axs):
+        ax.plot((bins[j][1:] + bins[j][:-1]) / 2, np.mean(hist[j], 0), label=label)
+for ax, title in zip(
+    axs,
+    [
+        "Adjacent spacing Å; outside0–12 mass not renormalized",
+        "Pseudo-torsion radians",
+        "Normalized signed triple product",
+    ],
+):
+    ax.set(xlabel=title, ylabel="Equal-protein bin probability")
+    ax.legend(fontsize=7)
+fig.savefig(C / "comparison_plots/local_torsion_chirality.png", dpi=140)
+plt.close(fig)
+(C / "INFERENCE_GUIDE.md").write_text("""# Reading the inference figures
+
+Traces show C-alpha positions only, colored from N to C. Fixed camera and common spatial limits reveal shrinkage or expansion. Intermediate frames are pre-update states; frame0 is the final clean estimate. DirectX0 is the model-implied clean estimate. At high noise many structures fit the same noisy input, so directX0 shrinkage is not automatically sampler collapse: inspect the actual trajectory, Rg and covariance.
+
+Generation receives only noisy coordinates, timestep and length. E015 also receives its preceding model-generated clean estimate. Neither receives a target or sequence. E007 has no EMA/parity/chiral-head equivalents. Distance maps use Å. Rg/covariance measure size and shape, not stability. Galleries follow the frozen numeric score.
+
+Refold cards show independently sequence-conditioned predictions. Confidence does not replace the TM/coverage/RMSD/finite-complete gates. Nearest confirmed PDB neighbors establish measured similarity, not exhaustive novelty. No experimental stability, solubility or function is inferred.\n""")
+
 low = [r for r in r7 if r["split"] == "heldout" and r["timestep"] == 5]
 finite = all(r["finite"] for r in r7)
 adj = float(np.mean([r["adjacent_valid_fraction"] for r in g7]))

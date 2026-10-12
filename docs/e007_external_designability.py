@@ -94,8 +94,14 @@ def cards():
     import ast, numpy as np, pyarrow.parquet as pq
 
     source = pathlib.Path(__file__).with_name("e015_external_reporting.py").read_text()
-    nodes = [n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name in ["table", "ca", "cards"]]
-    scope = dict(OUT=OUT, Path=pathlib.Path, np=np, pq=pq, read=m.read, resource=m.resource, progress=m.progress)
+    nodes = [
+        n
+        for n in ast.parse(source).body
+        if isinstance(n, ast.FunctionDef) and n.name in ["table", "ca", "cards", "neighbor_cards"]
+    ]
+    scope = dict(
+        OUT=OUT, Path=pathlib.Path, np=np, pq=pq, read=m.read, resource=m.resource, progress=m.progress, run=m.run
+    )
     exec(compile(ast.Module(body=nodes, type_ignores=[]), "same_external_card_protocol", "exec"), scope)
     for name in [
         "positive_control_gallery",
@@ -105,7 +111,9 @@ def cards():
         "candidates",
     ]:
         (OUT / name).mkdir(exist_ok=True)
+    scope["run"] = m.run
     scope["cards"]()
+    scope["neighbor_cards"]()
 
 
 def summary():

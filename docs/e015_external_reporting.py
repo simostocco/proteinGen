@@ -4,7 +4,7 @@ import json
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
-from e015_external_designability import OUT, ROOT, WORK, read, write, sha, resource, progress
+from e015_external_designability import OUT, ROOT, WORK, read, write, sha, resource, progress, run
 
 
 def table(name):
@@ -123,3 +123,40 @@ def report():
     files=[dict(path=str(p.relative_to(OUT)),bytes=p.stat().st_size,sha256=sha(p)) for p in OUT.iterdir() if p.is_file() and p.name not in ('MANIFEST.json','resource_monitor.jsonl','progress.json')]
     write(OUT/'MANIFEST.json',dict(status='COMPLETE' if validated and len(primary)==5 and all(r['valid_predictions']==r['selected_denominator'] for r in primary) else 'PARTIAL_OR_INCONCLUSIVE',counts=counts,verdict=verdict,files=files,panel_sha256=sha(OUT/'backbone_panel.json'),all_artifacts_on_d=True,original_e015_generations_immutable=True,other_experiments_modified=False))
     print(text)
+
+def neighbor_cards():
+    """Fixed-orientation target/refold/confirmed-PDB comparison; no new search."""
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    resource('confirmed_neighbor_cards',heavy=True)
+    panel={r['backbone_id']:r for r in read(OUT/'backbone_panel.json')['backbones']}
+    alignment=table('structural_alignment_results.parquet')
+    for n in table('novelty_summary.parquet'):
+        if not n.get('neighbor_ca_pdb'):continue
+        b=panel[n['backbone_id']]
+        if b['source_category']!='latest_best':continue
+        x=ca(b['sanitized_pdb']);neighbor=ca(n['neighbor_ca_pdb']);center=x.mean(0)
+        matrix=OUT/'alignments'/(b['backbone_id']+'_nearest_matrix.txt')
+        run([str(OUT/'tools/USalign/USalign'),n['neighbor_ca_pdb'],b['sanitized_pdb'],'-mol','prot','-m',str(matrix)],b['backbone_id']+'_nearest_overlay',120)
+        values=[]
+        for line in matrix.read_text().splitlines():
+            cols=line.split()
+            try:
+                if len(cols)==5 and int(cols[0]) in (0,1,2):values.append([float(q) for q in cols[1:]])
+            except ValueError:pass
+        assert len(values)==3,'Unsupported US-align transform format'
+        transform=np.asarray(values);neighbor=neighbor@transform[:,1:].T+transform[:,0]-center;x=x-center
+        designs=sorted([r for r in alignment if r['backbone_id']==b['backbone_id']],key=lambda r:-r['target_tm_score']);refold=None
+        if designs:
+            refold=ca(designs[0]['pdb']);refold-=refold.mean(0);u,_,vt=np.linalg.svd(refold.T@x);refold=refold@(u@np.diag([1,1,np.linalg.det(u@vt)])@vt)
+        arrays=[x,refold,neighbor];extent=max(5,max(float(np.abs(a).max()) for a in arrays if a is not None)*1.05)
+        fig=plt.figure(figsize=(15,5))
+        for j,(a,title) in enumerate(zip(arrays,['Generated Cα target','Best single-sequence refold','Nearest confirmed PDB: '+n['nearest_pdb']]),1):
+            ax=fig.add_subplot(1,3,j,projection='3d')
+            if a is not None:
+                ax.plot(*a.T,lw=1);ax.scatter(*a.T,c=np.arange(len(a)),cmap='viridis',s=4);ax.text(*a[0],'N');ax.text(*a[-1],'C')
+            ax.view_init(20,45);ax.set(xlim=(-extent,extent),ylim=(-extent,extent),zlim=(-extent,extent),title=title)
+        fig.suptitle(f"{b['backbone_id']}; PDBqTM={n['query_tm_score']:.3f}; coverage={n['query_coverage']:.1%}; {n['classification']}\nFixed common scale/orientation; computational assessment, not experimental stability")
+        folder=OUT/('potentially_novel_gallery' if n['classification']=='POTENTIALLY_NOVEL_RELATIVE_TO_PDB' else 'known_fold_like_gallery');folder.mkdir(exist_ok=True)
+        fig.savefig(folder/(b['backbone_id']+'_target_refold_neighbor.png'),dpi=130);plt.close(fig)

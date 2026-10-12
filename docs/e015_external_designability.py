@@ -888,5 +888,6 @@ if __name__=='__main__':
     elif a.stage in ('aggregate','cards','report'):
         import e015_external_reporting as reporting
         getattr(reporting,a.stage)()
+        if a.stage=='cards':reporting.neighbor_cards()
     elif a.stage=='monitor':
         x=resource('external_setup_monitor');print(json.dumps({k:x[k] for k in ('timestamp_unix','ram_available_bytes','swap_used_bytes','d_free_bytes','gpu_csv','gpu_compute_apps','load_average')}))
