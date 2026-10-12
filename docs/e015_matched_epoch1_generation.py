@@ -159,6 +159,8 @@ def run():
         dict(
             status="COMPLETE",
             checkpoint=str(cp),
+            position=record["position"],
+            parameters=33128139,
             sha256=digest,
             exposures=230132,
             samples=20,
