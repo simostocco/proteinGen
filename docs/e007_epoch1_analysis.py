@@ -60,21 +60,40 @@ def analysis():
             sets = {
                 split: [r for r in rec if r["timestep"] == t and r["split"] == split] for split in ["train", "heldout"]
             }
-            valid = {
-                k: [r for r in v if isinstance(r.get(metric), (float, int)) and math.isfinite(r[metric])]
-                for k, v in sets.items()
-            }
-            draws = {}
-            for split, rs in valid.items():
-                bd = np.zeros(5000)
-                for st in b.STRATA:
-                    values = np.array([r[metric] for r in rs if r["length_stratum"] == st])
-                    assert len(values)
-                    bd += values[rng.integers(0, len(values), (5000, len(values)))].sum(1) / len(rs)
-                draws[split] = bd
-            a = np.array([r[metric] for r in valid["train"]])
-            h = np.array([r[metric] for r in valid["heldout"]])
-            gap = draws["heldout"] - draws["train"]
+            by = {split: {r["pair_id"]: r for r in rs} for split, rs in sets.items()}
+            pairs = [
+                key
+                for key in sorted(set(by["train"]) & set(by["heldout"]))
+                if all(
+                    isinstance(by[split][key].get(metric), (float, int)) and math.isfinite(by[split][key][metric])
+                    for split in ["train", "heldout"]
+                )
+            ]
+            if not pairs:
+                summaries.append(
+                    dict(
+                        timestep=t,
+                        metric=metric,
+                        assessable_pairs=0,
+                        train_mean=None,
+                        heldout_mean=None,
+                        gap=None,
+                        gap_ci95=None,
+                        reason="No jointly assessable paired proteins",
+                    )
+                )
+                continue
+            a = np.array([by["train"][key][metric] for key in pairs])
+            h = np.array([by["heldout"][key][metric] for key in pairs])
+            ad = np.zeros(5000)
+            hd = np.zeros(5000)
+            for st in b.STRATA:
+                ix = [j for j, key in enumerate(pairs) if by["train"][key]["length_stratum"] == st]
+                if ix:
+                    draw = rng.choice(ix, (5000, len(ix)), replace=True)
+                    ad += a[draw].sum(1) / len(pairs)
+                    hd += h[draw].sum(1) / len(pairs)
+            gap = hd - ad
             summaries.append(
                 dict(
                     timestep=t,
@@ -87,7 +106,8 @@ def analysis():
                     ratio=float(h.mean() / a.mean()) if a.mean() != 0 else None,
                     gap_ci95=np.quantile(gap, [0.025, 0.975]).tolist(),
                     draws=5000,
-                    aggregation="stratified equal-protein bootstrap",
+                    aggregation="stratified paired equal-protein bootstrap, shared noise family",
+                    assessable_pairs=len(pairs),
                 )
             )
     b.write(
@@ -105,6 +125,15 @@ def analysis():
     gen = rows("generation_metrics.parquet")
     rank = []
     distribution = []
+    diversity = []
+    novelty = []
+    from protein_distance_diffusion.evaluation.marginal_distribution_diagnostic import ks, w1
+
+    serial = pathlib.Path(__file__).with_name("e015_serial_evaluation.py").read_text()
+    pn = next(n for n in ast.parse(serial).body if isinstance(n, ast.FunctionDef) and n.name == "population_metrics")
+    pscope = dict(np=np, ks=ks, w1=w1)
+    exec(compile(ast.Module(body=[pn], type_ignores=[]), "frozen_descriptor_bootstrap", "exec"), pscope)
+    population_metrics = pscope["population_metrics"]
     for n in b.LENGTHS:
         rr = refs(n)
         real = np.array([score_vector(r) for r in rr])
@@ -134,8 +163,78 @@ def analysis():
             if b.NAMES[c] in ["eig1", "eig2", "eig3", "trace", "anisotropy1", "anisotropy3"]
         ]
         raw = np.array([r["descriptor"] for r in gs])
-        gm = b.Comparison(standard.transform(raw), bb, raw, raw_b, h, p, spectrum).metrics()
-        fm = b.Comparison(a, bb, raw_a, raw_b, h, p, spectrum).metrics()
+        gc = b.Comparison(standard.transform(raw), bb, raw, raw_b, h, p, spectrum)
+        fc = b.Comparison(a, bb, raw_a, raw_b, h, p, spectrum)
+        gm = gc.metrics()
+        fm = fc.metrics()
+        boots = {k: [] for k in gm}
+        floorboots = {k: [] for k in fm}
+        brng = np.random.default_rng(15015)
+        for _ in range(5000):
+            ig = brng.integers(0, 4, 4)
+            ia = brng.integers(0, 4, 4)
+            ib = brng.integers(0, 4, 4)
+            g = population_metrics(gc, ig, ib)
+            f = population_metrics(fc, ia, ib)
+            for k in gm:
+                boots[k].append(g[k])
+                floorboots[k].append(f[k])
+        coord = {
+            r["sample_key"]: np.load(C / "e007_samples" / r["sample_key"] / "final_coordinates.npz")["coordinates"]
+            for r in gs
+        }
+        pairs = []
+        for i, r in enumerate(gs):
+            for q in gs[i + 1 :]:
+                x, z = coord[r["sample_key"]], coord[q["sample_key"]]
+                dm = np.linalg.norm(x[:, None] - x[None, :], axis=-1) - np.linalg.norm(z[:, None] - z[None, :], axis=-1)
+                pairs.append(
+                    dict(
+                        a=r["sample_key"],
+                        b=q["sample_key"],
+                        kabsch_rmsd_angstrom=b.aligned_rmsd(x, z),
+                        distance_matrix_rmse_angstrom=float(np.sqrt(np.mean(dm**2))),
+                        descriptor_distance=float(
+                            b.distances(
+                                standard.transform(np.array([r["descriptor"]])),
+                                standard.transform(np.array([q["descriptor"]])),
+                            )[0, 0]
+                        ),
+                    )
+                )
+        diversity.append(
+            dict(
+                length=n,
+                pairs=pairs,
+                exact_duplicates=sum(x["kabsch_rmsd_angstrom"] < 1e-6 for x in pairs),
+                median_pairwise_kabsch_rmsd_angstrom=float(np.median([x["kabsch_rmsd_angstrom"] for x in pairs])),
+            )
+        )
+        train = rows("population/train.parquet", pathlib.Path(b.cfg["population_root"]))
+        tr = sorted(train, key=lambda r: (abs(r["length"] - n), b.key("e015-generation-novelty-v1", r)))[:20]
+        trstats = [dict(b.intrinsic(cache.get(q["sample_id"])), sample_id=q["sample_id"]) for q in tr]
+        for r in gs:
+            nearest = {}
+            for split, ref in [("train", trstats), ("heldout", rr)]:
+                ds = b.distances(
+                    standard.transform(np.array([r["descriptor"]])),
+                    standard.transform(np.array([q["descriptor"] for q in ref])),
+                )[0]
+                j = int(np.argmin(ds))
+                nearest[split] = dict(
+                    identity=ref[j]["sample_id"],
+                    descriptor_distance=float(ds[j]),
+                    reference_count=len(ref),
+                    reference_population_root=b.cfg["population_root"],
+                )
+            novelty.append(
+                dict(
+                    sample=r["sample_key"],
+                    nearest=nearest,
+                    scope="Bounded sampled novelty; not a fullTRAINindex or proof against memorization",
+                )
+            )
+
         distribution.append(
             dict(
                 length=n,
@@ -144,8 +243,18 @@ def analysis():
                 excess={k: gm[k] - fm[k] for k in gm},
                 excess_ratio={k: gm[k] / fm[k] if fm[k] else None for k in gm},
                 reference_ids=[x["sample_id"] for x in rr],
+                bootstrap95={
+                    k: dict(
+                        generated=np.quantile(boots[k], [0.025, 0.975]).tolist(),
+                        real_floor=np.quantile(floorboots[k], [0.025, 0.975]).tolist(),
+                        excess=np.quantile(np.asarray(boots[k]) - np.asarray(floorboots[k]), [0.025, 0.975]).tolist(),
+                    )
+                    for k in gm
+                },
+                draws=5000,
             )
         )
+    b.write("diversity_novelty_metrics.json", dict(diversity=diversity, novelty=novelty))
     rank.sort(key=lambda x: (x["score"], x["sample_key"]))
     b.write(
         "quality_ranking.json",
