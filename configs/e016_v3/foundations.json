@@ -1,0 +1,56 @@
+{
+  "stage": "G0-G2_CPU_ONLY",
+  "geometry_version": "ca_internal_signed_v1",
+  "distance_support": "exp Gaussian (0,infinity); mathematical support, not audited physical bounds",
+  "angle_support": "pi*sigmoid Gaussian (0,pi)",
+  "torsion_support": "pi*tanh Gaussian (-pi,pi); periodic seam artifact explicit",
+  "train_priors": "BLOCKED_PENDING_CERTIFIED_PDB_SPLITS",
+  "model": {
+    "width": 32,
+    "heads": 4,
+    "layers": 2,
+    "ffn_mult": 2,
+    "pair_bias": true,
+    "chemistry": true,
+    "backend": "manual"
+  },
+  "critic": {
+    "width": 24,
+    "heads": 3,
+    "layers": 1,
+    "ffn_mult": 2,
+    "pair_bias": true,
+    "chemistry": true,
+    "backend": "manual"
+  },
+  "production_candidates": [
+    {
+      "width": 128,
+      "heads": 4,
+      "layers": 4
+    },
+    {
+      "width": 160,
+      "heads": 5,
+      "layers": 4
+    },
+    {
+      "width": 192,
+      "heads": 6,
+      "layers": 4
+    }
+  ],
+  "plan": "NO_PLAN",
+  "resources": {
+    "CPU_workers": 1,
+    "RSS_limit_bytes": 2147483648,
+    "artifact_peak_bytes": 1073741824,
+    "minimum_free_reserve_bytes": 10737418240,
+    "max_real_AF_calls": 0,
+    "CUDA_allowed": false,
+    "downloads_allowed": false,
+    "production_training_allowed": false
+  },
+  "oracle_execution": "BLOCKED_UNCALIBRATED; mock test only",
+  "specification_source": "Complete execution plan and implementation prompt supplied as user-message text; no assertion of attached host-file availability"
+}
