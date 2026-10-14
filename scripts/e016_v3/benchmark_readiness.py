@@ -205,9 +205,16 @@ def main():
                     raise RuntimeError("BLOCKED_PEAK_VRAM")
                 if row["RSS_bytes"] > card["max_RSS_bytes"] or time.monotonic() - start > card["max_wall_seconds"]:
                     raise RuntimeError("BLOCKED_RAM_OR_WALL")
+                row['operations_per_second'] = 1 / row['wall_seconds']
+                row['residues_per_second'] = N / row['wall_seconds']
+                with out.with_suffix('.jsonl').open('a') as f:
+                    f.write(json.dumps(row) + '\n'); f.flush(); os.fsync(f.fileno())
+                print(json.dumps(row), flush=True)
                 results.append(row)
                 return value
 
+            from benchmark_n64_checks import prechecks, gradient_check, postchecks
+            timed('feature_device_mask_and_checkpoint_checks', lambda: prechecks(state, actor, q, root))
             actor.zero_grad(set_to_none=True)
             timed("actor_backward", lambda: actor.logits(state).square().mean().backward())
             q.zero_grad(set_to_none=True)
@@ -223,6 +230,7 @@ def main():
                 timed("eager20_SAC_actor_backward_no_step", lambda: alg.actor_loss(state).backward())
                 for parameter in list(q.q1.parameters()) + list(q.q2.parameters()):
                     parameter.requires_grad_(True)
+            timed('eager_streamed_exact_gradient_agreement', lambda: gradient_check(state, actor, q, alg, root))
             q.zero_grad(set_to_none=True)
             with torch.no_grad():
                 target = alg.soft_value(state, targets=True, estimator="sampled")
@@ -243,16 +251,20 @@ def main():
                 for parameter in list(actor.parameters()) + list(q.parameters())
             ):
                 raise RuntimeError("NONFINITE_GRADIENT")
+            timed('synthetic_optimizer_target_and_portable_replay_checks', lambda: postchecks(state, actor, q, alg, actions, root))
             actor = q = alg = state = None
             if args.device == "cuda":
                 torch.cuda.empty_cache()
         out.write_text(
             json.dumps(
-                {"executed": True, "synthetic_only": True, "optimizer_steps": 0, "AF_calls": 0, "results": results},
+                {"executed": True, "synthetic_only": True, "optimizer_steps": {"actor":1,"critic":1,"temperature":0}, "AF_calls": 0, "results": results},
                 indent=2,
             )
             + "\n"
         )
+    except BaseException as exc:
+        out.with_suffix('.failure.json').write_text(json.dumps({'status':'STOP_FAILED','error':repr(exc),'partial_results':locals().get('results',[])},indent=2))
+        raise
     finally:
         lock.unlink(missing_ok=True)
 
