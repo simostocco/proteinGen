@@ -80,6 +80,8 @@ class PrefixEncoder(nn.Module):
     def forward(self, state):
         if type(state) != BuildState:
             raise ValueError("only literal build prefix; no edit/oracle/native fields")
+        if state.ca.device != self.tip.device:
+            raise ValueError("model/state device mismatch; transfer explicitly")
         f = features(state)
         dtype = self.tip.dtype
         t = state.t
@@ -121,16 +123,16 @@ class PrefixEncoder(nn.Module):
             allfeat = torch.cat(
                 [
                     chem,
-                    torch.zeros((t, 12), dtype=chem.dtype),
+                    torch.zeros((t, 12), dtype=chem.dtype, device=state.ca.device),
                     f["generated_terminal_flags"],
-                    torch.zeros((t, 1), dtype=chem.dtype),
+                    torch.zeros((t, 1), dtype=chem.dtype, device=state.ca.device),
                 ],
                 -1,
             ).to(dtype)
-        context = self.context(torch.tensor([state.N / 500.0, state.t / state.N], dtype=dtype))
+        context = self.context(torch.tensor([state.N / 500.0, state.t / state.N], dtype=dtype, device=state.ca.device))
         tokens = self.aa(f["token_ids"]) + self.token(allfeat) + context
         x = torch.cat([tokens, (self.tip + context)[None]], 0)
-        bias = torch.zeros((self.config.heads, t + 1, t + 1), dtype=dtype)
+        bias = torch.zeros((self.config.heads, t + 1, t + 1), dtype=dtype, device=state.ca.device)
         if t and self.config.pair_bias and not self.sequence_only:
             bias[:, :t, :t] = self.pair(
                 {k: v.to(dtype) if isinstance(v, torch.Tensor) and v.is_floating_point() else v for k, v in f.items()}

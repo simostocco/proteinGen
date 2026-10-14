@@ -39,11 +39,11 @@ def next_ca(ca, g):
     if t >= 3 and not -math.pi <= float(tau.detach()) <= math.pi:
         raise ValueError("signed torsion [-pi,pi]")
     if t == 1:
-        return ca[-1] + d * torch.tensor([1.0, 0.0, 0.0], dtype=ca.dtype)
+        return ca[-1] + d * torch.tensor([1.0, 0.0, 0.0], dtype=ca.dtype, device=ca.device)
     u = unit(ca[-1] - ca[-2])
     if t == 2:
         # canonical bootstrap gauge; only the first three positions use a fixed global axis.
-        e = torch.tensor([0.0, 1.0, 0.0], dtype=ca.dtype)
+        e = torch.tensor([0.0, 1.0, 0.0], dtype=ca.dtype, device=ca.device)
         e = unit(e - (e * u).sum() * u)
     else:
         e = ca[-3] - ca[-2]
@@ -57,6 +57,8 @@ def append(state, action):
         raise ValueError("closed state/action and unfinished episode")
     if action.mask != mask_for_step(state.t) or not state.valid.all():
         raise ValueError("mask or missing observed prefix cannot build a complete joint action")
+    if action.geometry.device != state.ca.device:
+        raise ValueError("state/action device mismatch; transfer explicitly")
     x = next_ca(state.ca, action.geometry.to(state.ca.dtype))
     return BuildState(state.residues + (action.residue,), torch.cat([state.ca, x[None]], 0), state.N, plan=state.plan)
 
@@ -65,7 +67,7 @@ def inverse(ca):
     if ca.ndim != 2 or ca.shape[1] != 3 or not torch.isfinite(ca).all():
         raise ValueError("finite mapped coordinates")
     t = len(ca) - 1
-    g = torch.zeros(3, dtype=ca.dtype)
+    g = torch.zeros(3, dtype=ca.dtype, device=ca.device)
     if t >= 1:
         g[0] = torch.linalg.vector_norm(ca[-1] - ca[-2])
     if t >= 2:
@@ -82,8 +84,8 @@ def action_from_positions(residue, ca):
     return BuildAction(residue, g, mask)
 
 
-def replay(N, actions):
-    s = BuildState.empty(N)
+def replay(N, actions, *, device="cpu"):
+    s = BuildState.empty(N, device=device)
     for a in actions:
-        s = append(s, a)
+        s = append(s, BuildAction(a.residue, a.geometry.to(device), a.mask))
     return s

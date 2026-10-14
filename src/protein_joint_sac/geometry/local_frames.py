@@ -63,22 +63,22 @@ def features(state):
         tm.append(tvalid)
     stack = lambda rows, shape: torch.stack(rows) if rows else z(shape)
     frame = stack(frames, (0, 3, 3))
-    frame_valid = torch.tensor(fv, dtype=torch.bool)
-    ids = torch.tensor([load().INDEX[a] for a in state.residues], dtype=torch.long)
-    chem = torch.as_tensor(chemistry_table(), dtype=dtype)[ids]
+    frame_valid = torch.tensor(fv, dtype=torch.bool, device=x.device)
+    ids = torch.tensor([load().INDEX[a] for a in state.residues], dtype=torch.long, device=x.device)
+    chem = torch.as_tensor(chemistry_table(), dtype=dtype, device=x.device)[ids]
     vec = x[None, :, :] - x[:, None, :]
     dist = torch.linalg.vector_norm(vec, dim=-1)
     pair_valid = valid[:, None] & valid[None, :]
     direction = vec / dist.clamp_min(1e-8)[..., None]
     orient = torch.einsum("iab,ijb->ija", frame, direction)
     relrot = torch.einsum("iab,jcb->ijac", frame, frame)
-    idx = torch.arange(t)
+    idx = torch.arange(t, device=x.device)
     longsep = (idx[:, None] - idx[None, :]).abs() >= 3
     w = torch.relu(1 - dist / 8.0).square() * pair_valid * longsep
     crowd = w.sum(-1)
     ci = load().CHEM_NAMES.index("carbon_only_sidechain")
     packing = (w * chem[:, ci, None] * chem[None, :, ci]).sum(-1)
-    terminals = torch.zeros((t, 3), dtype=torch.bool)
+    terminals = torch.zeros((t, 3), dtype=torch.bool, device=x.device)
     if t:
         terminals[0, 0] = True
         terminals[-1, 1] = t == state.N
@@ -92,11 +92,11 @@ def features(state):
         "right_handed_frame": frame,
         "frame_valid": frame_valid,
         "trailing_CA_bond_A": stack(bonds, (0,)),
-        "CA_bond_valid": torch.tensor(bm, dtype=torch.bool),
+        "CA_bond_valid": torch.tensor(bm, dtype=torch.bool, device=x.device),
         "trailing_CA_bend_rad": stack(bends, (0,)),
-        "CA_bend_valid": torch.tensor(am, dtype=torch.bool),
+        "CA_bend_valid": torch.tensor(am, dtype=torch.bool, device=x.device),
         "trailing_CA_virtual_torsion_rad": stack(torsions, (0,)),
-        "CA_torsion_valid": torch.tensor(tm, dtype=torch.bool),
+        "CA_torsion_valid": torch.tensor(tm, dtype=torch.bool, device=x.device),
         "pair_distance_A": dist,
         "pair_valid": pair_valid,
         "pair_local_direction": orient,

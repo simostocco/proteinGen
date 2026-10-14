@@ -83,11 +83,15 @@ class BuildState:
             raise ValueError("canonical20 immutable prefix only")
         if len(self.residues) > self.N or self.ca.shape != (len(self.residues), 3):
             raise ValueError("literal prefix; no future/padded coordinates")
-        if self.ca.device.type != "cpu" or not self.ca.is_floating_point() or not torch.isfinite(self.ca).all():
-            raise ValueError("CPU finite coordinates required in G0-G2")
+        if (
+            self.ca.device.type not in ["cpu", "cuda"]
+            or self.ca.dtype not in [torch.float32, torch.float64]
+            or not torch.isfinite(self.ca).all()
+        ):
+            raise ValueError("finite FP32/FP64 coordinates on CPU/CUDA required")
         if self.valid is None:
-            object.__setattr__(self, "valid", torch.ones(self.t, dtype=torch.bool))
-        if self.valid.shape != (self.t,) or self.valid.dtype != torch.bool or self.valid.device.type != "cpu":
+            object.__setattr__(self, "valid", torch.ones(self.t, dtype=torch.bool, device=self.ca.device))
+        if self.valid.shape != (self.t,) or self.valid.dtype != torch.bool or self.valid.device != self.ca.device:
             raise ValueError("explicit aligned validity")
         if type(self.plan) != PlanRef or self.plan.kind != "NO_PLAN" or self.geometry_version != GEOMETRY_VERSION:
             raise ValueError("unapproved plan/geometry version")
@@ -97,8 +101,13 @@ class BuildState:
         return len(self.residues)
 
     @classmethod
-    def empty(cls, N):
-        return cls((), torch.empty((0, 3), dtype=torch.float64), N)
+    def empty(cls, N, *, device="cpu", dtype=torch.float64):
+        return cls((), torch.empty((0, 3), dtype=dtype, device=device), N)
+
+    def to(self, device):
+        return BuildState(
+            self.residues, self.ca.to(device), self.N, self.valid.to(device), self.plan, self.geometry_version
+        )
 
 
 @dataclass(frozen=True)
@@ -111,7 +120,12 @@ class BuildAction:
     def __post_init__(self):
         if self.residue not in AA or len(self.residue) != 1:
             raise ValueError("chemical action canonical20 only")
-        if self.geometry.shape != (3,) or self.geometry.device.type != "cpu" or not torch.isfinite(self.geometry).all():
+        if (
+            self.geometry.shape != (3,)
+            or self.geometry.device.type not in ["cpu", "cuda"]
+            or self.geometry.dtype not in [torch.float32, torch.float64]
+            or not torch.isfinite(self.geometry).all()
+        ):
             raise ValueError("three finite geometry slots required")
         if self.mask not in [(False, False, False), (True, False, False), (True, True, False), (True, True, True)]:
             raise ValueError("bootstrap geometry mask")

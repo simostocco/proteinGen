@@ -7,7 +7,7 @@ def diagnostic_bc_loss(actor, target, geometry_weight=1.0):
         raise ValueError("separate supervision target required")
     h = actor.encode(target.state)
     aa_loss = torch.nn.functional.cross_entropy(
-        actor.aa_head(h)[None], torch.tensor([AA.index(target.next_action.residue)])
+        actor.aa_head(h)[None], torch.tensor([AA.index(target.next_action.residue)], device=h.device)
     )
     geom_loss = -actor.geometry_distribution(target.state, target.next_action.residue, h).log_prob(
         target.next_action.geometry

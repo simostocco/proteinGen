@@ -3,7 +3,7 @@
 import json, sqlite3
 import torch
 from dataclasses import asdict
-from ..contracts import d_path, BuildEpisode, BuildAction, GeneratedProtein
+from ..contracts import d_path, BuildEpisode, BuildAction, GeneratedProtein, digest
 from ..geometry.ca_builder import replay
 
 
@@ -14,18 +14,32 @@ class EpisodeReplay:
         self.db.execute("PRAGMA synchronous=FULL")
         self.db.execute("CREATE TABLE IF NOT EXISTS episodes(id TEXT PRIMARY KEY,payload TEXT NOT NULL,reward TEXT)")
 
-    def store(self, episode):
-        payload = json.dumps(
-            {
-                "N": episode.N,
-                "behavior": episode.behavior,
-                "actions": [
-                    {"residue": a.residue, "geometry": a.geometry.detach().tolist(), "mask": a.mask}
-                    for a in episode.actions
-                ],
-            },
-            sort_keys=True,
-        )
+    def store(self, episode, generated_protein=None):
+        record = {
+            "N": episode.N,
+            "behavior": episode.behavior,
+            "actions": [
+                {"residue": a.residue, "geometry": a.geometry.detach().cpu().tolist(), "mask": a.mask}
+                for a in episode.actions
+            ],
+        }
+        if generated_protein is not None:
+            reconstructed = GeneratedProtein(replay(episode.N, episode.actions))
+            if generated_protein.sequence_sha256 != reconstructed.sequence_sha256:
+                raise ValueError("stored proposal sequence differs from replay")
+            # Exact proposal bytes remain authoritative; roundtrip tolerance only checks trace correspondence.
+            torch.testing.assert_close(
+                generated_protein.state.ca.detach().cpu().double(),
+                reconstructed.state.ca,
+                rtol=1e-8 if generated_protein.state.ca.dtype == torch.float64 else 1e-4,
+                atol=1e-8 if generated_protein.state.ca.dtype == torch.float64 else 1e-4,
+            )
+            record.update(
+                proposal_ca=generated_protein.state.ca.detach().cpu().tolist(),
+                proposal_sha256=generated_protein.geometry_sha256,
+                geometry_version=generated_protein.state.geometry_version,
+            )
+        payload = json.dumps(record, sort_keys=True, allow_nan=False)
         old = self.db.execute("SELECT payload FROM episodes WHERE id=?", (episode.episode_id,)).fetchone()
         if old and old[0] != payload:
             raise ValueError("immutable episode mismatch")
@@ -49,7 +63,11 @@ class EpisodeReplay:
     def attach(self, identity, card):
         e = self.episode(identity)
         p = GeneratedProtein(replay(e.N, e.actions))
-        if (card.sequence_sha256, card.candidate_geometry_sha256) != (p.sequence_sha256, p.geometry_sha256):
+        stored = json.loads(self.db.execute("SELECT payload FROM episodes WHERE id=?", (identity,)).fetchone()[0])
+        proposal_sha = stored.get("proposal_sha256", p.geometry_sha256)
+        if "proposal_ca" in stored and digest(stored["proposal_ca"]) != proposal_sha:
+            raise ValueError("stored authoritative proposal corrupted")
+        if (card.sequence_sha256, card.candidate_geometry_sha256) != (p.sequence_sha256, proposal_sha):
             raise ValueError("reward different proposal")
         payload = json.dumps(asdict(card), sort_keys=True, allow_nan=False)
         self.db.execute("BEGIN IMMEDIATE")

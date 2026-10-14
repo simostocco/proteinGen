@@ -16,11 +16,19 @@ class EditActor(nn.Module):
     def forward(self, state):
         if type(state) != EditState:
             raise ValueError("edit requires completed evaluated sequence")
-        ids = torch.tensor([AA.index(a) for a in state.protein.sequence])
+        ids = torch.tensor([AA.index(a) for a in state.protein.sequence], device=self.emb.weight.device)
         N = len(ids)
         conf = state.oracle.plddt
-        known = torch.ones(N) if conf is not None else torch.zeros(N)
-        value = torch.tensor(conf, dtype=torch.float32) / 100.0 if conf is not None else torch.zeros(N)
+        known = (
+            torch.ones(N, device=self.emb.weight.device)
+            if conf is not None
+            else torch.zeros(N, device=self.emb.weight.device)
+        )
+        value = (
+            torch.tensor(conf, dtype=self.emb.weight.dtype, device=self.emb.weight.device) / 100.0
+            if conf is not None
+            else torch.zeros(N, device=self.emb.weight.device)
+        )
         h = self.context(torch.cat([self.emb(ids), value[:, None], known[:, None]], -1))
         logits = self.substitute(h)
         logits = logits.scatter(1, ids[:, None], float("-inf"))
@@ -44,7 +52,11 @@ class EditCritic(nn.Module):
             torch.cat(
                 [
                     self.emb.weight[r],
-                    torch.tensor([i / state.protein.state.N, state.remaining_calls / 10.0, float(action.stop)]),
+                    torch.tensor(
+                        [i / state.protein.state.N, state.remaining_calls / 10.0, float(action.stop)],
+                        dtype=self.emb.weight.dtype,
+                        device=self.emb.weight.device,
+                    ),
                 ]
             )
         ).squeeze()

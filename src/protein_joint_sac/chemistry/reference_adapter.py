@@ -51,7 +51,7 @@ def reference_features(state, mode="INFERENCE"):
     if type(state) != BuildState:
         raise ValueError("closed BuildState only")
     m = load()
-    coords = tuple(tuple(x.tolist()) if valid else None for x, valid in zip(state.ca.detach(), state.valid))
+    coords = tuple(tuple(x.tolist()) if valid else None for x, valid in zip(state.ca.detach().cpu(), state.valid.cpu()))
     p = m.PrefixState(state.residues, coords, state.N, state.t)
     return m.actor_preprocess(p, mode=mode, plan=None)
 
