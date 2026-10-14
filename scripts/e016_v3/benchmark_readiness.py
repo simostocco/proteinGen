@@ -92,7 +92,7 @@ def main():
         or card["max_artifact_bytes"] > 256 * 1024**2
     ):
         raise SystemExit("BLOCKED_UNBOUNDED_CARD")
-    # All guards before torch/CUDA initialization. This task never supplies an approved card.
+    # All guards before torch/CUDA initialization. A scoped approved card is required.
     import shutil
 
     if shutil.disk_usage(root).free < 10 * 1024**3 + card["max_artifact_bytes"]:
@@ -201,6 +201,9 @@ def main():
                         peak_allocated_bytes=torch.cuda.max_memory_allocated(),
                         peak_reserved_bytes=torch.cuda.max_memory_reserved(),
                     )
+                # Preserve measurements even when a guard rejects the operation.
+                with out.with_suffix('.guard_telemetry.jsonl').open('a') as f:
+                    f.write(json.dumps(row) + '\n'); f.flush(); os.fsync(f.fileno())
                 if row.get("peak_allocated_bytes", 0) > card["max_peak_allocated_bytes"]:
                     raise RuntimeError("BLOCKED_PEAK_VRAM")
                 if row["RSS_bytes"] > card["max_RSS_bytes"] or time.monotonic() - start > card["max_wall_seconds"]:
@@ -263,7 +266,7 @@ def main():
             + "\n"
         )
     except BaseException as exc:
-        out.with_suffix('.failure.json').write_text(json.dumps({'status':'STOP_FAILED','error':repr(exc),'partial_results':locals().get('results',[])},indent=2))
+        out.with_suffix('.failure.json').write_text(json.dumps({'status':'STOP_FAILED','error':repr(exc),'partial_results':locals().get('results',[]),'RSS_peak_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,'elapsed_seconds':time.monotonic()-start,'CUDA_allocated_peak_bytes':torch.cuda.max_memory_allocated() if args.device=='cuda' else None,'CUDA_reserved_peak_bytes':torch.cuda.max_memory_reserved() if args.device=='cuda' else None},indent=2))
         raise
     finally:
         lock.unlink(missing_ok=True)
