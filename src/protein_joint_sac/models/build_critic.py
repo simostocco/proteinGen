@@ -2,6 +2,14 @@ import copy
 import torch
 from torch import nn
 from .dense_geometry_attention import PrefixEncoder, ModelConfig
+from contextlib import contextmanager
+from contextvars import ContextVar
+_CURRENT_CACHE=ContextVar("frozen_Q_current_cache",default=None)
+@contextmanager
+def reuse_frozen_current(state):
+    token=_CURRENT_CACHE.set((state,{}))
+    try:yield
+    finally:_CURRENT_CACHE.reset(token)
 from ..geometry.ca_builder import append
 
 
@@ -13,7 +21,12 @@ class CandidateQ(nn.Module):
         self.head = nn.Sequential(nn.Linear(2 * c.width, c.width), nn.SiLU(), nn.Linear(c.width, 1))
 
     def forward(self, state, action):
-        return self.head(torch.cat([self.current(state), self.candidate(append(state, action))])).squeeze(-1)
+        cache=_CURRENT_CACHE.get()
+        if cache is not None and cache[0] is state and not state.ca.requires_grad and not any(p.requires_grad for p in self.current.parameters()):
+            if id(self) not in cache[1]:cache[1][id(self)]=self.current(state)
+            current=cache[1][id(self)]
+        else:current=self.current(state)
+        return self.head(torch.cat([current, self.candidate(append(state, action))])).squeeze(-1)
 
 
 class TwinCritics(nn.Module):

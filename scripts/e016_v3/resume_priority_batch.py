@@ -2,15 +2,16 @@ import sys
 from pathlib import Path
 sys.path.insert(0,'/mnt/d/Simone/proteinGen_data/pdb_only_v3_20261013')
 from v3_common import *
+LIMIT["initial_download_cap_bytes"]=4*2**30 # user-approved scope; fresh20GiBpeak admission, no source-size changes
 # Same acquisition/parser contract; new diagnostics preserve historical summaries.
 def write(name,obj,mutable=False):
- p=Path(os.environ.get('E016_BATCH_EVIDENCE_ROOT','/mnt/d/Simone/proteinGen_data/e016_cuda_n64_pdb_certification_20261014_v1'))/name
+ p=Path(os.environ.get('E016_BATCH_EVIDENCE_ROOT','/mnt/d/Simone/proteinGen_data/e016_gpu_unified_pdb_20261015_v1'))/name
  if p.exists():raise RuntimeError('immutable continuation evidence collision '+str(p))
  p.write_text(json.dumps(obj,indent=2)+'\n')
 
 import argparse,subprocess,gzip,collections
 p=argparse.ArgumentParser();p.add_argument('--phase',choices=['pilot','incremental'],required=True);p.add_argument('--limit',type=int,default=None);args=p.parse_args()
-EVIDENCE_ROOT=Path(os.environ.get('E016_BATCH_EVIDENCE_ROOT','/mnt/d/Simone/proteinGen_data/e016_cuda_n64_pdb_certification_20261014_v1')).resolve()
+EVIDENCE_ROOT=Path(os.environ.get('E016_BATCH_EVIDENCE_ROOT','/mnt/d/Simone/proteinGen_data/e016_gpu_unified_pdb_20261015_v1')).resolve()
 if not str(EVIDENCE_ROOT).startswith('/mnt/d/') or not EVIDENCE_ROOT.is_dir():raise SystemExit('D_ONLY_BATCH_EVIDENCE_ROOT_REQUIRED')
 if (EVIDENCE_ROOT/('ACQUISITION_'+args.phase.upper()+'_SUMMARY.json')).exists():raise SystemExit('NEW_BATCH_EVIDENCE_ROOT_REQUIRED_BEFORE_ACQUISITION')
 queue=json.loads((ROOT/'catalogs/download_queue.json').read_text())

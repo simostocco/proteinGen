@@ -75,6 +75,12 @@ class HybridSAC:
         }
 
     def backward_actor_exact_streamed(self, state):
+        from ..geometry.local_frames import reuse_static_prefix
+        from ..models.build_critic import reuse_frozen_current
+        with reuse_static_prefix(state),reuse_frozen_current(state):
+            return self._backward_actor_exact_streamed(state)
+
+    def _backward_actor_exact_streamed(self, state):
         """Same 20-category objective, one Q graph at a time; no optimizer step.
 
         State is a detached replay observation. Accumulate head/selected-AA gradients
