@@ -13,15 +13,16 @@ baseline=meminfo();headroom=baseline['MemTotal']*.10
 if baseline['MemAvailable']<=headroom:raise RuntimeError('HOST_ALREADY_PRESSURED')
 if shutil.disk_usage(R).free<11*2**30:raise RuntimeError('DISK_RESERVE')
 fd=os.open(lock,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600);os.write(fd,str(os.getpid()).encode());os.close(fd)
+run_id=os.environ.get('E016_BENCH_RUN_ID','001')
 results=[]
 try:
  for N in [64,128,256,500]:
-  folder=R/'benchmarks'/f'N{N}'
+  folder=R/'benchmarks'/f'N{N}_run{run_id}'
   if folder.exists():raise RuntimeError('IMMUTABLE_BENCHMARK_COLLISION')
   env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='0'
   cmd=[sys.executable,'-B',str(R/'launch.py'),str(R/'source/scripts/e016_v3/benchmark_complete_cuda.py'),'--length',str(N)]
   t=time.monotonic();pressure_samples=0;peakrss=0;peakdevice=None;previous_swap=baseline['SwapTotal']-baseline['SwapFree']
-  with (R/'logs'/f'CUDA_N{N}.log').open('w') as output,(R/'benchmarks'/f'N{N}_system_telemetry.jsonl').open('w') as telemetry:
+  with (R/'logs'/f'CUDA_N{N}_run{run_id}.log').open('w') as output,(R/'benchmarks'/f'N{N}_run{run_id}_system_telemetry.jsonl').open('w') as telemetry:
    child=subprocess.Popen(cmd,stdout=output,stderr=subprocess.STDOUT,env=env,start_new_session=True)
    while child.poll() is None:
     mi=meminfo();mi.update(pid=child.pid,RSS_bytes=rss(child.pid),elapsed_seconds=time.monotonic()-t,free_disk_bytes=shutil.disk_usage(R).free)
@@ -41,8 +42,8 @@ try:
     time.sleep(.5)
    code=child.wait()
   result={'N':N,'exit_code':code,'RSS_sampled_peak_bytes':peakrss,'total_GPU_device_sampled_peak_MiB':peakdevice,'wall_seconds':time.monotonic()-t,'baseline':baseline,'derived_OS_headroom_bytes':headroom,'fixed_process_RSS_cap':None,'fixed_allocator_fraction_cap':None}
-  (R/'benchmarks'/f'N{N}_HOST_RECEIPT.json').write_text(json.dumps(result,indent=2));results.append(result)
+  (R/'benchmarks'/f'N{N}_run{run_id}_HOST_RECEIPT.json').write_text(json.dumps(result,indent=2));results.append(result)
   print(json.dumps(result),flush=True)
   if code or not (folder/'RESULT.json').exists():raise RuntimeError(f'LENGTH_FAILED_N{N}; preserve diagnostics before optimization')
- (R/'benchmarks/LADDER_COMPLETE.json').write_text(json.dumps(results,indent=2))
+ (R/f'benchmarks/LADDER_COMPLETE_run{run_id}.json').write_text(json.dumps(results,indent=2))
 finally:lock.unlink(missing_ok=True)

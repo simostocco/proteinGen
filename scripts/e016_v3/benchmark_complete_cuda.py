@@ -3,7 +3,7 @@ import argparse,os,time,json,resource,traceback,sys,gc
 from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('--length',type=int,required=True);args=p.parse_args();N=args.length
 assert N in [64,128,256,500]
-R=Path(os.environ['E016_ARTIFACT_ROOT']);out=R/'benchmarks'/f'N{N}';out.mkdir(exist_ok=False)
+R=Path(os.environ['E016_ARTIFACT_ROOT']);out=R/'benchmarks'/f'N{N}_run'+os.environ.get('E016_BENCH_RUN_ID','001');out.mkdir(exist_ok=False)
 import torch
 from protein_joint_sac.contracts import BuildAction,BuildState,BuildEpisode,GeneratedProtein,RewardCard,AA
 from protein_joint_sac.geometry.ca_builder import replay,mask_for_step,append
@@ -19,6 +19,7 @@ from benchmark_n64_checks import gradient_check
 
 torch.set_num_threads(1);torch.manual_seed(1516);torch.cuda.manual_seed_all(1516)
 torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
+(out/'benchmarks').mkdir()
 rows=[];started=time.monotonic();stage='initialize'
 def timed(name,fn):
  global stage
@@ -43,7 +44,7 @@ try:
  f=timed('geometry_and_14feature_reference_outputs',lambda:features(state))
  assert all(v.device.type=='cuda' for v in f.values() if isinstance(v,torch.Tensor))
  biasnet=DensePairBias(4).cuda()
- with torch.no_grad():timed('dense_geometric_chemical_pair_bias',lambda:biasnet({k:v.float() if v.is_floating_point() else v for k,v in f.items()}))
+ with torch.no_grad():timed('dense_geometric_chemical_pair_bias',lambda:biasnet({k:v.float() if isinstance(v,torch.Tensor) and v.is_floating_point() else v for k,v in f.items()}))
  del f,biasnet
  h=timed('actor_forward',lambda:actor.encode(state));logp=torch.log_softmax(actor.aa_head(h),-1);assert torch.isfinite(logp).all() and len(logp)==20
  residue=AA[int(torch.distributions.Categorical(logits=logp).sample())]
@@ -54,7 +55,7 @@ try:
  with torch.no_grad():timed('independent_Q_forward',lambda:(q.q1(state,act),q.q2(state,act)))
  del h,logp,g,lg,act,candidate,dist,grad;gc.collect()
  if N==64:
-  timed('eager_streamed_exact_gradient_and_FD_equivalence',lambda:gradient_check(state,actor,q,alg,R))
+  timed('eager_streamed_exact_gradient_and_FD_equivalence',lambda:gradient_check(state,actor,q,alg,out))
   actor.zero_grad(set_to_none=True);q.zero_grad(set_to_none=True);gc.collect();torch.cuda.empty_cache()
   # Same parameter shapes and dense bias; explicitly compare SDPA execution, no backend switch.
   import copy
