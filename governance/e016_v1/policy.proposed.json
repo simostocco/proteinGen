@@ -1,0 +1,97 @@
+{
+  "schema_version": "e016-governance/1",
+  "policy_id": "e016-approach-c-review-v1",
+  "stage": "PREPARATION_ONLY",
+  "base_revision": "5c09c4baf3ea506a7f202c24a9f9568dfe174e3e",
+  "evidence": [
+    {
+      "path": "/mnt/d/Simone/proteinGen_data/e016_gpu_unified_pdb_20261015_v1/FINAL_COUNTS.json",
+      "sha256": "c1c2278d2df0a65ec2ac222a8dc1864e6373575daeac92f8cfbf9fcdf79ceef1",
+      "role": "recorded_population_not_recomputed"
+    },
+    {
+      "path": "/mnt/d/Simone/proteinGen_data/e016_gpu_unified_pdb_20261015_v1/RELEASE_SCOPE_AND_POLICY.json",
+      "sha256": "1de528cfe479918d4620ae0868f726d534c5b83d8e483cc2f3fe92e88cf27631",
+      "role": "historical_policy_not_adopted"
+    },
+    {
+      "path": "/mnt/d/Simone/proteinGen_data/e016_gpu_unified_pdb_20261015_v1/homology/POOL_FREEZE.json",
+      "sha256": "9c50314e70cb5bea998926274610ca7f8f393773428c095e1551cd05a90908fa",
+      "role": "historical_graph_summary"
+    },
+    {
+      "path": "/mnt/d/Simone/proteinGen_data/e016_gpu_unified_pdb_20261015_v1/release/split_proposal_f9e3f36250e3/SPLIT_PROPOSAL_REPORT.json",
+      "sha256": "8697af2e7f0d2aef1797859ed3a80238e8e427607f5d3ee3f44fbed0d58fc7b2",
+      "role": "historical_candidate_allocation"
+    },
+    {
+      "path": "/mnt/d/Simone/proteinGen_data/e016_v3_blocker_resolution_20261014_v1/NATIVE_CONTROL_PANEL.json",
+      "sha256": "89e40597db85e0a5f759b5d2cc464a758b0dab40a061b4f9f3f7f503242beadd",
+      "role": "preserved_selected_native_control_identities_and_historical_evidence"
+    }
+  ],
+  "relationships": {
+    "exact_identity": {
+      "mode": "HARD_CLOSURE",
+      "predicate": "IDENTITY_INVARIANT_V1",
+      "justification": "Exact identity and observation ownership are identity invariants, not a similarity threshold."
+    },
+    "similarity": {
+      "mode": "UNRESOLVED",
+      "predicate": null,
+      "justification": "Scientific predicate and permitted consumer restriction require separate approval. No production edge is reclassified."
+    },
+    "fragment": {
+      "mode": "UNRESOLVED",
+      "predicate": null,
+      "justification": "Scientific predicate and permitted consumer restriction require separate approval. No production edge is reclassified."
+    },
+    "construct": {
+      "mode": "UNRESOLVED",
+      "predicate": null,
+      "justification": "Scientific predicate and permitted consumer restriction require separate approval. No production edge is reclassified."
+    },
+    "source_context": {
+      "mode": "UNRESOLVED",
+      "predicate": null,
+      "justification": "Scientific predicate and permitted consumer restriction require separate approval. No production edge is reclassified."
+    },
+    "observation_ownership": {
+      "mode": "HARD_CLOSURE",
+      "predicate": "IDENTITY_INVARIANT_V1",
+      "justification": "Exact identity and observation ownership are identity invariants, not a similarity threshold."
+    }
+  },
+  "shadow_policy": "UNRESOLVED",
+  "controls": {
+    "reservation_scope": "UNRESOLVED",
+    "role_separation": "REQUIRED",
+    "selected_control_identities_preserved": true
+  },
+  "partitions": {
+    "target_ratios": {
+      "TRAIN": 0.8,
+      "VALIDATION": 0.1,
+      "TEST": 0.1
+    },
+    "target_semantics": "SOFT_OBJECTIVE",
+    "denominator": "UNRESOLVED",
+    "seed": 42
+  },
+  "evaluation": {
+    "minima": {
+      "unique_sequences": null,
+      "independent_groups": null,
+      "joint_observations": null,
+      "joint_identities": null
+    },
+    "required_length_bands": null,
+    "required_methods": null,
+    "required_contexts": null
+  },
+  "guarantees": {
+    "real_data_status": "NOT_EVALUATED",
+    "remote_homology_eliminated": false,
+    "production_admission": false
+  }
+}
