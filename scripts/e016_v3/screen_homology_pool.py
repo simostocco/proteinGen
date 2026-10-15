@@ -2,6 +2,8 @@
 import os,sys,json,time,subprocess,resource,shutil,signal,pickle,hashlib,collections
 from pathlib import Path
 R=Path(os.environ['E016_ARTIFACT_ROOT']);D=R/'homology';freeze=json.load(open(D/'POOL_FREEZE.json'))
+if (D/'GLOBAL_SCREEN_COMPLETE.json').exists():
+ completed=json.load(open(D/'GLOBAL_SCREEN_COMPLETE.json'));assert completed['pool_sha256']==freeze['FASTA_sha256'];print(json.dumps({'status':'ALREADY_COMPLETE_USE_component_screen_FOR_VERIFIED_RESUME','queries':completed['query_records']}),flush=True);sys.exit(0)
 assert freeze['full_source_population_complete'];N=freeze['node_sequences'];threads=min(4,max(1,(os.cpu_count() or 2)//2));RESERVE=10*2**30
 
 from homology_tools import run,mem,diskbytes

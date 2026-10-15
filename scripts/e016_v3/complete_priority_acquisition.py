@@ -3,6 +3,9 @@ import os,sys,json,subprocess,time,shutil
 from pathlib import Path
 R=Path(os.environ['E016_ARTIFACT_ROOT']);P=Path('/mnt/d/Simone/proteinGen_data/pdb_only_v3_20261013')
 queue=json.load(open(P/'catalogs/download_queue.json'));allowed={x['entry_id'] for x in queue};assert len(allowed)==2440
+if (R/'acquisition/COMPLETE.json').exists():
+ previous=json.load(open(R/'acquisition/COMPLETE.json'));latest={x['entry_id']:x for x in map(json.loads,(P/'DOWNLOAD_JOURNAL.jsonl').open())};assert allowed<=latest.keys();actual={status:sum(latest[k]['status']==status for k in allowed) for status in {latest[k]['status'] for k in allowed}};assert actual==previous['statuses']
+ print(json.dumps({'status':'ALREADY_COMPLETE_NO_WRITES_NO_HTTP','priority_entries':len(allowed),'terminal_states':actual}),flush=True);sys.exit(0)
 start=time.monotonic();batch=0
 while True:
  latest={x['entry_id']:x for x in map(json.loads,(P/'DOWNLOAD_JOURNAL.jsonl').open())}

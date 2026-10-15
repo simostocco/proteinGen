@@ -57,6 +57,9 @@ def screen(pref,querydb,targetdb,parent,out,query_to_node,skip_mode='CONNECTED',
  (out/'COMPLETE.json').write_text(json.dumps(report,indent=2));return report,forests,c
 
 def main():
+ if (H/'GLOBAL_SCREEN_COMPLETE.json').exists():
+  done=json.load(open(H/'GLOBAL_SCREEN_COMPLETE.json'));freeze=json.load(open(H/'POOL_FREEZE.json'));assert done['pool_sha256']==freeze['FASTA_sha256']==hash_file(H/'all_full_sequences.fasta');assert done['full_edges_sha256']==hash_file(H/'full_edges.tsv');assert done['query_records']==freeze['node_sequences']
+  print(json.dumps({'status':'ALREADY_COMPLETE_NO_WRITES','queries':done['query_records'],'forest_sha256':done['full_edges_sha256']}),flush=True);return
  pool=pickle.load(open(H/'initial_graph.pkl','rb'));freeze=json.load(open(H/'POOL_FREEZE.json'));pref=Path(str(next((H/'full_scratch').glob('*/pref_0.index')))[:-6]);assert len(Reader(pref).index)==freeze['node_sequences'];N=freeze['node_sequences']
  lookup={int(x.split()[0]):int(x.split()[1]) for x in (H/'all_db.lookup').read_text().splitlines()};assert lookup=={i:i for i in range(N)}
  report,forests,c=screen(pref,H/'all_db',H/'all_db',pool['parent'],H/'component_stream_v1',lookup)
