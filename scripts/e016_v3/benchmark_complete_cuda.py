@@ -3,7 +3,7 @@ import argparse,os,time,json,resource,traceback,sys,gc
 from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('--length',type=int,required=True);args=p.parse_args();N=args.length
 assert N in [64,128,256,500]
-R=Path(os.environ['E016_ARTIFACT_ROOT']);out=R/'benchmarks'/f'N{N}_run'+os.environ.get('E016_BENCH_RUN_ID','001');out.mkdir(exist_ok=False)
+R=Path(os.environ['E016_ARTIFACT_ROOT']);out=R/'benchmarks'/(f'N{N}_run'+os.environ.get('E016_BENCH_RUN_ID','001'));out.mkdir(exist_ok=False)
 import torch
 from protein_joint_sac.contracts import BuildAction,BuildState,BuildEpisode,GeneratedProtein,RewardCard,AA
 from protein_joint_sac.geometry.ca_builder import replay,mask_for_step,append
