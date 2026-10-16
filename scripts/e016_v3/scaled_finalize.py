@@ -11,6 +11,13 @@ from protein_joint_sac.data.certified_unified import file_sha
 from protein_joint_sac.geometry.ca_builder import inverse
 R=c.R
 
+def write_report(path,text):
+ path=Path(path)
+ if not isinstance(text,str):raise TypeError("Markdown report requires text")
+ part=path.with_name(path.name+".part")
+ part.write_text(text)
+ part.replace(path)
+
 def panel(data,matched):
  ids=data.jointids['TEST'] if matched else data.ids['TEST'];rng=random.Random(4026);chosen=[]
  for lo,hi in [(20,64),(65,128),(129,256),(257,384),(385,500)]:
@@ -133,14 +140,14 @@ Single-seed point estimates are descriptive, not replicated proof of geometry/ch
 
 Selected full-state checkpoints:\n"""+'\n'.join(f"- {n}: {s['path']} SHA256 {s['sha256']}" for n,s in selections.items())+'\n'
  text+='\nMeasured runtime and final-interval behavior:\n'+'\n'.join(f"- {n}: {x['elapsed_training_seconds']/3600:.3f}h; live/effective batch {x['live_batch']}/{x['effective_batch']}; observed device utilization mean/max {x['device_utilization_percent_mean_observed']:.1f}/{x['device_utilization_percent_max_observed']:.1f}%; {x['trend']}." for n,x in runtime.items())+'\n\nSee MATCHED_COMPARISONS.json for same-panel AA contrasts at identical10000-update exposure and selected-checkpoint TEST metrics. Source/allocator recovery overhead is retained; optimized-phase Torch peaks and device-wide telemetry are separate from earlier oversubscribed attempts. Four samples per length give descriptive generation diagnostics, not a statistically complete diversity estimate.\n'
- c.write(R/'FINAL_SCALED_TRAINING_REPORT.md',text)
+ write_report(R/'FINAL_SCALED_TRAINING_REPORT.md',text)
  docs={
  'ARCHITECTURE_10M_CONFIGS.md':'Width352 /8blocks /8heads /head dimension44 /FFN4 /RoPE /dropout0 /max500. Sequence pair module dormant/frozen and excluded from trainable counts. Joint distributions, bootstrap and builder unchanged. All scratch; paired initialization hashes verified. See configs/FROZEN.json and MODEL_PARAMETER_COUNTS.json.',
  'GPU_BATCH_OPTIMIZATION.md':'Measured64/128/256/384/500 and live1/2/4/8/16/32/64 in FP32/BF16. WDDM oversubscription beyond physical8GB severely reduces throughput; oversized batches not selected. Effective64; sequence live32 and joint live16. BF16 parity passed0.000356 loss error and0.00725 relative gradient L2. CPU reference logits/loss/gradient/optimizer/padding/checkpoint tests passed. Activation checkpointing saved memory but was slower at selected batch.',
  'CHECKPOINT_AND_RESUME.md':'Immutable atomic full-state checkpoints plus SHA sidecars. Preserve model/AdamW/scheduler/RNG/sampler/exposure, config/data/geometry/chemistry/prior/source hashes and selection metadata. Preflight12M restart and each arm update251 reconstruction verified. S1 original250 metadata failure preserved; separately SHA-verified normalization converted NumPy validation scalars to built-in numbers without altering tensors or stochastic state. Same-runtime numerical guarantees only.',
  'PRIOR_AND_SOURCE_QUALITY_REPORT.md':'TRAIN prior/source membership hashes rechecked. Source-extreme likelihood preflight rejected empirical narrow-distance head initialization; same ordinary initialization in J1/J2. Six known native extreme pairs across five TRAIN identities retained, not repaired or silently excluded. Anomaly exposure and gradient clipping recorded. Priors describe CA statistics, not rotamers/energy/folding stability.',
  'NEXT_RESEARCH_RECOMMENDATIONS.md':'Compare S1/J1 and J1/J2 at matched exposure and compute using held-out metrics and independent free-running geometry. S2 has different data and fewer exposures per identity. Repeat seeds before superiority claims. No tuning on final TEST. SAC, AlphaFold calibration, E015 and editing remain separate unexecuted research stages.'}
- for n,s in docs.items():c.write(R/n,'# '+n.removesuffix('.md').replace('_',' ')+'\n'+s+'\n')
+ for n,s in docs.items():write_report(R/n,'# '+n.removesuffix('.md').replace('_',' ')+'\n'+s+'\n')
  c.write(R/'RESOURCE_AND_RUNTIME_REPORT.json',{'models':completed,'measured_runtime_and_utilization':runtime,'allocator_runtime_change':json.load(open(R/'ALLOCATOR_RUNTIME_CHANGE.json')),'D_free_bytes':shutil.disk_usage(R).free,'root_logical_bytes':c.size(R),'GPU':c.gpu(),'source_commit':commit,'source_status':status,'TEST_events':1,'SAC_updates':0,'AF_calls':0,'protected_deletions':0})
  artifacts={str(p.relative_to(R)):file_sha(p) for p in sorted(R.rglob('*')) if p.is_file() and '.git' not in p.parts and p.name not in ['PROVENANCE_SHA256.json','FINALIZE.log']}
  c.write(R/'PROVENANCE_SHA256.json',{'source_commit':commit,'artifact_sha256':artifacts,'selected_checkpoints':selections,'dataset_manifest_sha256':file_sha(P/'PROPOSAL_MANIFEST.json'),'prior_seal_sha256':file_sha(PILOT/'PROVENANCE_SHA256.json'),'final_TEST_events':1})
