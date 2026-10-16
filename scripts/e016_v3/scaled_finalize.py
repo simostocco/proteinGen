@@ -66,6 +66,12 @@ def main():
   generated=[]
   for length in [20,64,128,256,384,500]:
    for replicate in range(4):generated.append(eng.generate(length,913000+length*16+replicate))
+  for sample in generated:
+   if sample.get('geometry') is not None:
+    x=np.asarray(sample['generated_CA_A']);distance=np.linalg.norm(x[:,None]-x[None,:],axis=-1);index=np.arange(len(x));long_pairs=np.triu(np.abs(index[:,None]-index[None,:])>=24,1);g=internal(x)
+    sample['geometry']['CA_contacts_sep_ge24_dist_lt8_A']=int(((distance<8.)&long_pairs).sum())
+    sample['geometry']['long_range_contact_definition']='C-alpha proxy, sequence separation>=24, distance<8 A, upper triangle; not a C-beta/all-atom contact label'
+    sample['geometry']['distributions']={'distance_histogram_0_10_A_128bins':np.histogram(g[1:,0],128,(0,10))[0].tolist(),'distance_outside_histogram':int(((g[1:,0]<0)|(g[1:,0]>10)).sum()),'angle_histogram_0_pi_128bins':np.histogram(g[2:,1],128,(0,np.pi))[0].tolist(),'torsion_histogram_minuspi_pi_128bins':np.histogram(g[3:,2],128,(-np.pi,np.pi))[0].tolist(),'circular_torsion_sin_mean':float(np.sin(g[3:,2]).mean()),'circular_torsion_cos_mean':float(np.cos(g[3:,2]).mean())}
   c.write(R/'runs'/n/'SELECTED_GENERATION_REPLICATES.json',generated)
   diversity={}
   TRAIN_strings={data.seqs[h] for h in data.ids['TRAIN']}
