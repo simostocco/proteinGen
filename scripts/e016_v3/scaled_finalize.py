@@ -8,6 +8,7 @@ from scaled_train import Engine
 from protein_joint_sac.data.scaled_supervised import Data,internal,canonical,P,PILOT
 from protein_joint_sac.data.accepted_supervised import CoordinateReader
 from protein_joint_sac.data.certified_unified import file_sha
+from protein_joint_sac.geometry.ca_builder import inverse
 R=c.R
 
 def panel(data,matched):
@@ -68,10 +69,10 @@ def main():
    for replicate in range(4):generated.append(eng.generate(length,913000+length*16+replicate))
   for sample in generated:
    if sample.get('geometry') is not None:
-    x=np.asarray(sample['generated_CA_A']);distance=np.linalg.norm(x[:,None]-x[None,:],axis=-1);index=np.arange(len(x));long_pairs=np.triu(np.abs(index[:,None]-index[None,:])>=24,1);g=internal(x)
+    x=np.asarray(sample['generated_CA_A']);distance=np.linalg.norm(x[:,None]-x[None,:],axis=-1);index=np.arange(len(x));long_pairs=np.triu(np.abs(index[:,None]-index[None,:])>=24,1);g=np.stack([inverse(torch.from_numpy(x[:i+1]))[0].numpy() for i in range(len(x))])
     sample['geometry']['CA_contacts_sep_ge24_dist_lt8_A']=int(((distance<8.)&long_pairs).sum())
     sample['geometry']['long_range_contact_definition']='C-alpha proxy, sequence separation>=24, distance<8 A, upper triangle; not a C-beta/all-atom contact label'
-    sample['geometry']['distributions']={'distance_histogram_0_10_A_128bins':np.histogram(g[1:,0],128,(0,10))[0].tolist(),'distance_outside_histogram':int(((g[1:,0]<0)|(g[1:,0]>10)).sum()),'angle_histogram_0_pi_128bins':np.histogram(g[2:,1],128,(0,np.pi))[0].tolist(),'torsion_histogram_minuspi_pi_128bins':np.histogram(g[3:,2],128,(-np.pi,np.pi))[0].tolist(),'circular_torsion_sin_mean':float(np.sin(g[3:,2]).mean()),'circular_torsion_cos_mean':float(np.cos(g[3:,2]).mean())}
+    sample['geometry']['distributions']={'distance_histogram_0_10_A_128bins':np.histogram(g[1:,0],128,(0,10))[0].tolist(),'distance_outside_histogram':int(((g[1:,0]<0)|(g[1:,0]>10)).sum()),'angle_histogram_0_pi_128bins':np.histogram(g[2:,1],128,(0,np.pi))[0].tolist(),'torsion_histogram_minuspi_pi_128bins':np.histogram(g[3:,2],128,(-np.pi,np.pi))[0].tolist(),'torsion_exact_seam_count':int((np.abs(g[3:,2])>=np.pi).sum()),'circular_torsion_sin_mean':float(np.sin(g[3:,2]).mean()),'circular_torsion_cos_mean':float(np.cos(g[3:,2]).mean())}
   c.write(R/'runs'/n/'SELECTED_GENERATION_REPLICATES.json',generated)
   diversity={}
   TRAIN_strings={data.seqs[h] for h in data.ids['TRAIN']}
