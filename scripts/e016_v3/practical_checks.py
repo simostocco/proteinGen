@@ -48,7 +48,21 @@ def traceback_check(root):
  save(out/'RESULT.json',{'status':'PASS','traceback_tsv_sha256':sha(out/'TRACEBACK.tsv'),'actual_aligned_strings_checked':checked,'checks':'nident, alignment column count, inclusive full sequence coordinate span and exact source subsequence; includes gaps'})
  return checked
 
+def equal_length_direction_guard(root):
+ """Additional conservative check; does not alter frozen predicates or grouping."""
+ p,by,active=load();groups={r['sequence_id']:r['protected_group_id'] for r in pq.read_table(root/'SEQUENCE_ASSIGNMENTS.parquet',columns=['sequence_id','protected_group_id']).to_pylist()};result={}
+ for which in ('alignment_coverage_v1','cross_screen_coverage_v1'):
+  counts=collections.Counter()
+  for a,b,ni,al,qs,qe,ts,te,ql,tl,ev,bits in edge_rows(root,which):
+   if ql!=tl:continue
+   forward=any(match(ni,al,qs,qe,ts,te,ql,tl));reverse=any(match(ni,al,ts,te,qs,qe,tl,ql))
+   if reverse and not forward:counts['reverse_only_protected_rows']+=1;counts['different_existing_groups']+=int(groups[p['hashes'][a]]!=groups[p['hashes'][b]])
+  result[which]=dict(counts)
+ assert not any(d.get('reverse_only_protected_rows',0) for d in result.values()),'equal-length direction requires reviewed correction'
+ save(root/'EQUAL_LENGTH_DIRECTION_CHECK.json',{'status':'PASS','counts':result,'interpretation':'No additional protected pair or group conflict when swapping alignment roles at equal lengths; no rules or assignments changed','reproduce':'practical_checks.equal_length_direction_guard(root)'})
+
 def independent_check(root):
+ equal_length_direction_guard(root)
  audit=json.load(open(root/'CROSS_SPLIT_AUDIT.json'));p,by,active=load();pairs=[];seen=set()
  for a,b in audit['independent_spotcheck_pairs']:
   if (a,b) not in seen:pairs.append((a,b));seen.add((a,b))
