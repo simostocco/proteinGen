@@ -10,3 +10,14 @@ class SequenceOnlyActor(nn.Module):
 
     def forward(self, state):
         return self.head(self.encoder(state))
+
+    def encode(self, state):
+        return self.encoder(state)
+
+    @property
+    def aa_head(self):
+        # Preserve historical state-dict keys under head.*.
+        return self.head
+
+    def logits(self, state):
+        return self.forward(state)

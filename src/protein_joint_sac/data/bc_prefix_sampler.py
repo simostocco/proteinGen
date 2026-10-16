@@ -1,19 +1,27 @@
-"""Bounded offline diagnostic sampler. Targets never enter actor state."""
+"""Legacy diagnostic names route to the authoritative inference-gauge prefix path."""
 import torch
-from ..contracts import BuildState,BCPrefixTarget
+from ..contracts import BuildState
 from ..chemistry.reference_adapter import load
-from ..geometry.ca_builder import action_from_positions
+from .certified_unified import canonical_teacher_prefix, canonical_native_prefix
 
-def diagnostic_prefix(observation,t,source_sha256):
- m=load();N=len(observation['canonical_full_sequence'])
- p=m.experimental_prefix_for_BC(observation,t=t,requested_N=N)
- ca=torch.tensor([x if x is not None else (0.,0.,0.) for x in p.ca],dtype=torch.float64).reshape(t,3)
- s=BuildState(p.residues,ca,N,torch.tensor([x is not None for x in p.ca],dtype=torch.bool))
- return s
 
-def diagnostic_target(observation,t,source_sha256):
- s=diagnostic_prefix(observation,t,source_sha256)
- nxt=diagnostic_prefix(observation,t+1,source_sha256)
- if not nxt.valid.all():raise ValueError('missing native prefix/next CA; no invented expert geometry')
- action=action_from_positions(nxt.residues[-1],nxt.ca)
- return BCPrefixTarget(s,action,source_sha256,t+1)
+def _coordinates(observation, t):
+    m = load()
+    prefix = m.experimental_prefix_for_BC(observation, t=t, requested_N=len(observation["canonical_full_sequence"]))
+    if any(x is None for x in prefix.ca):
+        raise ValueError("missing full-polymer prefix CA; fragments cannot become natural-start chains")
+    return prefix.ca
+
+
+def diagnostic_prefix(observation, t, source_sha256):
+    # Retain masked reference-feature diagnostics; never use this branch as a joint BC target.
+    m=load(); seq=observation["canonical_full_sequence"]
+    prefix=m.experimental_prefix_for_BC(observation,t=t,requested_N=len(seq))
+    if any(x is None for x in prefix.ca):
+        ca=torch.tensor([x if x is not None else (0.,0.,0.) for x in prefix.ca],dtype=torch.float64).reshape(t,3)
+        return BuildState(prefix.residues,ca,len(seq),torch.tensor([x is not None for x in prefix.ca],dtype=torch.bool))
+    return canonical_native_prefix(seq, prefix.ca, t)
+
+
+def diagnostic_target(observation, t, source_sha256):
+    return canonical_teacher_prefix(observation["canonical_full_sequence"], _coordinates(observation, t+1), t, source_sha256)

@@ -14,7 +14,7 @@ def compare_completed(protein, result, mask=None):
         raise ValueError("completed evaluated matching sequence required")
     if result.predicted_ca is None:
         raise ValueError("missing predictor coordinate mapping")
-    X = protein.state.ca.detach().cpu()
+    X = protein.state.ca.detach().cpu().double()
     Y = torch.tensor(result.predicted_ca, dtype=torch.float64)
     if Y.shape != X.shape or not torch.isfinite(Y).all():
         raise ValueError("full ordered position correspondence required; do not align cropped sequences silently")

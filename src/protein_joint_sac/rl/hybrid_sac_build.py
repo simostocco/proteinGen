@@ -7,7 +7,10 @@ from .soft_targets import Temperatures
 
 
 class HybridSAC:
-    def __init__(self, actor, critics, gamma=0.99, lr=1e-3, target_aa=2.0, target_geom=0.0):
+    def __init__(self, actor, critics, gamma=0.99, lr=1e-3, target_aa=2.0, target_geom=0.0, actor_backward="streamed_exact"):
+        if actor_backward not in ["streamed_exact", "eager_exact"]:
+            raise ValueError("explicit exact actor backward implementation")
+        self.actor_backward = actor_backward
         self.actor = actor
         self.critics = critics
         self.gamma = gamma
@@ -54,9 +57,12 @@ class HybridSAC:
         for p in params:
             p.requires_grad_(False)
         try:
-            aloss = self.actor_loss(state)
-            self.actor_optimizer.zero_grad()
-            aloss.backward()
+            self.actor_optimizer.zero_grad(set_to_none=True)
+            if self.actor_backward == "streamed_exact":
+                aloss = self.backward_actor_exact_streamed(state)
+            else:
+                aloss = self.actor_loss(state)
+                aloss.backward()
             self.actor_optimizer.step()
         finally:
             for p in params:
@@ -69,7 +75,8 @@ class HybridSAC:
         self.critics.polyak(0.005)
         return {
             "critic_loss": float(qloss.detach()),
-            "actor_loss": float(aloss.detach()),
+            "actor_loss": float(aloss.detach()) if isinstance(aloss, torch.Tensor) else aloss,
+            "actor_backward": self.actor_backward,
             "temperature_loss": float(tloss.detach()),
             "scope": "CPU_SYNTHETIC_ONLY",
         }
