@@ -62,7 +62,23 @@ def main():
  for n in names:
   path=R/'runs'/n/'FINAL_TEST.json'
   if path.exists():tests[n]=json.load(open(path));continue
-  eng=Engine(n,data,configs[n]);eng.resume(Path(selections[n]['path']));result={'primary':assess(eng,full if n=='S2' else matched)}
+  eng=Engine(n,data,configs[n]);eng.resume(Path(selections[n]['path']))
+  generated=[]
+  for length in [20,64,128,256,384,500]:
+   for replicate in range(4):generated.append(eng.generate(length,913000+length*16+replicate))
+  c.write(R/'runs'/n/'SELECTED_GENERATION_REPLICATES.json',generated)
+  diversity={}
+  TRAIN_strings={data.seqs[h] for h in data.ids['TRAIN']}
+  for length in [20,64,128,256,384,500]:
+   subset=[x for x in generated if x['N']==length];good=[x for x in subset if x['status']=='COMPLETE'];strings=[x['sequence'] for x in good];distances=[]
+   if n.startswith('J'):
+    for i in range(len(good)):
+     for j in range(i):
+      a=np.asarray(good[i]['generated_CA_A']);b=np.asarray(good[j]['generated_CA_A']);a=a-a.mean(0);b=b-b.mean(0);u,_,vt=np.linalg.svd(a.T@b);sign=np.eye(3);sign[-1,-1]=np.linalg.det(u@vt);rotation=u@sign@vt;distances.append(float(np.sqrt(np.square(a@rotation-b).sum()/length)))
+   composition={letter:sum(s.count(letter) for s in strings)/max(1,sum(map(len,strings))) for letter in c.AA}
+   diversity[str(length)]={'requested':4,'complete':len(good),'unique_sequences':len(set(strings)),'exact_TRAIN_sequence_overlap':len(set(strings)&TRAIN_strings),'composition':composition,'pairwise_proper_Kabsch_CA_RMSD_A':distances,'interpretation':'four-sample descriptive diversity only; neither distinct-fold certification nor stability evidence'}
+  c.write(R/'runs'/n/'SELECTED_GENERATION_DIVERSITY.json',diversity)
+  result={'primary':assess(eng,full if n=='S2' else matched)}
   if n=='S2':result['matched']=assess(eng,matched)
   c.write(path,result);tests[n]=result;del eng;torch.cuda.empty_cache()
  c.write(R/'FINAL_TEST_RESULTS.json',{'event_count':1,'models':tests,'no_tuning_after_TEST':True})
