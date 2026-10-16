@@ -36,6 +36,18 @@ def main():
  c.setup();names=['S1','J1','J2','S2'];completed={n:json.load(open(R/'runs'/n/'COMPLETED.json')) for n in names};configs=json.load(open(R/'configs/FROZEN.json'))
  if any(x['updates']!=10000 for x in completed.values()):raise ValueError('no TEST before all four10000-update completions')
  selections={n:{'path':x['selected_checkpoint'],'sha256':x['selected_sha256']} for n,x in completed.items()}
+ schedules={}
+ for n in ['S1','J1','J2']:
+  values={}
+  for log in sorted((R/'runs'/n).glob('updates_from_*.jsonl')):
+   for line in log.read_text().splitlines():
+    row=json.loads(line);u=row['update'];h=row['sample_order_sha256']
+    if u in values and values[u]!=h:raise ValueError('conflicting exposure history')
+    values[u]=h
+  if sorted(values)!=list(range(1,10001)):raise ValueError('incomplete matched exposure history')
+  schedules[n]=values
+ if not (schedules['S1']==schedules['J1']==schedules['J2']):raise ValueError('matched exposure schedule violated')
+ c.write(R/'MATCHED_EXPOSURE_VERIFICATION.json',{'status':'PASS','updates_compared':10000,'prefix_decisions_per_arm':640000,'models':['S1','J1','J2'],'same_identity_observation_prefix_schedule':True})
  for s in selections.values():assert file_sha(s['path'])==s['sha256']
  seal=R/'CHECKPOINT_SELECTIONS_FROZEN.json'
  if not seal.exists():c.write(seal,{'selections':selections,'protocol_sha256':file_sha(R/'configs/FINAL_TEST_PROTOCOL.json'),'TEST_evaluated':False})
