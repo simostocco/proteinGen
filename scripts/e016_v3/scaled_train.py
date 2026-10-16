@@ -62,9 +62,10 @@ class Engine:
  def checkpoint(self,path):
   if path.exists():raise ValueError('immutable checkpoint exists')
   guard(400*2**20)
-  return save_atomic(path,{'lineage':self.lineage,'model':self.model.state_dict(),'optimizer':self.opt.state_dict(),'scheduler':self.scheduler.state_dict(),'rng':rng_state(),'sampler':self.sampler.state_dict(),'update':self.update,'validation':self.validation,'elapsed':self.elapsed_prior+time.monotonic()-self.start,'length_exposures':self.band_counts.tolist(),'flagged_decisions':self.flagged})
+  self.last_durable=path
+  return save_atomic(path,{'lineage':self.lineage,'model':self.model.state_dict(),'optimizer':self.opt.state_dict(),'scheduler':self.scheduler.state_dict(),'rng':rng_state(),'sampler':self.sampler.state_dict(),'update':self.update,'validation':json.loads(json.dumps(self.validation,allow_nan=False)),'elapsed':self.elapsed_prior+time.monotonic()-self.start,'length_exposures':self.band_counts.tolist(),'flagged_decisions':self.flagged})
  def resume(self,path):
-  s=load_checked(path)
+  s=load_checked(path);self.last_durable=path
   if s['lineage']!=self.lineage:raise ValueError('checkpoint source/config/dataset/feature provenance changed')
   self.model.load_state_dict(s['model']);self.opt.load_state_dict(s['optimizer']);self.scheduler.load_state_dict(s['scheduler']);self.sampler.load_state_dict(s['sampler']);self.update=s['update'];self.validation=s['validation'];self.elapsed_prior=s['elapsed'];self.start=time.monotonic();self.band_counts=np.array(s['length_exposures']);self.flagged=s['flagged_decisions'];restore_rng(s['rng'])
  @torch.no_grad()
@@ -107,6 +108,9 @@ def run(name):
  if receipt['status']!='PASS' or receipt['configs_sha256']!=file_sha(R/'configs/FROZEN.json'):raise ValueError('frozen preflight/config mismatch')
  if json.load(open(R/'preflight/SCALED_RESTART.json'))['status']!='PASS':raise ValueError('12M restart preflight required')
  report={};write(R/'HEARTBEAT.json',{'name':name,'status':'DATA_LOADING','timestamp':time.time()});data=Data(name.startswith('J'),report);d=R/'runs'/name;d.mkdir(exist_ok=True);write(d/'DATA_RECEIPT.json',report);eng=Engine(name,data,c);panels=json.load(open(R/'configs/VALIDATION_PANELS.json'));panel=panels['full' if name=='S2' else 'matched'];existing=sorted(d.glob('checkpoint_[0-9]*.pt'),key=lambda p:int(p.stem.split('_')[-1]));segment=f'updates_from_{eng.update:05}_{int(time.time())}.jsonl'
+ if (d/'RECOVERY_START.json').exists():
+  recovery=json.load(open(d/'RECOVERY_START.json'))
+  if not existing or int(existing[-1].stem.split('_')[-1])<=recovery['update']:existing=[Path(recovery['path'])]
  if existing:eng.resume(existing[-1]);segment=f'updates_from_{eng.update:05}_{int(time.time())}.jsonl'
  else:
   state=rng_state();metric=eng.evaluate(panel);restore_rng(state);eng.validation.append(metric);write(d/'validation_00000.json',metric)
@@ -117,7 +121,7 @@ def run(name):
    if eng.update%25==0:
     log.flush();write(R/'HEARTBEAT.json',{'name':name,'status':'TRAINING','timestamp':time.time(),**m,**guard()});print(json.dumps({'name':name,**m,**guard()}),flush=True)
    if eng.update==251 and not (d/'RESUME_VERIFICATION.json').exists():
-    expected_model=cpu_copy(eng.model.state_dict());expected_opt=cpu_copy(eng.opt.state_dict());expected_scheduler=copy.deepcopy(eng.scheduler.state_dict());expected_sampler=copy.deepcopy(eng.sampler.state_dict());expected_rng=rng_digest();resumed=Engine(name,data,c);resumed.resume(d/'checkpoint_00250.pt');actual=resumed.step();pe=maxdiff(expected_model,resumed.model.state_dict());oe=maxdiff(expected_opt,resumed.opt.state_dict());same=actual['sample_order_sha256']==m['sample_order_sha256'] and resumed.scheduler.state_dict()==expected_scheduler and resumed.sampler.state_dict()==expected_sampler and rng_digest()==expected_rng
+    expected_model=cpu_copy(eng.model.state_dict());expected_opt=cpu_copy(eng.opt.state_dict());expected_scheduler=copy.deepcopy(eng.scheduler.state_dict());expected_sampler=copy.deepcopy(eng.sampler.state_dict());expected_rng=rng_digest();resumed=Engine(name,data,c);resumed.resume(eng.last_durable);actual=resumed.step();pe=maxdiff(expected_model,resumed.model.state_dict());oe=maxdiff(expected_opt,resumed.opt.state_dict());same=actual['sample_order_sha256']==m['sample_order_sha256'] and resumed.scheduler.state_dict()==expected_scheduler and resumed.sampler.state_dict()==expected_sampler and rng_digest()==expected_rng
     receipt={'status':'PASS' if same and pe<2e-5 and oe<1e-4 else 'FAIL','parameter_max_abs_error':pe,'optimizer_max_abs_error':oe,'scheduler_sampler_rng_and_examples_equal':same,'loss_abs_error':abs(actual['AA_NLL']-m['AA_NLL']),'scope':'12M_REAL_PDB_UPDATE251_RECONSTRUCTION','precision':c['precision']};write(d/'RESUME_VERIFICATION.json',receipt);del resumed,expected_model,expected_opt;torch.cuda.empty_cache()
     if receipt['status']!='PASS':raise RuntimeError('scaled restart verification failed')
    if eng.update in MILESTONES:
@@ -129,7 +133,11 @@ def run(name):
    p=d/f'checkpoint_{eng.update:05}.pt'
    if not p.exists():eng.checkpoint(p)
    write(d/'STOPPED.json',{'update':eng.update,'reason':'graceful signal/watchdog','checkpoint':str(p)});raise RuntimeError('graceful stop; do not advance next model')
- best=min((x for x in eng.validation if x['update'] in MILESTONES),key=lambda x:x['selection_loss'] if name.startswith('J') else x['AA_NLL']);checkpoint=d/f"checkpoint_{best['update']:05}.pt";write(d/'COMPLETED.json',{'status':'COMPLETED_10000_UPDATES','name':name,'updates':eng.update,'decisions':eng.sampler.cursor,'distinct_TRAIN_identities':len(eng.sampler.seen),'prefix_tokens':eng.sampler.tokens,'length_exposures':eng.band_counts.tolist(),'anomaly_identity_decisions':eng.flagged,'best_validation':best,'final_validation':eng.validation[-1],'selected_checkpoint':str(checkpoint),'selected_sha256':file_sha(checkpoint),'elapsed_seconds':eng.elapsed_prior+time.monotonic()-eng.start,'resources':guard(),'config':c});print('TRAINING_COMPLETE '+name,flush=True)
+ best=min((x for x in eng.validation if x['update'] in MILESTONES),key=lambda x:x['selection_loss'] if name.startswith('J') else x['AA_NLL']);checkpoint=d/f"checkpoint_{best['update']:05}.pt"
+ if (d/'RECOVERY_START.json').exists():
+  recovery=json.load(open(d/'RECOVERY_START.json'))
+  if recovery['update']==best['update']:checkpoint=Path(recovery['path'])
+ write(d/'COMPLETED.json',{'status':'COMPLETED_10000_UPDATES','name':name,'updates':eng.update,'decisions':eng.sampler.cursor,'distinct_TRAIN_identities':len(eng.sampler.seen),'prefix_tokens':eng.sampler.tokens,'length_exposures':eng.band_counts.tolist(),'anomaly_identity_decisions':eng.flagged,'best_validation':best,'final_validation':eng.validation[-1],'selected_checkpoint':str(checkpoint),'selected_sha256':file_sha(checkpoint),'elapsed_seconds':eng.elapsed_prior+time.monotonic()-eng.start,'resources':guard(),'config':c});print('TRAINING_COMPLETE '+name,flush=True)
 
 if __name__=='__main__':
  a=argparse.ArgumentParser();a.add_argument('--name',required=True,choices=['S1','J1','J2','S2']);q=a.parse_args()
