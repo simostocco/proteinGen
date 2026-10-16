@@ -59,11 +59,19 @@ class BCConfig:
     precision: str = "FP32_MODEL_FP64_GEOMETRY"
     population_view: str = "MATCHED_JOINT"
     validation_identity_limit: int = 32
+    weight_decay: float = 0.01
+    geometry_normalization: str = "sum"
+    admission_sha256: str | None = None
+    prior_sha256: str | None = None
+    entrypoint_sha256: str | None = None
     def __post_init__(self):
-        if self.version!="bc-prefix-v1" or self.mode not in ["sequence","joint"] or self.scope not in ["ENGINEERING_FIXTURE","CERTIFIED_PILOT"]: raise ValueError("explicit validated BC scope/mode")
+        if self.version!="bc-prefix-v1" or self.mode not in ["sequence","joint"] or self.scope not in ["ENGINEERING_FIXTURE","CERTIFIED_PILOT","LIMITED_PDB_PILOT"]: raise ValueError("explicit validated BC scope/mode")
         if self.validation_identity_limit<1 or self.batch_size<1 or self.scheduler_updates<1 or self.device not in ["cpu","cuda"] or self.precision!="FP32_MODEL_FP64_GEOMETRY": raise ValueError("BC resource/precision config")
         if any(not math.isfinite(v) or v<=0 for v in [self.learning_rate,self.aa_weight,self.geometry_weight,self.clip_norm]): raise ValueError("finite positive BC scales")
         if self.population_view not in ["MATCHED_JOINT","ALL_SEQUENCES"] or self.mode=="joint" and self.population_view!="MATCHED_JOINT":raise ValueError("explicit comparison population")
+        if self.geometry_normalization not in ["sum","valid_component_mean"] or not math.isfinite(self.weight_decay) or self.weight_decay<0:raise ValueError("loss normalization/weight decay")
+        for checksum in [self.admission_sha256,self.prior_sha256,self.entrypoint_sha256]:
+            if checksum is not None and (len(checksum)!=64 or any(c not in "0123456789abcdef" for c in checksum)):raise ValueError("provenance SHA256")
         ModelConfig(width=self.width,heads=self.heads,layers=self.layers,chemistry=self.chemistry)
 
 
@@ -72,8 +80,8 @@ _CERTIFIED_ADMISSION = object()
 
 class Population:
     def __init__(self, rows, scope, membership=None, *, _admission=None):
-        if scope=="CERTIFIED_PILOT" and _admission is not _CERTIFIED_ADMISSION:raise ValueError("use verified certified population factory")
-        if scope not in ["ENGINEERING_FIXTURE","CERTIFIED_PILOT"]: raise ValueError("population scope")
+        if scope in ["CERTIFIED_PILOT","LIMITED_PDB_PILOT"] and _admission is not _CERTIFIED_ADMISSION:raise ValueError("use verified certified population factory")
+        if scope not in ["ENGINEERING_FIXTURE","CERTIFIED_PILOT","LIMITED_PDB_PILOT"]: raise ValueError("population scope")
         self.rows=tuple(sorted(rows,key=lambda r:r["observation_id"]))
         self.scope=scope; self.groups=defaultdict(lambda:defaultdict(list))
         seen=set(); seq_splits={}; group_splits={}
@@ -155,7 +163,7 @@ class BCTrainer:
         if config.device=="cuda":torch.cuda.manual_seed_all(config.seed)
         c=ModelConfig(width=config.width,heads=config.heads,layers=config.layers,chemistry=config.chemistry)
         self.model=(JointActor(c) if config.mode=="joint" else SequenceOnlyActor(c)).to(config.device)
-        self.optimizer=torch.optim.AdamW(self.model.parameters(),lr=config.learning_rate)
+        self.optimizer=torch.optim.AdamW(self.model.parameters(),lr=config.learning_rate,weight_decay=config.weight_decay)
         self.scheduler=torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer,config.scheduler_updates)
         self.sampler=PrefixSampler(population,config.seed+1);self.update=0;self.best_validation=float("inf")
         self.lineage={"config":asdict(config),"membership":population.membership,"geometry_version":GEOMETRY_VERSION,"chemistry":asdict(chemistry_ref()),"code_sha256":code_hash(),"normalizers":None,"scaler":None,"runtime":{"torch":str(torch.__version__),"numpy":np.__version__,"cuda":torch.version.cuda,"python":platform.python_version()}}
@@ -166,12 +174,13 @@ class BCTrainer:
         if g is not None:
             geom=-self.model.geometry_distribution(state,AA[label],h).log_prob(g)
             components=sum((t>=1,t>=2,t>=3))
-        total=self.config.aa_weight*aa+self.config.geometry_weight*geom
+        geometry_loss=geom/max(1,components) if self.config.geometry_normalization=="valid_component_mean" else geom
+        total=self.config.aa_weight*aa+self.config.geometry_weight*geometry_loss
         if not torch.isfinite(total):raise FloatingPointError("nonfinite BC loss")
-        return total,{"aa_nll":float(aa.detach()),"geometry_nll_sum":float(geom.detach()),"geometry_components":components}
+        return total,{"aa_nll":float(aa.detach()),"geometry_nll_sum":float(geom.detach()),"geometry_components":components,"geometry_loss":float(geometry_loss.detach())}
     def step(self):
         if self.update>=self.config.scheduler_updates: raise ValueError("configured update budget exhausted")
-        if self.config.scope=="CERTIFIED_PILOT" and self.update>=100:raise ValueError("real pilot ceiling100; production protocol not authorized")
+        if self.config.scope in ["CERTIFIED_PILOT","LIMITED_PDB_PILOT"] and self.update>=100:raise ValueError("real pilot ceiling100; production protocol not authorized")
         self.model.train(); self.optimizer.zero_grad(set_to_none=True); samples=self.sampler.draw(self.config.batch_size);metrics=[]
         # Literal variable-length prefixes; gradient accumulation avoids future padding/pair features.
         for i,t in samples:
@@ -179,19 +188,19 @@ class BCTrainer:
         norm=torch.nn.utils.clip_grad_norm_(self.model.parameters(),self.config.clip_norm,error_if_nonfinite=True)
         self.optimizer.step();self.scheduler.step();self.update+=1
         if not all(torch.isfinite(p).all() for p in self.model.parameters()):raise FloatingPointError("nonfinite parameters")
-        return {"update":self.update,"samples":samples,"aa_nll":sum(m["aa_nll"] for m in metrics)/len(metrics),"geometry_nll_sum":sum(m["geometry_nll_sum"] for m in metrics)/len(metrics),"grad_norm":float(norm),"exposure":self.sampler.exposure}
+        return {"update":self.update,"samples":samples,"aa_nll":sum(m["aa_nll"] for m in metrics)/len(metrics),"geometry_nll_sum":sum(m["geometry_nll_sum"] for m in metrics)/len(metrics),"geometry_loss":sum(m["geometry_loss"] for m in metrics)/len(metrics),"geometry_valid_components":sum(m["geometry_components"] for m in metrics),"grad_norm":float(norm),"exposure":self.sampler.exposure}
     @torch.no_grad()
     def validate(self,prefixes_per_observation=4):
         if prefixes_per_observation<1:raise ValueError("validation coverage")
-        self.model.eval(); aa=geom=mass=0.;n=0;dof=0
+        self.model.eval(); aa=geom=geometry_loss=mass=0.;n=0;dof=0
         all_groups=self.population.groups["VALIDATION"]
         groups={h:all_groups[h] for h in sorted(all_groups)[:self.config.validation_identity_limit]}
         for h,indices in sorted(groups.items()):
             for i in indices:
                 L=len(self.population.rows[i]["sequence"]);ts=sorted(set(np.linspace(0,L-1,min(prefixes_per_observation,L),dtype=int).tolist()));w=1/(len(groups)*len(indices)*len(ts))
                 for t in ts:
-                    _,m=self.loss(i,t);aa+=w*m["aa_nll"];geom+=w*m["geometry_nll_sum"];mass+=w;n+=1;dof+=m["geometry_components"]
-        score=self.config.aa_weight*aa+self.config.geometry_weight*geom;self.best_validation=min(score,self.best_validation)
+                    _,m=self.loss(i,t);aa+=w*m["aa_nll"];geom+=w*m["geometry_nll_sum"];geometry_loss+=w*m["geometry_loss"];mass+=w;n+=1;dof+=m["geometry_components"]
+        score=self.config.aa_weight*aa+self.config.geometry_weight*geometry_loss;self.best_validation=min(score,self.best_validation)
         return {"aa_nll":aa,"aa_perplexity":math.exp(min(aa,700)),"geometry_nll_sum":geom,"selection_loss":score,"best_selection_loss":self.best_validation,"validation_identities":len(groups),"available_validation_identities":len(all_groups),"prefixes":n,"geometry_components":dof,"weight_mass":mass,"weighting":"uniform identity / observation / selected prefix","scope":self.config.scope}
     def checkpoint(self,path):
         path=d_path(path)
