@@ -13,3 +13,19 @@ def test_assessment_uses_same_rigid_invariant_ca_metrics():
 def test_assessment_rejects_nonfinite_complete_trace():
  x=helix();x[8]=np.nan
  with pytest.raises(ValueError):metrics(x)
+
+def test_signed_chirality_metric_reverses_under_reflection():
+ x=helix();a=metrics(x);x[:,0]*=-1;b=metrics(x)
+ assert b['signed_triple_product_mean']==pytest.approx(-a['signed_triple_product_mean'],abs=1e-12)
+ assert b['torsion_circular_mean_rad']==pytest.approx(-a['torsion_circular_mean_rad'],abs=1e-12)
+
+def test_generation_panel_recovers_cached_work_without_model(tmp_path):
+ import partial_finalize as f
+ f.write(tmp_path/'panel.json',[{'N':N,'seed':2026101700+100*N+j,'sample_index':j,'checkpoint_sha256':'fixture-sha','status':'GENERATION_GEOMETRY_FAILURE'} for N in f.LENGTHS for j in range(32) if (N,j)!=(500,31)])
+ reused={('fixture-sha',500,31):{'N':500,'seed':2026101700+50000+31,'sample_index':31,'checkpoint_sha256':'fixture-sha','status':'GENERATION_GEOMETRY_FAILURE'}}
+ old=f.R;f.R=tmp_path
+ try:
+  items=f.sample_panel('fixture',{},None,'fixture-sha',tmp_path/'panel.json',None,set(),reused);assert len(items)==160;assert items[-1]['prediction_cache_reused']
+  items[0]['seed']=0;f.write(tmp_path/'panel.json',items)
+  with pytest.raises(ValueError,match='generation cache'):f.sample_panel('fixture',{},None,'fixture-sha',tmp_path/'panel.json',None,set(),{})
+ finally:f.R=old

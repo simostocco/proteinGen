@@ -36,6 +36,8 @@ class Engine:
   self.scheduler=torch.optim.lr_scheduler.LambdaLR(self.opt,factor);self.sampler=ContinuationSampler(data,parent['sampler'],arm.endswith('PARTIAL'),config['partial_geometry_oversample']);del parent
   self.update=0;self.validation=[];self.start=time.monotonic();self.elapsed_prior=0.;self.band_counts=np.zeros(5,dtype=np.int64);self.anomaly_exposure=0
   self.flagged={r['sequence_hash'] for r in json.load(open(core.PILOT/'priors/COORDINATE_EXTREMES.json'))['examples']}
+  quality=R/'view/OBSERVED_GEOMETRY_DIAGNOSTICS.json'
+  if quality.exists():self.flagged.update(r['sequence_hash'] for r in json.load(open(quality)) if r['split']=='TRAIN')
   self.lineage={'arm':arm,'config':config,'package_sha256':code_hash(),'entrypoint_sha256':file_sha(__file__),'core_entrypoint_sha256':file_sha(core.__file__),'parent_checkpoint':str(p),'geometry_version':GEOMETRY_VERSION,'mask_version':VERSION,'chemistry':ref().__dict__,'view_sha256':file_sha(R/'view/VIEW_FROZEN.json'),'validation_sha256':file_sha(R/'configs/VALIDATION_PANELS.json'),'optimizer':'RESTORED_PARENT_ADAMW_MOMENTS_NEW_SCHEDULE','TEST':'NEVER_EVALUATED_OR_USED_FOR_DEVELOPMENT','torch':str(torch.__version__),'precision':'BF16','normalizers':'unchanged TRAIN priors; no new fitted scaler'}
  def step(self):
   if self.update>=self.c['max_updates']:raise ValueError('continuation ceiling')
