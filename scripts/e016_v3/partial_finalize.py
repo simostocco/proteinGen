@@ -69,6 +69,14 @@ def main():
     if line.strip():v=json.loads(line);by[v['update']]=v
   curves[arm]=[by[k] for k in sorted(by)];valid[arm]={str(int(p.stem.split('_')[-1])):json.loads(p.read_text()) for p in sorted(d.glob('validation_*.json'))}
   generated[arm]=sample_panel(arm,cfg[arm],done[arm]['selected_checkpoint'],done[arm]['selected_sha256'],d/'SELECTED_GENERATION.json',data,train_strings,reuse)
+ # Selection remains frozen; assess the actual last continuation separately when
+ # the best common-validation checkpoint is an earlier model or the 10k parent.
+ for arm in ARMS:
+  last=R/'runs'/arm/f"checkpoint_{done[arm]['additional_updates']:05}.pt"
+  last_sha=file_sha(last)
+  if last_sha!=last.with_name(last.name+'.sha256').read_text().strip():raise ValueError('last-continuation generation checksum')
+  if last_sha!=done[arm]['selected_sha256']:
+   generated[arm+'-LAST']=sample_panel(arm,cfg[arm],last,last_sha,R/'runs'/arm/'LAST_CONTINUATION_GENERATION.json',data,train_strings,reuse)
  for name in ['J1','J2']:
   config=cfg[name+'-FULL'];checkpoint=OLD/'runs'/name/'checkpoint_10000.pt'
   if file_sha(checkpoint)!=config['parent_sha256']:raise ValueError('original generation baseline hash')
@@ -86,7 +94,7 @@ def main():
  lines+=['','## Matched comparisons','',json.dumps(pairs,indent=2),'','Teacher-forced likelihood and CA proxies do not establish native fold quality, experimental foldability or thermodynamic stability. One-seed development comparisons retain residual sequence-relatedness limitations of the accepted split.']
  text('FINAL_PARTIAL_SUPERVISION_REPORT.md','\n'.join(lines)+'\n');text('FINAL_RESEARCH_ASSESSMENT.md','\n'.join(lines)+'\n')
  generation_summary={a:{str(N):{'attempts':32,'complete':sum(v['status']=='COMPLETE' for v in items if v['N']==N),'unique_complete_sequences':len({v['sequence'] for v in items if v['N']==N and v['status']=='COMPLETE'}),'seconds':sum(v['seconds'] for v in items if v['N']==N),'clashes_per100residues':summary([v['independent_CA_metrics']['clashes_per100_residues'] for v in items if v['N']==N and 'independent_CA_metrics' in v])} for N in LENGTHS} for a,items in generated.items()}
- text('FREE_GENERATION_COMPARISON.md','# Free-running assessment\n\n32 fixed-seed attempts per selected model and untouched 10k parent baseline at each length; failures retained. Identical checkpoint/seed predictions are reused with an explicit receipt. Native comparison uses length-windowed TRAIN/VALIDATION, never TEST.\n\n```json\n'+json.dumps(generation_summary,indent=2)+'\n```\nNo experimentally foldable-protein claim is supported.\n')
+ text('FREE_GENERATION_COMPARISON.md','# Free-running assessment\n\n32 fixed-seed attempts per selected model, differing last continuation and untouched 10k parent baseline at each length; failures retained. Identical checkpoint/seed predictions are reused with an explicit receipt. Native comparison uses length-windowed TRAIN/VALIDATION, never TEST.\n\n```json\n'+json.dumps(generation_summary,indent=2)+'\n```\nNo experimentally foldable-protein claim is supported.\n')
  text('CHECKPOINT_AND_RESUME_REPORT.md','# Checkpoint recovery\n\nOriginal J1/J2 10k checkpoints were SHA-verified and preserved. Every new branch starts from its corresponding original model/optimizer; only the continuation scheduler restarts. New checkpoints bind source/config/view, RNG and sampler streams. Actual mixed-data restart proof: tests/CONTINUATION_RESTART.json. New-task retention keeps best/latest with checksum-recorded deletion receipts; historical evidence is untouched.\n')
  write(R/'RESOURCE_AND_STORAGE_REPORT.json',{'finalization_seconds':time.monotonic()-start,'D_free_bytes':shutil.disk_usage(R).free,'finalizer_RSS_highwater':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,'runs':{a:{'elapsed_seconds':v['elapsed_seconds'],'resources':v['resources']} for a,v in done.items()},'generation_summary':generation_summary,'historical_deletions':0})
  write(R/'MASK_CORRECTNESS_TEST_RESULTS.json',{'CPU':'tests/MASK_CPU_FINAL.xml','recovery_CPU':'tests/MASK_RECOVERY.xml','broader_CPU':'tests/REGRESSION_RECOVERY.xml','historical_fixture_root_rerun':'tests/REAL_SOURCE_RECOVERY.xml','view_QA_unit':'tests/VIEW_QA_UNIT.xml','CUDA':json.load(open(R/'tests/GPU_MASK_PROOF.json')),'actual_mixed_sampler_restart':json.load(open(R/'tests/CONTINUATION_RESTART.json'))})
