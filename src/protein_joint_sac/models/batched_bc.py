@@ -23,22 +23,24 @@ def collate(states,device):
 def features_batch(batch,chemistry=True,sequence_only=False):
     x=batch['x'];valid=batch['valid'];ids=batch['ids'];ts=batch['t'];Ns=batch['N'];B,L,_=x.shape;dev=x.device;present=torch.arange(L,device=dev)[None]<ts[:,None]
     valid=valid&present;x=torch.where(valid[...,None],x,0.)
+    links=batch.get('bond_valid',torch.ones_like(valid))&valid
+    if links.shape!=valid.shape:raise ValueError('aligned prefix bond-valid mask required')
     chem=torch.as_tensor(chemistry_table(),device=dev,dtype=torch.float64)[ids]*present[...,None]
     z=lambda *shape:torch.zeros(*shape,device=dev,dtype=torch.float64)
     bonds=z(B,L);bends=z(B,L);tors=z(B,L);frame=z(B,L,3,3);bm=torch.zeros(B,L,device=dev,dtype=torch.bool);am=bm.clone();tm=bm.clone();fv=bm.clone()
     if not sequence_only:
         if L>=2:
-            b=x[:,1:]-x[:,:-1];bn=torch.linalg.vector_norm(b,dim=-1);bm[:,1:]=valid[:,1:]&valid[:,:-1];bonds[:,1:]=torch.where(bm[:,1:],bn,0.)
+            b=x[:,1:]-x[:,:-1];bn=torch.linalg.vector_norm(b,dim=-1);bm[:,1:]=valid[:,1:]&valid[:,:-1]&links[:,1:];bonds[:,1:]=torch.where(bm[:,1:],bn,0.)
         if L>=3:
             a=b[:,:-1];c=b[:,1:];an=bn[:,:-1];cn=bn[:,1:];cross=torch.linalg.cross(a,c);crossn=torch.linalg.vector_norm(cross,dim=-1)
-            av=valid[:,:-2]&valid[:,1:-1]&valid[:,2:]&(an>1e-8)&(cn>1e-8);am[:,2:]=av
+            av=valid[:,:-2]&valid[:,1:-1]&valid[:,2:]&links[:,1:-1]&links[:,2:]&(an>1e-8)&(cn>1e-8);am[:,2:]=av
             bends[:,2:]=torch.where(av,torch.atan2(torch.where(av,crossn,0.),torch.where(av,-(a*c).sum(-1),1.)),0.)
             vv=av&(crossn>1e-8);fv[:,2:]=vv;ex=c/cn.clamp_min(1e-10)[...,None];ez=cross/crossn.clamp_min(1e-10)[...,None];ey=torch.linalg.cross(ez,ex)
             frame[:,2:]=torch.where(vv[...,None,None],torch.stack([ex,ey,ez],dim=2),0.)
         if L>=4:
             u=b[:,1:-1]/bn[:,1:-1].clamp_min(1e-10)[...,None];v=-b[:,:-2];v=v-(v*u).sum(-1)[...,None]*u;w=b[:,2:]-(b[:,2:]*u).sum(-1)[...,None]*u
             vn=torch.linalg.vector_norm(v,dim=-1);wn=torch.linalg.vector_norm(w,dim=-1)
-            tv=valid[:,:-3]&valid[:,1:-2]&valid[:,2:-1]&valid[:,3:]&(bn[:,:-2]>=1e-10)&(bn[:,1:-1]>=1e-10)&(bn[:,2:]>=1e-10)&(vn>=1e-10)&(wn>=1e-10);tm[:,3:]=tv
+            tv=valid[:,:-3]&valid[:,1:-2]&valid[:,2:-1]&valid[:,3:]&links[:,1:-2]&links[:,2:-1]&links[:,3:]&(bn[:,:-2]>=1e-10)&(bn[:,1:-1]>=1e-10)&(bn[:,2:]>=1e-10)&(vn>=1e-10)&(wn>=1e-10);tm[:,3:]=tv
             vh=v/vn.clamp_min(1e-10)[...,None];wh=w/wn.clamp_min(1e-10)[...,None];si=(torch.linalg.cross(u,vh)*wh).sum(-1);co=(vh*wh).sum(-1)
             tors[:,3:]=torch.where(tv,torch.atan2(torch.where(tv,si,0.),torch.where(tv,co,1.)),0.)
     # Prefix geometry is evaluated in FP64; neural pair features cast after invariants.
@@ -49,7 +51,7 @@ def features_batch(batch,chemistry=True,sequence_only=False):
         ori=torch.einsum('biac,bijc->bija',frame,direction);rot=torch.einsum('biac,bjdc->bijad',frame,frame).flatten(-2)
         idx=torch.arange(L,device=dev);long=(idx[:,None]-idx[None,:]).abs()>=3;w=torch.relu(1-dist/8.).square()*pv*long
         crowd=w.sum(-1);exposure=torch.where(valid,1/(1+crowd),0.);ci=load().CHEM_NAMES.index('carbon_only_sidechain');packing=(w*chem[:,:,ci,None]*chem[:,None,:,ci]).sum(-1)
-        rbf=torch.exp(-((dist.float()[...,None]-torch.linspace(0,20,8,device=dev))/3.).square());sep=((idx[:,None]-idx[None,:])/500.).expand(B,L,L)[...,None]
+        rbf=torch.exp(-((dist.float()[...,None]-torch.linspace(0,20,8,device=dev))/3.).square())*pv[...,None];sep=((idx[:,None]-idx[None,:])/500.).expand(B,L,L)[...,None]
         chemical=(chem.float()@chem.float().transpose(-1,-2)/100.)[...,None] if chemistry else torch.zeros(B,L,L,1,device=dev)
         masks=torch.stack([pv,fv[:,:,None].expand(B,L,L),fv[:,None,:].expand(B,L,L)],-1).float()
         pair=(torch.cat([rbf,sep,ori.float(),rot.float(),chemical,masks],-1),pv)
@@ -85,11 +87,18 @@ def encode_batch(model,batch,activation_checkpoint=False,prepared=None):
         else:x=block_forward(block,x,bias,positions)
     return enc.final(x[:,-1])
 
-def losses(model,batch,labels,geometry=None,activation_checkpoint=False,prepared=None):
+def losses(model,batch,labels,geometry=None,activation_checkpoint=False,prepared=None,geometry_fp32=False):
     h=encode_batch(model,batch,activation_checkpoint,prepared);aa=F.cross_entropy(model.aa_head(h).float(),labels,reduction='none')
     if geometry is None:return aa,torch.zeros_like(aa),torch.zeros(len(aa),3,device=aa.device)
-    chem=model.chemistry[labels] if model.encoder.config.chemistry else torch.zeros_like(model.chemistry[labels]);p=model.geom(torch.cat([h,model.selected_aa(labels),chem],-1)).float()
+    chem=model.chemistry[labels] if model.encoder.config.chemistry else torch.zeros_like(model.chemistry[labels])
+    if geometry_fp32:
+        with torch.autocast(device_type=h.device.type,enabled=False):p=model.geom(torch.cat([h.float(),model.selected_aa(labels).float(),chem.float()],-1)).float()
+    else:p=model.geom(torch.cat([h,model.selected_aa(labels),chem],-1)).float()
     mu=p[:,:3];logstd=p[:,3:].clamp(-5,2);mask=batch['t'][:,None]>=torch.arange(1,4,device=h.device)[None]
+    target_mask=batch.get('geometry_target_valid',torch.ones_like(mask))
+    if target_mask.shape!=mask.shape or target_mask.dtype!=torch.bool:raise ValueError('explicit B-by-3 boolean geometry-target mask required')
+    if (target_mask[:,1]&~target_mask[:,0]).any() or (target_mask[:,2]&~target_mask[:,1]).any():raise ValueError('geometry mask contradicts required consecutive anchors')
+    mask=mask&target_mask
     g=geometry.double();d=torch.where(mask[:,0],g[:,0],1.);angle=torch.where(mask[:,1],g[:,1]/math.pi,.5);tau=torch.where(mask[:,2],g[:,2]/math.pi,0.)
     u=torch.stack([d.log(),torch.logit(angle),torch.atanh(tau)],-1)
     jac=torch.stack([u[:,0],math.log(math.pi)-F.softplus(-u[:,1])-F.softplus(u[:,1]),math.log(math.pi)+2*(math.log(2)-u[:,2]-F.softplus(-2*u[:,2]))],-1)

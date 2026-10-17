@@ -51,7 +51,7 @@ def make(data,examples,joint):
  return collate(states,'cuda'),torch.tensor(labels,device='cuda'),torch.stack(g).cuda() if joint else None
 def autocast(precision):return torch.autocast('cuda',dtype=torch.bfloat16) if precision=='BF16' else nullcontext()
 def loss_call(m,b,y,g,c):
- with autocast(c['precision']):aa,geom,components=losses(m,b,y,g,c.get('activation_checkpoint',False))
+ with autocast(c['precision']):aa,geom,components=losses(m,b,y,g,c.get('activation_checkpoint',False),geometry_fp32=c.get('geometry_projection_fp32',False))
  return aa+geom,aa,geom,components
 
 def preflight():

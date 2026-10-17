@@ -93,7 +93,10 @@ class Engine:
     with autocast(self.c['precision']):
      h=encode_batch(self.model,b);i=int(torch.distributions.Categorical(logits=self.model.aa_head(h)[0].float()).sample())
      if self.joint:
-      chem=self.model.chemistry[i] if self.c['name']=='J2' else torch.zeros_like(self.model.chemistry[i]);p=self.model.geom(torch.cat([h[0],self.model.selected_aa.weight[i],chem])).float()
+      chem=self.model.chemistry[i] if self.c['name']=='J2' else torch.zeros_like(self.model.chemistry[i])
+      if self.c.get('geometry_projection_fp32',False):
+       with torch.autocast('cuda',enabled=False):p=self.model.geom(torch.cat([h[0].float(),self.model.selected_aa.weight[i].float(),chem.float()])).float()
+      else:p=self.model.geom(torch.cat([h[0],self.model.selected_aa.weight[i],chem])).float()
     if self.joint:
      g,_=GeometryDistribution(p[:3],p[3:],mask_for_step(state.t)).rsample();state=append(state,BuildAction(AA[i],g.cpu().double(),mask_for_step(state.t)))
     else:
