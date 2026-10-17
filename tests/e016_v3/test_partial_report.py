@@ -24,9 +24,11 @@ def test_full_report_publication_uses_supplied_results(tmp_path):
  (tmp_path/'NATIVE_VS_GENERATED_GEOMETRY.json').write_text(json.dumps({'native':native}))
  counts={s:{'identities':1,'additional_to_complete_identities':1,'observations':1,'distance_targets':18,'angle_targets':17,'torsion_targets':16,'AA_at_missing_CA':1} for s in ['TRAIN','VALIDATION']}
  (tmp_path/'PARTIAL_PDB_ELIGIBILITY_COUNTS.json').write_text(json.dumps({'splits':counts}));(tmp_path/'view').mkdir();(tmp_path/'view/PARTIAL_VIEW_QA.json').write_text('{}')
+ (tmp_path/'configs').mkdir();(tmp_path/'configs/VALIDATION_PANELS.json').write_text(json.dumps({'complete':[['synthetic-id','observation',3]]}))
  publish(tmp_path,done,valid,generated)
  study=json.loads((tmp_path/'STUDY_COMPARISON.json').read_text());assert study['TEST_used'] is False;assert study['selected']['J1-PARTIAL']['update']==20000
  assert study['selected_paired_comparisons']['J1_PARTIAL_MINUS_FULL']['complete']['right_minus_left_AA_geometry_objective']==[0.,0.,0.]
+ assert study['partial_validation_identity_strata']['J1-PARTIAL']['20000']['COMPLETE_VIEW_IDENTITY_ADDITIONAL_OBSERVATION']['identities']==1
  assert (tmp_path/'FINAL_PARTIAL_SUPERVISION_REPORT.md').exists() and (tmp_path/'FREE_GENERATION_COMPARISON.md').exists()
 
 
