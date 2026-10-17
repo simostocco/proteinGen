@@ -85,7 +85,7 @@ def retain_best_latest(d,engine):
 
 def run(arm):
  core.setup();config=json.load(open(R/'configs/CONTINUATION_FROZEN.json'))[arm];gate=json.load(open(R/'PREFLIGHT_PASS.json'))
- if gate['status']!='PASS' or gate['config_sha256']!=file_sha(R/'configs/CONTINUATION_FROZEN.json'):raise ValueError('required CPU/GPU/data preflight gate')
+ if gate['status']!='PASS' or gate['config_sha256']!=file_sha(R/'configs/CONTINUATION_FROZEN.json') or gate['view_sha256']!=file_sha(R/'view/VIEW_FROZEN.json') or gate['package_sha256']!=code_hash() or gate['training_entrypoint_sha256']!=file_sha(__file__) or gate['core_entrypoint_sha256']!=file_sha(core.__file__):raise ValueError('required CPU/GPU/data preflight gate')
  d=R/'runs'/arm;d.mkdir(exist_ok=True)
  if (d/'COMPLETED.json').exists():
   receipt=json.loads((d/'COMPLETED.json').read_text())
