@@ -20,6 +20,19 @@ def paired_delta(left,right):
  if set(a)!=set(b) or not a:raise ValueError('paired identity panels differ')
  ids=sorted(a);d=np.array([np.asarray(b[h])-a[h] for h in ids]);rng=np.random.default_rng(741);boot=np.array([d[rng.integers(len(d),size=len(d))].mean(0) for _ in range(500)]);boot=np.column_stack([boot,boot.sum(1)]);mean=d.mean(0)
  return {'identities':len(ids),'right_minus_left_AA_geometry_objective':[float(mean[0]),float(mean[1]),float(mean.sum())],'identity_bootstrap_95pct':np.quantile(boot,[.025,.975],axis=0).tolist(),'interpretation':'descriptive paired identity resampling, conditional on one training seed; residual family/source correlations are not removed'}
+def sampling_evidence(curves):
+ by={arm:{v['update']:v for v in rows} for arm,rows in curves.items()}
+ out={'paired_chemistry_schedules':{},'equal_complete_exposure':{}}
+ for condition in ['FULL','PARTIAL']:
+  left=by['J1-'+condition];right=by['J2-'+condition];common=sorted(set(left)&set(right))
+  out['paired_chemistry_schedules'][condition]={'common_logged_updates':len(common),'all_sample_order_hashes_equal':all(left[u]['sample_order_sha256']==right[u]['sample_order_sha256'] for u in common),'all_complete_stream_hashes_equal':all(left[u]['complete_stream_sha256']==right[u]['complete_stream_sha256'] for u in common),'all_partial_stream_hashes_equal':all(left[u]['partial_stream_sha256']==right[u]['partial_stream_sha256'] for u in common)}
+ for name in ['J1','J2']:
+  full=by[name+'-FULL'];partial=by[name+'-PARTIAL'];out['equal_complete_exposure'][name]=[]
+  for u,v in sorted(full.items()):
+   if 2*u not in partial:continue
+   p=partial[2*u]
+   out['equal_complete_exposure'][name].append({'FULL_update':u,'PARTIAL_update':2*u,'complete_decisions':v['branch_decisions']['complete'],'counts_equal':v['branch_decisions']['complete']==p['branch_decisions']['complete'],'complete_stream_hashes_equal':v['complete_stream_sha256']==p['complete_stream_sha256']})
+ return out
 def selected_update(root,arm,receipt):
  p=Path(receipt['selected_checkpoint'])
  return int(p.stem.split('_')[-1]) if p.parent.resolve()==(root/'runs'/arm).resolve() else 0
@@ -44,7 +57,7 @@ def publish(root,done,valid,generated):
    normalized={aa:n/max(1,total) for aa,n in sorted(composition.items())};geom=[v['independent_CA_metrics'] for v in complete if 'independent_CA_metrics' in v]
    gen_summary[arm][str(N)]={'attempts':len(attempts),'complete':len(complete),'geometry_assessment_failures':sum('assessment_failure' in v for v in complete),'unique_sequences':len(set(sequences)),'duplicate_fraction':1-len(set(sequences))/max(1,len(sequences)) if sequences else None,'AA_composition':normalized,'AA_entropy_bits':float(-(p*np.log2(p)).sum()),'exact_TRAIN_sequence_matches':sum(v.get('exact_TRAIN_sequence_match',False) for v in complete),'seconds':sum(v['seconds'] for v in attempts),'metrics':{key:scalar_summary([g[key] for g in geom]) for key in ['clashes_per100_residues','clashes_per10000_nonlocal_pairs','long_contact_fraction','Rg_A','Rg_over_N_cuberoot','degenerate_frames','torsion_positive_fraction','signed_triple_product_mean']},'adjacent_spacing_mean_A':scalar_summary([g['adjacent_A']['mean'] for g in geom]),'angle_mean_rad':scalar_summary([g['angle_rad']['mean'] for g in geom]),'caveat':'exact overlap only; no new sequence alignments or biological novelty claim'}
  native=json.loads((root/'NATIVE_VS_GENERATED_GEOMETRY.json').read_text())['native'];native_summary={s:{N:{'selected_identities':v['selected_identities'],'available_identities':v['available_identities'],'length_window':v['length_window'],'metrics':{key:scalar_summary([r['metrics'][key] for r in v['rows']]) for key in ['clashes_per100_residues','clashes_per10000_nonlocal_pairs','long_contact_fraction','Rg_A','Rg_over_N_cuberoot','degenerate_frames','torsion_positive_fraction','signed_triple_product_mean']}} for N,v in by.items()} for s,by in native.items()}
- study={'selected':selected,'selected_paired_comparisons':comparisons,'equal_update_comparisons':equal_update,'generation_summary':gen_summary,'native_length_matched_summary':native_summary,'TEST_used':False};write('STUDY_COMPARISON.json',study)
+ study={'selected':selected,'selected_paired_comparisons':comparisons,'equal_update_comparisons':equal_update,'generation_summary':gen_summary,'native_length_matched_summary':native_summary,'TEST_used':False};curve_path=root/'CONTINUATION_TRAINING_CURVES.json';study['sampling_receipt_checks']=sampling_evidence(json.loads(curve_path.read_text())) if curve_path.exists() else None;write('STUDY_COMPARISON.json',study)
  resource_path=root/'RESOURCE_AND_STORAGE_REPORT.json'
  if resource_path.exists():
   resources=json.loads(resource_path.read_text());resources['sampled_operational_telemetry']=resource_samples(sorted((root/'logs').glob('resource_recovery_*.jsonl')));write(resource_path.name,resources)

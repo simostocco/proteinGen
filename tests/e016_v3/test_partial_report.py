@@ -41,3 +41,18 @@ def test_operational_resource_samples_distinguish_device_and_process(tmp_path):
  assert v['WSL_available_bytes_min']==70 and v['swap_used_bytes_peak']==5
  assert 'not isolated process' in v['scope']
  assert resource_samples([])['samples']==0
+
+
+def test_schedule_receipts_detect_unpaired_samples_and_equal_exposure():
+ from partial_report import sampling_evidence
+ def row(u,count,order,stream):return {'update':u,'branch_decisions':{'complete':count},'sample_order_sha256':order,'complete_stream_sha256':stream,'partial_stream_sha256':'partial'}
+ c={a:[] for a in ['J1-FULL','J1-PARTIAL','J2-FULL','J2-PARTIAL']}
+ for n in ['J1','J2']:
+  c[n+'-FULL']=[row(5000,320000,'full-order','same-prefix')]
+  c[n+'-PARTIAL']=[row(10000,320000,'partial-order','same-prefix')]
+ v=sampling_evidence(c)
+ assert v['paired_chemistry_schedules']['FULL']['all_sample_order_hashes_equal']
+ assert v['equal_complete_exposure']['J1'][0]['counts_equal']
+ assert v['equal_complete_exposure']['J1'][0]['complete_stream_hashes_equal']
+ c['J2-FULL'][0]['sample_order_sha256']='different'
+ assert not sampling_evidence(c)['paired_chemistry_schedules']['FULL']['all_sample_order_hashes_equal']
