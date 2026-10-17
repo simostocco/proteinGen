@@ -17,8 +17,21 @@ def stage(script,args):
  with log.open('xb') as f:result=subprocess.run(command,cwd=R/'source',stdout=f,stderr=subprocess.STDOUT)
  event({'stage':label,'status':'END','returncode':result.returncode,'seconds':time.monotonic()-start})
  if result.returncode:raise RuntimeError('stage failed; preserved log: '+str(log))
+def published_receipt(root):
+ p=root/'PROVENANCE_SHA256.json';active=root/'ACTIVE_CONTROLLER.json'
+ if not p.exists() or not active.exists():return False
+ manifest=json.loads(p.read_text())
+ if 'artifact_sha256' not in manifest or json.loads(active.read_text()).get('phase')!='COMPLETED':return False
+ for rel,h in manifest['artifact_sha256'].items():
+  item=(root/rel).resolve()
+  if not item.is_relative_to(root.resolve()) or sha(item)!=h:raise ValueError('published artifact differs: '+rel)
+ for value in manifest['selected_checkpoints'].values():
+  if sha(value['path'])!=value['sha256']:raise ValueError('published selected checkpoint differs')
+ return True
+
 def main():
  lock=(R/'CONTROLLER.lock').open('a+');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+ if published_receipt(R):print('ALREADY_COMPLETE_ALL_ARTIFACT_HASHES_VERIFIED',flush=True);return
  if not (R/'PREFLIGHT_PASS.json').exists():raise RuntimeError('real mixed-data preflight must pass before training launch')
  for arm in ARMS:
   stage('partial_train.py',['--arm',arm])
