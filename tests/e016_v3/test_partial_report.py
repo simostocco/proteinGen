@@ -9,3 +9,22 @@ def test_paired_likelihood_comparison_preserves_opposing_components():
 def test_original_parent_is_additional_update_zero(tmp_path):
  assert selected_update(tmp_path,'J1-FULL',{'selected_checkpoint':str(tmp_path/'old/J1/checkpoint_10000.pt')})==0
  assert selected_update(tmp_path,'J1-FULL',{'selected_checkpoint':str(tmp_path/'runs/J1-FULL/checkpoint_05000.pt')})==5000
+
+def test_full_report_publication_uses_supplied_results(tmp_path):
+ import json
+ from partial_report import publish
+ arms=['J1-FULL','J1-PARTIAL','J2-FULL','J2-PARTIAL'];done={};valid={};generated={}
+ for arm in arms:
+  done[arm]={'selected_checkpoint':str(tmp_path/'runs'/arm/'checkpoint_20000.pt'),'selected_sha256':'synthetic','additional_updates':20000,'additional_prefix_decisions':1280000}
+  v={'AA_NLL':2.,'geometry_valid_component_mean_per_decision':-1.,'selection_objective':1.,'per_identity_AA_geometry_mean':{'synthetic-id':[2.,-1.]}}
+  valid[arm]={'0':{'complete':v,'partial':v},'20000':{'complete':v,'partial':v}}
+  g={k:0.1 for k in ['clashes_per100_residues','clashes_per10000_nonlocal_pairs','long_contact_fraction','Rg_A','Rg_over_N_cuberoot','degenerate_frames','torsion_positive_fraction','signed_triple_product_mean']};g.update(adjacent_A={'mean':3.8},angle_rad={'mean':1.9})
+  generated[arm]=[{'N':64,'status':'COMPLETE','sequence':'A'*64,'seconds':1.,'independent_CA_metrics':g}]
+ native={s:{'64':{'selected_identities':1,'available_identities':1,'length_window':[58,70],'rows':[{'metrics':g}]}} for s in ['TRAIN','VALIDATION']}
+ (tmp_path/'NATIVE_VS_GENERATED_GEOMETRY.json').write_text(json.dumps({'native':native}))
+ counts={s:{'identities':1,'additional_to_complete_identities':1,'observations':1,'distance_targets':18,'angle_targets':17,'torsion_targets':16,'AA_at_missing_CA':1} for s in ['TRAIN','VALIDATION']}
+ (tmp_path/'PARTIAL_PDB_ELIGIBILITY_COUNTS.json').write_text(json.dumps({'splits':counts}));(tmp_path/'view').mkdir();(tmp_path/'view/PARTIAL_VIEW_QA.json').write_text('{}')
+ publish(tmp_path,done,valid,generated)
+ study=json.loads((tmp_path/'STUDY_COMPARISON.json').read_text());assert study['TEST_used'] is False;assert study['selected']['J1-PARTIAL']['update']==20000
+ assert study['selected_paired_comparisons']['J1_PARTIAL_MINUS_FULL']['complete']['right_minus_left_AA_geometry_objective']==[0.,0.,0.]
+ assert (tmp_path/'FINAL_PARTIAL_SUPERVISION_REPORT.md').exists() and (tmp_path/'FREE_GENERATION_COMPARISON.md').exists()
