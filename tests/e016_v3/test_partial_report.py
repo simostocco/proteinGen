@@ -56,3 +56,13 @@ def test_schedule_receipts_detect_unpaired_samples_and_equal_exposure():
  assert v['equal_complete_exposure']['J1'][0]['complete_stream_hashes_equal']
  c['J2-FULL'][0]['sample_order_sha256']='different'
  assert not sampling_evidence(c)['paired_chemistry_schedules']['FULL']['all_sample_order_hashes_equal']
+
+
+def test_partial_validation_separates_new_identity_from_extra_observation():
+ from partial_report import partial_identity_strata
+ v=partial_identity_strata({'known':[2.0,-1.0],'new1':[3.0,-.5],'new2':[1.0,-.5]}, {'known'})
+ assert v['COMPLETE_VIEW_IDENTITY_ADDITIONAL_OBSERVATION']['identities']==1
+ assert v['NEW_PARTIAL_ONLY_IDENTITY']['identities']==2
+ assert v['NEW_PARTIAL_ONLY_IDENTITY']['AA_NLL']==2.0
+ assert v['NEW_PARTIAL_ONLY_IDENTITY']['objective']==1.5
+ assert partial_identity_strata({},set())['NEW_PARTIAL_ONLY_IDENTITY']['AA_NLL'] is None
