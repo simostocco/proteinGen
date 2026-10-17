@@ -59,7 +59,7 @@ def sample_panel(arm,config,checkpoint,expected_sha,cache,data,train_strings,reu
 def main():
  core.setup();start=time.monotonic();cfg=json.load(open(R/'configs/CONTINUATION_FROZEN.json'));done={a:json.load(open(R/'runs'/a/'COMPLETED.json')) for a in ARMS}
  for a,v in done.items():
-  if file_sha(v['selected_checkpoint'])!=v['selected_sha256']:raise ValueError('selected checkpoint SHA mismatch '+a)
+  if v['config']!=cfg[a] or file_sha(v['selected_checkpoint'])!=v['selected_sha256']:raise ValueError('selected checkpoint SHA mismatch '+a)
  write(R/'SELECTION_FROZEN.json',{a:{'path':v['selected_checkpoint'],'sha256':v['selected_sha256'],'criterion':v['config']['selection']} for a,v in done.items()})
  data=PartialData();curves={};valid={};generated={};reuse={};train_strings={''.join(data.seqs[h]) for h in data.proposal.sequences if data.proposal.sequences[h]['split']=='TRAIN'}
  for arm in ARMS:

@@ -40,7 +40,7 @@ class PartialData:
   for s in self.owners:
    for v in self.owners[s].values():v.sort()
   self.ids={s:sorted(self.owners[s]) for s in self.owners}
-  self.receipt={'partial_observations':len(self.cache),'partial_cache_bytes':sum(sum(v.nbytes for v in r.values() if isinstance(v,np.ndarray)) for r in self.cache.values()),'seconds_partial_load':time.monotonic()-start,'TEST_coordinates_loaded':0,'view_sha256':file_sha(R/'view/VIEW_FROZEN.json')}
+  self.receipt={'partial_observations':len(self.cache),'partial_cache_bytes':sum(sum(v.nbytes for v in r.values() if isinstance(v,np.ndarray)) for r in self.cache.values()),'seconds_partial_load':time.monotonic()-start,'TEST_observations_admitted':0,'TEST_feature_or_loss_targets':0,'shared_batches_may_decode_unselected_rows':True,'view_sha256':file_sha(R/'view/VIEW_FROZEN.json')}
  def add(self,row,xy):
   oid=row['observation_id'];seen=np.array(row['ca_observed'],dtype=bool);N=len(self.seqs[row['sequence_hash']]);x=np.array([v if v is not None else [0,0,0] for v in xy],dtype=np.float64)
   if len(x)!=N or [v is not None for v in xy]!=seen.tolist():raise ValueError('partial coordinate/mask correspondence changed')

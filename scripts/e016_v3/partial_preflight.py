@@ -36,7 +36,7 @@ def main():
  write(R/'configs/CONTINUATION_FROZEN.json',cfg)
  # Cost all milestone states plus atomic staging, the actual existing engineering checkpoint,
  # logs and final generation; no historical deletion/cleanup is a resource strategy.
- budget={'D_free_before_continuations':shutil.disk_usage(R).free,'planned_milestone_states':8,'upper_bytes_per_state':170*2**20,'atomic_staging_bytes':340*2**20,'remaining_logs_reports_and_generation_bytes':800*2**20,'hard_reserve_bytes':10*2**30};budget['projected_remaining_peak_bytes']=8*budget['upper_bytes_per_state']+budget['atomic_staging_bytes']+budget['remaining_logs_reports_and_generation_bytes']
+ budget={'D_free_before_continuations':shutil.disk_usage(R).free,'planned_milestone_states':8,'upper_bytes_per_state':170*2**20,'atomic_staging_bytes':340*2**20,'preflight_checkpoint_bytes':170*2**20,'remaining_logs_reports_and_generation_bytes':800*2**20,'hard_reserve_bytes':10*2**30};budget['projected_remaining_peak_bytes']=8*budget['upper_bytes_per_state']+budget['atomic_staging_bytes']+budget['remaining_logs_reports_and_generation_bytes']+budget['preflight_checkpoint_bytes']
  write(R/'RESOURCE_BUDGET_FROZEN.json',budget)
  if budget['D_free_before_continuations']<budget['hard_reserve_bytes']+budget['projected_remaining_peak_bytes']:raise RuntimeError('continuation peak does not fit measured disk reserve')
  native_quality=[]
