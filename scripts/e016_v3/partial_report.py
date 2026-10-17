@@ -5,6 +5,16 @@ import numpy as np
 def scalar_summary(values):
  a=np.asarray(values,dtype=float);a=a[np.isfinite(a)]
  return {'n':len(a),'mean':float(a.mean()) if len(a) else None,'median':float(np.median(a)) if len(a) else None,'q05_q95':np.quantile(a,[.05,.95]).tolist() if len(a) else None}
+def resource_samples(paths):
+ rows=[];gpu=[]
+ for p in paths:
+  for line in Path(p).read_text().splitlines():
+   if not line.strip():continue
+   row=json.loads(line);rows.append(row)
+   if row.get('GPU'):
+    try:gpu.append([float(v.strip()) for v in row['GPU'].split(',')])
+    except ValueError:pass
+ return {'samples':len(rows),'device_wide_used_MiB_peak':max((v[0] for v in gpu),default=None),'device_wide_free_MiB_min':min((v[1] for v in gpu),default=None),'GPU_utilization_percent_mean':float(np.mean([v[2] for v in gpu])) if gpu else None,'D_free_bytes_min':min((v['D_free_bytes'] for v in rows),default=None),'WSL_available_bytes_min':min((v['memory']['MemAvailable'] for v in rows),default=None),'swap_used_bytes_peak':max((v['memory']['SwapTotal']-v['memory']['SwapFree'] for v in rows),default=None),'scope':'10-second samples; device-wide memory includes desktop/other consumers, not isolated process accounting; brief unsampled peaks remain possible'}
 def paired_delta(left,right):
  a=left['per_identity_AA_geometry_mean'];b=right['per_identity_AA_geometry_mean']
  if set(a)!=set(b) or not a:raise ValueError('paired identity panels differ')
@@ -35,6 +45,9 @@ def publish(root,done,valid,generated):
    gen_summary[arm][str(N)]={'attempts':len(attempts),'complete':len(complete),'geometry_assessment_failures':sum('assessment_failure' in v for v in complete),'unique_sequences':len(set(sequences)),'duplicate_fraction':1-len(set(sequences))/max(1,len(sequences)) if sequences else None,'AA_composition':normalized,'AA_entropy_bits':float(-(p*np.log2(p)).sum()),'exact_TRAIN_sequence_matches':sum(v.get('exact_TRAIN_sequence_match',False) for v in complete),'seconds':sum(v['seconds'] for v in attempts),'metrics':{key:scalar_summary([g[key] for g in geom]) for key in ['clashes_per100_residues','clashes_per10000_nonlocal_pairs','long_contact_fraction','Rg_A','Rg_over_N_cuberoot','degenerate_frames','torsion_positive_fraction','signed_triple_product_mean']},'adjacent_spacing_mean_A':scalar_summary([g['adjacent_A']['mean'] for g in geom]),'angle_mean_rad':scalar_summary([g['angle_rad']['mean'] for g in geom]),'caveat':'exact overlap only; no new sequence alignments or biological novelty claim'}
  native=json.loads((root/'NATIVE_VS_GENERATED_GEOMETRY.json').read_text())['native'];native_summary={s:{N:{'selected_identities':v['selected_identities'],'available_identities':v['available_identities'],'length_window':v['length_window'],'metrics':{key:scalar_summary([r['metrics'][key] for r in v['rows']]) for key in ['clashes_per100_residues','clashes_per10000_nonlocal_pairs','long_contact_fraction','Rg_A','Rg_over_N_cuberoot','degenerate_frames','torsion_positive_fraction','signed_triple_product_mean']}} for N,v in by.items()} for s,by in native.items()}
  study={'selected':selected,'selected_paired_comparisons':comparisons,'equal_update_comparisons':equal_update,'generation_summary':gen_summary,'native_length_matched_summary':native_summary,'TEST_used':False};write('STUDY_COMPARISON.json',study)
+ resource_path=root/'RESOURCE_AND_STORAGE_REPORT.json'
+ if resource_path.exists():
+  resources=json.loads(resource_path.read_text());resources['sampled_operational_telemetry']=resource_samples(sorted((root/'logs').glob('resource_recovery_*.jsonl')));write(resource_path.name,resources)
  census=json.loads((root/'PARTIAL_PDB_ELIGIBILITY_COUNTS.json').read_text());qa=json.loads((root/'view/PARTIAL_VIEW_QA.json').read_text())
  lines=['# Partial-structure continuation results','','All results are PDB-supervised development results using VALIDATION. TEST was not reevaluated. No AlphaFold, SAC, E015 or editing policy executed.','','| Arm | Additional updates | Selected additional update | AA NLL | Geometry NLL per decision | Common complete objective | New decisions |','|---|---:|---:|---:|---:|---:|---:|']
  for a,r in done.items():

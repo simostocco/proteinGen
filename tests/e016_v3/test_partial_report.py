@@ -28,3 +28,16 @@ def test_full_report_publication_uses_supplied_results(tmp_path):
  study=json.loads((tmp_path/'STUDY_COMPARISON.json').read_text());assert study['TEST_used'] is False;assert study['selected']['J1-PARTIAL']['update']==20000
  assert study['selected_paired_comparisons']['J1_PARTIAL_MINUS_FULL']['complete']['right_minus_left_AA_geometry_objective']==[0.,0.,0.]
  assert (tmp_path/'FINAL_PARTIAL_SUPERVISION_REPORT.md').exists() and (tmp_path/'FREE_GENERATION_COMPARISON.md').exists()
+
+
+def test_operational_resource_samples_distinguish_device_and_process(tmp_path):
+ from partial_report import resource_samples
+ import json
+ p=tmp_path/'telemetry.jsonl'
+ rows=[{'D_free_bytes':100,'memory':{'MemAvailable':80,'SwapTotal':40,'SwapFree':40},'GPU':'100, 7000, 90, 50, 80'},{'D_free_bytes':90,'memory':{'MemAvailable':70,'SwapTotal':40,'SwapFree':35},'GPU':'200, 6900, 50, 51, 90'}]
+ p.write_text('\n'.join(json.dumps(v) for v in rows))
+ v=resource_samples([p])
+ assert v['samples']==2 and v['device_wide_used_MiB_peak']==200
+ assert v['WSL_available_bytes_min']==70 and v['swap_used_bytes_peak']==5
+ assert 'not isolated process' in v['scope']
+ assert resource_samples([])['samples']==0
