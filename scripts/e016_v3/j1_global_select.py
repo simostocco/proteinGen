@@ -56,5 +56,24 @@ def run():
   for v in selected_items:v['prediction_cache_reused']=True
  u,cp,sha=chosen;j.write(j.R/'SELECTED_FREE_GENERATION.json',selected_items)
  receipt={'selected_update':u,'selected_checkpoint':str(cp),'selected_sha256':sha,'provisional_main_selection':{k:done[k] for k in ['selected_update','selected_checkpoint','selected_sha256']},'guardrails_sha256':file_sha(j.R/'configs/FINAL_GENERATION_GUARDRAILS_FROZEN.json'),'checked_candidates':checked,'interpretation':'original parent fallback' if u==0 else 'AA-improving continuation passed frozen final length-specific geometry/diversity safeguards','TEST':'NOT_EVALUATED'}
- j.write(j.R/'FINAL_SELECTION.json',receipt);print('FINAL_J1_SELECTION '+str(u),flush=True)
+ j.write(j.R/'FINAL_SELECTION.json',receipt)
+ # Always assess the actual last trained policy, even when the parent is selected.
+ latest=Path(done['latest_checkpoint']);lsha=done['latest_sha256'];lu=done['additional_updates']
+ if file_sha(latest)!=lsha:raise ValueError('latest checkpoint integrity')
+ if latest==cp:latest_items=selected_items
+ else:
+  cache=j.R/f'FINAL_CANDIDATE_{lu:05}.json';latest_items=read(cache) if cache.exists() else []
+  keys={(v['N'],v['sample_index']) for v in latest_items}
+  if len(keys)!=len(latest_items) or any(v['checkpoint_sha256']!=lsha for v in latest_items):raise ValueError('latest generation association')
+  if engine is None:
+   model,state=j.parent_model();del state;engine=SimpleNamespace(model=model,c={**j.CFG,'name':'J1'},joint=True)
+  state=load_checked(latest);engine.model.load_state_dict(state['model'],strict=True);del state
+  for N in LENGTHS:
+   for k in range(32):
+    if (N,k) in keys:continue
+    v=Generator.generate(engine,N,2026101700+100*N+k);v.update(sample_index=k,checkpoint_sha256=lsha)
+    if v['status']=='COMPLETE':v['metrics']=metrics(v['generated_CA_A'])
+    latest_items.append(v);j.write(cache,latest_items);j.write(j.R/'ASSESSMENT_HEARTBEAT.json',{'latest_update':lu,'N':N,'sample':k,'time':time.time()})
+ j.write(j.R/'LATEST_FREE_GENERATION.json',latest_items)
+ print('FINAL_J1_SELECTION '+str(u)+' LATEST_ASSESSED '+str(lu),flush=True)
 if __name__=='__main__':run()

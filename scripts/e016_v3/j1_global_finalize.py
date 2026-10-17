@@ -79,7 +79,7 @@ def assess():
     v=Generator.generate(engine,N,seed);v.update(sample_index=k,checkpoint_sha256=sha)
     if v['status']=='COMPLETE':v['metrics']=metrics(v['generated_CA_A'])
    items.append(v);j.write(cache,items);j.write(j.R/'ASSESSMENT_HEARTBEAT.json',{'N':N,'sample':k,'time':time.time(),'checkpoint_sha256':sha})
- native=read(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json')['native'];base_summary=metric_summary(baseline_generation);new_summary=metric_summary(items);comparisons={}
+ native=read(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json')['native'];base_summary=metric_summary(baseline_generation);new_summary=metric_summary(items);latest_items=read(j.R/'LATEST_FREE_GENERATION.json');latest_summary=metric_summary(latest_items);comparisons={};latest_comparisons={}
  for N in LENGTHS:
   old=sorted([v for v in baseline_generation if v['N']==N],key=lambda v:v['sample_index']);new=sorted([v for v in items if v['N']==N],key=lambda v:v['sample_index'])
   target=np.median([v['metrics']['Rg_over_N_cuberoot'] for v in native['TRAIN'][str(N)]['rows']]);clash=[];rg=[]
@@ -88,7 +88,15 @@ def assess():
     clash.append(b['metrics']['clashes_per100_residues']-a['metrics']['clashes_per100_residues'])
     rg.append(abs(math.log(b['metrics']['Rg_over_N_cuberoot']/target))-abs(math.log(a['metrics']['Rg_over_N_cuberoot']/target)))
   comparisons[str(N)]={'paired_clash_change_per100':paired_ci(clash),'paired_absolute_log_Rg_error_change':paired_ci(rg),'native_TRAIN_normalized_Rg_median':float(target)}
- j.write(j.R/'NATIVE_VS_GENERATED_GLOBAL_GEOMETRY.json',{'metric_definitions':'same as prior study; Rg matched by length window, clash<2A/seqsep>=3, long contacts<8A/seqsep>=24; CA proxies only','native_reference_path':str(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'native_reference_sha256':file_sha(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'native':native,'baseline':base_summary,'selected':new_summary,'paired_comparison':comparisons,'generation_cache_sha256':file_sha(cache)})
+ for N in LENGTHS:
+  old=sorted([v for v in baseline_generation if v['N']==N],key=lambda v:v['sample_index']);new=sorted([v for v in latest_items if v['N']==N],key=lambda v:v['sample_index'])
+  target=np.median([v['metrics']['Rg_over_N_cuberoot'] for v in native['TRAIN'][str(N)]['rows']]);clash=[];rg=[]
+  for a,b in zip(old,new):
+   if 'metrics' in a and 'metrics' in b:
+    clash.append(b['metrics']['clashes_per100_residues']-a['metrics']['clashes_per100_residues'])
+    rg.append(abs(math.log(b['metrics']['Rg_over_N_cuberoot']/target))-abs(math.log(a['metrics']['Rg_over_N_cuberoot']/target)))
+  latest_comparisons[str(N)]={'paired_clash_change_per100':paired_ci(clash),'paired_absolute_log_Rg_error_change':paired_ci(rg),'native_TRAIN_normalized_Rg_median':float(target)}
+ j.write(j.R/'NATIVE_VS_GENERATED_GLOBAL_GEOMETRY.json',{'metric_definitions':'same as prior study; Rg matched by length window, clash<2A/seqsep>=3, long contacts<8A/seqsep>=24; CA proxies only','native_reference_path':str(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'native_reference_sha256':file_sha(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'native':native,'baseline':base_summary,'selected':new_summary,'paired_comparison':comparisons,'latest_actual_policy':latest_summary,'latest_paired_comparison':latest_comparisons,'generation_cache_sha256':file_sha(cache)})
  # Resource totals include failed preflight logs and all retained new artifacts.
  resources=[]
  for line in (j.R/'logs/resources.jsonl').read_text().splitlines():
@@ -105,6 +113,9 @@ def assess():
  text='# Free-running J1 assessment\n\n32independent seeds at each of64,128,256,384,500residues. Original parent outputs reused exactly for the original SHA and seed/protocol; selected continuation outputs are separately generated. No native sequence or coordinates condition these complete generations.\n\n'
  for N in LENGTHS:
   a=base_summary[str(N)];b=new_summary[str(N)];text+=f"N={N}: complete{b['complete_valid']}/32; Rg {a['Rg_A']['mean']:.3f}→{b['Rg_A']['mean']:.3f}Angstrom; clashes/100res {a['clashes_per100_residues']['mean']:.4f}→{b['clashes_per100_residues']['mean']:.4f}; long-contact fraction {a['long_contact_fraction']['mean']:.6f}→{b['long_contact_fraction']['mean']:.6f}; unique sequences{b['unique_sequences']}/32.\n\n"
+ text+='Actual last trained policy (reported even when not selected):\n\n'
+ for N in LENGTHS:
+  b=latest_summary[str(N)];text+=f"N={N}: Rg{b['Rg_A']['mean']:.3f}Angstrom; clashes/100res{b['clashes_per100_residues']['mean']:.4f}; long contacts{b['long_contact_fraction']['mean']:.6f}; complete{b['complete_valid']}/32.\n\n"
  text+='Paired bootstrap intervals, native TRAIN/VALIDATION reference distributions, local geometry and sequence/distance-fingerprint diversity are in NATIVE_VS_GENERATED_GLOBAL_GEOMETRY.json. Short, true-AA-conditioned TRAIN rollouts are a different task from these complete joint samples. These CA metrics do not establish experimental folding or thermodynamic stability.\n';(j.R/'FREE_GENERATION_ASSESSMENT.md').write_text(text)
  selected_train=selected['TRAIN'];last_train=last['TRAIN'];last_val=last['VALIDATION'];st=read(j.R/'SEQUENCE_BASELINES.json')
  lines=['# J1 global pretraining: measured outcome','',f"Source branch e016-j1-global-pretraining-20261017-v1; training implementation commit2695487. Main J1 additional updates{done['additional_updates']}; total lineage{done['total_lineage_updates']}; parameter count12351746 unchanged. No other model, TEST, AF, SAC or E015 executed.",'',
