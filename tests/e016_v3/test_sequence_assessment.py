@@ -17,3 +17,18 @@ def test_numpy_eligibility_is_json_safe():
  value=selection_flag(-.01,.05,True,np.float64(2.),{'local_delta':.2,'severe_clash_mean':6.})
  assert type(value) is bool
  assert json.loads(json.dumps({'eligible':value}))=={'eligible':True}
+
+def test_historical_evaluation_restores_training_flags_on_error():
+ import torch,pytest
+ from j1_sequence_first import historical_evaluation
+ old=torch.are_deterministic_algorithms_enabled();cu=torch.backends.cudnn.deterministic
+ try:
+  torch.use_deterministic_algorithms(True);torch.backends.cudnn.deterministic=True
+  with pytest.raises(ValueError):
+   with historical_evaluation():
+    assert not torch.are_deterministic_algorithms_enabled()
+    assert not torch.backends.cudnn.deterministic
+    raise ValueError('synthetic evaluator failure')
+  assert torch.are_deterministic_algorithms_enabled() and torch.backends.cudnn.deterministic
+ finally:
+  torch.use_deterministic_algorithms(old);torch.backends.cudnn.deterministic=cu

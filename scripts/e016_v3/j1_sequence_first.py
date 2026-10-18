@@ -2,6 +2,7 @@
 import collections,copy,gc,json,math,os,random,signal,subprocess,threading,time
 from pathlib import Path
 from types import SimpleNamespace
+from contextlib import contextmanager
 import numpy as np
 import torch
 from torch.nn import functional as F
@@ -24,6 +25,15 @@ def guard():
  if STOP.is_set():raise RuntimeError("graceful stop requested")
 def selection_flag(delta,local,finitegen,clashes,guardrails):
  return bool(delta<0 and local<=guardrails['local_delta'] and finitegen and clashes<guardrails['severe_clash_mean'])
+@contextmanager
+def historical_evaluation():
+ # Retain the predeclared historical forward/generation protocol; no optimizer runs here.
+ old=torch.are_deterministic_algorithms_enabled();cudnn=torch.backends.cudnn.deterministic
+ try:
+  torch.use_deterministic_algorithms(False);torch.backends.cudnn.deterministic=False
+  yield
+ finally:
+  torch.use_deterministic_algorithms(old);torch.backends.cudnn.deterministic=cudnn
 def loss_call(model,b,y,g):
  with torch.autocast('cuda',dtype=torch.bfloat16):
   return losses(model,b,y,g,geometry_fp32=True)
@@ -55,6 +65,7 @@ class Sampler:
  def report(self):return {'updates':self.cursor,'exposures':dict(self.counts),**self.cover.report()}
 class Engine:
  def __init__(self,data,c):
+  torch.use_deterministic_algorithms(True);torch.backends.cudnn.deterministic=True
   self.data=data;self.c=c;self.name='J1';self.joint=True;self.model,parent=j.parent_model();set_dropout(self.model,.15)
   self.opt=torch.optim.AdamW(self.model.parameters(),lr=c['learning_rate'],weight_decay=.01,fused=True);self.opt.load_state_dict(parent['optimizer'])
   if {float(s['step']) for s in self.opt.state.values()}!={30000.}:raise ValueError('parent optimizer mismatch')
@@ -64,7 +75,7 @@ class Engine:
    return .1+.9*.5*(1+math.cos(math.pi*min(1,(k-250)/(c['max_updates']-250))))
   self.scheduler=torch.optim.lr_scheduler.LambdaLR(self.opt,factor);restore_rng(parent['rng']);del parent
   self.sampler=Sampler(data);self.rollrng=random.Random(180720);self.update=0;self.residues=0;self.nonlocal_targets=0;self.history=[];self.best=0;self.elapsed=0.;self.start=time.monotonic()
-  self.lineage={'version':VERSION,'config':c,'package_sha256':code_hash(),'entrypoint_sha256':file_sha(__file__),'parent_sha256':j.PARENT_SHA,'split_sha256':file_sha(j.core.P/'PROPOSAL_MANIFEST.json'),'view_sha256':file_sha(j.OLD/'view/VIEW_FROZEN.json'),'panels_sha256':file_sha(R/'configs/EVALUATION_PANELS.json'),'geometry_version':'ca_internal_signed_v1','chemistry':'DISABLED','TEST':'NOT_USED'}
+  self.lineage={'version':VERSION,'config':c,'package_sha256':code_hash(),'entrypoint_sha256':file_sha(__file__),'parent_sha256':j.PARENT_SHA,'split_sha256':file_sha(j.core.P/'PROPOSAL_MANIFEST.json'),'view_sha256':file_sha(j.OLD/'view/VIEW_FROZEN.json'),'panels_sha256':file_sha(R/'configs/EVALUATION_PANELS.json'),'geometry_version':'ca_internal_signed_v1','chemistry':'DISABLED','TEST':'NOT_USED','numerical_execution':'DETERMINISTIC_TRAIN_HISTORICAL_INFERENCE_V1','torch':str(torch.__version__),'cuda_runtime':str(torch.version.cuda)}
  def step(self,force_stage=None,force_horizon=None):
   guard();start=time.monotonic();self.model.train();self.opt.zero_grad(set_to_none=True);aaex,geoex=self.sampler.draw();AA=GEO=0.;component=np.zeros(3);gnonlocal=0.;counts=[];stage=force_stage or (1 if self.update<2500 else 2 if self.update<5000 else 3)
   for off in range(0,64,16):
@@ -103,15 +114,18 @@ class Engine:
  def resume(self,path):
   s=load_checked(path)
   if s['lineage']!=self.lineage:
-   amended=copy.deepcopy(s['lineage']);receipt=json.load(open(R/'CONTROLLER_AMENDMENT.json'))
-   if amended.get('entrypoint_sha256')!=receipt['previous_entrypoint_sha256'] or self.lineage['entrypoint_sha256']!=receipt['new_entrypoint_sha256']:raise ValueError('unapproved controller lineage change')
+   amended=copy.deepcopy(s['lineage']);receipt=json.load(open(R/'NUMERICAL_EXECUTION_AMENDMENT.json'))
+   if amended.get('entrypoint_sha256') not in receipt['legacy_entrypoint_sha256'] or self.lineage['entrypoint_sha256']!=receipt['new_entrypoint_sha256'] or file_sha(path) not in receipt['legacy_checkpoint_sha256']:raise ValueError('unapproved numerical/controller migration')
    amended['entrypoint_sha256']=self.lineage['entrypoint_sha256']
-   if amended!=self.lineage:raise ValueError('non-controller lineage change')
+   for key in ['numerical_execution','torch','cuda_runtime']:
+    if key in amended:raise ValueError('unexpected existing numerical lineage metadata')
+    amended[key]=self.lineage[key]
+   if amended!=self.lineage:raise ValueError('non-numerical lineage change')
   self.model.load_state_dict(s['model'],strict=True);self.opt.load_state_dict(s['optimizer']);self.scheduler.load_state_dict(s['scheduler']);self.sampler.load_state_dict(s['sampler']);self.rollrng.setstate(s['rollout_rng']);self.update=s['additional_update'];self.residues=s['residues'];self.nonlocal_targets=s['nonlocal_targets'];self.history=s['history'];self.best=s['best'];self.elapsed=s['elapsed'];self.start=time.monotonic();restore_rng(s['rng'])
  @torch.no_grad()
  def generate(self,N,seed):return Generator.generate(self,N,seed)
 def checkpoint_prune(engine):
- d=R/'runs/J1';keep={engine.update,engine.best}
+ d=R/'runs/J1';keep={engine.update,engine.best,3482}
  # Preserve explicit stage boundaries as compact model-only states, full latest/best restart states.
  for p in d.glob('checkpoint_*.pt'):
   u=int(p.stem.split('_')[1])
@@ -131,6 +145,7 @@ def generation(engine,u,n=2):
    rows.append(v);LAST[0]=time.monotonic()
  write(R/'runs/J1'/f'generation_{u:05}.json',rows)
  return rows
+@historical_evaluation()
 def assess(engine,data,panels):
  state=rng_state();train=j.evaluate(engine.model,data.base,panels['TRAIN'],'TRAIN');LAST[0]=time.monotonic();val=j.evaluate(engine.model,data.base,panels['VALIDATION'],'VALIDATION');LAST[0]=time.monotonic()
  from partial_train import Engine as PE
