@@ -49,7 +49,8 @@ def verification():
  if st['lineage']['config']['dropout']!=.15:raise ValueError('dropout changed')
  p=R/'PAUSED_CHECKPOINT_VERIFICATION.json'
  result={'status':'PASS_LOAD_CHECKSUM_COUNTERS_FINITE_STATE','checkpoint':str(cp),'sha256':file_sha(cp),'bytes':cp.stat().st_size,'additional_update':u,'total_optimizer_updates':30000+u,'received_verified_update':receipt['verified_received_update'],'further_optimizer_updates':u-receipt['verified_received_update'],'maximum_further_updates':2500,'optimizer_steps':sorted(steps),'scheduler_last_epoch':st['scheduler']['last_epoch'],'sampler_cursor':st['sampler']['cursor'],'recoverable_fields':required,'rng_keys':list(st['rng']),'lineage':st['lineage'],'source_reporting_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=R/'source',text=True).strip(),'elapsed_main_seconds_including_evaluation':st['elapsed'],'dropout_augmentation_RNG':'global torch CPU/CUDA RNG; sampler Python RNG and independent rollout RNG saved','test':'NO_NEW_OPTIMIZER_UPDATES; prior deterministic interruption proofs retained','reason':'USER_REQUESTED_BUDGET_REDUCTION','timestamp':time.time()}
- write(destination(p),result)
+ result['training_heartbeat_at_pause']=read(R/'HEARTBEAT.json')
+ result['active_training_implementation_commit']='df1543e0c5e2c48fa2da9e4796db4b4e46124802'
  return st,result
 @torch.no_grad()
 def audit(model,data):
@@ -114,6 +115,21 @@ def audit(model,data):
  tokenstats={k:describe(v) for k,v in ts.items()}
  tokencontrib={name:{'mean_abs_linear_contribution':float(np.mean(np.abs(ts[name]))*model.encoder.token.weight[:,c].abs().mean().item()),'note':'linear contribution before shared context, AA embedding and LayerNorm'} for c,name in enumerate(tokennames)}
  out={'status':'READ_ONLY_TRAIN_DIAGNOSTIC_NO_NORMALIZATION_FITTED_OR_APPLIED','sampling_seed':180018,'identities':len(set(v[0] for v in chosen)),'prefix_contexts':len(chosen),'pair_sample_count':len(a),'effective_coordinate_pair_sample_count':int(effective.sum()),'all_context_pair_count':pairtotal,'all_context_valid_pair_count':validtotal,'missing_prefix_positions':missing,'source_contexts':diagnostics,'raw_observed_pair_distance_A':describe(rawdist),'context_features':{'N_over500':describe(np.array(contexts)[:,0]),'t_overN':describe(np.array(contexts)[:,1])},'token_features':tokenstats,'pair_features_25':featurestats,'pair_bias_BF16':describe(bf.cpu().numpy().ravel()),'pair_bias_FP32_minus_BF16_abs':describe((fp32-bf).abs().cpu().numpy().ravel()),'pair_feature_conditional_zero_ablation':contributions,'token_linear_contributions':tokencontrib,'first_block_content_QK':qkstats,'no_outlier_filtering':True,'limitations':['Bounded stratified TRAIN sample, not exhaustive archive extrema','Partial coverage strata intentionally broader than population weighting','Pair quantiles sampled; all-context valid/missing pair counts exact','Ablation magnitude is conditional and nonadditive through nonlinear MLP','No TRAIN-fitted scalers exist in active input pathway; none fitted here','No validation/test observations used for audit statistics']}
+ stress=[]
+ for row in read(j.core.PILOT/'priors/COORDINATE_EXTREMES.json')['examples']:
+  h=row['sequence_hash'];o=row['observation_id'];N=len(data.seqs[h]);t=min(N-1,max(row['positions_1based'])+1)
+  if data.proposal.sequences[h]['split']!='TRAIN':raise ValueError('stress panel role')
+  b,_,_=data.batch([(h,o,t)],device='cpu');f,_,_=features_batch(b,chemistry=False)
+  vals=f[0,:,22][f[0,:,27]>0].numpy()
+  stress.append({'sequence_hash':h,'observation_id':o,'source_entry':row['entry_id'],'positions_1based':row['positions_1based'],'historically_verified_pair_A':row['distance_A'],'prefix_target':t,'pair_fully_in_prefix':max(row['positions_1based'])<=t,'observed_prefix_bonds_A':describe(vals),'interpretation':'Separate source-anomaly stress panel; not merged into representative quantiles; source unchanged and not masked as missing'})
+ out['separate_verified_TRAIN_source_anomaly_stress_panel']=stress
+ augrows=[];generator=torch.Generator().manual_seed(180020)
+ for h,o,t,kind in chosen[::5]:
+  b,_,_=data.batch([(h,o,t)],device='cpu');bb=s.augment(b,.075,generator);f,pair,_=features_batch(bb,chemistry=False)
+  original,_,_=features_batch(b,chemistry=False)
+  augrows.append({'sequence_hash':h,'observation_id':o,'t':t,'kind':kind,'observed':int(b['valid'].sum()),'input_visible':int(bb['valid'].sum()),'hidden_by_augmentation':int((bb['ca_observed']&~bb['valid']).sum()),'geometry_targets_unchanged':bool(torch.equal(b['geometry_target_valid'],bb['geometry_target_valid'])),'frame_valid_before_after':[int(original[...,30].sum()),int(f[...,30].sum())],'mean_visible_crowding_before_after':[(float(original[...,26][b['valid']].mean()) if b['valid'].any() else None),(float(f[...,26][bb['valid']].mean()) if bb['valid'].any() else None)]})
+ out['training_input_augmentation_diagnostic']={'seed':180020,'probability':.075,'preserve_last3':True,'contexts':augrows,'scope':'TRAIN-only read-only masking probe; actual observation masks and target masks unchanged'}
+ out['pair_statistics_include_self_diagonal']=True
  write(destination(R/'FEATURE_NORMALIZATION_DISTRIBUTIONS.json'),out)
  return out
 def gradient_audit(model,data):
@@ -162,10 +178,21 @@ def gradient_audit(model,data):
 
 def evaluate(n=16):
  j.core.setup();torch.use_deterministic_algorithms(False);torch.backends.cudnn.deterministic=False
- st,verify=verification();model,parent=j.parent_model();del parent
- model.load_state_dict(st['model'],strict=True);set_dropout(model,.15);model.eval()
- u=st['additional_update'];cp=Path(verify['checkpoint']);sampler=st['sampler'];elapsed=st['elapsed'];history=st['history'];del st;gc.collect()
- data=PartialData();panels=read(R/'configs/EVALUATION_PANELS.json');result={}
+ st,verify=verification();u=st['additional_update'];cp=Path(verify['checkpoint']);sampler=st['sampler'];elapsed=st['elapsed'];history=st['history']
+ data=PartialData();recovered=s.Engine(data,read(R/'configs/FROZEN.json'));recovered.resume(cp)
+ def equal(a,b):
+  if torch.is_tensor(a) and torch.is_tensor(b):return torch.equal(a.detach().cpu(),b.detach().cpu())
+  if isinstance(a,dict) and isinstance(b,dict):return a.keys()==b.keys() and all(equal(a[k],b[k]) for k in a)
+  if isinstance(a,(tuple,list)) and isinstance(b,(tuple,list)):return len(a)==len(b) and all(equal(x,y) for x,y in zip(a,b))
+  return a==b
+ restored={'model':equal(st['model'],recovered.model.state_dict()),'optimizer':equal(st['optimizer'],recovered.opt.state_dict()),'scheduler':equal(st['scheduler'],recovered.scheduler.state_dict()),'sampler':equal(st['sampler'],recovered.sampler.state_dict()),'RNG':equal(st['rng'],s.rng_state()),'rollout_RNG':equal(st['rollout_rng'],recovered.rollrng.getstate())}
+ if not all(restored.values()):raise RuntimeError('full no-step restoration mismatch: '+str(restored))
+ verify['actual_controller_restore_equal']=restored;verify['optimizer_steps_taken_for_recovery_check']=0;verify['parameters']=sum(p.numel() for p in recovered.model.parameters() if p.requires_grad)
+ verify['training_stage']=1 if u<2500 else 2 if u<5000 else 3
+ write(destination(R/'PAUSED_CHECKPOINT_VERIFICATION.json'),verify)
+ model=recovered.model;del recovered,st;gc.collect();torch.cuda.empty_cache()
+ torch.use_deterministic_algorithms(False);torch.backends.cudnn.deterministic=False
+ set_dropout(model,.15);model.eval();panels=read(R/'configs/EVALUATION_PANELS.json');result={}
  for role in ['TRAIN','VALIDATION']:result[role]=j.evaluate(model,data.base,panels[role],role)
  from partial_train import Engine as PE
  eng=SimpleNamespace(model=model,data=data,c={**j.CFG,'live_batch':16},update=u)
@@ -188,6 +215,18 @@ def evaluate(n=16):
   valid=[(x,y) for x,y in zip(a,b) if 'metrics' in x and 'metrics' in y]
   comp[str(N)]={'clash_delta_per100':paired_ci([y['metrics']['clashes_per100_residues']-x['metrics']['clashes_per100_residues'] for x,y in valid]),'native_abs_log_Rg_error_delta':paired_ci([abs(math.log(y['metrics']['Rg_over_N_cuberoot']/ref))-abs(math.log(x['metrics']['Rg_over_N_cuberoot']/ref)) for x,y in valid]),'native_TRAIN_normalized_Rg_median':float(ref)}
  geometry={'samples_per_length':n,'paused':new,'parent_matched_seed_subset':old,'paired_changes':comp,'native_reference_path':str(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'native_reference_sha256':file_sha(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'interpretation':'Fully free-running AA and geometry, not true-AA-conditioned training rollouts; no folding claim'}
+ geometry['native_TRAIN_VALIDATION']={}
+ for role in ['TRAIN','VALIDATION']:
+  geometry['native_TRAIN_VALIDATION'][role]={}
+  for N,entry in native[role].items():
+   rr=entry['rows'];geometry['native_TRAIN_VALIDATION'][role][N]={'observations':len(rr),'identities':len({r['sequence_hash'] for r in rr}),'selection':'Frozen length-matched native window, not newly selected controls','metrics':{name:describe([r['metrics'][name] for r in rr]) for name in ['Rg_A','Rg_over_N_cuberoot','clashes_per100_residues','long_contact_fraction','degenerate_frames','torsion_resultant']}}
+ archive=s.PREVIOUS/'NATIVE_VS_GENERATED_GLOBAL_GEOMETRY.json'
+ geometry['historical_60k_reference']={'path':str(archive),'sha256':file_sha(archive),'summary32':read(archive)['latest_actual_policy'],'limitation':'Archived32-sample summary, descriptive comparison; not paired with current16 subset'}
+ geometry['pooled_generated_histograms']={}
+ for N in [64,128,256,384,500]:
+  rr=[v['metrics'] for v in gen if v['N']==N and 'metrics' in v]
+  ah=np.array([v['angle_histogram'] for v in rr]).sum(0);th=np.array([v['torsion_histogram'] for v in rr]).sum(0)
+  geometry['pooled_generated_histograms'][str(N)]={'virtual_angle_edges_rad':np.linspace(0,np.pi,19).tolist(),'virtual_angle_counts':ah.tolist(),'signed_torsion_edges_rad':np.linspace(-np.pi,np.pi,37).tolist(),'signed_torsion_counts':th.tolist(),'degenerate_frames_per_available_triple':sum(v['degenerate_frames'] for v in rr)/max(1,len(rr)*(N-2))}
  write(destination(R/'PAUSED_FREE_GENERATION_COMPARISON.json'),geometry)
  necessary=[]
  if va['AA_NLL']>=base['VALIDATION']['AA_NLL']:necessary.append('AA did not improve over original parent')
@@ -201,7 +240,7 @@ def evaluate(n=16):
  curve=traces();write(R/'J1_TRAINING_CURVES.json',curve)
  stage3=[v for v in curve if 'AA_shared_gradient_L2' in v];gg={}
  for key in ['AA_shared_gradient_L2','geometry_shared_raw_L2','geometry_shared_scaled_L2','geometry_to_AA_shared_ratio','AA_geometry_shared_cosine','geometry_gradient_scale','gradient_norm_preclip']:gg[key]=describe([v[key] for v in stage3])
- gg['auxiliary_gradient_cap_count']=sum(v['geometry_gradient_scale']<1 for v in stage3);gg['stage3_updates']=len(stage3);gg['global_norm_clip_count_all_updates']=sum(v['gradient_norm_preclip']>1 for v in curve);gg['all_updates']=len(curve);gg['source']='Actual shared encoder parameter gradients, not geometry heads only';gg['individual_auxiliary_loss_gradients']='Preflight GRADIENT_BALANCE_REPORT.json; continuous production logs aggregate all geometry paths, no invented component-specific time series'
+ gg['auxiliary_gradient_cap_count']=sum(v['geometry_gradient_scale']<1 for v in stage3);gg['stage3_updates']=len(stage3);gg['global_norm_clip_count_all_updates']=sum(v['gradient_norm_preclip']>1 for v in curve);gg['all_updates']=len(curve);gg['AA_shared_after_whole_model_normclip']=describe([v['AA_shared_gradient_L2']*min(1,1/max(v['gradient_norm_preclip'],1e-30)) for v in stage3]);gg['clipping_interpretation']='Raw backward gradients after normclip; not an equivalent AdamW learning-rate estimate';gg['source']='Actual shared encoder parameter gradients, not geometry heads only';gg['individual_auxiliary_loss_gradients']='Preflight GRADIENT_BALANCE_REPORT.json; continuous production logs aggregate all geometry paths, no invented component-specific time series'
  cover=s.Coverage();cover.load_state_dict(sampler['coverage'])
  write(destination(R/'PAUSED_GRADIENT_AND_EXPOSURE_SUMMARY.json'),{'gradients':gg,'sampler_counts':sampler['counts'],'coverage':cover.report(),'rollout_residues':curve[-1]['rollout_residues'],'nonlocal_targets':curve[-1]['nonlocal_targets'],'trained_horizons':dict(collections.Counter(v['rollout_horizon'] for v in curve if 'rollout_horizon' in v)),'ordinary_update_seconds_sum':sum(v['seconds'] for v in curve),'checkpoint_elapsed_seconds':elapsed})
  write(destination(R/'PAUSED_EVALUATION_COMPLETE.json'),{'status':'DONE_NO_OPTIMIZER_STEPS','time':time.time(),'update':u,'samples_per_length':n})
