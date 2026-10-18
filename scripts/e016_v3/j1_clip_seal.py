@@ -16,9 +16,12 @@ def main():
   if str(R/'source/scripts/e016_v3/j1_clip_pilot.py') in cmd and 'python' in cmd:raise RuntimeError('training controller still active')
  if subprocess.check_output(['git','status','--porcelain'],cwd=R/'source',text=True):raise RuntimeError('uncommitted source')
  old=json.load(open(OLD/'PROVENANCE_SHA256.json'));ver=json.load(open(OLD/'PROVENANCE_VERIFICATION.json'))
- if sha(OLD/'PROVENANCE_SHA256.json')!=ver['manifest_sha256']:raise RuntimeError('historical provenance changed')
+ if sha(OLD/'PROVENANCE_SHA256.json')!=ver['manifest_sha256'] or ver['manifest_sha256']!='041b9f9fe6048efcfd6ce9cb0a15db6d30a81ff23d9bb4e2badbbc2e7d9477a3':raise RuntimeError('historical provenance changed')
  for p,h in old['protected_checkpoint_sha256'].items():
   if sha(p)!=h:raise RuntimeError('protected checkpoint changed '+p)
+ inputs=old['input_manifests_and_reference_evidence']
+ for p,entry in inputs.items():
+  if sha(p)!=entry['sha256']:raise RuntimeError('source/data/reference manifest changed '+p)
  # Verify all sealed prior reports, checkpoints and code without writing that lineage.
  errors=[]
  for rel,v in old['outputs'].items():
@@ -35,7 +38,7 @@ def main():
    if p.is_symlink():raise RuntimeError('unexpected output symlink '+rel)
    outputs[rel]={'sha256':sha(p),'bytes':p.stat().st_size}
  tracked=subprocess.check_output(['git','ls-files','-z'],cwd=R/'source').decode().split('\0');sources={n:sha(R/'source'/n) for n in tracked if n and (R/'source'/n).is_file()}
- result={'version':'J1_SHORT_CLIP_PRECISION_V1','time':time.time(),'branch':subprocess.check_output(['git','branch','--show-current'],cwd=R/'source',text=True).strip(),'reporting_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=R/'source',text=True).strip(),'training_implementation_commits':[json.load(open(R/'STORAGE_STAGING_AMENDMENT.json'))['old_source_commit'],json.load(open(R/'STORAGE_STAGING_AMENDMENT.json'))['successor_source_commit']],'source_clean':True,'frozen_config_sha256':sha(R/'configs/FROZEN.json'),'corrected_generation_protocol_sha256':sha(R/'configs/FINAL_ASSESSMENT_PROTOCOL.json'),'historical_manifest_sha256':sha(OLD/'PROVENANCE_SHA256.json'),'historical_output_files_verified':len(old['outputs']),'historical_source_files_verified':len(old['tracked_source_sha256']),'protected_checkpoint_sha256':old['protected_checkpoint_sha256'],'tracked_source_sha256':sources,'outputs':outputs,'excluded':['runtime caches','self manifest and final verification receipt'],'TEST':'NOT_EVALUATED','normalization_changes':False,'training_stopped':True,'automatic_extension':False}
+ result={'version':'J1_SHORT_CLIP_PRECISION_V1','time':time.time(),'branch':subprocess.check_output(['git','branch','--show-current'],cwd=R/'source',text=True).strip(),'reporting_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=R/'source',text=True).strip(),'training_implementation_commits':[json.load(open(R/'STORAGE_STAGING_AMENDMENT.json'))['old_source_commit'],json.load(open(R/'STORAGE_STAGING_AMENDMENT.json'))['successor_source_commit']],'source_clean':True,'frozen_config_sha256':sha(R/'configs/FROZEN.json'),'corrected_generation_protocol_sha256':sha(R/'configs/FINAL_ASSESSMENT_PROTOCOL.json'),'historical_manifest_sha256':sha(OLD/'PROVENANCE_SHA256.json'),'historical_output_files_verified':len(old['outputs']),'historical_source_files_verified':len(old['tracked_source_sha256']),'protected_checkpoint_sha256':old['protected_checkpoint_sha256'],'input_source_data_and_reference_manifest_sha256':inputs,'tracked_source_sha256':sources,'outputs':outputs,'excluded':['runtime caches','self manifest and final verification receipt'],'TEST':'NOT_EVALUATED','normalization_changes':False,'training_stopped':True,'automatic_extension':False}
  path=R/'PROVENANCE_SHA256.json'
  if path.exists():raise RuntimeError('preserve existing final provenance')
  path.write_text(json.dumps(result,indent=2)+'\n');errors=[]
