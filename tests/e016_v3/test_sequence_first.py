@@ -60,3 +60,22 @@ def test_dropout_recompute_rng_parity():
  torch.testing.assert_close(a['coordinates'],b['coordinates'],atol=0,rtol=0)
  for p,v in zip(m.parameters(),g):
   if v is not None:torch.testing.assert_close(p.grad,v,atol=1e-6,rtol=1e-4)
+
+@pytest.mark.parametrize('stress',[1.,1e6])
+def test_full_auxiliary_gradient_cap_preserves_AA_and_bounds_all_geometry_paths(stress):
+ from j1_sequence_first import combine_aa_and_geometry_gradients
+ x,ids=fixture();m=net();b=prefix_batch(x[:8],ids[:8],len(x));y=ids[8:9];g=inverse(x[:9])[0][None]
+ aa,geo,_=losses(m,b,y,g,geometry_fp32=True);aa.mean().backward();a={n:None if p.grad is None else p.grad.detach().clone() for n,p in m.named_parameters()};m.zero_grad(set_to_none=True)
+ from protein_joint_sac.rl.global_geometry import rollout
+ torch.manual_seed(4);r=rollout(m,x[:5],ids[:11],len(x),6,x[:11],precision='FP32')
+ b,y,g=b,y,g
+ aa,geo,_=losses(m,b,y,g,geometry_fp32=True);(stress*(geo.mean()+1000*r['Rg_loss']+r['clash_loss'])).backward()
+ raw={n:None if p.grad is None else p.grad.detach().clone() for n,p in m.named_parameters()};v=combine_aa_and_geometry_gradients(m,a,.5)
+ assert v['geometry_to_AA_shared_ratio']<=.500001 and 0<v['geometry_gradient_scale']<=1
+ if stress>1:assert v['geometry_gradient_scale']<1
+ for n,p in m.named_parameters():
+  expected=torch.zeros_like(p)
+  if raw[n] is not None:expected+=raw[n]*v['geometry_gradient_scale']
+  if a[n] is not None:expected+=a[n]
+  if p.grad is not None:torch.testing.assert_close(p.grad,expected,atol=0,rtol=0)
+ assert m.geom[-1].weight.grad.norm()>0 and m.encoder.blocks[0].qkv.weight.grad.norm()>0

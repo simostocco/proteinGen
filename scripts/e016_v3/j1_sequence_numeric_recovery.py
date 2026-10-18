@@ -26,6 +26,9 @@ def main():
   row={'H':H,'full_gradient_paths':2,'truncated':False,'seconds':time.monotonic()-q,'allocated':torch.cuda.max_memory_allocated(),'reserved':torch.cuda.max_memory_reserved(),'geometry_grad':float(e.model.geom[-1].weight.grad.norm()),'Transformer_grad':float(e.model.encoder.blocks[0].qkv.weight.grad.norm()),'finite':all(p.grad.isfinite().all() for p in e.model.parameters() if p.grad is not None)}
   assert row['finite'];bench.append(row);write(R/'DETERMINISTIC_LONG_ROLLOUT_BENCHMARKS.json',bench)
   del r,loss,ref,ids;gc.collect()
+ e.resume(p);real=e.step(force_stage=3,force_horizon=64)
+ assert real['geometry_to_AA_shared_ratio']<=.500001
+ write(R/'REAL_H64_AA_GRADIENT_CAP_UPDATE.json',{'status':'PASS','engineering_optimizer_calls':1,'main_calls':0,'metrics':real,'geometry_head_grad_finite':bool(e.model.geom[-1].weight.grad.isfinite().all())})
  gate=json.load(open(R/'PREFLIGHT_PASS.json'));write(R/'PREFLIGHT_PASS_SERIALIZATION_REPAIR.json',gate)
  gate['entrypoint_sha256']=file_sha(s.__file__);gate['numerical_amendment_sha256']=file_sha(R/'NUMERICAL_EXECUTION_AMENDMENT.json');gate['deterministic_restart_sha256']=file_sha(R/'AMENDED_ENGINE_RESTART.json');write(R/'PREFLIGHT_PASS.json',gate)
  print('DETERMINISTIC_ACTUAL_ENGINE_AND_LONG_ROLLOUT_PASS',flush=True)

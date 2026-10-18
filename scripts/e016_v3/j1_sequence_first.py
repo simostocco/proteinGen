@@ -34,6 +34,23 @@ def historical_evaluation():
   yield
  finally:
   torch.use_deterministic_algorithms(old);torch.backends.cudnn.deterministic=cudnn
+def combine_aa_and_geometry_gradients(model,aa_gradients,ratio=.5):
+ # Capture *all* geometry paths at parameter gradients, including recurrent coordinates.
+ named=list(model.named_parameters());shared=[(n,p) for n,p in named if n.startswith('encoder.')]
+ av=torch.cat([(aa_gradients[n] if aa_gradients[n] is not None else torch.zeros_like(p)).reshape(-1) for n,p in shared])
+ gv=torch.cat([(p.grad if p.grad is not None else torch.zeros_like(p)).reshape(-1) for n,p in shared])
+ an=float(av.norm());gn=float(gv.norm())
+ if not math.isfinite(an+gn):raise FloatingPointError('nonfinite shared-gradient budget')
+ scale=min(1.,ratio*an/max(gn,1e-30))
+ cosine=float(torch.dot(av,gv)/(av.norm()*gv.norm()).clamp_min(1e-30))
+ with torch.no_grad():
+  for n,p in named:
+   a=aa_gradients[n]
+   if p.grad is not None:p.grad.mul_(scale)
+   if a is not None:
+    if p.grad is None:p.grad=a
+    else:p.grad.add_(a)
+ return {'AA_shared_gradient_L2':an,'geometry_shared_raw_L2':gn,'geometry_gradient_scale':scale,'geometry_shared_scaled_L2':gn*scale,'geometry_to_AA_shared_ratio':gn*scale/max(an,1e-30),'AA_geometry_shared_cosine':cosine,'gradient_policy':'STAGE3_FIXED_RATIO0.5_ALL_AUX_PARAMETER_GRADIENT_CLIP'}
 def loss_call(model,b,y,g):
  with torch.autocast('cuda',dtype=torch.bfloat16):
   return losses(model,b,y,g,geometry_fp32=True)
@@ -75,7 +92,7 @@ class Engine:
    return .1+.9*.5*(1+math.cos(math.pi*min(1,(k-250)/(c['max_updates']-250))))
   self.scheduler=torch.optim.lr_scheduler.LambdaLR(self.opt,factor);restore_rng(parent['rng']);del parent
   self.sampler=Sampler(data);self.rollrng=random.Random(180720);self.update=0;self.residues=0;self.nonlocal_targets=0;self.history=[];self.best=0;self.elapsed=0.;self.start=time.monotonic()
-  self.lineage={'version':VERSION,'config':c,'package_sha256':code_hash(),'entrypoint_sha256':file_sha(__file__),'parent_sha256':j.PARENT_SHA,'split_sha256':file_sha(j.core.P/'PROPOSAL_MANIFEST.json'),'view_sha256':file_sha(j.OLD/'view/VIEW_FROZEN.json'),'panels_sha256':file_sha(R/'configs/EVALUATION_PANELS.json'),'geometry_version':'ca_internal_signed_v1','chemistry':'DISABLED','TEST':'NOT_USED','numerical_execution':'DETERMINISTIC_TRAIN_HISTORICAL_INFERENCE_V1','torch':str(torch.__version__),'cuda_runtime':str(torch.version.cuda)}
+  self.lineage={'version':VERSION,'config':c,'package_sha256':code_hash(),'entrypoint_sha256':file_sha(__file__),'parent_sha256':j.PARENT_SHA,'split_sha256':file_sha(j.core.P/'PROPOSAL_MANIFEST.json'),'view_sha256':file_sha(j.OLD/'view/VIEW_FROZEN.json'),'panels_sha256':file_sha(R/'configs/EVALUATION_PANELS.json'),'geometry_version':'ca_internal_signed_v1','chemistry':'DISABLED','TEST':'NOT_USED','gradient_policy':'STAGE3_FIXED_RATIO0.5_ALL_AUX_PARAMETER_GRADIENT_CLIP','numerical_execution':'DETERMINISTIC_TRAIN_HISTORICAL_INFERENCE_V1','torch':str(torch.__version__),'cuda_runtime':str(torch.version.cuda)}
  def step(self,force_stage=None,force_horizon=None):
   guard();start=time.monotonic();self.model.train();self.opt.zero_grad(set_to_none=True);aaex,geoex=self.sampler.draw();AA=GEO=0.;component=np.zeros(3);gnonlocal=0.;counts=[];stage=force_stage or (1 if self.update<2500 else 2 if self.update<5000 else 3)
   for off in range(0,64,16):
@@ -83,6 +100,9 @@ class Engine:
    # AA-only exposure stream; no duplicated AA loss on geometry-only examples.
    with torch.autocast('cuda',dtype=torch.bfloat16):h=encode_batch(self.model,b);aa=F.cross_entropy(self.model.aa_head(h).float(),y,reduction='sum')/64
    aa.backward();AA+=float(aa.detach());del b,y,g,h,aa
+  aa_gradients=None
+  if stage>=3:
+   aa_gradients={n:(None if p.grad is None else p.grad.detach().clone()) for n,p in self.model.named_parameters()};self.opt.zero_grad(set_to_none=True)
   for off in range(0,32,16):
    ex=geoex[off:off+16];b,y,g=self.data.batch(ex);b=augment(b,self.c['mask_probability'])
    aa,geo,parts=loss_call(self.model,b,y,g);obj=self.c['lambda_local']*geo.sum()/32;obj.backward()
@@ -103,6 +123,7 @@ class Engine:
    r=generated_bundle(self.model,ref[:t],ids,N,H,ref);ramp=min(1.,max(0.,(self.update+1-5000)/1000)) if not force_stage else 1.
    aux=ramp*(self.c['lambda_Rg']*r['Rg']+self.c['lambda_clash']*r['clash']+self.c['lambda_pair']*r['pair']);aux.backward();self.residues+=r['residues']
    extra.update(rollout_horizon=H,rollout_paths=2,rollout_rg=float(r['Rg'].detach()),rollout_clash=float(r['clash'].detach()),rollout_pair_energy=float(r['pair'].detach()),rollout_ramp=ramp,rollout_start=t,rollout_identity=h);del r,aux,ref,ids
+  if aa_gradients is not None:extra.update(combine_aa_and_geometry_gradients(self.model,aa_gradients,.5))
   pre=torch.nn.utils.clip_grad_norm_(self.model.parameters(),1.,error_if_nonfinite=True);lr=self.opt.param_groups[0]['lr'];self.opt.step();self.scheduler.step();self.update+=1;torch.cuda.synchronize()
   if not all(torch.isfinite(p).all() for p in self.model.parameters()):raise FloatingPointError('nonfinite parameters')
   LAST[0]=time.monotonic()
@@ -117,7 +138,7 @@ class Engine:
    amended=copy.deepcopy(s['lineage']);receipt=json.load(open(R/'NUMERICAL_EXECUTION_AMENDMENT.json'))
    if amended.get('entrypoint_sha256') not in receipt['legacy_entrypoint_sha256'] or self.lineage['entrypoint_sha256']!=receipt['new_entrypoint_sha256'] or file_sha(path) not in receipt['legacy_checkpoint_sha256']:raise ValueError('unapproved numerical/controller migration')
    amended['entrypoint_sha256']=self.lineage['entrypoint_sha256']
-   for key in ['numerical_execution','torch','cuda_runtime']:
+   for key in ['gradient_policy','numerical_execution','torch','cuda_runtime']:
     if key in amended:raise ValueError('unexpected existing numerical lineage metadata')
     amended[key]=self.lineage[key]
    if amended!=self.lineage:raise ValueError('non-numerical lineage change')
