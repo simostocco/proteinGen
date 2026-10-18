@@ -21,6 +21,8 @@ def traces():
     v=json.loads(line);rows[v['additional_update']]=v
  return [rows[u] for u in sorted(rows)]
 def describe(x):
+ if torch.is_tensor(x):
+  x=x.detach().cpu();x=(x.float() if x.dtype==torch.bfloat16 else x).numpy()
  x=np.asarray(x,float);total=len(x);nonfinite=int((~np.isfinite(x)).sum());x=x[np.isfinite(x)]
  if not len(x):return {'n':0}
  q=np.quantile(x,[0,.001,.01,.05,.25,.5,.75,.95,.99,.999,1])
@@ -91,7 +93,7 @@ def audit(model,data,checkpoint_sha=None):
     xx=torch.cat([enc.aa(bg['ids'])+enc.token(fg)+ct[:,None],(enc.tip+ct)[:,None]],1)
     z=enc.blocks[0].qkv(enc.blocks[0].norm(xx)).view(1,t+1,3,8,44);pos=torch.cat([torch.arange(t,device='cuda')[None],bg['t'][:,None]],1)
     q=rope(z[:,:,0].transpose(1,2),pos);k=rope(z[:,:,1].transpose(1,2),pos);qk=(q.float()@k.float().transpose(-1,-2))/math.sqrt(44)
-   qkstats.append({'context':index,'content_QK':describe(qk.cpu().numpy().ravel())})
+   qkstats.append({'context':index,'content_QK':describe(qk.flatten())})
   diagnostics.append({'sequence_hash':h,'observation_id':o,'target':t,'kind':kind,'length':len(data.seqs[h]),'observed_prefix_fraction':float(vv.mean())})
  a=np.concatenate(ps);effective=a[:,25]>0;featurestats={}
  for c,name in enumerate(names):
@@ -290,6 +292,13 @@ def compare_milestones():
   if file_sha(cp)!=sha:raise ValueError('protected comparison checkpoint changed')
   if u==7500:
    audit(model,data,sha);gradient_audit(model,data,sha)
+ finish_comparison(verify,review,native,coverage,counts,residues,nonlocal_targets)
+
+def finish_comparison(verify,review,native,coverage,counts,residues,nonlocal_targets):
+ parent=[]
+ for row in read(j.OLD/'runs/J1-FULL/SELECTED_GENERATION.json'):
+  row=dict(row);row['metrics']=row['independent_CA_metrics'];parent.append(row)
+ old=metric_summary(parent)
  archive=s.PREVIOUS/'NATIVE_VS_GENERATED_GLOBAL_GEOMETRY.json'
  native_summary={role:{N:{'identities':len({r['sequence_hash'] for r in entry['rows']}),'metrics':{name:describe([r['metrics'][name] for r in entry['rows']]) for name in ['Rg_A','Rg_over_N_cuberoot','clashes_per100_residues','long_contact_fraction','degenerate_frames','torsion_resultant']}} for N,entry in native[role].items()} for role in ['TRAIN','VALIDATION']}
  write(destination(R/'MILESTONE_GEOMETRY_REFERENCES.json'),{'parent':old,'historical_60k':{'source':str(archive),'sha256':file_sha(archive),'summary32':read(archive)['latest_actual_policy']},'native_TRAIN_VALIDATION':native_summary,'native_source_sha256':file_sha(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'metric_definitions':'Clash<2A seqsep>=3; long contact<8A seqsep>=24; length-matched frozen native windows; CA-only proxies'})
@@ -302,5 +311,19 @@ def compare_milestones():
  write(destination(R/'PAUSED_EVALUATION_COMPLETE.json'),{'status':'COMPARISON_5000_7500_AND_READ_ONLY_AUDIT_COMPLETE','time':time.time(),'recovery_update':verify['additional_update'],'samples_per_length_per_checkpoint':32,'optimizer_updates_after_stop':0})
  print('MILESTONE_COMPARISON_COMPLETE_NO_TRAINING',flush=True)
 
+
+def resume_audit_only():
+ j.core.setup();torch.use_deterministic_algorithms(False);torch.backends.cudnn.deterministic=False
+ verify=read(R/'PAUSED_CHECKPOINT_VERIFICATION.json');review=read(R/'MILESTONE_5000_7500_COMPARISON.json')
+ if [r['update'] for r in review]!=[5000,7500]:raise ValueError('incomplete cached milestone reviews')
+ for r in review:
+  if file_sha(r['checkpoint'])!=r['sha256']:raise ValueError('comparison checkpoint changed')
+ data=PartialData();model,parent=j.parent_model();del parent
+ state=load_checked(review[1]['checkpoint']);model.load_state_dict(state['model'],strict=True);del state;set_dropout(model,.15);model.eval()
+ audit(model,data,review[1]['sha256']);gradient_audit(model,data,review[1]['sha256'])
+ recovery=load_checked(verify['checkpoint']);sampler=s.Sampler(data);sampler.load_state_dict(recovery['sampler']);coverage=sampler.report();counts=dict(sampler.counts);residues=recovery['residues'];nonlocal_targets=recovery['nonlocal_targets'];del recovery,sampler
+ native=read(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json')['native']
+ finish_comparison(verify,review,native,coverage,counts,residues,nonlocal_targets)
+
 if __name__=='__main__':
- a=argparse.ArgumentParser();a.add_argument('--samples',type=int,default=16,choices=[16,32]);a.add_argument('--compare-milestones',action='store_true');args=a.parse_args();compare_milestones() if args.compare_milestones else evaluate(args.samples)
+ a=argparse.ArgumentParser();a.add_argument('--samples',type=int,default=16,choices=[16,32]);a.add_argument('--compare-milestones',action='store_true');a.add_argument('--resume-audit-only',action='store_true');args=a.parse_args();resume_audit_only() if args.resume_audit_only else compare_milestones() if args.compare_milestones else evaluate(args.samples)

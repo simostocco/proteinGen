@@ -22,3 +22,10 @@ def test_distribution_summary_does_not_convert_missing_to_zero():
  assert out['n']==3 and out['mean']==2. and out['zero_fraction']==0.
  assert out['nonfinite_count']==2 and out['n_total']==5
  assert describe([])=={'n':0}
+
+
+def test_bfloat16_audit_conversion_preserves_values():
+ import torch
+ out=describe(torch.tensor([.5,1.,2.],dtype=torch.bfloat16))
+ assert out['n']==3 and out['nonfinite_count']==0
+ assert out['mean']==pytest.approx(3.5/3)
