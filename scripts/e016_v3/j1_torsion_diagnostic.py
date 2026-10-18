@@ -27,7 +27,7 @@ def components(m,b,y,g):
  return aa,nll,mask,p,u
 
 def summarize(z,panel):
- nll=z['nll'];mask=z['mask'];uid=np.array([h for h,o,t in panel]);ret={'components':{},'decisions':len(panel),'identities':len(set(uid)),'historic_local_per_decision':float((nll.sum(1)/mask.sum(1).clip(1)).mean()),'AA_NLL':float(z['aa'].mean())}
+ nll=z['nll'];mask=z['mask'];uid=np.array([h for h,o,t in panel]);ret={'components':{},'decisions':len(panel),'identities':len(set(uid)),'historic_local_per_decision':float((nll.sum(1)/mask.sum(1).clip(1)).mean()),'AA_NLL':float(z['aa'].astype(float).mean())}
  for c,name in enumerate(['distance','angle','torsion']):
   v=nll[mask[:,c],c];ids=uid[mask[:,c]];by=collections.defaultdict(list)
   for h,a in zip(ids,v):by[h].append(a)
