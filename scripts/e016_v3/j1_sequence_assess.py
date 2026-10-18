@@ -78,7 +78,7 @@ def check_candidate(summary,baseline,native):
  return failures
 def assess():
  assert json.load(open(R/'configs/FINAL_SELECTION_FROZEN.json'))['before_first_new_VALIDATION_evaluation'] is True
- j.core.setup();done=json.load(open(R/'runs/J1/COMPLETED.json'));data=PartialData();panels=json.load(open(R/'configs/EVALUATION_PANELS.json'));pt=train_partial_panel(data);write(R/'configs/PARTIAL_TRAIN_PANEL.json',pt)
+ j.core.setup();torch.use_deterministic_algorithms(False);torch.backends.cudnn.deterministic=False;done=json.load(open(R/'runs/J1/COMPLETED.json'));data=PartialData();panels=json.load(open(R/'configs/EVALUATION_PANELS.json'));pt=train_partial_panel(data);write(R/'configs/PARTIAL_TRAIN_PANEL.json',pt)
  write(R/'POPULATION_RECEIPT.json',{'TRAIN_complete_identities':len(data.base.jointids['TRAIN']),'TRAIN_partial_identities':len(data.ids['TRAIN']),'TRAIN_union_identities':len(set(data.base.jointids['TRAIN'])|set(data.ids['TRAIN'])),'TRAIN_partial_observations':len([r for r in data.rows.values() if r['split']=='TRAIN']),'VALIDATION_complete_identities':len(data.base.jointids['VALIDATION']),'VALIDATION_partial_identities':len(data.ids['VALIDATION']),'partial_TRAIN_panel_identities':len({h for h,o,t in pt}),'partial_TRAIN_panel_seed':180041,'TEST_targets':0})
  model,state=j.parent_model();del state;set_dropout(model,.15)
  trainpart=partial_eval(model,data,pt,'TRAIN');valpart=partial_eval(model,data,json.load(open(R/'configs/PARTIAL_VALIDATION_PANEL.json')),'VALIDATION');parent_nonlocal=nonlocal_evaluate(model,data)
@@ -115,6 +115,22 @@ def assess():
  passing=[v for v in reviewed if v['passed']];selected=min(passing,key=lambda v:v['VALIDATION']['AA_NLL']) if passing else None
  selection={'selected_checkpoint':selected['checkpoint'] if selected else str(j.PARENT),'selected_sha256':selected['sha256'] if selected else j.PARENT_SHA,'selected_additional_update':selected['update'] if selected else 0,'selection_reason':'lowest AA NLL satisfying frozen geometry/diversity/gap safeguards' if selected else 'immutable original fallback; no candidate satisfies all frozen safeguards','candidates':[{'update':v['update'],'passed':v['passed'],'failures':v['failures']} for v in reviewed],'TEST':'NOT_EVALUATED'}
  write(R/'FINAL_SELECTION.json',selection);write(R/'NATIVE_VS_GENERATED_GEOMETRY.json',{'native_reference_path':str(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'native_reference_sha256':file_sha(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'baseline':baseline_summary,'candidates':{str(v['update']):{'summary':v['free_generation'],'paired_change':v['paired_free_generation_change']} for v in reviewed},'historical_60k_path':str(PREVIOUS/'NATIVE_VS_GENERATED_GLOBAL_GEOMETRY.json'),'historical_sha256':file_sha(PREVIOUS/'NATIVE_VS_GENERATED_GLOBAL_GEOMETRY.json')})
+ # Compare resumed deterministic execution to the actual accepted producer trace.
+ trace={}
+ for f in sorted((R/'runs/J1').glob('updates_from*.jsonl')):
+  for line in f.read_text().splitlines():
+   if line.strip():
+    row=json.loads(line);trace[row['additional_update']]=row
+ expected=[trace[u] for u in range(3483,min(done['additional_updates'],3514)+1)]
+ if expected:
+  probe=Engine(data,json.load(open(R/'configs/FROZEN.json')));probe.resume(R/'runs/J1/checkpoint_03482.pt');actual=[probe.step() for _ in expected]
+  keys=['AA_NLL_stochastic_batch','local_geometry_NLL','nonlocal_energy_score','gradient_norm_preclip'];errors={k:max(abs(a.get(k,0)-b.get(k,0)) for a,b in zip(expected,actual)) for k in keys}
+  same=all(a['sample_order_sha256']==b['sample_order_sha256'] for a,b in zip(expected,actual))
+  result={'status':'PASS' if same and max(errors.values())==0 else 'FAIL','actual_producer_updates_replayed':len(expected),'starting_main_checkpoint':3482,'same_targets':same,'loss_and_gradient_norm_errors':errors,'engineering_optimizer_calls':len(expected),'main_calls':0,'scope':'Actual post-amendment main trace, not just repeatability of two test engines'}
+  write(R/'ACTUAL_MAIN_TRACE_REPLAY.json',result)
+  del probe;gc.collect();torch.cuda.empty_cache()
+  if result['status']!='PASS':raise RuntimeError('actual deterministic main trace replay mismatch')
+ torch.use_deterministic_algorithms(False);torch.backends.cudnn.deterministic=False
  # TRAIN-only gradient panel, same implementation and no optimizer; reported recalibration is diagnostic only.
  import j1_sequence_preflight as pf
  original=pf.write
@@ -123,6 +139,7 @@ def assess():
   if name=='GRADIENT_BALANCE_REPORT.json':
    actual=json.load(open(R/'configs/FROZEN.json'));v['weights_applied']= {k:val for k,val in actual.items() if k.startswith('lambda_')}
    v['hypothetical_recalibration_NOT_APPLIED']=v.pop('weights')
+   v['loss_gradients']['hypothetical_recalibrated_combined_NOT_APPLIED']=v['loss_gradients'].pop('combined_active')
    aa=v['loss_gradients']['AA']['shared_all']['L2'];v['actual_weighted_shared_ratios']={k:actual['lambda_'+k]*v['loss_gradients'][k]['shared_all']['L2']/aa for k in ['local','nonlocal','Rg','clash','pair']}
    p=R/'FINAL_GRADIENT_BALANCE_DIAGNOSTIC.json'
   elif name=='GRADIENT_TRAIN_PANEL.json':p=R/'configs/FINAL_GRADIENT_TRAIN_PANEL.json'
