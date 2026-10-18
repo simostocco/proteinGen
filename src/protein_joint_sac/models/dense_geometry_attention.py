@@ -45,6 +45,7 @@ class DenseBlock(nn.Module):
         )
 
     def forward(self, x, bias):
+        p = getattr(self, "dropout_p", 0.0) if self.training else 0.0
         L = len(x)
         h = self.c.heads
         dh = self.c.width // h
@@ -54,14 +55,11 @@ class DenseBlock(nn.Module):
         q = apply_rope(q, positions)
         k = apply_rope(k, positions)
         if self.c.backend == "sdpa":
-            out = F.scaled_dot_product_attention(q, k, v, attn_mask=bias, dropout_p=0.0, is_causal=False)
+            out = F.scaled_dot_product_attention(q, k, v, attn_mask=bias, dropout_p=p, is_causal=False)
         else:
-            out = torch.softmax(q @ k.transpose(-1, -2) / math.sqrt(dh) + bias, -1) @ v
-        return (
-            self.ff(self.norm2(x + self.out(out.permute(1, 0, 2).reshape(L, -1))))
-            + x
-            + self.out(out.permute(1, 0, 2).reshape(L, -1))
-        )
+            out = F.dropout(torch.softmax(q @ k.transpose(-1, -2) / math.sqrt(dh) + bias, -1), p=p, training=self.training) @ v
+        h = x + F.dropout(self.out(out.permute(1, 0, 2).reshape(L, -1)), p=p, training=self.training)
+        return h + F.dropout(self.ff(self.norm2(h)), p=p, training=self.training)
 
 
 class PrefixEncoder(nn.Module):

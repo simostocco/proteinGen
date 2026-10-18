@@ -69,8 +69,10 @@ def block_forward(block,x,bias,positions):
     B,L,D=x.shape;H=block.c.heads;dh=D//H
     qkv=block.qkv(block.norm(x)).view(B,L,3,H,dh);q,k,v=[qkv[:,:,i].transpose(1,2) for i in range(3)]
     q=rope(q,positions);k=rope(k,positions)
-    out=F.scaled_dot_product_attention(q,k,v,attn_mask=bias.to(q.dtype),dropout_p=0.,is_causal=False)
-    h=x+block.out(out.transpose(1,2).reshape(B,L,D));return h+block.ff(block.norm2(h))
+    p=getattr(block,'dropout_p',0.) if block.training else 0.
+    out=F.scaled_dot_product_attention(q,k,v,attn_mask=bias.to(q.dtype),dropout_p=p,is_causal=False)
+    h=x+F.dropout(block.out(out.transpose(1,2).reshape(B,L,D)),p=p,training=block.training)
+    return h+F.dropout(block.ff(block.norm2(h)),p=p,training=block.training)
 
 def encode_batch(model,batch,activation_checkpoint=False,prepared=None):
     enc=model.encoder;seqonly=enc.sequence_only;feat,pair,present=features_batch(batch,enc.config.chemistry,seqonly) if prepared is None else prepared
