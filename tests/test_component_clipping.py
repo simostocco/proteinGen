@@ -27,3 +27,11 @@ def test_shared_zero_AA_does_not_zero_geometry_heads():
  o=combine(m,aa);assert o['geometry_shared_scale']==0
  assert m.geom[2].weight.grad.abs().sum()>0
  assert m.encoder.weight.grad.abs().sum()==0
+def test_nonfinite_component_is_an_emergency_stop():
+ import pytest
+ m=Fixture();aa={n:None for n,p in m.named_parameters()}
+ for n,p in m.named_parameters():p.grad=torch.zeros_like(p)
+ m.geom[2].weight.grad[2,0]=float('nan')
+ before={n:p.detach().clone() for n,p in m.named_parameters()}
+ with pytest.raises(FloatingPointError):combine(m,aa)
+ assert all(torch.equal(before[n],p) for n,p in m.named_parameters())
