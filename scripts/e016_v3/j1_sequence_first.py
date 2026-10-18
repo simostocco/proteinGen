@@ -22,6 +22,8 @@ def status(phase,**kw):write(R/'HEARTBEAT.json',{'phase':phase,'timestamp':time.
 def guard():
  j.guard()
  if STOP.is_set():raise RuntimeError("graceful stop requested")
+def selection_flag(delta,local,finitegen,clashes,guardrails):
+ return bool(delta<0 and local<=guardrails['local_delta'] and finitegen and clashes<guardrails['severe_clash_mean'])
 def loss_call(model,b,y,g):
  with torch.autocast('cuda',dtype=torch.bfloat16):
   return losses(model,b,y,g,geometry_fp32=True)
@@ -100,7 +102,11 @@ class Engine:
   return save_atomic(path,{'lineage':self.lineage,'model':self.model.state_dict(),'optimizer':self.opt.state_dict(),'scheduler':self.scheduler.state_dict(),'sampler':self.sampler.state_dict(),'rng':rng_state(),'rollout_rng':self.rollrng.getstate(),'additional_update':self.update,'residues':self.residues,'nonlocal_targets':self.nonlocal_targets,'history':self.history,'best':self.best,'elapsed':self.elapsed+time.monotonic()-self.start})
  def resume(self,path):
   s=load_checked(path)
-  if s['lineage']!=self.lineage:raise ValueError('lineage integrity mismatch')
+  if s['lineage']!=self.lineage:
+   amended=copy.deepcopy(s['lineage']);receipt=json.load(open(R/'CONTROLLER_AMENDMENT.json'))
+   if amended.get('entrypoint_sha256')!=receipt['previous_entrypoint_sha256'] or self.lineage['entrypoint_sha256']!=receipt['new_entrypoint_sha256']:raise ValueError('unapproved controller lineage change')
+   amended['entrypoint_sha256']=self.lineage['entrypoint_sha256']
+   if amended!=self.lineage:raise ValueError('non-controller lineage change')
   self.model.load_state_dict(s['model'],strict=True);self.opt.load_state_dict(s['optimizer']);self.scheduler.load_state_dict(s['scheduler']);self.sampler.load_state_dict(s['sampler']);self.rollrng.setstate(s['rollout_rng']);self.update=s['additional_update'];self.residues=s['residues'];self.nonlocal_targets=s['nonlocal_targets'];self.history=s['history'];self.best=s['best'];self.elapsed=s['elapsed'];self.start=time.monotonic();restore_rng(s['rng'])
  @torch.no_grad()
  def generate(self,N,seed):return Generator.generate(self,N,seed)
@@ -161,7 +167,7 @@ def train():
     e.history.append(entry);val=result['VALIDATION'];delta=val['AA_NLL']-baseline['VALIDATION']['AA_NLL'];local=val['geometry_NLL']-baseline['VALIDATION']['geometry_NLL']
     finitegen=len([r for r in result['generation'] if r['status']=='COMPLETE'])==10
     clashes=np.mean([r['metrics']['clashes_per100_residues'] for r in result['generation'] if 'metrics' in r])
-    eligible=delta<0 and local<=c['guardrails']['local_delta'] and finitegen and clashes<c['guardrails']['severe_clash_mean']
+    eligible=selection_flag(delta,local,finitegen,clashes,c['guardrails'])
     entry['eligible']=eligible
     best=next(v for v in e.history if v['update']==e.best)
     if eligible and val['AA_NLL']<best['VALIDATION']['AA_NLL']:e.best=e.update
