@@ -89,9 +89,20 @@ def assess():
  baseline_summary=metric_summary(parentrows);native=json.load(open(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'))['native']
  candidates=[Path(done['latest_checkpoint'])]
  if done['best_update'] and done['best_update']!=done['additional_updates']:candidates.append(R/'runs/J1'/f"checkpoint_{done['best_update']:05}.pt")
+ base=json.load(open(R/'SEQUENCE_BASELINES.json'))['J1']
+ kept={int(load_checked(cp)['additional_update']):cp for cp in candidates}
+ prechecks=[]
+ for cp in sorted(list((R/'candidates').glob('model_*.pt'))+list((R/'runs/J1').glob('stage_model_*.pt'))):
+  u=int(load_checked(cp)['additional_update'])
+  if u in kept:continue
+  ev=json.load(open(R/'runs/J1'/f'evaluation_{u:05}.json'))
+  tr=ev['TRAIN'];va=ev['VALIDATION'];eligible=va['AA_NLL']<base['VALIDATION']['AA_NLL'] and va['geometry_NLL']<=base['VALIDATION']['geometry_NLL']+.10 and va['AA_NLL']-tr['AA_NLL']<=base['VALIDATION']['AA_NLL']-base['TRAIN']['AA_NLL']
+  prechecks.append({'update':u,'candidate':str(cp),'necessary_native_likelihood_and_gap_checks_pass':eligible,'generation_not_required_if_necessary_condition_fails':True})
+  if eligible:kept[u]=cp
+ candidates=list(kept.values());write(R/'CANDIDATE_NATIVE_PRECHECKS.json',prechecks)
  reviewed=[];cache={}
  for cp in candidates:
-  sha=file_sha(cp);st=load_checked(cp);model.load_state_dict(st['model'],strict=True);u=st['additional_update'];sampler=st['sampler'];del st;gc.collect();set_dropout(model,.15)
+  sha=file_sha(cp);st=load_checked(cp);model.load_state_dict(st['model'],strict=True);u=st['additional_update'];sampler=st.get('sampler');has_optimizer='optimizer' in st;del st;gc.collect();set_dropout(model,.15)
   evaluation=json.load(open(R/'runs/J1'/f'evaluation_{u:05}.json'))
   partialtrain=partial_eval(model,data,pt,'TRAIN');nonlocalv=nonlocal_evaluate(model,data);rows=generation_for(model,cp,sha);summary=metric_summary(rows);fail=check_candidate(summary,baseline_summary,native)
   val=evaluation['VALIDATION'];tr=evaluation['TRAIN'];base=json.load(open(R/'SEQUENCE_BASELINES.json'))['J1'];gap=val['AA_NLL']-tr['AA_NLL'];oldgap=base['VALIDATION']['AA_NLL']-base['TRAIN']['AA_NLL']
@@ -103,7 +114,7 @@ def assess():
   for N in [64,128,256,384,500]:
    old=sorted([r for r in parentrows if r['N']==N],key=lambda v:v['sample_index']);new=sorted([r for r in rows if r['N']==N],key=lambda v:v['sample_index']);ref=np.median([v['metrics']['Rg_over_N_cuberoot'] for v in native['TRAIN'][str(N)]['rows']])
    comparison[str(N)]={'clash_delta':paired_ci([b['metrics']['clashes_per100_residues']-a['metrics']['clashes_per100_residues'] for a,b in zip(old,new) if 'metrics' in b]),'native_log_Rg_error_delta':paired_ci([abs(math.log(b['metrics']['Rg_over_N_cuberoot']/ref))-abs(math.log(a['metrics']['Rg_over_N_cuberoot']/ref)) for a,b in zip(old,new) if 'metrics' in b])}
-  v={'update':u,'checkpoint':str(cp),'sha256':sha,'passed':not fail,'failures':fail,'TRAIN':tr,'VALIDATION':val,'partial_TRAIN':partialtrain,'partial_VALIDATION':evaluation['PARTIAL_VALIDATION'],'nonlocal':nonlocalv,'AA_validation_paired_change':paired,'TRAIN_VALIDATION_gap':gap,'free_generation':summary,'paired_free_generation_change':comparison}
+  v={'update':u,'checkpoint':str(cp),'sha256':sha,'full_optimizer_restart_available':has_optimizer,'passed':not fail,'failures':fail,'TRAIN':tr,'VALIDATION':val,'partial_TRAIN':partialtrain,'partial_VALIDATION':evaluation['PARTIAL_VALIDATION'],'nonlocal':nonlocalv,'AA_validation_paired_change':paired,'TRAIN_VALIDATION_gap':gap,'free_generation':summary,'paired_free_generation_change':comparison}
   reviewed.append(v);write(R/'FINAL_CANDIDATE_REVIEWS.json',reviewed)
   if cp==Path(done['latest_checkpoint']):
    actual=sum(x.bit_count() for x in sampler['coverage']['visited'].values());expected=0
@@ -113,7 +124,7 @@ def assess():
    coverage={**done['coverage'],'same_identity_visit_counts_with_replacement_expected_unique_positions':expected,'actual_distinct_positions':actual,'excess_unique_positions_over_expected':actual-expected,'comparison_scope':'Analytic expectation with same per-identity counts under uniform replacement; not a separately trained arm'}
    write(R/'POSITION_COVERAGE_REPORT.json',coverage)
  passing=[v for v in reviewed if v['passed']];selected=min(passing,key=lambda v:v['VALIDATION']['AA_NLL']) if passing else None
- selection={'selected_checkpoint':selected['checkpoint'] if selected else str(j.PARENT),'selected_sha256':selected['sha256'] if selected else j.PARENT_SHA,'selected_additional_update':selected['update'] if selected else 0,'selection_reason':'lowest AA NLL satisfying frozen geometry/diversity/gap safeguards' if selected else 'immutable original fallback; no candidate satisfies all frozen safeguards','candidates':[{'update':v['update'],'passed':v['passed'],'failures':v['failures']} for v in reviewed],'TEST':'NOT_EVALUATED'}
+ selection={'selected_checkpoint':selected['checkpoint'] if selected else str(j.PARENT),'selected_sha256':selected['sha256'] if selected else j.PARENT_SHA,'selected_additional_update':selected['update'] if selected else 0,'selected_full_optimizer_restart_available':selected['full_optimizer_restart_available'] if selected else True,'selection_reason':'lowest AA NLL satisfying frozen geometry/diversity/gap safeguards' if selected else 'immutable original fallback; no candidate satisfies all frozen safeguards','candidates':[{'update':v['update'],'passed':v['passed'],'failures':v['failures']} for v in reviewed],'TEST':'NOT_EVALUATED'}
  write(R/'FINAL_SELECTION.json',selection);write(R/'NATIVE_VS_GENERATED_GEOMETRY.json',{'native_reference_path':str(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'native_reference_sha256':file_sha(j.OLD/'NATIVE_VS_GENERATED_GEOMETRY.json'),'baseline':baseline_summary,'candidates':{str(v['update']):{'summary':v['free_generation'],'paired_change':v['paired_free_generation_change']} for v in reviewed},'historical_60k_path':str(PREVIOUS/'NATIVE_VS_GENERATED_GLOBAL_GEOMETRY.json'),'historical_sha256':file_sha(PREVIOUS/'NATIVE_VS_GENERATED_GLOBAL_GEOMETRY.json')})
  # Compare resumed deterministic execution to the actual accepted producer trace.
  trace={}
