@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from protein_joint_sac.models.geometry_inference import corrected_action,legacy_action
 from protein_joint_sac.models.hybrid_distributions import GeometryDistribution
-from protein_joint_sac.geometry.ca_builder import next_ca
+from protein_joint_sac.geometry.ca_builder import next_ca,dihedral
 from protein_joint_sac.rl.group_clipping import groups,combine
 
 @pytest.mark.parametrize('z',[-1e6,-100.,-10.,-9.,0.,9.,10.,100.,1e6])
@@ -15,7 +15,10 @@ def test_torsion_support_inverse_and_handedness(z):
  assert math.isfinite(info['represented_action_log_density']) and math.isfinite(info['latent_action_log_density'])
  assert z==0 or math.copysign(1,float(g[2]))==math.copysign(1,z)
  ca=torch.tensor([[0.,0.,0.],[3.8,0.,0.],[3.8,3.8,0.]],dtype=torch.float64)
- assert torch.isfinite(next_ca(ca,g)).all()
+ point=next_ca(ca,g)
+ assert torch.isfinite(point).all()
+ recovered=dihedral(ca[0],ca[1],ca[2],point)
+ assert abs(float(recovered-g[2]))<1e-12
 
 @pytest.mark.parametrize('z',[-10000.,10000.])
 def test_angle_endpoints_are_explicit_and_invertible(z):
@@ -80,3 +83,11 @@ def test_adamw_state_restart_after_group_clipping():
  m.load_state_dict(state);opt.load_state_dict(os);combine(m,assign(m,1e4),{'S':2.,'A':1.,'G':3.});opt.step()
  assert all(torch.equal(v,expected[n]) for n,v in m.state_dict().items())
  assert all(torch.isfinite(p).all() for p in m.parameters())
+
+
+def test_reference_jacobian_matches_actual_transform_derivative():
+ d=GeometryDistribution(torch.zeros(3,dtype=torch.float64),torch.zeros(3,dtype=torch.float64),(True,True,True))
+ for z in [-5.,0.,5.]:
+  u=torch.tensor([.5,z,z],dtype=torch.float64,requires_grad=True)
+  J=torch.autograd.functional.jacobian(d.transform,u)
+  assert torch.allclose(J.diag().abs().log(),d.log_jacobian(u),atol=1e-10,rtol=1e-10)

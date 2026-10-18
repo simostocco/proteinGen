@@ -20,9 +20,9 @@ s.R=R;s.j.R=R;s.j.core.R=R
 write=s.write
 STOP=threading.Event();LAST=[time.monotonic()]
 def read(p):return json.load(open(p))
-def guard():
+def guard(staging=210*2**20):
  free=shutil.disk_usage(R).free
- if free<10*2**30+210*2**20:raise RuntimeError('10GiB reserve plus210MiB checkpoint staging unavailable')
+ if free<10*2**30+staging:raise RuntimeError('10GiB reserve plus requested payload staging unavailable')
  mem={v.split(':')[0]:int(v.split()[1])*1024 for v in Path('/proc/meminfo').read_text().splitlines() if v.startswith(('MemAvailable:','MemTotal:','SwapFree:','SwapTotal:'))}
  if mem['MemAvailable']<.1*mem['MemTotal']:raise RuntimeError('host RAM headroom below10percent')
  return {'D_free_bytes':free,'RSS_highwater_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,'GPU_allocated_peak':torch.cuda.max_memory_allocated(),'GPU_reserved_peak':torch.cuda.max_memory_reserved(),**mem}
@@ -74,12 +74,16 @@ class Engine:
   torch.cuda.synchronize();LAST[0]=time.monotonic()
   return {'pilot_update':self.update,'total_optimizer_updates':35000+self.update,'seconds':time.monotonic()-start,'learning_rate_used':self.scheduler.get_last_lr()[0] if self.update==0 else self.c['learning_rate']*self.scheduler.lr_lambdas[0](self.update-1),'sampler_cursor':self.sampler.cursor,'nonlocal_targets_total':self.nonlocal_targets,'differentiated_rollout_residues':0,**out,**diag}
  def checkpoint(self,path,model_only=False):
-  guard();payload={'lineage':self.lineage,'model':self.model.state_dict(),'pilot_update':self.update,'total_optimizer_updates':35000+self.update,'history':self.history}
+  guard(80*2**20 if model_only else 210*2**20);payload={'lineage':self.lineage,'model':self.model.state_dict(),'pilot_update':self.update,'total_optimizer_updates':35000+self.update,'history':self.history}
   if not model_only:payload.update(optimizer=self.opt.state_dict(),scheduler=self.scheduler.state_dict(),rng=s.rng_state(),sampler=self.sampler.state_dict(),rollout_rng=self.rollrng.getstate(),nonlocal_targets=self.nonlocal_targets,elapsed=self.elapsed+time.monotonic()-self.start,best=self.best)
   return s.save_atomic(path,payload)
  def resume(self,path):
   st=s.load_checked(path)
-  if st['lineage']!=self.lineage:raise ValueError('pilot lineage/config/source mismatch')
+  if st['lineage']!=self.lineage:
+   receipt=read(R/'STORAGE_STAGING_AMENDMENT.json');amended=copy.deepcopy(st['lineage'])
+   if sha(path)!=receipt['checkpoint_sha256'] or amended['entrypoint_sha256']!=receipt['old_entrypoint_sha256'] or self.lineage['entrypoint_sha256']!=receipt['new_entrypoint_sha256'] or self.lineage['source_commit']!=receipt['successor_source_commit']:raise ValueError('unapproved storage migration')
+   for key in ['entrypoint_sha256','source_commit']:amended[key]=self.lineage[key]
+   if amended!=self.lineage:raise ValueError('storage amendment changed numerical/data/config lineage')
   if st['scheduler']['last_epoch']!=st['pilot_update'] or st['sampler']['cursor']!=5000+st['pilot_update'] or {float(x['step']) for x in st['optimizer']['state'].values()}!={35000.+st['pilot_update']}:raise ValueError('recovery counter inconsistency')
   self.model.load_state_dict(st['model'],strict=True);self.opt.load_state_dict(st['optimizer']);self.scheduler.load_state_dict(st['scheduler']);self.sampler.load_state_dict(st['sampler']);self.rollrng.setstate(st['rollout_rng']);self.update=st['pilot_update'];self.nonlocal_targets=st['nonlocal_targets'];self.history=st['history'];self.best=st['best'];self.elapsed=st['elapsed'];self.start=time.monotonic();s.restore_rng(st['rng'])
 
@@ -185,7 +189,13 @@ def run():
  if not (R/'GRADIENT_POLICY_TESTS.json').exists():recovery_test(data,c)
  if read(R/'GRADIENT_POLICY_TESTS.json')['status']!='PASS':raise RuntimeError('recovery preflight gate')
  e=Engine(data,c);existing=sorted((R/'runs/J1').glob('checkpoint_*.pt'))
- if existing:e.resume(existing[-1])
+ if existing:
+  e.resume(existing[-1])
+  if (R/'STORAGE_STAGING_AMENDMENT.json').exists() and not (R/'STORAGE_STAGING_RESUME_VERIFICATION.json').exists():
+   saved=s.load_checked(existing[-1]);checks={'model':same(saved['model'],e.model.state_dict()),'optimizer':same(saved['optimizer'],e.opt.state_dict()),'scheduler':same(saved['scheduler'],e.scheduler.state_dict()),'sampler':same(saved['sampler'],e.sampler.state_dict()),'RNG':same(saved['rng'],s.rng_state()),'rollout_RNG':same(saved['rollout_rng'],e.rollrng.getstate())}
+   if not all(checks.values()):raise ValueError('storage-only no-step restore mismatch')
+   e.elapsed=max(e.elapsed,read(R/'STORAGE_PAUSE_COMPLETED.json')['elapsed_seconds_including_evaluation'])
+   write(R/'STORAGE_STAGING_RESUME_VERIFICATION.json',{'status':'PASS','checks':checks,'resumed_pilot_update':e.update,'optimizer_updates_for_verification':0,'checkpoint_sha256':sha(existing[-1]),'package_unchanged':saved['lineage']['package_sha256']==e.lineage['package_sha256'],'time':time.time()});del saved
  if not e.history:
   base=read(OLD/'runs/J1/evaluation_05000.json');base['pilot_update']=0;write(R/'runs/J1/evaluation_00000.json',base);e.history=[base]
   status('BASELINE_CORRECTED_GENERATION')
@@ -221,5 +231,5 @@ def run():
   final=R/'runs/J1'/f'checkpoint_{e.update:05}.pt'
   if not final.exists():e.checkpoint(final)
   write(R/'runs/J1/COMPLETED.json',{'pilot_updates':e.update,'total_optimizer_updates':35000+e.update,'latest_checkpoint':str(final),'latest_sha256':sha(final),'best_AA_update':e.best,'reason':reason or ('signal/watchdog' if STOP.is_set() else 'authorized2500maximum'),'elapsed_seconds_including_evaluation':e.elapsed+time.monotonic()-e.start,'coverage':e.sampler.report(),'source_counts':e.source_counts,'nonlocal_targets':e.nonlocal_targets,'rollout_residues':0,'resources':guard()})
- status('PILOT_STOPPED',update=e.update,reason=reason or 'authorized maximum');print('SHORT_PILOT_STOPPED',flush=True)
+ status('PILOT_STOPPED',update=e.update,reason=reason or ('signal/watchdog' if STOP.is_set() else 'authorized maximum'));print('SHORT_PILOT_STOPPED',flush=True)
 if __name__=='__main__':run()
