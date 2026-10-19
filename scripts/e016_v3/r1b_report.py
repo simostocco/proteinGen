@@ -114,7 +114,7 @@ Raw MSA coverage/gaps and deterministic max512-row80%-identity effective-depth e
 
 The earlier single-sequence NO-GO remains unchanged. Under the new MSA protocol, original aggregate native-recovery requirements pass: TRAIN median={cal['TRAIN_median_recovery']:.6f},7/8>=.50, pTM/recovery Spearman={cal['TRAIN_pTM_recovery_Spearman']:.6f}; VALIDATION scores .895361/.536176 give median .715768. This is operational/native-recovery progress, not production reward certification.
 
-Prespecified candidate: clip(beta * mean_pLDDT/100 * pTM * fraction(long-range PAE<10A),0,1), with a TRAIN-only nonnegative scalar. Of eight TRAIN identities sorted by canonical SHA, six fit and two hold out. Beta={cal['beta_TRAIN_only']:.9f} and exact split were frozen before VALIDATION. TRAIN held-out MAE={cal['TRAIN_holdout_MAE']:.6f}passes.15. Independent VALIDATION MAE={cal['VALIDATION_audit_MAE']:.6f}fails.20. No threshold or coefficient was altered after this result. Residuals and all constituent scores remain separate in `REWARD_CALIBRATION_RESIDUALS.json`.
+Prespecified candidate: clip(beta * mean_pLDDT/100 * pTM * fraction(long-range PAE<10A),0,1), with a TRAIN-only nonnegative scalar. Of eight TRAIN identities sorted by canonical SHA, six fit and two hold out. Long-range PAE uses the unchanged sequence separation min(24,max(4,N//4)); no coordinate-agreement term enters this sequence score. Beta={cal['beta_TRAIN_only']:.9f} and exact split were frozen before VALIDATION. TRAIN held-out MAE={cal['TRAIN_holdout_MAE']:.6f}passes.15. Independent VALIDATION MAE={cal['VALIDATION_audit_MAE']:.6f}fails.20. No threshold or coefficient was altered after this result. Residuals and all constituent scores remain separate in `REWARD_CALIBRATION_RESIDUALS.json`.
 
 The confidence product is not automatically a calibrated probability of native recovery. PAE and pTM already reflect related global uncertainty; multiplying more factors can underpredict recovery for partially organized/multidomain proteins, while high local confidence can coexist with a different assembly conformation. These are hypotheses supported by the residual pattern, not an experimentally isolated causal proof. The amyloid control remains highly confident but unlike the deposited fibril, and is retained in fitting/analysis.
 
@@ -178,7 +178,7 @@ The conditional audit reaches8TRAIN and2VALIDATION controls. TRAIN median=.96545
 | No associated-accession prediction found |3|
 | Total |32|
 
-Downloaded21unique models. Of15exact/construct comparisons,12reach.50; all3exact predictions exceed.95. Qualified TRAIN median=.953676(n12), VALIDATION=.544018(n3). TRAIN regional-pLDDT/recovery Spearman=.594406. Coverage, constructs and providers differ; AFDB/local differences are not pure MSA effects. Missing SIFTS links are not proof of model absence. No AFDB pTM was invented.
+Downloaded21unique models. Of15exact/construct comparisons,12reach.50; all3exact predictions exceed.95. Qualified TRAIN median=.953676(n12), VALIDATION=.544018(n3). TRAIN regional-pLDDT/recovery Spearman=.594406. Coverage, constructs and providers differ; AFDB/local differences are not pure MSA effects. Missing SIFTS links are not proof of model absence; these are gaps in AFDB/UniProt association, not errors in the native coordinate maps. No AFDB pTM was invented.
 
 | Critic arm | Parameters/Q | Q1RMSE | Q2RMSE | Seconds | Frozen gate |
 |---|---:|---:|---:|---:|---|

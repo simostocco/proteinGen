@@ -11,9 +11,12 @@ def write(name,value):
   chunks=re.split(r'(`[^`]*`|https?://[^\s)]+)',value)
   for i in range(0,len(chunks),2):
    text=chunks[i]
-   text=re.sub(r'\b(all|All|of|in|In|by|for|only|Only|below|under|above|to|after|before|both|exactly|selected|the|The|uses|use|with|With|made|totals|contains|model|recycles|seed|depth|budget|score|scores|ColabFold|JAX|alphafold-colabfold)(?=\d)',r'\1 ',text)
+   text=re.sub(r'\b(all|All|of|Of|in|In|by|for|only|Only|below|under|above|to|after|before|both|exactly|selected|the|The|uses|use|with|With|made|totals|contains|model|recycles|seed|depth|budget|score|scores|ColabFold|JAX|alphafold-colabfold|and|Another|Downloaded|Frozen|reaches|despite|including|on|not|rows)(?=\d)',r'\1 ',text)
    text=re.sub(r'(\d)(?=[A-Za-z]{4,}\b)',r'\1 ',text)
    text=re.sub(r'(\d)(?=(and|is|has|on|of|to|in|as|can|are|for|its|AA|CA|MSA|CPU|GPU|RMSE|MiB|GiB|nats|pTM|pLDDT|rows)\b)',r'\1 ',text)
+   text=re.sub(r'(?<=[A-Za-z])(?=\.\d)',' ',text)
+   text=re.sub(r'(\d)on(?=\d)',r'\1 on ',text)
+   text=text.replace('VALIDATIONn3','VALIDATION n=3').replace('free D:=','free D: ').replace('Q1held','Q1 held').replace('Q2held','Q2 held')
    text=text.replace('pTM(single','pTM (single').replace('regionalpLDDT','regional pLDDT').replace('freeD','free D:').replace('(n12)','(n=12)').replace('(n3)','(n=3)').replace('sigma1','sigma 1')
    chunks[i]=text
   value=''.join(chunks)
