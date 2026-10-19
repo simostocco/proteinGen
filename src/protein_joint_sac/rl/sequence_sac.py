@@ -46,6 +46,7 @@ class SequenceFirstSAC:
         expected=c.get('calibration_sha256')
         if not expected or not receipt or receipt.get('status')!='SUCCEEDED' or receipt.get('calibrated') is not True or receipt.get('calibration_sha256')!=expected or receipt.get('evidence_type')!='EXTERNAL_PREDICTION':raise PermissionError('verified calibrated complete-episode receipt required')
         if not math.isfinite(float(reward)):raise FloatingPointError('nonfinite return')
+        if c.get('objective',{}).get('beta_G')!=0:raise ValueError('initial sequence-first phase routes geometry KL only through separately capped retention, not the primary AA objective')
         if done!=(next_state.t==next_state.N) or state.N!=next_state.N:raise ValueError('finite-horizon termination mismatch')
         obj=dict(c['objective'],alpha_A=float(self.temperatures.log_aa.exp().detach()),alpha_G=float(self.temperatures.log_geom.exp().detach()))
         with torch.no_grad():nv=0. if done else regularized_value(self.actor,self.critics,next_state,self.reference,targets=True,**obj)[0];target=bellman_target(torch.as_tensor(reward,device=state.ca.device),done,nv)

@@ -61,7 +61,7 @@ def fit_reward_gate(train_rows,validation_rows):
     if len(native)<6:fails.append('fewer than six TRAIN native successes')
     if len(vals)<2:fails.append('fewer than two VALIDATION audit successes')
     if native:
-        tm=np.array([r['recovery']['robust_fixed_map_TM_similarity_fullN'] for r in native]);conf=np.array([r['features']['ptm'] for r in native]);order=lambda v:np.array([sum(v<z)+(sum(v==z)-1)/2 for z in v],float);rho=float(np.corrcoef(order(tm),order(conf))[0,1]) if np.ptp(conf)>0 else None
+        tm=np.array([r['recovery']['robust_fixed_map_TM_similarity_fullN'] for r in native]);conf=np.array([r['features']['ptm'] if r['features']['ptm'] is not None else np.nan for r in native],float);order=lambda v:np.array([sum(v<z)+(sum(v==z)-1)/2 for z in v],float);rho=float(np.corrcoef(order(tm),order(conf))[0,1]) if np.isfinite(conf).all() and np.ptp(conf)>0 and np.ptp(tm)>0 else None
         if np.median(tm)<.6 or np.mean(tm>=.5)<2/3:fails.append('TRAIN native recovery below sealed median.60 and >=2/3 at.50')
         if rho is None or rho<.4:fails.append('TRAIN pTM/recovery rank correlation below.40 or undefined')
     else:tm=np.array([]);rho=None
@@ -70,12 +70,12 @@ def fit_reward_gate(train_rows,validation_rows):
     # This gate is necessary, not sufficient: no fit/deployable coefficients unless
     # the small native controls also separate from declared exploitation probes.
     variants=[r for r in train_rows if r.get('kind')=='variant' and r.get('status')=='SUCCEEDED']
-    if native and variants:
+    if native and variants and all(r['features']['global_confidence_product'] is not None for r in native+variants):
         score=lambda r:r['features']['mean_pLDDT']/100*r['features']['global_confidence_product']
         if max(score(r) for r in variants)>=float(np.median([score(r) for r in native])):fails.append('variant exploitation probe reaches native median confidence-product')
     fit=None
     if len(native)>=6 and all(r['features']['sequence_confidence_product'] is not None for r in native):
-        ordered=sorted(native,key=lambda r:r['sequence_sha256']);fitted=ordered[:4];hold=ordered[4:];x=np.array([r['features']['sequence_confidence_product'] for r in fitted]);y=np.array([r['recovery']['robust_fixed_map_TM_similarity_fullN'] for r in fitted]);beta=float(max(0.,x@y/max(float(x@x),1e-12)));pred=lambda r:float(np.clip(beta*r['features']['sequence_confidence_product'],0.,1.));hold_mae=float(np.mean([abs(pred(r)-r['recovery']['robust_fixed_map_TM_similarity_fullN']) for r in hold]));val_mae=float(np.mean([abs(pred(r)-r['recovery']['robust_fixed_map_TM_similarity_fullN']) for r in vals])) if vals else None
+        ordered=sorted(native,key=lambda r:r['sequence_sha256']);fitted=ordered[:4];hold=ordered[4:];x=np.array([r['features']['sequence_confidence_product'] for r in fitted]);y=np.array([r['recovery']['robust_fixed_map_TM_similarity_fullN'] for r in fitted]);beta=float(max(0.,x@y/max(float(x@x),1e-12)));pred=lambda r:float(np.clip(beta*r['features']['sequence_confidence_product'],0.,1.));hold_mae=float(np.mean([abs(pred(r)-r['recovery']['robust_fixed_map_TM_similarity_fullN']) for r in hold]));val_mae=float(np.mean([abs(pred(r)-r['recovery']['robust_fixed_map_TM_similarity_fullN']) for r in vals])) if vals and all(r['features']['sequence_confidence_product'] is not None for r in vals) else None
         fit={'coefficient':beta,'TRAIN_fit_ids':[r['sequence_sha256'] for r in fitted],'TRAIN_holdout_ids':[r['sequence_sha256'] for r in hold],'TRAIN_holdout_MAE':hold_mae,'VALIDATION_audit_MAE':val_mae,'formula':'clip(beta * mean_pLDDT/100 * pTM * fraction(long-range PAE<10A),0,1)','fit_excludes_VALIDATION':True}
         if hold_mae>.15:fails.append('held-out TRAIN confidence calibration MAE>.15')
         if val_mae is not None and val_mae>.20:fails.append('disjoint VALIDATION calibration audit MAE>.20')
