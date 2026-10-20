@@ -33,7 +33,16 @@ for j,g in enumerate(groups[:2]):
 fig.colorbar(im,ax=axes.ravel().tolist(),label='AA-frequency difference (descriptive; no good direction)');fig.suptitle('Composition: n=32 sequences per group and exact length');fig.subplots_adjust(top=.8,bottom=.2,right=.85);fig.text(.5,.04,'Full sequences, all canonical residues; per-length TRAIN reference. Heatmap shows point estimates without uncertainty.',ha='center',fontsize=8)
 for ext in ['png','pdf']:fig.savefig(R/f'COMPOSITION_DIFFERENCES.{ext}')
 plt.close(fig)
-def md(name,s):(R/name).write_text(s)
+def md(name,s):
+ import re
+ words='cached|complete|canonical|designs|design|sequences|sequence|unique|studies|study|topologies|successes|failures|solved|residues|residue|one|both|connected|short|soluble|components|positions|position|groups|group|nats|bytes|attempts|models|model|folds|calls|training|actor|examples|resamples|recycles|threads|parameter|parameters|targets|decisions|individual|local|stable|first|second|masked|one-at-a-time|saved|identity|full|valid|independent|genetic'
+ s=re.sub(r'(\d)('+words+r')\b',r'\1 \2',s)
+ s=re.sub(r'\b(first|all|uses|leaving|excluding|at|with|of|total|than|above|below|mean|median|versus|length|case|these)(?=\d)',r'\1 ',s)
+ s=re.sub(r'\b(TRAIN|VALIDATION|DataS1|J1)(?=[0-9+])',r'\1 ',s)
+ s=re.sub(r',(?=[A-Za-z])',', ',s)
+ s=s.replace('over+500','over +500').replace('OfficialDataS1','Official DataS1').replace('PDBBC','PDB BC').replace('pTMprotocol','pTM protocol')
+ (R/name).write_text(s)
+
 def fmt(x):return f'{x:.3f}'
 ESMtable='| Length | +7,500 | +500 | Natural TRAIN | Shuffled | Paired difference [95% CI] |\n|---:|---:|---:|---:|---:|---|\n'
 for N in lengths:
