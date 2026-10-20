@@ -7,7 +7,7 @@ from protein_joint_sac.rl.sequence_replay import OracleWallBudget
 from protein_joint_sac.rl.sequence_rewards import sequence_features,mapped_structure_scores
 
 def main():
- cfg=json.load(open(R/'configs/VARIANT_INFERENCE_FROZEN.json'));refs=json.load(open(R/'configs/NATIVE_REFERENCES.json'));adapter=backend();write('folds/INSTALLATION_VERIFICATION.json',adapter.preflight(verify_weights=True));b=adapter.backend;budget=OracleWallBudget(R/'folds/worker_budget.sqlite',12,1500);rows=json.load(open(R/'ALPHAFOLD_VARIANT_INFERENCE_MANIFEST.json'))['rows'] if (R/'ALPHAFOLD_VARIANT_INFERENCE_MANIFEST.json').exists() else []
+ assert not (R/'folds/BASELINE_ADEQUACY_STOP.json').exists() or (R/'configs/EXPLORATORY_RANKING_AMENDMENT.json').exists(), 'original protocol stopped; explicit exploratory amendment required';cfg=json.load(open(R/'configs/VARIANT_INFERENCE_FROZEN.json'));refs=json.load(open(R/'configs/NATIVE_REFERENCES.json'));adapter=backend();write('folds/INSTALLATION_VERIFICATION.json',adapter.preflight(verify_weights=True));b=adapter.backend;budget=OracleWallBudget(R/'folds/worker_budget.sqlite',12,1500);rows=json.load(open(R/'ALPHAFOLD_VARIANT_INFERENCE_MANIFEST.json'))['rows'] if (R/'ALPHAFOLD_VARIANT_INFERENCE_MANIFEST.json').exists() else []
  for job in cfg['jobs']:
   if job['id'] in {r['id'] for r in rows}:continue
   guard();out=R/'folds'/job['id'];assert not out.exists(),'unfinished job requires manual recovery; no repeat'
