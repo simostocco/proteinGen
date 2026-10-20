@@ -9,11 +9,11 @@ counts={g:{N:sum(r['group']==g and r['N']==N for r in panel['rows'])for N in len
 fig,ax=plt.subplots(figsize=(9,5))
 for j,(g,label,col) in enumerate(zip(groups,labels,colors)):
  vals=[esm['summary'][g][str(N)]for N in lengths];means=np.array([v['mean']for v in vals]);cis=np.array([v['mean_bootstrap95']for v in vals]);x=np.arange(5)+(j-2)*.11;ax.errorbar(x,means,yerr=[means-cis[:,0],cis[:,1]-means],marker='o',capsize=3,label=label,color=col)
-ax.set_xticks(range(5),lengths);ax.set_xlabel('Requested / exact native sequence length');ax.set_ylabel('Mean sampled masked log probability (nats / residue; higher = more compatible)');ax.set_title('Frozen ESM-2 35M: generated, natural and shuffled sequences');ax.legend(fontsize=8);fig.text(.5,.01,'16 single-mask positions / sequence; n=32/group/length except VALIDATION '+str([counts['natural_VALIDATION'][N]for N in lengths])+'; 95% sequence bootstrap CI.\nIntervals condition on fixed sampled positions; not folding/stability estimates.',ha='center',fontsize=8);fig.tight_layout(rect=(0,.08,1,1))
-for ext in ['png','pdf']:fig.savefig(R/f'ESM2_SEQUENCE_COMPARISON.{ext}')
+ax.set_xticks(range(5),lengths);ax.set_xlabel('Requested / exact native sequence length');ax.set_ylabel('Mean masked log probability\n(nats / residue; higher = more compatible)');ax.set_title('Frozen ESM-2 35M: generated, natural and shuffled sequences');ax.legend(fontsize=8);fig.text(.5,.01,'16 single-mask positions / sequence; n=32/group/length except VALIDATION '+str([counts['natural_VALIDATION'][N]for N in lengths])+'; 95% sequence bootstrap CI.\nIntervals condition on fixed sampled positions; not folding/stability estimates.',ha='center',fontsize=8);fig.tight_layout(rect=(0,.08,1,1))
+for ext in ['png','pdf']:fig.savefig(R/f'ESM2_SEQUENCE_COMPARISON.{ext}',bbox_inches='tight')
 plt.close(fig)
 main=bench['results']['paper_main570_excluding_solved_NMR_pdb'];names=list(main);fig,ax=plt.subplots(figsize=(9,5));m=np.array([main[n]['AUROC']for n in names]);ci=np.array([main[n]['AUROC_study_cluster_bootstrap95']for n in names]);ax.errorbar(m,np.arange(len(names)),xerr=[m-ci[:,0],ci[:,1]-m],fmt='o',capsize=4);ax.set_yticks(range(len(names)),[n.replace('ESM2_sampled_masked_mean_logp','ESM-2 sampled masked PLL')for n in names]);ax.axvline(.5,color='gray',ls='--');ax.set_xlim(.2,.9);ax.set_xlabel('AUROC (higher = better success/failure discrimination)');ax.set_title('Garcia published design benchmark: individual frozen evaluators');fig.text(.5,.01,'n=570 designs, 225 successes / 345 failures, 11 studies; author exclusion of44 solved-NMR designs.\n95% study-cluster bootstrap CI, 1,000 replicates. Correlated designs are not independent families. No predictor fitted.',ha='center',fontsize=8);fig.tight_layout(rect=(0,.08,1,1))
-for ext in ['png','pdf']:fig.savefig(R/f'EXPERIMENTAL_SCORE_DISCRIMINATION.{ext}')
+for ext in ['png','pdf']:fig.savefig(R/f'EXPERIMENTAL_SCORE_DISCRIMINATION.{ext}',bbox_inches='tight')
 plt.close(fig)
 fig,axes=plt.subplots(1,3,figsize=(13,4.5))
 for ax,key,title in zip(axes,['Rg_A','clashes_per100_residues','long_contact_fraction'],['Radius of gyration (A)','Clashes /100 residues (lower)','Long-range contact fraction']):
@@ -21,7 +21,7 @@ for ax,key,title in zip(axes,['Rg_A','clashes_per100_residues','long_contact_fra
   v=[aux['metrics'][g][str(N)][key]for N in lengths];mean=np.array([x['mean']for x in v]);ci=np.array([x['mean_bootstrap95']for x in v]);ax.errorbar(lengths,mean,yerr=[mean-ci[:,0],ci[:,1]-mean],fmt='o-',capsize=3,label=label,color=col)
  ref=[aux['native_reference']['TRAIN'][str(N)]['metrics'][key]for N in lengths];ax.plot(lengths,[x['mean']for x in ref],color='green',ls='--',label='Frozen native TRAIN window');ax.set_title(title);ax.set_xlabel('Length');ax.legend(fontsize=7)
 fig.suptitle('Auxiliary J1 CA geometry: n=32 generated attempts / model / length');fig.text(.5,.005,'95% sequence bootstrap CI for generated means. Native reference uses frozen +/-10% length windows, not exact-length controls.\nClash: distance<2A and sequence separation>=3; contact: distance<8A and separation>=24. Rg/contact are not monotonic quality scores.',ha='center',fontsize=8);fig.tight_layout(rect=(0,.1,1,.94))
-for ext in ['png','pdf']:fig.savefig(R/f'AUXILIARY_GEOMETRY_COMPARISON.{ext}')
+for ext in ['png','pdf']:fig.savefig(R/f'AUXILIARY_GEOMETRY_COMPARISON.{ext}',bbox_inches='tight')
 plt.close(fig)
 fig,axes=plt.subplots(1,2,figsize=(12,4))
 for j,g in enumerate(groups[:2]):
@@ -31,7 +31,7 @@ for j,g in enumerate(groups[:2]):
   diff.append(avg(g)-avg('natural_TRAIN'))
  im=axes[j].imshow(diff,aspect='auto',vmin=-.04,vmax=.04,cmap='coolwarm');axes[j].set_xticks(range(20),list(AA));axes[j].set_yticks(range(5),lengths);axes[j].set_title(labels[j]+' minus natural TRAIN');axes[j].set_ylabel('Sequence length')
 fig.colorbar(im,ax=axes.ravel().tolist(),label='AA-frequency difference (descriptive; no good direction)');fig.suptitle('Composition: n=32 sequences per group and exact length');fig.subplots_adjust(top=.8,bottom=.2,right=.85);fig.text(.5,.04,'Full sequences, all canonical residues; per-length TRAIN reference. Heatmap shows point estimates without uncertainty.',ha='center',fontsize=8)
-for ext in ['png','pdf']:fig.savefig(R/f'COMPOSITION_DIFFERENCES.{ext}')
+for ext in ['png','pdf']:fig.savefig(R/f'COMPOSITION_DIFFERENCES.{ext}',bbox_inches='tight')
 plt.close(fig)
 def md(name,s):
  import re
