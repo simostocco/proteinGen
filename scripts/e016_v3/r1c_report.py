@@ -1,6 +1,19 @@
 """Publish R1c scientific reports from measured receipts; no training or network."""
 from r1c_common import *
-import numpy as np,subprocess
+import numpy as np,subprocess,re
+_raw_write=write
+def write(p,x):
+ if isinstance(x,str) and p.endswith('.md'):
+  # Presentation only: separate explicitly listed words/units from adjacent numbers.
+  parts=re.split(r'(`[^`]*`|https?://[^\s)]+)',x)
+  for i in range(0,len(parts),2):
+   v=parts[i]
+   v=re.sub(r'\b(Completed|all|All|of|in|by|for|only|below|under|above|after|before|both|Both|exactly|selected|the|The|uses|use|with|and|Another|Frozen|reaches|despite|including|on|not|rows|from|gain|gains|case|TRAIN|IID|OOD|amyloid|fragment|residues|errors|error|limit|fraction|MAE|RMSE)(?=[−-]?\d)',r'\1 ',v)
+   v=re.sub(r'(?<=\d)(?=(MiB|GiB|ms\b|s\b|nats\b))',' ',v)
+   v=v.replace('Neff80','Neff80').replace('gains are0','gains are 0').replace('remains0','remains 0').replace('beta0','beta 0')
+   parts[i]=v
+  x=''.join(parts)
+ _raw_write(p,x)
 
 def main():
  h=json.load(open(R/'HISTORICAL_PER_CONTROL_DIAGNOSIS.json'));d=json.load(open(R/'CONFIDENCE_VS_NATIVE_RECOVERY.json'));fold=json.load(open(R/'MSA_DEPTH_ABLATION.json'));critic=json.load(open(R/'FULL_TRAJECTORY_CRITIC_COMPARISON.json'));rows=d['depth_rows'];source=subprocess.check_output(['git','rev-parse','HEAD'],cwd=R/'source',text=True).strip()
