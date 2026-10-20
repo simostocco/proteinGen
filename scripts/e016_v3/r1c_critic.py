@@ -32,18 +32,18 @@ def exact(prefix_a,prefix_u,N):
 
 def dataset():
  states=[];candidates=[];vectors=[];targets=[];mc=[];metadata=[];episodes=[];maxlogerr=0.;maxreplay=0.
- for split,count,lengths,seed in [('TRAIN',64,[12,20,32,48],190210),('IID',16,[12,20,32,48],190211),('OOD',16,[64,96],190212)]:
+ for split,count,lengths,seed in [('TRAIN',64,[20,24,32,48],190210),('IID',16,[20,24,32,48],190211),('OOD',16,[64,96],190212)]:
   rng=np.random.default_rng(seed)
   for ep in range(count):
    N=lengths[ep%len(lengths)];a=rng.integers(0,20,N);u=CENTER+rng.normal(0,.28 if split=='OOD' else SIG,(N,3));s=BuildState.empty(N);actions=[];trace=[];selected=set(np.unique(np.linspace(0,N-1,8,dtype=int)).tolist())
    for t in range(N):
-    g=torch.tensor(geo(u[t]),dtype=torch.float64);mask=mask_for_step(t);action=BuildAction(AA[a[t]],g,mask)
+    mask=mask_for_step(t);g=torch.tensor(geo(u[t]),dtype=torch.float64)*torch.tensor(mask);action=BuildAction(AA[a[t]],g,mask)
     mu=torch.tensor(CENTER,dtype=torch.float64);ls=torch.full((3,),math.log(.28 if split=='OOD' else SIG),dtype=torch.float64);pd=GeometryDistribution(mu,ls,mask)
     lp=float(pd.log_prob(g));direct=float(torch.where(torch.tensor(mask),pd.base.log_prob(torch.tensor(u[t]))-pd.log_jacobian(torch.tensor(u[t])),0.).sum());maxlogerr=max(maxlogerr,abs(lp-direct));assert math.isfinite(lp)
     nxt=append(s,action);trace.append({'AA':AA[a[t]],'latent':u[t].tolist(),'geometry':g.tolist(),'mask':list(mask),'AA_logp':-math.log(20),'geometry_logp':lp})
     if t in selected:
      hist=np.bincount(a[:t],minlength=20)/max(t,1);ss=.55*a[:t]/19+.45*gscore(u[:t]);ss[:min(t,3)]=.55*a[:min(t,3)]/19+.45*EG
-     v=np.r_[np.eye(20)[a[t]],(u[t]-CENTER)/SIG,N/100,t/N,hist,ss.mean() if t else ES,a[0]/19 if t else .5,gscore(u[3]) if t>=4 else EG]
+     v=np.r_[np.eye(20)[a[t]],(u[t]-CENTER)/SIG*np.array(mask),N/100,t/N,hist,ss.mean() if t else ES,a[0]/19 if t else .5,gscore(u[3]) if t>=4 else EG]
      future=montecarlo(a[:t+1],u[:t+1],N,rng);q=exact(a[:t+1],u[:t+1],N)
      states.append(s);candidates.append(nxt);vectors.append(v);targets.append(q);mc.append(future.tolist());metadata.append({'split':split,'episode':f'{split}_{ep}','N':N,'t':t,'AA':int(a[t]),'analytic_Q':float(q),'MC_mean':float(future.mean()),'MC_SE':float(future.std()/math.sqrt(len(future)))})
     actions.append(action);s=nxt
@@ -59,7 +59,7 @@ def sliced(pre,idx):
  return tuple(None if v is None else tuple(w[idx] for w in v) if isinstance(v,tuple) else v[idx] for v in pre)
 def main():
  assert not (R/'FULL_TRAJECTORY_CRITIC_COMPARISON.json').exists();guard();torch.set_num_threads(6);torch.manual_seed(190220);torch.cuda.manual_seed_all(190220);torch.use_deterministic_algorithms(True);torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
- cfg={'seed':190220,'episodes':{'TRAIN':64,'IID':16,'OOD':16},'TRAIN_lengths':[12,20,32,48],'OOD_lengths':[64,96],'transitions_per_episode':8,'full_episodes_retained':True,'steps_per_arm':800,'batch':32,'AdamW_lr':.002,'weight_decay':.01,'clip_norm':5.,'heldout_RMSE_limit':.1,'model_selection':'one fixed configuration, no sweep','actor':'synthetic random policy; no J1 model imported or loaded','target':'exact conditional expected terminal return checked against128 MC branches; no future suffix in input','OOD':'new lengths and off-policy geometry .28 vs .15; future Monte Carlo continuation always reference .15','features':'same direct candidate AA, latent action, length/progress, observed prefix histogram and causal sufficient-statistic summaries for both arms; Transformer also receives prefix and candidate-prefix encoders','scope':'value regression and MC calibration, not evidence of stable bootstrapped SAC policy optimization','max_critic_seconds_per_arm':600}
+ cfg={'seed':190220,'episodes':{'TRAIN':64,'IID':16,'OOD':16},'TRAIN_lengths':[20,24,32,48],'OOD_lengths':[64,96],'transitions_per_episode':8,'full_episodes_retained':True,'steps_per_arm':800,'batch':32,'AdamW_lr':.002,'weight_decay':.01,'clip_norm':5.,'heldout_RMSE_limit':.1,'model_selection':'one fixed configuration, no sweep','actor':'synthetic random policy; no J1 model imported or loaded','target':'exact conditional expected terminal return checked against128 MC branches; no future suffix in input','OOD':'new lengths and off-policy geometry .28 vs .15; future Monte Carlo continuation always reference .15','features':'same direct candidate AA, latent action, length/progress, observed prefix histogram and causal sufficient-statistic summaries for both arms; Transformer also receives prefix and candidate-prefix encoders','scope':'value regression and MC calibration, not evidence of stable bootstrapped SAC policy optimization','max_critic_seconds_per_arm':600}
  write('configs/FULL_CRITIC_FROZEN.json',cfg);ss,cs,x,y,mc,meta=dataset();splits={k:np.flatnonzero([r['split']==k for r in meta]) for k in ['TRAIN','IID','OOD']};mean=x[splits['TRAIN']].mean(0);std=np.maximum(x[splits['TRAIN']].std(0),.05);x=(x-mean)/std;write('critic/TRAIN_FEATURE_SCALES.json',{'mean':mean.tolist(),'std':std.tolist()})
  X=torch.tensor(x,device='cuda',dtype=torch.float32);Y=torch.tensor(y,device='cuda',dtype=torch.float32);batchS=collate(ss,'cuda');batchC=collate(cs,'cuda');prepS=features_batch(batchS,False);prepC=features_batch(batchC,False)
  conf=ModelConfig(width=32,heads=4,layers=1,ffn_mult=2,chemistry=False,backend='sdpa');transformers=[]
