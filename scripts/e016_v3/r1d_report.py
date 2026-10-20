@@ -15,12 +15,7 @@ def main():
  if not receipt.exists():write('data/ARCHIVE_DOWNLOAD_RECEIPT.json',download)
  metadata=json.load(open(R/'network/PIPELINE_COMMIT.json'));provenance=dict(download,processed_member=member,source_pipeline_commit=metadata['sha'],source_pipeline_URL='https://github.com/Rocklin-Lab/cdna-display-proteolysis-pipeline',quality_notebook={'path':'network/Data_quality_filtering_script.ipynb','SHA256':sha(R/'network/Data_quality_filtering_script.ipynb')},STEP5_density_inference_code={'path':'network/STEP5_module.ipynb','SHA256':sha(R/'network/STEP5_module.ipynb')},attribution='Tsuboyama et al., Nature620,434-444(2023), doi:10.1038/s41586-023-06328-6; Zenodo7992926 v2_230420, CC BY4.0',GitHub_license_note='No separate LICENSE file exposed in the pinned repository tree; source notebooks retained for audit, no assertion of a new code license',ProteinGym='not downloaded or used; repackaged Tsuboyama assays would not be independent evidence')
  write('TSUBOYAMA_DATASET_PROVENANCE.json',provenance)
- flanks=[]
- for l in labels:
-  for r in l['source_rows']:
-   full=r.get('aa_seq_full','');seq=l['sequence'];start=full.find(seq);assert start>=0 and full.find(seq,start+1)<0;flanks.append((full[:start],full[start+len(seq):]))
- assert len(set(flanks))==1
- write('analysis/CONSTRUCT_AND_FLANK_CHECK.json',{'all_selected_rows_core_occurs_once':True,'all_selected_assay_flanks_identical':True,'common_flanks':list(flanks[0]),'AF_input':'exact aa_seq experimental core; aa_seq_full flanking assay sequence retained in source; no unsupported fragment reinterpretation','WT_reference':'author per-parent median, not forced zero for individual WT replicates'})
+ flankcheck=json.load(open(R/'analysis/CONSTRUCT_AND_FLANK_CHECK.json'));assert flankcheck['DNA_translation_equals_recorded_full_payload_all_checked']
  wtqueries=[]
  for j in cfg['jobs']:
   if j['WT']:wtqueries.append({'parent':j['parent'],'role':j['role'],'sequence':j['sequence'],'sequence_sha256':j['sequence_sha256'],'N':j['N'],'public_PDB_exact_core_mapping':{'pdb_id':next(v['PDB_accession'] for v in bench['selected_families'] if v['parent_key']==j['parent_key']),'native_full_chain_start0':native[j['parent_key']]['start0'],'native_core_length':j['N']}})
@@ -51,7 +46,7 @@ Dataset1 retains the broader processed assay pool. The Dataset2/3 member contain
 
 STEP5 code reports posterior medians and2.5/97.5 percentiles; `deltaG_95CI` is interval width. Its thermodynamic conversion uses an RT factor0.58kcal/mol. The study reports PBS at approximately22°C. Posterior uncertainty does not include every systematic error or prove cooperative equilibrium folding. Trypsin/chymotrypsin are complementary assay checks, not independent confirmations of every molecule's folding. Their raw estimates/intervals remain separate, and the author filtering notebook examines inter-protease patterns, potential folded-state cleavage and Cys artefacts. We did not reinterpret the author's `Stabilizing_mut` flag as a substitute for quantitative ΔG.
 
-The measured constructs include common assay flanks; AF receives the exact released `aa_seq` core. Selected core/flank substitutions are verified; `aa_seq_full` is preserved. This is a controlled in-vitro assay-specific comparison, not a statement about solubility, function, oligomeric behavior or in-vivo stability.
+The measured constructs include assay flanks that vary across some WT controls and mutants; AF receives the exact released `aa_seq` core. Core substitutions and DNA-encoded full payloads are verified, with strict matched-flank sensitivity reported separately; `aa_seq_full` is preserved. This is a controlled in-vitro assay-specific comparison, not a statement about solubility, function, oligomeric behavior or in-vivo stability.
 
 Sources: [primary paper](https://www.nature.com/articles/s41586-023-06328-6), [official data](https://zenodo.org/records/7992926), [pinned author pipeline](https://github.com/Rocklin-Lab/cdna-display-proteolysis-pipeline/tree/{metadata['sha']}).
 ''')
@@ -61,7 +56,7 @@ Policies are preserved in `configs/SELECTION_AND_ANALYSIS_PREDECLARED.json` and 
 
 The first family proxy combined30%-identity short-sequence links transitively and collapsed473/479 parents. It was rejected before any AF prediction, with code/results/config preserved in `analysis/rejected_family_proxy_v1`. The replacement uses author WT_cluster, source-PDB and accepted protected-group merges plus strong50%-identity/80%-shorter-coverage global alignment links. This matches the existing split's primary near-duplicate scale and avoids pretending weak helical-sequence matches certify family homology. It yields115 components overall and {qfamilies} with qualified variants. Family separation remains operational; undiscovered remote homology and shared short folds are explicit limitations, not erased by distinct names.
 
-Exclude operational families with exact E016 TEST construct overlap; inspect identity/split ownership only, no TEST labels/coordinates/scoring. Selected parents map to qualified TRAIN native observations. Equal-family sampling gives two development and two audit groups; roles are fixed by SHA of family ID. Prefer two64–72-residue parents and two shorter ones where eligible. Exact native substrings and source hashes are checked. Official PDBe records identify THO1, villin headpiece, RXLR effector and Sda monomers; no family is chosen using recovery scores.
+Exclude operational families with exact E016 TEST construct overlap; inspect identity/split ownership only, no TEST labels/coordinates/scoring. Selected parents map to qualified TRAIN native observations. Equal-family sampling gives two development and two audit groups; roles are fixed by SHA of family ID. Prefer two64–72-residue parents and two shorter ones where eligible. Exact native substrings and source hashes are checked. A late full-payload check found heterogeneous assay flanks; author-reference/core analysis is retained, with separately labelled post hoc matched-flank sensitivity. THO1 lacks a matched-flank WT measurement, so its WT pairs do not qualify as exact full-construct comparisons; its two mutants do match each other. Official PDBe records identify THO1, villin headpiece, RXLR effector and Sda monomers; no family is chosen using recovery scores.
 
 {table}
 
