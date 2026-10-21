@@ -30,6 +30,8 @@ class Population:
    allids=set(self.base.ids[split]);c=set(self.base.jointids[split]);p={h for h in allids if h in self.partial_owners}-c;u=allids-c-p;self.groups[split]=dict(complete=sorted(c),partial=sorted(p),aa_only=sorted(u))
   assert [len(x) for x in self.groups['TRAIN'].values()]==[21475,29129,67615]
   self.cache={};self.group_sets={k:set(v) for k,v in self.groups['TRAIN'].items()}
+ def input_hashes(self):
+  return {str(path):file_sha(path) for path in [P/'PROPOSAL_MANIFEST.json',P/'SEQUENCE_ASSIGNMENTS.parquet',P/'JOINT_OBSERVATION_ASSIGNMENTS.parquet',PARTIAL.parent/'VIEW_FROZEN.json']}
  def generated_prefix_target(self,state,identity,device):
   # Valid future AA label only with the same known native AA prefix. Coordinates
   # may be generated context, never an invented experimental geometry target.

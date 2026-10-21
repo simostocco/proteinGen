@@ -84,17 +84,22 @@ def execute(config,root,grant,resume=None):
  if shutil.disk_usage(root).free<10*2**30+2*estimate:raise OSError('insufficient two-generation atomic recovery headroom; do not lower model capacity silently')
  torch.manual_seed(config['seed']);torch.cuda.manual_seed_all(config['seed']);torch.use_deterministic_algorithms(True)
  prior=FrozenPrior('cuda');system=System(config['profile'],config.get('shapes')).cuda();learner=Learner(system,**config['optimizer']);pop=Population();sampler=CoverageSampler(pop,config['seed']);geometry_sampler=CoverageSampler(pop,config['seed']+1);goals=Goals(pop,config['seed']+2,json.load(open(config['native_limits'])));samplers=dict(AA=sampler,geometry=geometry_sampler,goals=goals);replay=Replay(run/'replay.sqlite');counters={'updates':0,'episodes':0};limits=json.load(open(config['native_limits']));replay_rng=random.Random(config['seed']+3)
- data_manifest=pop.membership();effective_config={**config,'data_manifest':data_manifest,'source_commit':__import__('subprocess').check_output(['git','rev-parse','HEAD'],cwd=Path(__file__).resolve().parents[3],text=True).strip()}
+ data_manifest=pop.membership();effective_config={**config,'data_manifest':data_manifest,'data_input_hashes':pop.input_hashes(),'native_limits_sha256':file_sha(config['native_limits']),'validation_panel_sha256':file_sha(config['validation_panel']) if config.get('validation_panel') else None,'source_commit':__import__('subprocess').check_output(['git','rev-parse','HEAD'],cwd=Path(__file__).resolve().parents[3],text=True).strip()}
  if config.get('initial_checkpoint') and not resume:
   initial=config['initial_checkpoint']
   if file_sha(initial['path'])!=initial['sha256']:raise ValueError('initialization checkpoint SHA')
   parent=torch.load(initial['path'],map_location='cpu',weights_only=False)
   if parent['j1_sha256']!=SHA or parent['profile']!=system.profile:raise ValueError('initialization reference/profile')
+  if parent['config'].get('data_input_hashes')!=effective_config['data_input_hashes']:raise ValueError('stage initialization data provenance')
   system.load_state_dict(parent['system'],strict=True)
   for k,o in learner.optimizers.items():
    o.load_state_dict(parent['optimizers'][k])
    for g in o.param_groups:g['lr']=config['optimizer']['lr']
   for k,v in samplers.items():v.load_state_dict(parent['samplers'][k])
+  counters['episodes']=parent['counters'].get('episodes',0)
+  if parent['replay_snapshot']:
+   snap=parent['replay_snapshot'];assert file_sha(snap['path'])==snap['sha256'];replay.close();import sqlite3
+   source=sqlite3.connect(snap['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
  if resume:
   state=restore(resume,system,learner,samplers,effective_config);counters=state['counters'];replay_rng.setstate(counters['replay_rng']);replay.close();import sqlite3
   assert file_sha(state['replay_snapshot']['path'])==state['replay_snapshot']['sha256'];source=sqlite3.connect(state['replay_snapshot']['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
@@ -134,7 +139,7 @@ def execute(config,root,grant,resume=None):
     with open(pointer,'w') as f:json.dump(manifest,f,indent=2);f.flush();__import__('os').fsync(f.fileno())
     pointer.replace(run/'LATEST_RECOVERY.json')
     # Bounded retention only for checkpoints created by this run, retain latest plus selected outside this loop.
-    if previous and not config['retain_all_checkpoints']:
+    if previous and not config['retain_all_checkpoints'] and not previous[0].with_suffix('.keep').exists():
      for p in previous:p.unlink()
     previous=(path,snapshot)
  finally:history.close();replay.close();prior.verify(learner.optimizers.values())
