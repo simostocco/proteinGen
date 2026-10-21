@@ -1,0 +1,33 @@
+from crisp_v2_core import *
+from crisp_v2_interface import *
+import subprocess,resource
+start=time.monotonic();torch.set_num_threads(6);torch.use_deterministic_algorithms(True);actor=load_actor();adapter=Steering().cuda();adapter.load_state_dict(torch.load(R/'runs/adapter_00080.pt',weights_only=False)['adapter']);adapter.eval();tasks=[r for r in read('tasks/PUBLIC_TASKS.json')if r['split']=='TRAIN'];zero=Steering().cuda().eval();tests={};sensitivity=[]
+# Matched actual draws demonstrate independently gated steering and goal dependence.
+for i,task in enumerate(tasks[:4]):
+ state=state_for(task);cpu=BuildState(state.residues,state.ca.cpu(),state.N);h,l,m,s=reference(actor,[cpu]);ctx=context(state,task);outputs={}
+ for name,aa,gg in [('base',False,False),('AA',True,False),('G',False,True),('joint',True,True)]:outputs[name]=adapter(h[0],ctx,l[0],m[0],s[0],aa,gg)
+ tests['AA_gate_does_not_directly_change_conditional_geometry']=torch.equal(outputs['AA'][1],m[0])and torch.equal(outputs['AA'][2],s[0]);tests['G_gate_does_not_directly_change_AA_logits']=torch.equal(outputs['G'][0],l[0])
+ rr=torch.Generator(device='cuda').manual_seed(17100+i);us=torch.rand(512,device='cuda',generator=rr);eps=torch.randn(3,device='cuda',dtype=torch.float64,generator=rr)
+ baseindices=torch.searchsorted(outputs['base'][0].softmax(-1).cumsum(-1),us).clamp_max(19);adaptindices=torch.searchsorted(outputs['AA'][0].softmax(-1).cumsum(-1),us).clamp_max(19)
+ g0,_=corrected_action(outputs['base'][1][0],outputs['base'][2][0],[True]*3,eps);g1,_=corrected_action(outputs['G'][1][0],outputs['G'][2][0],[True]*3,eps)
+ cf=copy.deepcopy(task);cf['endpoint'][1]+=12;cf['motifs'][str(state.t)]='W';cc=context(state,cf);alt=adapter(h[0],cc,l[0],m[0],s[0]);ka,kg,_=kl(*outputs['joint'],l[0],m[0],s[0])
+ sensitivity.append(dict(task=task['id'],same_draw_AA_changes_of512=int((baseindices!=adaptindices).sum()),same_draw_geometry_L2=float(torch.linalg.vector_norm(g1-g0)),AA_KL=float(ka),geometry_KL_per_component=float(kg/3),counterfactual_goal_logits_L2=float(torch.linalg.vector_norm(alt[0]-outputs['joint'][0])),counterfactual_goal_mu_L2=float(torch.linalg.vector_norm(alt[1]-outputs['joint'][1])),kinematic_necessary_reachability=bool(np.linalg.norm(np.array(task['endpoint'])-np.array(task['initial_CA'])[-1])<read('configs/NATIVE_CALIBRATION.json')['adjacent_high_A']*(task['N']-3)+task['position_tolerance_A'])))
+tests['same_noise_steering_changes_actual_decisions']=sum(v['same_draw_AA_changes_of512']for v in sensitivity)>0 and all(v['same_draw_geometry_L2']>0 for v in sensitivity)
+# Reward ledger covers residue, rewind, regenerate and stop, including discarded suffix actions.
+task=tasks[0];env=Hierarchy(actor,adapter,task,1901);env.act('CONTINUE',steps=8);env.act('REWIND',position=6);env.act('REGENERATE');env.act('CONTINUE',steps=7);original=env.state.ca.clone();res=env.state.residues;env.act('REWIND',position=8);env.act('CONTINUE',steps=5);tests['branched_context_literal_replay_exact']=torch.equal(original,env.state.ca)and env.state.residues==res;env.act('STOP');ev=env.reward_events;gamma=.995;shaped=sum(gamma**q['tick']*q['shaping']for q in ev);expected=-.1*ev[0]['before_potential'];tests['actual_rewind_reward_ledger_telescopes']=abs(shaped-expected)<1e-10;tests['every_primitive_event_logged']=len(ev)==env.ticks and [q['tick']for q in ev]==list(range(env.ticks));tests['incomplete_STOP_is_failure_not_timeout']=ev[-1]['terminal_success']==0. and env.ended
+exp=copy.deepcopy(env.export());restored=Hierarchy(actor,adapter,task,123);restored.restore(exp);tests['reward_and_intervention_history_recover']=restored.reward_events==ev and restored.interventions==env.interventions
+rewards=[.2,-.1,.7];tests['semi_MDP_discount_and_terminal']=abs(option_target(rewards,5.,False)-(.2+.995*(-.1)+.995**2*.7+.995**3*5))<1e-12 and abs(option_target(rewards,5.,True)-(.2+.995*(-.1)+.995**2*.7))<1e-12
+# Logged main comparison action sequences remain identical with the full reward ledger.
+rows=read('FEASIBILITY_EPISODES.json');checks=[]
+for arm in ['frozen_J1','supervised_goal_joint','AA_only','geometry_only']:
+ r=next(x for x in rows if x['arm']==arm);t=next(x for x in read('tasks/PUBLIC_TASKS.json')if x['id']==r['task']);e=Hierarchy(actor,zero if arm=='frozen_J1'else adapter,t,r['seed'],arm!='geometry_only',arm!='AA_only');e.act('CONTINUE',steps=t['N']-3);e.act('STOP');checks.append(''.join(e.state.residues)==r['sequence']);newdiscount=gamma**(e.ticks-1)*sum(q['terminal_success']for q in e.reward_events);tests['terminal_reward_clock_consistent']=abs(newdiscount-(gamma**(e.ticks-1)*int(r['assessment']['success'])))<1e-12
+# Explicit positive terminal test makes the clock check non-vacuous even when the free-running panel has zero successes.
+n=next(r for r in read('tasks/HIDDEN_NATIVE_SUPERVISION.json')if r['identity']==task['identity']);positive=Hierarchy(actor,adapter,task,1902);positive.state=BuildState(tuple(n['sequence']),torch.tensor(n['CA'],device='cuda',dtype=torch.float64),task['N']);positive.act('STOP');tests['positive_terminal_reward_is_one_at_tick0']=positive.reward_events[-1]['tick']==0 and positive.reward_events[-1]['terminal_success']==1. and option_target([1.],terminated=True)==1.
+# Tolerance-ball necessary reachability, separate from conservative exact-center heuristic used by the comparison managers.
+probe=copy.deepcopy(task);L=read('configs/NATIVE_CALIBRATION.json');st=state_for(task);remaining=st.N-st.t;probe['endpoint']=(st.ca[-1].cpu().numpy()+np.array([L['adjacent_high_A']*remaining+probe['position_tolerance_A']/2,0,0])).tolist();tests['reachability_includes_target_tolerance']=necessary_position_reachability(st,probe,L);probe['endpoint'][0]+=probe['position_tolerance_A'];tests['reachability_rejects_beyond_contour_and_tolerance']=not necessary_position_reachability(st,probe,L)
+# Convention: terminal reward is on STOP at primitive tick T-1, return gamma^(T-1).
+tests['reward_ledger_preserves_comparison_policy_actions']=all(checks)
+write('COUNTERFACTUAL_AND_REACHABILITY_DIAGNOSTICS.json',dict(rows=sensitivity,no_learned_intervention_or_reachability_models=True,interpretation='controlled explicit goal changes and matched action noise reveal local policy sensitivity, not learned causal representation or long-horizon reachability proof'))
+write('REWARD_AND_EXTENDED_CONTROL_TESTS.json',dict(tests=tests,all_pass=all(tests.values()),reward_events=ev,sensitivity=sensitivity,seconds=time.monotonic()-start,comparison_source_archive='results/FEASIBILITY_EXECUTED_CORE.py',J1_unchanged=tensor_sha(actor)==read('DIRECT_STEERING_TESTS.json')['frozen_tensor_sha256']))
+assert all(tests.values()),tests
+print('EXTENDED PASS',tests,flush=True)
