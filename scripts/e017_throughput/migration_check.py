@@ -1,0 +1,13 @@
+from pathlib import Path
+import json,sqlite3
+import torch
+from protein_joint_sac.crisp_v3 import networks as N,optimization as O,admission as A
+from protein_joint_sac.crisp_v3.data import Population,CoverageSampler
+from protein_joint_sac.crisp_v3.execution import migrate_execution,enable_loader,scientific_config
+from protein_joint_sac.crisp_v3.prior import FrozenPrior,tensor_sha,file_sha
+from protein_joint_sac.crisp_v3.storage import Replay,rng_state
+from protein_joint_sac.crisp_v3.recovery import state_digest
+R=Path(__file__).resolve().parents[3];c=json.load(open(R/'configs/OPTIMIZED_EXECUTION.json'));parent=torch.load(c['execution_parent']['path'],map_location='cpu',weights_only=False);enable_loader(c);prior=FrozenPrior('cpu');system=N.System('research');learner=O.Learner(system,**c['optimizer']);A.configure_initialization(system,learner,c['schedule']);pop=Population();samplers=dict(AA=CoverageSampler(pop),geometry=CoverageSampler(pop),goals=A.InitGoals(pop,1705,json.load(open(c['native_limits']))));fixture=R/'results/migration_fixture_verified';fixture.mkdir(exist_ok=True);replay=Replay(fixture/'replay.sqlite');effective={**parent['config'],**c,'source_commit':'ENGINEERING_FIXTURE_ONLY'};counters=migrate_execution(c,system,learner,samplers,effective,replay,fixture)
+checks=dict(system=state_digest(system.state_dict())==state_digest(parent['system']),optimizers=state_digest({k:v.state_dict() for k,v in learner.optimizers.items()})==state_digest(parent['optimizers']),schedulers=state_digest({k:v.state_dict() for k,v in learner.schedulers.items()})==state_digest(parent['schedulers']),samplers=state_digest({k:v.state_dict() for k,v in samplers.items()})==state_digest(parent['samplers']),RNG=state_digest(rng_state())==state_digest(parent['rng']),counters=state_digest(counters)==state_digest(parent['counters']))
+src=sqlite3.connect('file:'+parent['replay_snapshot']['path']+'?mode=ro',uri=True);dst=sqlite3.connect(fixture/'replay.sqlite');checks['replay_logical']=list(src.iterdump())==list(dst.iterdump());src.close();dst.close();assert all(checks.values()),checks;prior.verify(learner.optimizers.values());assert prior.shared_prefix_features==c['execution_protocol']['share_prefix_features'];assert A.initialization_update.__module__.endswith('fast_execution')
+(R/'results/EXECUTION_MIGRATION_CHECK.json').write_text(json.dumps(dict(status='PASS',checks=checks,source_checkpoint_sha256=file_sha(c['execution_parent']['path']),update=counters['updates'],next_update=counters['updates']+1,scientific_config_exact=scientific_config(c)==scientific_config(parent['config']),actual_training_startup_dispatch_verified=True,actor_optimizer_only=set(learner.optimizers)=={'actor'}),indent=2));print('MIGRATION_PASS',checks)

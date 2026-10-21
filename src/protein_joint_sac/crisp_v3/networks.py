@@ -101,4 +101,4 @@ class System(nn.Module):
 def prepare(prefix,reference,goals,goal_valid,context=None,subgoal=None):
  B=len(prefix['t']);dev=prefix['ids'].device
  if goals.shape[-1]!=36 or goal_valid.shape!=goals.shape[:2]:raise ValueError('goal schema')
- return dict(prefix=prefix,reference={k:v.detach() for k,v in reference.items()},features=features_batch(prefix,chemistry=True),goals=goals,goal_valid=goal_valid,context=torch.zeros(B,64,device=dev) if context is None else context,subgoal=torch.zeros(B,device=dev) if subgoal is None else subgoal)
+ return dict(prefix=prefix,reference={k:v.detach() for k,v in reference.items()},features=prefix.pop('_execution_actor_features') if '_execution_actor_features' in prefix else features_batch(prefix,chemistry=True),goals=goals,goal_valid=goal_valid,context=torch.zeros(B,64,device=dev) if context is None else context,subgoal=torch.zeros(B,device=dev) if subgoal is None else subgoal)

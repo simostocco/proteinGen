@@ -24,7 +24,13 @@ class FrozenPrior:
  @torch.no_grad()
  def __call__(self,b):
   if self.model.training:raise RuntimeError('J1 must stay in eval mode')
-  h=encode_batch(self.model,b);B=len(h);ids=torch.arange(20,device=h.device)[None].expand(B,20)
+  prepared=None
+  if getattr(self,'shared_prefix_features',False):
+   from protein_joint_sac.models.batched_bc import features_batch
+   features,pair,present=features_batch(b,chemistry=True);b['_execution_actor_features']=(features,pair,present)
+   original=features.clone();original[...,:22]=0.;original[...,33]=0.
+   pv=pair[0].clone();pv[...,21]=0.;prepared=(original,(pv,pair[1]),present)
+  h=encode_batch(self.model,b,prepared=prepared);B=len(h);ids=torch.arange(20,device=h.device)[None].expand(B,20)
   z=self.model.geom(torch.cat([h[:,None].expand(B,20,352),self.model.selected_aa(ids),h.new_zeros(B,20,22)],-1)).float()
   return dict(h=h.float(),logits=self.model.aa_head(h).float(),mu=z[:,:,:3],ls=z[:,:,3:].clamp(-5,2))
  def verify(self,optimizers=()):

@@ -46,10 +46,22 @@ class ArrowRows:
 def arrow_group(self,path,index):
  import pyarrow.parquet as pq
  return ArrowRows(pq.ParquetFile(path).read_row_group(index,columns=['selected_calpha_coordinates'],use_threads=False).column(0))
+ACTIVE_LOADER='eager'
 def set_loader(mode):
+ global ACTIVE_LOADER
+ ACTIVE_LOADER=mode
  old=CoordinateReader.group;old.cache_clear();arrow_group.cache_clear();_EAGER_GROUP.cache_clear()
  if mode=='eager':CoordinateReader.group=_EAGER_GROUP
  elif mode=='arrow_scalar_lru4':CoordinateReader.group=arrow_group
+ elif mode in ['qualified_ram_512MiB','qualified_ram_1024MiB']:
+  from .fast_execution import qualified_group,QUALIFIED
+  QUALIFIED.limit=(1024 if mode=='qualified_ram_1024MiB' else 512)*2**20
+  CoordinateReader.group=qualified_group
+ elif mode=='arrow_ram_256MiB':
+  from .fast_execution import ram_group
+  CoordinateReader.group=ram_group
  else:raise ValueError('unknown execution loader')
 def enable_loader(config):
  set_loader(config.get('execution_protocol',{}).get('loader','eager'))
+ from .fast_execution import enable
+ enable(config)
