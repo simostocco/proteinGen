@@ -1,0 +1,43 @@
+{
+  "schema": "crisp_v3_training_v1",
+  "reference_sha256": "881457ff0396975c1b20dd0a8e2caac8521e65b7e1cec76a7bb531dbc437b412",
+  "reward_protocol": "crisp_v3_terminal_geometric_v1",
+  "profile": "development",
+  "stage": "supervised",
+  "updates": 1000,
+  "seed": 1703,
+  "effective_AA_batch": 64,
+  "microbatch": 1,
+  "complete_geometry_decisions": 32,
+  "goal_demonstrations": 8,
+  "optimizer": {
+    "lr": 0.0001,
+    "gamma": 0.995,
+    "alpha_aa": 0.01,
+    "alpha_geometry": 0.001,
+    "beta_aa": 0.02,
+    "beta_geometry": 0.01
+  },
+  "loss_weights": {
+    "aa": 1.0,
+    "geometry": 0.1,
+    "kl_aa": 0.02,
+    "kl_geometry": 0.01,
+    "goal": 0.05
+  },
+  "gradient_clip": 1.0,
+  "native_limits": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_20261021_v1/configs/NATIVE_CALIBRATION.json",
+  "collect_every": 100,
+  "critic_every": 1,
+  "actor_every": 2,
+  "target_tau": 0.005,
+  "operational_events": 4096,
+  "checkpoint_every": 500,
+  "curriculum_every": 2500,
+  "validation_panel": null,
+  "validation_every": 500,
+  "retain_all_checkpoints": false,
+  "BC_microbatch": 1,
+  "BC_weight": 0.1,
+  "geometry_BC_weight": 0.02
+}
