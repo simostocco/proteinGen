@@ -1,0 +1,9 @@
+from crisp_v2_common import *
+import subprocess
+old=D/'e016_sequence_first_rl_readiness_20261019_v1';r1c=D/'e016_r1c_reward_reliability_20261019_v1';toy=old/'HYBRID_SAC_TOY_RESULTS.json';traj=r1c/'FULL_TRAJECTORY_CRITIC_COMPARISON.json';a=json.loads(toy.read_text());b=json.loads(traj.read_text());assert a['status']=='PASS'and a['J1_optimizer_updates']==0 and b['J1_optimizer_updates']==0
+row=next(r for r in b['rows']if r['arm']=='Transformer');vals={s:row['metrics'][s]['RMSE_expected_return']for s in ['IID','OOD']};assert all(v<.1 for z in vals.values()for v in z)
+files=[]
+for name in ['rl/sequence_rl.py','models/hybrid_distributions.py','models/geometry_inference.py','geometry/ca_builder.py','models/build_critic.py']:
+ p=R/'source/src/protein_joint_sac'/name;q=old/'source/src/protein_joint_sac'/name;files.append(dict(path=str(p),sha256=sha(p),historical_source=str(q),same_as_R0_source=q.exists()and sha(p)==sha(q)))
+write('SAC_FOUNDATION_AUDIT.json',dict(historical_analytic_toy=dict(path=str(toy),sha256=sha(toy),status=a['status'],gamma=a['gamma'],terminal_no_bootstrap=a['terminal_no_bootstrap']),historical_full_trajectory=dict(path=str(traj),sha256=sha(traj),Transformer_RMSE=vals,real_protein_return_calibration=b['real_protein_return_calibration'],MC_regression_not_full_SAC_learning=b['MC_value_regression_not_full_SAC_learning']),source=files,no_new_critic_or_RL_updates=True,CRISP_target='option_target uses gamma0.995 and option durations; legacy gamma1 helper is not silently reused',main_repository=dict(branch=subprocess.check_output(['git','-C','/mnt/d/Simone/proteinGen','branch','--show-current'],text=True).strip(),head=subprocess.check_output(['git','-C','/mnt/d/Simone/proteinGen','rev-parse','HEAD'],text=True).strip()),claim='verified historical engineering foundations; no real task-return or production SAC readiness certification'))
+print('SAC FOUNDATION VERIFIED',vals,flush=True)
