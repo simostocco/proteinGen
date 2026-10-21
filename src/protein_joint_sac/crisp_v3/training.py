@@ -23,6 +23,12 @@ def seal_config(config):
  if config.get('shapes') is not None:
   with torch.device('meta'):System(config['profile'],config['shapes'])
  if config['updates']<1 or config['effective_AA_batch']<1:raise ValueError('update/batch')
+ if config.get('admission_protocol'):
+  if config['stage']!='supervised' or config['updates']>10000:raise ValueError('initialization stage/ceiling')
+  if config['initialization_scope']['updated']!=['actor']:raise ValueError('actor-only stage')
+  for path,sha in config['frozen_artifact_hashes'].items():
+   if file_sha(path)!=sha:raise ValueError('frozen admission artifact mismatch')
+  if config['validation_milestones']!=[250,1000,2500,5000,10000]:raise ValueError('sealed milestones')
  return digest(config)
 
 def authorization(path,config):
@@ -92,9 +98,14 @@ def execute(config,root,grant,resume=None):
   policy.startup(root);run=root/('run_'+uuid.uuid4().hex);run.mkdir()
  manager=RollingRecovery(run,policy,create=not owned_resume)
  manager._recover_pending();manager.collect_superseded()
- torch.manual_seed(config['seed']);torch.cuda.manual_seed_all(config['seed']);torch.use_deterministic_algorithms(True)
+ random.seed(config['seed']);__import__('numpy').random.seed(config['seed']);torch.manual_seed(config['seed']);torch.cuda.manual_seed_all(config['seed']);torch.use_deterministic_algorithms(True)
  prior=FrozenPrior('cuda');system=System(config['profile'],config.get('shapes')).cuda();learner=Learner(system,**config['optimizer']);pop=Population();sampler=CoverageSampler(pop,config['seed']);geometry_sampler=CoverageSampler(pop,config['seed']+1);goals=Goals(pop,config['seed']+2,json.load(open(config['native_limits'])));samplers=dict(AA=sampler,geometry=geometry_sampler,goals=goals);replay=Replay(run/'replay.sqlite');counters={'updates':0,'episodes':0};limits=json.load(open(config['native_limits']));replay_rng=random.Random(config['seed']+3)
- data_manifest=pop.membership();effective_config={**config,'data_manifest':data_manifest,'data_input_hashes':pop.input_hashes(),'native_limits_sha256':file_sha(config['native_limits']),'validation_panel_sha256':file_sha(config['validation_panel']) if config.get('validation_panel') else None,'source_commit':__import__('subprocess').check_output(['git','rev-parse','HEAD'],cwd=Path(__file__).resolve().parents[3],text=True).strip()}
+ if config.get('admission_protocol'):
+  from .admission import configure_initialization,InitGoals,Monitor,verify_panel
+  if config['stage']!='supervised':raise ValueError('initialization-only admission protocol')
+  configure_initialization(system,learner,config['schedule']);goals=InitGoals(pop,config['seed']+2,limits);samplers['goals']=goals
+  verify_panel(pop,json.load(open(config['validation_panel'])),'VALIDATION');verify_panel(pop,json.load(open(config['matched_TRAIN_panel'])),'TRAIN')
+ data_manifest=pop.membership();effective_config={**config,'data_manifest':data_manifest,'data_input_hashes':pop.input_hashes(),'native_limits_sha256':file_sha(config['native_limits']),'validation_panel_sha256':file_sha(config['validation_panel']) if config.get('validation_panel') else None,'matched_TRAIN_panel_sha256':file_sha(config['matched_TRAIN_panel']) if config.get('matched_TRAIN_panel') else None,'source_commit':__import__('subprocess').check_output(['git','rev-parse','HEAD'],cwd=Path(__file__).resolve().parents[3],text=True).strip()}
  if config.get('initial_checkpoint') and not resume:
   initial=config['initial_checkpoint']
   if file_sha(initial['path'])!=initial['sha256']:raise ValueError('initialization checkpoint SHA')
@@ -113,25 +124,48 @@ def execute(config,root,grant,resume=None):
  if resume:
   state=restore(resume,system,learner,samplers,effective_config);counters=state['counters'];replay_rng.setstate(counters['replay_rng']);replay.close()
   assert file_sha(state['replay_snapshot']['path'])==state['replay_snapshot']['sha256'];manager.policy.require(run,Path(state['replay_snapshot']['path']).stat().st_size+2**20);source=sqlite3.connect(state['replay_snapshot']['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
+ if config.get('admission_protocol') and counters.get('scientific_stop',{}).get('stop'):raise PermissionError('Scientific stop requires review and an explicitly new lineage; automatic resume is blocked')
  if owned_resume:
   if json.load(open(run/'CONFIG.json'))!=effective_config:raise ValueError('same-run resume configuration mismatch')
  else:(run/'CONFIG.json').write_text(json.dumps(effective_config,indent=2))
  history=open(run/'updates.jsonl','a' if owned_resume else 'x')
  replay.set_write_guard(lambda n:manager.runway(replay,n))
  last_checkpoint_time=time.monotonic()
+ if config.get('admission_protocol'):
+  inactive={k:tensor_sha(m) for k,m in system.models.items() if k!='actor'}|{'targets':tensor_sha(system.targets)}
+  if 'inactive_model_sha256' in counters and counters['inactive_model_sha256']!=inactive:raise ValueError('inactive model identity after resume')
+  counters['inactive_model_sha256']=inactive
  def checkpoint(validation=None,near_growth=None):
   nonlocal last_checkpoint_time
   counters['replay_rng']=replay_rng.getstate();prior.verify(learner.optimizers.values())
+  if config.get('admission_protocol'):
+   actual={k:tensor_sha(m) for k,m in system.models.items() if k!='actor'}|{'targets':tensor_sha(system.targets)}
+   if actual!=counters['inactive_model_sha256']:raise ValueError('inactive network modified')
   out=manager.publish(replay,lambda snap:payload(system,learner,samplers,effective_config,snap,counters),counters['updates'],validation,near_growth);last_checkpoint_time=time.monotonic();return out
- at_boundary=True;paused=False
+ at_boundary=True;paused=False;scientific_stop=False;monitor=None
+ if config.get('admission_protocol'):monitor=Monitor(config['early_stop'],counters.get('monitor'))
  atomic_json(run/'RUN_STATUS.json',dict(status='RUNNING',completed_updates=counters['updates']))
  try:
-  if manager.current()['latest'] is None:checkpoint()
+  if manager.current()['latest'] is None and monitor is None:checkpoint()
+  if monitor is not None and monitor.state['baseline'] is None:
+   from .admission import validation_run
+   manager.runway(replay,16*2**20)
+   baseline_validation,baseline_stop=validation_run(system,prior,pop,config,0,run,monitor);counters['monitor']=monitor.state
+   checkpoint(baseline_validation)
+   if baseline_stop['stop']:raise ValueError('initial evaluation is invalid')
   for update in range(counters['updates'],config['updates']):
    manager.runway(replay);at_boundary=False
    t=time.monotonic();stage=config['stage'];system.train();goals.stage=min(len(__import__('protein_joint_sac.crisp_v3.goals',fromlist=['CURRICULUM']).CURRICULUM)-1,update//config['curriculum_every'])
+   if monitor is not None:
+    goals.stage=0 if update<2500 else 1 if update<5000 else 2
+    for key,model in system.models.items():
+     if key!='actor':model.eval()
    with torch.autocast('cuda',dtype=torch.bfloat16):
-    if stage=='supervised':result=supervised_update(system,learner,prior,pop,sampler,geometry_sampler,goals,config)
+    if stage=='supervised':
+     if monitor is not None:
+      from .admission import initialization_update
+      result=initialization_update(system,learner,prior,pop,sampler,geometry_sampler,goals,config)
+     else:result=supervised_update(system,learner,prior,pop,sampler,geometry_sampler,goals,config)
     else:
      if update%config['collect_every']==0:
       task=goals.draw();policy=tensor_sha(system.models['actor'])+':'+tensor_sha(system.models['high_actor']);ep=collect(system,prior,task,limits,replay,policy,config['seed']+counters['episodes'],config['operational_events']);counters['episodes']+=1
@@ -157,7 +191,12 @@ def execute(config,root,grant,resume=None):
    if (update+1)%config.get('log_every',10)==0 or update+1==config['updates']:
     line=json.dumps(result)+'\n';manager.runway(replay,len(line.encode()));history.write(line);history.flush()
    validation=None
-   if config.get('validation_panel') and ((update+1)%config['validation_every']==0 or update+1 in config.get('validation_milestones',[])):
+   if monitor is not None and update+1 in config['validation_milestones']:
+    from .admission import validation_run
+    manager.runway(replay,16*2**20)
+    validation,decision=validation_run(system,prior,pop,config,update+1,run,monitor);counters['monitor']=monitor.state
+    scientific_stop=decision['stop'];counters['scientific_stop']=decision
+   elif monitor is None and config.get('validation_panel') and ((update+1)%config['validation_every']==0 or update+1 in config.get('validation_milestones',[])):
     panel=json.load(open(config['validation_panel']));scores=validate_actor(system,prior,panel,'cuda',config)
     groups={}
     for r in scores:
@@ -166,6 +205,7 @@ def execute(config,root,grant,resume=None):
      value=sum(sum(v)/len(v) for v in groups.values())/len(groups)
      validation=dict(metric='identity_weighted_validation_AA_NLL',value=value,mode='min',panel_sha256=effective_config['validation_panel_sha256'],identities=len(groups),decisions=sum(map(len,groups.values())))
    if validation or (update+1)%config['checkpoint_every']==0 or update+1==config['updates'] or time.monotonic()-last_checkpoint_time>=config.get('checkpoint_wall_seconds',900):checkpoint(validation)
+   if scientific_stop:break
  except (OSError,sqlite3.Error) as error:
   if not isinstance(error,StoragePause) and getattr(error,'errno',None) not in [errno.ENOSPC,errno.EDQUOT] and getattr(error,'sqlite_errorcode',None)!=sqlite3.SQLITE_FULL:raise
   paused=True
@@ -178,6 +218,10 @@ def execute(config,root,grant,resume=None):
    except (StoragePause,OSError) as failure:save_error=str(failure)
   latest=manager.current()['latest']
   atomic_json(run/'PAUSED_STORAGE.json',dict(status='PAUSED_STORAGE',reason=str(error),current_completed_updates=counters['updates'],current_update_incomplete=not at_boundary,exact_current_state_saved=bool(emergency),resume_checkpoint=latest['checkpoint'] if latest else None,resume_update=latest['update'] if latest else None,emergency_save_error=save_error))
+ except (RuntimeError,ValueError,FloatingPointError) as error:
+  latest=manager.current()['latest']
+  atomic_json(run/'RUN_STATUS.json',dict(status='STOPPED_ERROR',reason=str(error),completed_updates=counters['updates'],current_update_incomplete=not at_boundary,resume_checkpoint=latest['checkpoint'] if latest else None))
+  raise
  finally:history.close();replay.close();prior.verify(learner.optimizers.values())
- atomic_json(run/'RUN_STATUS.json',dict(status='PAUSED_STORAGE' if paused else 'COMPLETED',completed_updates=counters['updates']))
+ atomic_json(run/'RUN_STATUS.json',dict(status='PAUSED_STORAGE' if paused else 'STOPPED_SCIENTIFIC' if scientific_stop else 'COMPLETED',completed_updates=counters['updates']))
  return str(run)

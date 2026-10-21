@@ -1,0 +1,122 @@
+{
+  "schema": "crisp_v3_initialization_admission_v1",
+  "reference_sha256": "881457ff0396975c1b20dd0a8e2caac8521e65b7e1cec76a7bb531dbc437b412",
+  "reward_protocol": "crisp_v3_terminal_geometric_v1",
+  "profile": "research",
+  "stage": "supervised",
+  "updates": 10000,
+  "seed": 1703,
+  "effective_AA_batch": 64,
+  "microbatch": 1,
+  "complete_geometry_decisions": 32,
+  "goal_demonstrations": 8,
+  "optimizer": {
+    "lr": 5e-05,
+    "gamma": 0.995,
+    "alpha_aa": 0.01,
+    "alpha_geometry": 0.001,
+    "beta_aa": 0.02,
+    "beta_geometry": 0.01
+  },
+  "loss_weights": {
+    "aa": 1.0,
+    "geometry": 0.1,
+    "kl_aa": 0.02,
+    "kl_geometry": 0.01,
+    "goal": 0.05
+  },
+  "gradient_clip": 1.0,
+  "native_limits": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_20261021_v1/configs/NATIVE_CALIBRATION.json",
+  "collect_every": 100,
+  "critic_every": 1,
+  "actor_every": 2,
+  "target_tau": 0.005,
+  "operational_events": 4096,
+  "checkpoint_every": 250,
+  "curriculum_every": 2500,
+  "validation_panel": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_training_admission_20261021_v1/panels/FROZEN_VALIDATION_MANIFEST.json",
+  "validation_every": 100000000,
+  "BC_microbatch": 1,
+  "BC_weight": 0.1,
+  "geometry_BC_weight": 0.02,
+  "log_every": 1,
+  "validation_milestones": [
+    250,
+    1000,
+    2500,
+    5000,
+    10000
+  ],
+  "storage_policy": {
+    "min_headroom_bytes": 2147483648,
+    "warning_free_bytes": 4294967296,
+    "near_term_growth_bytes": 33554432,
+    "checkpoint_hint_bytes": 734003200,
+    "expected_live_replay_bytes": 0,
+    "expected_log_bytes": 67108864
+  },
+  "checkpoint_wall_seconds": 1800,
+  "admission_protocol": "crisp_actor_initialization_20261021_v1",
+  "matched_TRAIN_panel": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_training_admission_20261021_v1/panels/MATCHED_TRAIN_DIAGNOSTIC_MANIFEST.json",
+  "goal_stream_scale": 0.25,
+  "schedule": {
+    "warmup": 250,
+    "total_updates": 10000,
+    "floor_ratio": 0.1
+  },
+  "early_stop": {
+    "schema": "crisp_initialization_monitor_v1",
+    "patience": 2,
+    "AA_regression_nats": 0.05,
+    "gap_growth_nats": 0.1,
+    "goal_loss_regression": 0.1,
+    "component_regression_nats": 0.2,
+    "completion_floor": 0.9,
+    "futility_after": 5000
+  },
+  "stream_weights": {
+    "AA": {
+      "aa": 1.0,
+      "geometry": 0.05,
+      "kl_aa": 0.02,
+      "kl_geometry": 0.01,
+      "goal": 0.0
+    },
+    "complete_geometry": {
+      "aa": 0.0,
+      "geometry": 0.1,
+      "kl_aa": 0.0,
+      "kl_geometry": 0.01,
+      "goal": 0.0
+    },
+    "goal": {
+      "aa": 1.0,
+      "geometry": 0.1,
+      "kl_aa": 0.02,
+      "kl_geometry": 0.01,
+      "goal": 0.05
+    }
+  },
+  "initialization_scope": {
+    "updated": [
+      "actor"
+    ],
+    "frozen": [
+      "J1",
+      "q1",
+      "q2",
+      "high_actor",
+      "high_q1",
+      "high_q2",
+      "reach",
+      "all_target_networks"
+    ],
+    "system_capacity": 63389056,
+    "actor_parameters": 17438114
+  },
+  "frozen_artifact_hashes": {
+    "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_training_admission_20261021_v1/panels/FROZEN_VALIDATION_MANIFEST.json": "093ac146a0024072012babe4cb2227b15f1572b382acea75e3c470d7b6ce4276",
+    "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_training_admission_20261021_v1/panels/MATCHED_TRAIN_DIAGNOSTIC_MANIFEST.json": "b7947594eaf76b04044f2021690d0b088a43361f4221478fd75ed01a56782a2f",
+    "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_20261021_v1/configs/NATIVE_CALIBRATION.json": "d643dc34ea0f9dc2686e80140666058ffcd7e767f9c45dfff78b7a49c3d598da"
+  }
+}
