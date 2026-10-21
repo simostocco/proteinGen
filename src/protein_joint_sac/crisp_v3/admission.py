@@ -168,8 +168,8 @@ def actor_loss(system,b,aa,g,valid,weights,with_goal=False):
  l,mu,ls=system.models['actor'](b);idx=torch.arange(len(aa),device=aa.device);selected_mu=mu[idx,aa];selected_ls=ls[idx,aa];ce=F.cross_entropy(l,aa,reduction='none');ka,kg,_=kl(l,mu,ls,b['reference'],valid);count=valid.sum(-1);has=count>0
  nll=-log_prob(selected_mu,selected_ls,g,valid)/count.clamp_min(1)
  # Rows without valid experimental targets contribute ZERO geometry likelihood / geometry KL.
- geometry=nll[has].mean() if has.any() else (mu.sum()+ls.sum())*0
- geometry_kl=(kg/count.clamp_min(1))[has].mean() if has.any() else (mu.sum()+ls.sum())*0
+ geometry=(nll[has].mean() if has.any() else (mu.sum()+ls.sum())*0) if len(aa)==1 else nll.mean() # retain sealed scalar dtype/path; batch rows include unavailable zero targets
+ geometry_kl=((kg/count.clamp_min(1))[has].mean() if has.any() else (mu.sum()+ls.sum())*0) if len(aa)==1 else (kg/count.clamp_min(1)).mean()
  goal=deterministic_goal_loss(b,selected_mu,selected_ls,valid) if with_goal else mu.sum()*0
  values=dict(aa=ce.mean(),geometry=geometry,kl_aa=ka.mean(),kl_geometry=geometry_kl,goal=goal)
  total=sum(weights[k]*values[k] for k in values)
@@ -298,7 +298,7 @@ def validation_run(system,prior,pop,config,update,run,monitor):
    atomic_json(cache,ref)
  gen+=ref
  with torch.autocast('cuda',dtype=torch.bfloat16):val['objective_conflict']=objective_conflict(system,prior,pop,tp,device,config)
- baseline_file=Path(run)/'validation_00000.json'
+ baseline_file=Path(config.get('execution_baseline_validation',Path(run)/'validation_00000.json'))
  if baseline_file.exists():val['paired_uncertainty']=paired_intervals(val,json.load(open(baseline_file))['VALIDATION'])
  stop=monitor.observe(update,train,val,gen)
  # Compact per-identity/cell metrics retain paired inference without large prefix tensors.

@@ -99,6 +99,8 @@ def execute(config,root,grant,resume=None):
  manager=RollingRecovery(run,policy,create=not owned_resume)
  manager._recover_pending();manager.collect_superseded()
  random.seed(config['seed']);__import__('numpy').random.seed(config['seed']);torch.manual_seed(config['seed']);torch.cuda.manual_seed_all(config['seed']);torch.use_deterministic_algorithms(True)
+ from .execution import enable_loader
+ enable_loader(config)
  prior=FrozenPrior('cuda');system=System(config['profile'],config.get('shapes')).cuda();learner=Learner(system,**config['optimizer']);pop=Population();sampler=CoverageSampler(pop,config['seed']);geometry_sampler=CoverageSampler(pop,config['seed']+1);goals=Goals(pop,config['seed']+2,json.load(open(config['native_limits'])));samplers=dict(AA=sampler,geometry=geometry_sampler,goals=goals);replay=Replay(run/'replay.sqlite');counters={'updates':0,'episodes':0};limits=json.load(open(config['native_limits']));replay_rng=random.Random(config['seed']+3)
  if config.get('admission_protocol'):
   from .admission import configure_initialization,InitGoals,Monitor,verify_panel
@@ -124,6 +126,10 @@ def execute(config,root,grant,resume=None):
  if resume:
   state=restore(resume,system,learner,samplers,effective_config);counters=state['counters'];replay_rng.setstate(counters['replay_rng']);replay.close()
   assert file_sha(state['replay_snapshot']['path'])==state['replay_snapshot']['sha256'];manager.policy.require(run,Path(state['replay_snapshot']['path']).stat().st_size+2**20);source=sqlite3.connect(state['replay_snapshot']['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
+ if config.get('execution_parent') and not resume:
+  from .execution import migrate_execution
+  counters=migrate_execution(config,system,learner,samplers,effective_config,replay,run)
+  replay_rng.setstate(counters['replay_rng']);replay.close();replay=Replay(run/'replay.sqlite')
  if config.get('admission_protocol') and counters.get('scientific_stop',{}).get('stop'):raise PermissionError('Scientific stop requires review and an explicitly new lineage; automatic resume is blocked')
  if owned_resume:
   if json.load(open(run/'CONFIG.json'))!=effective_config:raise ValueError('same-run resume configuration mismatch')
@@ -142,11 +148,11 @@ def execute(config,root,grant,resume=None):
    actual={k:tensor_sha(m) for k,m in system.models.items() if k!='actor'}|{'targets':tensor_sha(system.targets)}
    if actual!=counters['inactive_model_sha256']:raise ValueError('inactive network modified')
   out=manager.publish(replay,lambda snap:payload(system,learner,samplers,effective_config,snap,counters),counters['updates'],validation,near_growth);last_checkpoint_time=time.monotonic();return out
- at_boundary=True;paused=False;scientific_stop=False;monitor=None
+ at_boundary=True;paused=False;scientific_stop=False;monitor=None;operator_paused=False
  if config.get('admission_protocol'):monitor=Monitor(config['early_stop'],counters.get('monitor'))
  atomic_json(run/'RUN_STATUS.json',dict(status='RUNNING',completed_updates=counters['updates']))
  try:
-  if manager.current()['latest'] is None and monitor is None:checkpoint()
+  if manager.current()['latest'] is None and (monitor is None or config.get('execution_parent')):checkpoint(config.get('execution_parent',{}).get('validation'))
   if monitor is not None and monitor.state['baseline'] is None:
    from .admission import validation_run
    manager.runway(replay,16*2**20)
@@ -154,6 +160,17 @@ def execute(config,root,grant,resume=None):
    checkpoint(baseline_validation)
    if baseline_stop['stop']:raise ValueError('initial evaluation is invalid')
   for update in range(counters['updates'],config['updates']):
+   request=run/'PAUSE_REQUEST.json'
+   if request.exists():
+    ticket=json.load(open(request))
+    if ticket.get('schema')!='crisp_operator_pause_v1' or ticket.get('config_sha256')!=digest(effective_config):raise ValueError('invalid operator pause request')
+    latest=manager.current()['latest']
+    if not latest or latest['update']!=counters['updates']:checkpoint()
+    manager._bundle_valid(manager.current()['latest']);operator_paused=True
+    atomic_json(run/'PAUSE_APPLIED.json',dict(update=counters['updates'],checkpoint=manager.current()['latest']['checkpoint'],request=ticket))
+    request.rename(run/('APPLIED_PAUSE_REQUEST_'+str(counters['updates'])+'_'+str(time.time_ns())+'.json'))
+    from .recovery import fsync_dir
+    fsync_dir(run);break
    manager.runway(replay);at_boundary=False
    t=time.monotonic();stage=config['stage'];system.train();goals.stage=min(len(__import__('protein_joint_sac.crisp_v3.goals',fromlist=['CURRICULUM']).CURRICULUM)-1,update//config['curriculum_every'])
    if monitor is not None:
@@ -223,5 +240,5 @@ def execute(config,root,grant,resume=None):
   atomic_json(run/'RUN_STATUS.json',dict(status='STOPPED_ERROR',reason=str(error),completed_updates=counters['updates'],current_update_incomplete=not at_boundary,resume_checkpoint=latest['checkpoint'] if latest else None))
   raise
  finally:history.close();replay.close();prior.verify(learner.optimizers.values())
- atomic_json(run/'RUN_STATUS.json',dict(status='PAUSED_STORAGE' if paused else 'STOPPED_SCIENTIFIC' if scientific_stop else 'COMPLETED',completed_updates=counters['updates']))
+ atomic_json(run/'RUN_STATUS.json',dict(status='PAUSED_STORAGE' if paused else 'PAUSED_OPERATOR' if operator_paused else 'STOPPED_SCIENTIFIC' if scientific_stop else 'COMPLETED',completed_updates=counters['updates']))
  return str(run)
