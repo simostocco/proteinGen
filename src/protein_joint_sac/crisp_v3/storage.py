@@ -4,28 +4,37 @@ from pathlib import Path
 import numpy as np
 import torch
 from .prior import SHA
+from .recovery import StoragePolicy,atomic_checkpoint
 
 def canonical(x):return json.dumps(x,sort_keys=True,separators=(',',':'),allow_nan=False)
 def digest(x):return hashlib.sha256(canonical(x).encode()).hexdigest()
 class Replay:
  def __init__(self,path):
-  self.path=Path(path);self.path.parent.mkdir(parents=True,exist_ok=True);self.db=sqlite3.connect(self.path);self.db.execute('PRAGMA journal_mode=WAL');self.db.execute('PRAGMA synchronous=FULL')
-  self.db.executescript("""CREATE TABLE IF NOT EXISTS episodes(id TEXT PRIMARY KEY, data TEXT); CREATE TABLE IF NOT EXISTS events(episode TEXT,n INTEGER,data TEXT,sha TEXT, PRIMARY KEY(episode,n)); CREATE TABLE IF NOT EXISTS transitions(id TEXT PRIMARY KEY,data TEXT); CREATE TABLE IF NOT EXISTS policies(id TEXT PRIMARY KEY,slot INTEGER UNIQUE); CREATE TABLE IF NOT EXISTS outcomes(episode TEXT PRIMARY KEY,data TEXT); CREATE INDEX IF NOT EXISTS transition_level_source ON transitions(json_extract(data,'$.source'),json_extract(data,'$.action.level'),id);""")
+  self.write_guard=None;self.path=Path(path);self.path.parent.mkdir(parents=True,exist_ok=True);self.db=sqlite3.connect(self.path);self.db.execute('PRAGMA journal_mode=WAL');self.db.execute('PRAGMA synchronous=FULL')
+  self.db.executescript("""CREATE TABLE IF NOT EXISTS storage_revision(id INTEGER PRIMARY KEY,revision INTEGER); INSERT OR IGNORE INTO storage_revision VALUES(1,0); CREATE TABLE IF NOT EXISTS episodes(id TEXT PRIMARY KEY, data TEXT); CREATE TABLE IF NOT EXISTS events(episode TEXT,n INTEGER,data TEXT,sha TEXT, PRIMARY KEY(episode,n)); CREATE TABLE IF NOT EXISTS transitions(id TEXT PRIMARY KEY,data TEXT); CREATE TABLE IF NOT EXISTS policies(id TEXT PRIMARY KEY,slot INTEGER UNIQUE); CREATE TABLE IF NOT EXISTS outcomes(episode TEXT PRIMARY KEY,data TEXT); CREATE INDEX IF NOT EXISTS transition_level_source ON transitions(json_extract(data,'$.source'),json_extract(data,'$.action.level'),id);""")
+ def revision(self):return self.db.execute('SELECT revision FROM storage_revision WHERE id=1').fetchone()[0]
+ def set_write_guard(self,guard):self.write_guard=guard
+ def _guard(self,n):
+  if self.write_guard:self.write_guard(max(64*1024,n*4+64*1024))
+ def _touch(self):self.db.execute('UPDATE storage_revision SET revision=revision+1 WHERE id=1')
  def episode(self,identity,initial,goal,policy,source):
   if source not in ['POLICY_GENERATED','DEMONSTRATION','COUNTERFACTUAL','SYNTHETIC_ENGINEERING']:raise ValueError('source')
   data=dict(initial=initial,goal=goal,policy=policy,source=source,j1=SHA);data['identity_sha256']=digest(data)
-  with self.db:self.db.execute('INSERT INTO episodes VALUES (?,?)',(identity,canonical(data)))
+  self._guard(len(canonical(data)))
+  with self.db:self.db.execute('INSERT INTO episodes VALUES (?,?)',(identity,canonical(data)));self._touch()
  def policy_slot(self,identity):
   row=self.db.execute('SELECT slot FROM policies WHERE id=?',(identity,)).fetchone()
   if row:return row[0]
   slot=self.db.execute('SELECT COUNT(*) FROM policies').fetchone()[0]
   if slot>=256:raise RuntimeError('policy vocabulary full; explicit schema migration required')
-  with self.db:self.db.execute('INSERT INTO policies VALUES (?,?)',(identity,slot))
+  self._guard(len(identity))
+  with self.db:self.db.execute('INSERT INTO policies VALUES (?,?)',(identity,slot));self._touch()
   return slot
  def append(self,episode,event):
   if not self.db.execute('SELECT 1 FROM episodes WHERE id=?',(episode,)).fetchone():raise KeyError(episode)
   prev=self.db.execute('SELECT n,sha FROM events WHERE episode=? ORDER BY n DESC LIMIT 1',(episode,)).fetchone();n=prev[0]+1 if prev else 0;event=copy.deepcopy(event);event['previous_sha']=prev[1] if prev else 'GENESIS';h=digest(event)
-  with self.db:self.db.execute('INSERT INTO events VALUES (?,?,?,?)',(episode,n,canonical(event),h))
+  self._guard(len(canonical(event)))
+  with self.db:self.db.execute('INSERT INTO events VALUES (?,?,?,?)',(episode,n,canonical(event),h));self._touch()
   return n,h
  def read(self,episode,until=None):
   row=self.db.execute('SELECT data FROM episodes WHERE id=?',(episode,)).fetchone()
@@ -50,10 +59,12 @@ class Replay:
   if ep['source']!=record['source'] or ep['policy']!=record['policy']:raise ValueError('replay ownership')
   if record['source']=='DEMONSTRATION':raise ValueError('native demonstrations use BC, not actor RL replay')
   if not -1<=record['state_event']<=record['next_event']<self.db.execute('SELECT COUNT(*) FROM events WHERE episode=?',(record['episode'],)).fetchone()[0]:raise ValueError('transition references')
-  with self.db:self.db.execute('INSERT INTO transitions VALUES (?,?)',(record['id'],canonical(record)))
+  self._guard(len(canonical(record)))
+  with self.db:self.db.execute('INSERT INTO transitions VALUES (?,?)',(record['id'],canonical(record)));self._touch()
  def finish_episode(self,episode,outcome):
   if outcome['terminated'] and outcome['censored']:raise ValueError('inconsistent end status')
-  with self.db:self.db.execute('INSERT INTO outcomes VALUES (?,?)',(episode,canonical(outcome)))
+  self._guard(len(canonical(outcome)))
+  with self.db:self.db.execute('INSERT INTO outcomes VALUES (?,?)',(episode,canonical(outcome)));self._touch()
  def sample(self,n,rng,source='POLICY_GENERATED',level=None):
   where="json_extract(data,'$.source')=?";args=[source]
   if level is not None:where+=" AND json_extract(data,'$.action.level')=?";args.append(level)
@@ -71,16 +82,10 @@ def set_rng(s):
 
 def payload(system,learner,samplers,config,replay_snapshot,counters):
  return dict(schema='crisp_v3_full_v1',j1_sha256=SHA,profile=system.profile,system=system.state_dict(),optimizers={k:o.state_dict() for k,o in learner.optimizers.items()},schedulers={k:o.state_dict() for k,o in learner.schedulers.items()},steps=learner.steps,samplers={k:v.state_dict() for k,v in samplers.items()},config=config,config_sha256=digest(config),replay_snapshot=replay_snapshot,counters=counters,rng=rng_state())
-def atomic_save(path,state,estimated_bytes):
- path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
- if path.exists():raise FileExistsError('checkpoint publication is immutable')
- if shutil.disk_usage(path.parent).free<10*2**30+estimated_bytes+64*2**20:raise OSError('10 GiB reserve plus atomic staging gate')
- tmp=path.with_suffix(path.suffix+'.part')
- try:
-  with open(tmp,'wb') as f:torch.save(state,f);f.flush();os.fsync(f.fileno())
-  os.replace(tmp,path);fd=os.open(path.parent,os.O_DIRECTORY);os.fsync(fd);os.close(fd)
- finally:
-  if tmp.exists():tmp.unlink() # Only this task's failed transient publication.
+def atomic_save(path,state,estimated_bytes=None):
+ # Compatibility API for small engineering callers; actual serialization is
+ # measured rather than trusting the historical estimate argument.
+ return atomic_checkpoint(path,state,StoragePolicy())
 
 def restore(path,system,learner,samplers,config):
  s=torch.load(path,map_location='cpu',weights_only=False)

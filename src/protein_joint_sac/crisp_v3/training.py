@@ -9,7 +9,8 @@ from .density import sample
 from .networks import System,prepare
 from .prior import FrozenPrior,SHA,file_sha,tensor_sha
 from .optimization import Learner,supervised,finish
-from .storage import Replay,digest,payload,atomic_save,restore
+from .storage import Replay,digest,payload,restore
+from .recovery import StoragePolicy,StoragePause,RollingRecovery,atomic_json
 from .data import Population,CoverageSampler
 from .goals import Goals
 from .pipeline import native_goal_batch,observation,collect,replay_example
@@ -77,11 +78,20 @@ def execute(config,root,grant,resume=None):
  authorization(grant,config);root=Path(root).resolve();D=Path('/mnt/d/Simone/proteinGen_data').resolve()
  if not root.is_relative_to(D):raise ValueError('all training artifacts must reside on D:')
  if config['stage']!='supervised' and not resume and not config.get('initial_checkpoint'):raise ValueError('later stages require an explicit full-state initialization checkpoint')
- root.mkdir(parents=True,exist_ok=True);run=root/('run_'+uuid.uuid4().hex);run.mkdir();cfgsha=seal_config(config)
- # Fail before allocation if two complete checkpoints cannot be staged safely.
- with torch.device('meta'):prototype=System(config['profile'],config.get('shapes'));counts=prototype.counts()
- estimate=counts['total_trainable']*12+sum(counts['target_nontrainable'].values())*4+64*2**20
- if shutil.disk_usage(root).free<10*2**30+2*estimate:raise OSError('insufficient two-generation atomic recovery headroom; do not lower model capacity silently')
+ root.mkdir(parents=True,exist_ok=True)
+ policy=StoragePolicy(**config.get('storage_policy',{}))
+ # Existing latest recovery resumes in its OWN run, avoiding abandoned live
+ # replay copies. Historical/pre-v2 paths always fork and are never adopted.
+ owned_resume=False
+ if resume:
+  candidate=Path(resume).absolute().parent.parent
+  if (candidate/'STORAGE_OWNER.json').exists() and (candidate/'RECOVERY_INDEX.json').exists():
+   index=json.load(open(candidate/'RECOVERY_INDEX.json'))
+   if index['latest'] and index['latest']['checkpoint']==str(Path(resume).absolute()):run=candidate;owned_resume=True
+ if not owned_resume:
+  policy.startup(root);run=root/('run_'+uuid.uuid4().hex);run.mkdir()
+ manager=RollingRecovery(run,policy,create=not owned_resume)
+ manager._recover_pending();manager.collect_superseded()
  torch.manual_seed(config['seed']);torch.cuda.manual_seed_all(config['seed']);torch.use_deterministic_algorithms(True)
  prior=FrozenPrior('cuda');system=System(config['profile'],config.get('shapes')).cuda();learner=Learner(system,**config['optimizer']);pop=Population();sampler=CoverageSampler(pop,config['seed']);geometry_sampler=CoverageSampler(pop,config['seed']+1);goals=Goals(pop,config['seed']+2,json.load(open(config['native_limits'])));samplers=dict(AA=sampler,geometry=geometry_sampler,goals=goals);replay=Replay(run/'replay.sqlite');counters={'updates':0,'episodes':0};limits=json.load(open(config['native_limits']));replay_rng=random.Random(config['seed']+3)
  data_manifest=pop.membership();effective_config={**config,'data_manifest':data_manifest,'data_input_hashes':pop.input_hashes(),'native_limits_sha256':file_sha(config['native_limits']),'validation_panel_sha256':file_sha(config['validation_panel']) if config.get('validation_panel') else None,'source_commit':__import__('subprocess').check_output(['git','rev-parse','HEAD'],cwd=Path(__file__).resolve().parents[3],text=True).strip()}
@@ -103,9 +113,19 @@ def execute(config,root,grant,resume=None):
  if resume:
   state=restore(resume,system,learner,samplers,effective_config);counters=state['counters'];replay_rng.setstate(counters['replay_rng']);replay.close();import sqlite3
   assert file_sha(state['replay_snapshot']['path'])==state['replay_snapshot']['sha256'];source=sqlite3.connect(state['replay_snapshot']['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
- (run/'CONFIG.json').write_text(json.dumps(effective_config,indent=2));history=open(run/'updates.jsonl','x');previous=None
+ if owned_resume:
+  if json.load(open(run/'CONFIG.json'))!=effective_config:raise ValueError('same-run resume configuration mismatch')
+ else:(run/'CONFIG.json').write_text(json.dumps(effective_config,indent=2))
+ history=open(run/'updates.jsonl','a' if owned_resume else 'x')
+ replay.set_write_guard(lambda n:manager.runway(replay,n))
+ def checkpoint(validation=None,near_growth=None):
+  counters['replay_rng']=replay_rng.getstate();prior.verify(learner.optimizers.values())
+  return manager.publish(replay,lambda snap:payload(system,learner,samplers,effective_config,snap,counters),counters['updates'],validation,near_growth)
+ at_boundary=True
  try:
+  if manager.current()['latest'] is None:checkpoint()
   for update in range(counters['updates'],config['updates']):
+   manager.runway(replay);at_boundary=False
    t=time.monotonic();stage=config['stage'];system.train();goals.stage=min(len(__import__('protein_joint_sac.crisp_v3.goals',fromlist=['CURRICULUM']).CURRICULUM)-1,update//config['curriculum_every'])
    with torch.autocast('cuda',dtype=torch.bfloat16):
     if stage=='supervised':result=supervised_update(system,learner,prior,pop,sampler,geometry_sampler,goals,config)
@@ -129,18 +149,28 @@ def execute(config,root,grant,resume=None):
        if update%config['critic_every']==0:result['critics']=learner.critic(b,nb,aa,g,mask,mask,torch.tensor([r['reward']],device='cuda'),torch.tensor([r['duration']],device='cuda'),torch.tensor([r['terminated']],device='cuda'),high,worlds[1].action_mask(for_bootstrap=True)[None].cuda() if high and not worlds[1].terminated else torch.ones(1,9,device='cuda',dtype=torch.bool))
        if update%config['actor_every']==0:result['actor']=learner.high_actor(b,worlds[0].action_mask()[None].cuda()) if high else learner.low_actor(b,mask,lambda:bc_regularizer(system,prior,pop,sampler,geometry_sampler,config))
        system.polyak(config['target_tau'])
-   counters['updates']=update+1;counters['replay_rng']=replay_rng.getstate();result.update(update=update+1,seconds=time.monotonic()-t);history.write(json.dumps(result)+'\n');history.flush()
-   if config.get('validation_panel') and (update+1)%config['validation_every']==0:
-    panel=json.load(open(config['validation_panel']));scores=validate_actor(system,prior,panel,'cuda',config);(run/f'validation_{update+1:08d}.json').write_text(json.dumps(scores))
-   if (update+1)%config['checkpoint_every']==0 or update+1==config['updates']:
-    prior.verify(learner.optimizers.values());snapshot=run/f'replay_{update+1:08d}.sqlite';replay.snapshot(snapshot);snap=dict(path=str(snapshot),sha256=file_sha(snapshot));path=run/f'checkpoint_{update+1:08d}.pt';atomic_save(path,payload(system,learner,samplers,effective_config,snap,counters),estimate)
-    manifest=dict(checkpoint=str(path),sha256=file_sha(path),replay=snap,config_sha256=digest(effective_config),source_commit=effective_config['source_commit'],update=update+1)
-    pointer=run/'LATEST_RECOVERY.json.part'
-    with open(pointer,'w') as f:json.dump(manifest,f,indent=2);f.flush();__import__('os').fsync(f.fileno())
-    pointer.replace(run/'LATEST_RECOVERY.json')
-    # Bounded retention only for checkpoints created by this run, retain latest plus selected outside this loop.
-    if previous and not config['retain_all_checkpoints'] and not previous[0].with_suffix('.keep').exists():
-     for p in previous:p.unlink()
-    previous=(path,snapshot)
+   counters['updates']=update+1;counters['replay_rng']=replay_rng.getstate();at_boundary=True
+   result.update(update=update+1,seconds=time.monotonic()-t)
+   if (update+1)%config.get('log_every',10)==0 or update+1==config['updates']:
+    line=json.dumps(result)+'\n';manager.runway(replay,len(line.encode()));history.write(line);history.flush()
+   validation=None
+   if config.get('validation_panel') and ((update+1)%config['validation_every']==0 or update+1 in config.get('validation_milestones',[])):
+    panel=json.load(open(config['validation_panel']));scores=validate_actor(system,prior,panel,'cuda',config)
+    groups={}
+    for r in scores:
+     if r['split']=='VALIDATION':groups.setdefault(r['identity'],[]).append(r['aa'])
+    if groups:
+     value=sum(sum(v)/len(v) for v in groups.values())/len(groups)
+     validation=dict(metric='identity_weighted_validation_AA_NLL',value=value,mode='min',panel_sha256=effective_config['validation_panel_sha256'],identities=len(groups),decisions=sum(map(len,groups.values())))
+   if validation or (update+1)%config['checkpoint_every']==0 or update+1==config['updates']:checkpoint(validation)
+ except StoragePause as error:
+  # Normal forecast pressure is detected BEFORE an update; save the coherent
+  # current state with no further growth allowance, then return PAUSED.
+  emergency=None;save_error=None
+  if at_boundary:
+   try:emergency=checkpoint(near_growth=0)
+   except (StoragePause,OSError) as failure:save_error=str(failure)
+  latest=manager.current()['latest']
+  atomic_json(run/'PAUSED_STORAGE.json',dict(status='PAUSED_STORAGE',reason=str(error),current_completed_updates=counters['updates'],current_update_incomplete=not at_boundary,exact_current_state_saved=bool(emergency),resume_checkpoint=latest['checkpoint'] if latest else None,resume_update=latest['update'] if latest else None,emergency_save_error=save_error))
  finally:history.close();replay.close();prior.verify(learner.optimizers.values())
  return str(run)
