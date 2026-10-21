@@ -1,5 +1,5 @@
 """Future training orchestration. All execution requires a separate scoped authorization."""
-import copy,json,math,random,shutil,time,uuid
+import copy,json,math,random,shutil,time,uuid,errno,sqlite3,warnings
 from pathlib import Path
 import torch
 from torch.nn import functional as F
@@ -118,9 +118,11 @@ def execute(config,root,grant,resume=None):
  else:(run/'CONFIG.json').write_text(json.dumps(effective_config,indent=2))
  history=open(run/'updates.jsonl','a' if owned_resume else 'x')
  replay.set_write_guard(lambda n:manager.runway(replay,n))
+ last_checkpoint_time=time.monotonic()
  def checkpoint(validation=None,near_growth=None):
+  nonlocal last_checkpoint_time
   counters['replay_rng']=replay_rng.getstate();prior.verify(learner.optimizers.values())
-  return manager.publish(replay,lambda snap:payload(system,learner,samplers,effective_config,snap,counters),counters['updates'],validation,near_growth)
+  out=manager.publish(replay,lambda snap:payload(system,learner,samplers,effective_config,snap,counters),counters['updates'],validation,near_growth);last_checkpoint_time=time.monotonic();return out
  at_boundary=True
  try:
   if manager.current()['latest'] is None:checkpoint()
@@ -162,8 +164,10 @@ def execute(config,root,grant,resume=None):
     if groups:
      value=sum(sum(v)/len(v) for v in groups.values())/len(groups)
      validation=dict(metric='identity_weighted_validation_AA_NLL',value=value,mode='min',panel_sha256=effective_config['validation_panel_sha256'],identities=len(groups),decisions=sum(map(len,groups.values())))
-   if validation or (update+1)%config['checkpoint_every']==0 or update+1==config['updates']:checkpoint(validation)
- except StoragePause as error:
+   if validation or (update+1)%config['checkpoint_every']==0 or update+1==config['updates'] or time.monotonic()-last_checkpoint_time>=config.get('checkpoint_wall_seconds',900):checkpoint(validation)
+ except (OSError,sqlite3.Error) as error:
+  if not isinstance(error,StoragePause) and getattr(error,'errno',None) not in [errno.ENOSPC,errno.EDQUOT] and getattr(error,'sqlite_errorcode',None)!=sqlite3.SQLITE_FULL:raise
+  warnings.warn('Training paused for storage; inspect PAUSED_STORAGE.json before resuming',RuntimeWarning)
   # Normal forecast pressure is detected BEFORE an update; save the coherent
   # current state with no further growth allowance, then return PAUSED.
   emergency=None;save_error=None

@@ -5,7 +5,7 @@ outside a freshly registered run can become an automatic retirement candidate.
 """
 from dataclasses import dataclass,asdict
 from pathlib import Path
-import hashlib,json,math,os,shutil,sqlite3,uuid,warnings
+import hashlib,json,math,os,shutil,sqlite3,uuid,warnings,errno
 import numpy as np
 import torch
 GIB=2**30;MIB=2**20
@@ -98,6 +98,9 @@ def atomic_checkpoint(path,state,policy=None,near_growth=None):
   if actual!=n:raise ValueError('serialization count changed between passes')
   record=dict(path=str(path),sha256=sha(tmp),bytes=actual,state_digest=expected)
   os.replace(tmp,path);fsync_dir(path.parent);return record
+ except OSError as error:
+  if error.errno in [errno.ENOSPC,errno.EDQUOT]:raise StoragePause('capacity changed during checkpoint write; previous recovery remains authoritative') from error
+  raise
  finally:
   if tmp.exists():tmp.unlink() # This invocation's own incomplete transient only.
 

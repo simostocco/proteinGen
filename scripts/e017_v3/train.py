@@ -9,4 +9,5 @@ with torch.device('meta'):m=System(c['profile'],c.get('shapes'))
 print(json.dumps(dict(config_sha256=h,counts=m.counts(),execution=a.execute),indent=2),flush=True)
 if a.execute:
  if not a.output:p.error('--output required')
- print(execute(c,a.output,a.authorization_file,a.resume))
+ run=execute(c,a.output,a.authorization_file,a.resume);print(run)
+ if (Path(run)/'PAUSED_STORAGE.json').exists():p.exit(75,'Paused safely for storage; no automatic continuation.\n')
