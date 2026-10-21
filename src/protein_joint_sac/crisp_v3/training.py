@@ -108,10 +108,10 @@ def execute(config,root,grant,resume=None):
   for k,v in samplers.items():v.load_state_dict(parent['samplers'][k])
   counters['episodes']=parent['counters'].get('episodes',0)
   if parent['replay_snapshot']:
-   snap=parent['replay_snapshot'];assert file_sha(snap['path'])==snap['sha256'];replay.close();import sqlite3
+   snap=parent['replay_snapshot'];assert file_sha(snap['path'])==snap['sha256'];replay.close()
    source=sqlite3.connect(snap['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
  if resume:
-  state=restore(resume,system,learner,samplers,effective_config);counters=state['counters'];replay_rng.setstate(counters['replay_rng']);replay.close();import sqlite3
+  state=restore(resume,system,learner,samplers,effective_config);counters=state['counters'];replay_rng.setstate(counters['replay_rng']);replay.close()
   assert file_sha(state['replay_snapshot']['path'])==state['replay_snapshot']['sha256'];source=sqlite3.connect(state['replay_snapshot']['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
  if owned_resume:
   if json.load(open(run/'CONFIG.json'))!=effective_config:raise ValueError('same-run resume configuration mismatch')
@@ -123,7 +123,8 @@ def execute(config,root,grant,resume=None):
   nonlocal last_checkpoint_time
   counters['replay_rng']=replay_rng.getstate();prior.verify(learner.optimizers.values())
   out=manager.publish(replay,lambda snap:payload(system,learner,samplers,effective_config,snap,counters),counters['updates'],validation,near_growth);last_checkpoint_time=time.monotonic();return out
- at_boundary=True
+ at_boundary=True;paused=False
+ atomic_json(run/'RUN_STATUS.json',dict(status='RUNNING',completed_updates=counters['updates']))
  try:
   if manager.current()['latest'] is None:checkpoint()
   for update in range(counters['updates'],config['updates']):
@@ -167,6 +168,7 @@ def execute(config,root,grant,resume=None):
    if validation or (update+1)%config['checkpoint_every']==0 or update+1==config['updates'] or time.monotonic()-last_checkpoint_time>=config.get('checkpoint_wall_seconds',900):checkpoint(validation)
  except (OSError,sqlite3.Error) as error:
   if not isinstance(error,StoragePause) and getattr(error,'errno',None) not in [errno.ENOSPC,errno.EDQUOT] and getattr(error,'sqlite_errorcode',None)!=sqlite3.SQLITE_FULL:raise
+  paused=True
   warnings.warn('Training paused for storage; inspect PAUSED_STORAGE.json before resuming',RuntimeWarning)
   # Normal forecast pressure is detected BEFORE an update; save the coherent
   # current state with no further growth allowance, then return PAUSED.
@@ -177,4 +179,5 @@ def execute(config,root,grant,resume=None):
   latest=manager.current()['latest']
   atomic_json(run/'PAUSED_STORAGE.json',dict(status='PAUSED_STORAGE',reason=str(error),current_completed_updates=counters['updates'],current_update_incomplete=not at_boundary,exact_current_state_saved=bool(emergency),resume_checkpoint=latest['checkpoint'] if latest else None,resume_update=latest['update'] if latest else None,emergency_save_error=save_error))
  finally:history.close();replay.close();prior.verify(learner.optimizers.values())
+ atomic_json(run/'RUN_STATUS.json',dict(status='PAUSED_STORAGE' if paused else 'COMPLETED',completed_updates=counters['updates']))
  return str(run)
