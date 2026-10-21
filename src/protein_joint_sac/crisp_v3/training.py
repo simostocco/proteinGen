@@ -109,10 +109,10 @@ def execute(config,root,grant,resume=None):
   counters['episodes']=parent['counters'].get('episodes',0)
   if parent['replay_snapshot']:
    snap=parent['replay_snapshot'];assert file_sha(snap['path'])==snap['sha256'];replay.close()
-   source=sqlite3.connect(snap['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
+   manager.policy.require(run,Path(snap['path']).stat().st_size+2**20);source=sqlite3.connect(snap['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
  if resume:
   state=restore(resume,system,learner,samplers,effective_config);counters=state['counters'];replay_rng.setstate(counters['replay_rng']);replay.close()
-  assert file_sha(state['replay_snapshot']['path'])==state['replay_snapshot']['sha256'];source=sqlite3.connect(state['replay_snapshot']['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
+  assert file_sha(state['replay_snapshot']['path'])==state['replay_snapshot']['sha256'];manager.policy.require(run,Path(state['replay_snapshot']['path']).stat().st_size+2**20);source=sqlite3.connect(state['replay_snapshot']['path']);dest=sqlite3.connect(run/'replay.sqlite');source.backup(dest);source.close();dest.close();replay=Replay(run/'replay.sqlite')
  if owned_resume:
   if json.load(open(run/'CONFIG.json'))!=effective_config:raise ValueError('same-run resume configuration mismatch')
  else:(run/'CONFIG.json').write_text(json.dumps(effective_config,indent=2))
