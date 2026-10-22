@@ -1,0 +1,15 @@
+# V4 prospective protocol
+
+64TRAIN/32VALIDATION qualified complete identities, unique protected groups, length64-96,24/32-residue native prefixes plus8generated actions. TRAIN andVALIDATION manifest membership is frozen before prediction. No TEST outcomes. Native witness validity and internal-coordinate roundtrip required; exclusions persisted.
+
+A=frozen V3actor; B=V3one-step native-prefix latent-mean endpoint guide; C=sampled8step generated-prefix terminal guide; D=classical per-instance internal-coordinate optimization. B/C share initialization, task order, noise streams,500update ceiling, batch2, nativeBC, local geometric regularizer, geometryKL,AdamW and schedule. B/C differ in generated-prefix exposure and sampled-vs-mean terminal guidance as well as temporal credit: do not attribute gains exclusively to one factor.
+
+Goal loss is bounded position d²/(8²+d²) plus.5sin²(orientation_error/2), preserving the V3guide formula. Local validity regularizer penalizes adjacent-distance violations at original native bounds in units.25A and nonlocal overlaps below2A; nativeBC and conditional geometryKL preserve prior. Weights1/.1/.1/.01 for goal/local/BC/KL respectively. TRAIN-only measured gradients: guide3.14-8.42;BC.14-3.01;KL.017-.158;local0in initial four controls. No validation-based tuning. AA sequence decisions fixednative; AAoutput layer frozen;17,429,134actorparameters trained, same17,438,114actorarchitecture. J1 and all other networks unchanged. J1coordinate input derivatives explicitly enabled; no detached reference in V4.
+
+Evaluations0/100/250/500:32VALIDATIONidentities x2fixed noise draws; matchedTRAIN8identities x2. Selection lowest mean position among validity>=A-.05. Prospective success:>=20%position gain vsB, pairedidentityCI supports gain, joint hitrate improves, validityloss<=.05. Nonfinite/OOM unsupported action fails immediately; completion<.95 orgeometryKL>1at two evals stops. No extension.
+
+IK:8stepprimary and64stepupper-bound solve per heldout attempt, same target/local validity, frozenAaction initialization and weak latent displacement prior; no native intermediate coordinates in objective. Its point-action policy has no finite KL-to-J1. Budgets/CPUtime reported separately; not falsely equated with amortized training.
+
+Additional diagnostic: frozenAgenerates last4prefix coordinates once and allarms receive that identical prefix with originalnativegoal. Feasibility may change; necessary contour bound and IKresults reported. Goal-only interventions alter only goals with fixed prefixes/AAs using native-action-derived torsion witness perturbations; explicitly kinematic, not new experimentally validated conformations. No external fold predictor.
+
+All checkpoints contain actor,moments,scheduler,source/config/task bindings,sampler order/cursor,monitor,RNG; immutable fullV3checkpoint external binding recovers all unchanged networks. New-run latest/best only; atomic verified staging and2GiBheadroom.

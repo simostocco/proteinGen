@@ -145,8 +145,8 @@ def gradient_preflight():
  result=dict(PASS=True,FD=errors,latent_action_gradient_norms=gg.norm(dim=-1).detach().cpu().tolist(),policy_mu_gradient_norms=[float(g.norm()) for g in mg],shared_encoder_gradient_norm=norm,J1_input_gradient_norm=float(rgrad.norm()),J1_weights_frozen=True,weighted_loss_gradient_norms=norms,loss_terms={k:float(v.detach()) for k,v in terms.items()},peak_allocated=torch.cuda.max_memory_allocated(),peak_reserved=torch.cuda.max_memory_reserved(),seconds=time.monotonic()-start,trainable_parameters=sum(p.numel() for p in e.actor.parameters() if p.requires_grad))
  save('results/GRADIENT_PREFLIGHT.json',result);print('PREFLIGHT',result,flush=True)
 
-def ckpt(e,opt,sched,arm,update,best,order,cursor):
- e.prior.verify([opt]);state=dict(schema='e017_v4_recovery_v1',actor=e.actor.state_dict(),optimizer=opt.state_dict(),scheduler=sched.state_dict(),arm=arm,update=update,best=best,order=order,cursor=cursor,rng=rng_state(),config=CONFIG,config_hash=config_hash(),parent=str(PARENT),parent_SHA=SHA,J1_SHA=e.prior.identity,TRAIN_SHA=sha(ROOT/'manifests/TRAIN.json'),VALIDATION_SHA=sha(ROOT/'manifests/VALIDATION.json'))
+def ckpt(e,opt,sched,arm,update,best,order,cursor,strikes):
+ e.prior.verify([opt]);state=dict(schema='e017_v4_recovery_v1',actor=e.actor.state_dict(),optimizer=opt.state_dict(),scheduler=sched.state_dict(),arm=arm,update=update,best=best,order=order,cursor=cursor,monitor=dict(strikes=strikes),source_commit=json.load(open(ROOT/'SEALED_CONFIG.json'))['source_commit'],rng=rng_state(),config=CONFIG,config_hash=config_hash(),parent=str(PARENT),parent_SHA=SHA,J1_SHA=e.prior.identity,TRAIN_SHA=sha(ROOT/'manifests/TRAIN.json'),VALIDATION_SHA=sha(ROOT/'manifests/VALIDATION.json'))
  path=ROOT/'checkpoints'/arm/f'checkpoint_{update:05d}.pt';path.parent.mkdir(exist_ok=True);idxpath=path.parent/'INDEX.json';old=json.load(open(idxpath)) if idxpath.exists() else {'latest':None,'best':None};record=atomic_checkpoint(path,state,POLICY);record.update(update=update);newbest=record if best.get('update')==update else old['best'];atomic_json(idxpath,dict(latest=record,best=newbest))
  # Retire only this arm's superseded run-owned complete checkpoints, after verified replacement.
  for f in path.parent.glob('checkpoint_*.pt'):
@@ -156,13 +156,15 @@ def ckpt(e,opt,sched,arm,update,best,order,cursor):
  return path
 
 def train(arm):
- assert arm in ['B','C'];sealed=json.load(open(ROOT/'SEALED_CONFIG.json'));assert sealed['config']==CONFIG and sealed['config_hash']==config_hash();seed(CONFIG['seed']);e=Engine();tasks=dataset('TRAIN');val=dataset('VALIDATION');order=list(range(len(tasks)));random.Random(CONFIG['seed']).shuffle(order);cursor=0
+ assert arm in ['B','C'];assert not (ROOT/f'results/{arm}_STOP.json').exists(),'scientific stop requires review';sealed=json.load(open(ROOT/'SEALED_CONFIG.json'));assert sealed['config']==CONFIG and sealed['config_hash']==config_hash();assert subprocess.check_output(['git','-C',str(ROOT/'source'),'rev-parse','HEAD'],text=True).strip()==sealed['source_commit'];seed(CONFIG['seed']);e=Engine();tasks=dataset('TRAIN');val=dataset('VALIDATION');order=list(range(len(tasks)));random.Random(CONFIG['seed']).shuffle(order);cursor=0
  opt=torch.optim.AdamW([p for p in e.actor.parameters() if p.requires_grad],lr=CONFIG['lr'],weight_decay=.01,foreach=False)
  mult=lambda u: min(1.,(u+1)/25)*(.1+.9*(1+math.cos(math.pi*min(u,500)/500))/2)
- sched=torch.optim.lr_scheduler.LambdaLR(opt,mult);best=dict(position=float('inf'),update=None);start_update=0;idxpath=ROOT/'checkpoints'/arm/'INDEX.json'
+ sched=torch.optim.lr_scheduler.LambdaLR(opt,mult);best=dict(position=1e30,update=None);start_update=0;strikes=0;idxpath=ROOT/'checkpoints'/arm/'INDEX.json'
  if idxpath.exists():
-  ix=json.load(open(idxpath));st=torch.load(ix['latest']['path'],map_location='cpu',weights_only=False);assert sha(ix['latest']['path'])==ix['latest']['sha256'] and st['config_hash']==config_hash();e.actor.load_state_dict(st['actor']);opt.load_state_dict(st['optimizer']);sched.load_state_dict(st['scheduler']);set_rng(st['rng']);order=st['order'];cursor=st['cursor'];best=st['best'];start_update=st['update']
- log=open(ROOT/f'results/{arm}_updates.jsonl','a',buffering=1);baseline=json.load(open(ROOT/'results/A_00000_VALIDATION.json'))['summary'];strikes=0
+  ix=json.load(open(idxpath));st=torch.load(ix['latest']['path'],map_location='cpu',weights_only=False);assert sha(ix['latest']['path'])==ix['latest']['sha256'] and st['config_hash']==config_hash();e.actor.load_state_dict(st['actor']);opt.load_state_dict(st['optimizer']);sched.load_state_dict(st['scheduler']);set_rng(st['rng']);order=st['order'];cursor=st['cursor'];best=st['best'];start_update=st['update'];strikes=st['monitor']['strikes']
+ if not idxpath.exists():ckpt(e,opt,sched,arm,0,best,order,cursor,strikes)
+ log=open(ROOT/f'results/{arm}_updates.jsonl','a',buffering=1);baseline=json.load(open(ROOT/'results/A_00000_VALIDATION.json'))['summary']
+ save(f'results/{arm}_STATUS.json',dict(status='RUNNING',completed_updates=start_update))
  for u in range(start_update,500):
   POLICY.require(ROOT,4096);e.actor.train();opt.zero_grad(set_to_none=True);start=time.monotonic();parts=defaultdict(float);ids=[]
   for j in range(2):
@@ -173,14 +175,15 @@ def train(arm):
    for k,v in terms.items():parts[k]+=float(v.detach())/2
   if any(p.grad is not None for p in e.prior.model.parameters()):raise RuntimeError('J1 gradient leak')
   gn=torch.nn.utils.clip_grad_norm_([p for p in e.actor.parameters() if p.requires_grad],1.,error_if_nonfinite=True);opt.step();sched.step();torch.cuda.synchronize();row=dict(update=u+1,loss=sum(CONFIG['weights'][k]*v for k,v in parts.items()),terms=dict(parts),gradient_norm=float(gn),identities=ids,seconds=time.monotonic()-start);log.write(json.dumps(row)+'\n')
-  if (u+1)%25==0:print('TRAIN',arm,u+1,row['loss'],row['seconds'],flush=True)
+  if (u+1)%25==0:
+   save(f'results/{arm}_STATUS.json',dict(status='RUNNING',completed_updates=u+1,last_seconds=row['seconds']));print('TRAIN',arm,u+1,row['loss'],row['seconds'],flush=True)
   if u+1 in [100,250,500]:
    ev=e.evaluate(val,arm,u+1);e.evaluate(tasks[:8],arm,u+1);good=ev['summary']['valid']/ev['summary']['attempts']>=baseline['valid']/baseline['attempts']-.05
    if good and ev['summary']['position_error_A']<best['position']:best=dict(position=ev['summary']['position_error_A'],update=u+1)
-   ckpt(e,opt,sched,arm,u+1,best,order,cursor);bad=ev['summary']['finite']/ev['summary']['attempts']<.95 or ev['summary']['KL']>1;strikes=strikes+1 if bad else 0
+   bad=ev['summary']['finite']/ev['summary']['attempts']<.95 or ev['summary']['KL']>1;strikes=strikes+1 if bad else 0;ckpt(e,opt,sched,arm,u+1,best,order,cursor,strikes)
    if strikes>=2:save(f'results/{arm}_STOP.json',dict(update=u+1,reason='sealed completion/KL gate'));break
-  elif (u+1)%100==0:ckpt(e,opt,sched,arm,u+1,best,order,cursor)
- log.close();e.prior.verify([opt]);save(f'results/{arm}_FINISHED.json',dict(update=u+1,J1_frozen=True,actor_SHA=tensor_sha(e.actor),peak_allocated=torch.cuda.max_memory_allocated(),peak_reserved=torch.cuda.max_memory_reserved(),source_commit=subprocess.check_output(['git','-C',str(ROOT/'source'),'rev-parse','HEAD'],text=True).strip()))
+  elif (u+1)%100==0:ckpt(e,opt,sched,arm,u+1,best,order,cursor,strikes)
+ log.close();save(f'results/{arm}_STATUS.json',dict(status='COMPLETED' if u+1==500 else 'STOPPED_SCIENTIFIC',completed_updates=u+1));e.prior.verify([opt]);save(f'results/{arm}_FINISHED.json',dict(update=u+1,J1_frozen=True,actor_SHA=tensor_sha(e.actor),peak_allocated=torch.cuda.max_memory_allocated(),peak_reserved=torch.cuda.max_memory_reserved(),source_commit=subprocess.check_output(['git','-C',str(ROOT/'source'),'rev-parse','HEAD'],text=True).strip()))
 
 def baseline():
  assert json.load(open(ROOT/'SEALED_CONFIG.json'))['config_hash']==config_hash();e=Engine();e.evaluate(dataset('VALIDATION'),'A',0);e.evaluate(dataset('TRAIN')[:8],'A',0)
