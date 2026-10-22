@@ -15,7 +15,7 @@ def step(e,o,s,task,ns):
  loss.backward();norm=torch.nn.utils.clip_grad_norm_([p for p in e.actor.parameters() if p.requires_grad],1.,error_if_nonfinite=True);o.step();s.step();torch.cuda.synchronize();return dict(loss=float(loss.detach()),norm=float(norm),seconds=time.monotonic()-start,actor=v.tensor_sha(e.actor),optimizer=state_digest(o.state_dict()),scheduler=state_digest(s.state_dict()),rng=state_digest(rng_state()))
 
 def main(stage):
- v.seed(v.CONFIG['seed']);e=v.Engine();tasks=v.dataset('TRAIN');o,s=optimizer(e);path=ROOT/'checkpoints/engineering_restart.pt'
+ v.seed(v.CONFIG['seed']);e=v.Engine();tasks=v.dataset('TRAIN');o,s=optimizer(e);path=ROOT/'checkpoints'/('engineering_restart_'+v.config_hash()[:8]+'.pt')
  if stage=='parent':
   e.actor.eval();t=tasks[0];changed=copy.deepcopy(t);changed['hidden_native_future']=(np.array(changed['hidden_native_future'])+1000).tolist();changed['sequence']=changed['sequence'][:t['t']+8]+changed['sequence'][t['t']+8:][::-1]
   with torch.no_grad():
