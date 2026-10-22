@@ -91,6 +91,7 @@ class Engine:
   for k in range(8):
    inp=prefix(task,k) if arm=='B' else x
    mu,ls,rm,rl,ref,b=self.predict(task,inp);mus.append(mu);lss.append(ls);refs.append(ref)
+   if retain:mu.retain_grad();ls.retain_grad()
    u=mu.double()+ls.double().exp()*epsilon[k]
    if delta is not None:u=u+delta[k]
    g=torch.stack([u[0].exp(),math.pi*u[1].sigmoid(),math.pi*u[2].tanh()]);
@@ -166,15 +167,17 @@ def train(arm):
  log=open(ROOT/f'results/{arm}_updates.jsonl','a',buffering=1);baseline=json.load(open(ROOT/'results/A_00000_VALIDATION.json'))['summary']
  save(f'results/{arm}_STATUS.json',dict(status='RUNNING',completed_updates=start_update))
  for u in range(start_update,500):
-  POLICY.require(ROOT,4096);e.actor.train();opt.zero_grad(set_to_none=True);start=time.monotonic();parts=defaultdict(float);ids=[]
+  POLICY.require(ROOT,4096);e.actor.train();opt.zero_grad(set_to_none=True);start=time.monotonic();parts=defaultdict(float);components=defaultdict(float);action_gradients=[];ids=[]
   for j in range(2):
    if cursor==len(order):random.Random(CONFIG['seed']+u).shuffle(order);cursor=0
    task=tasks[order[cursor]];cursor+=1;ids.append(task['identity']);ns=CONFIG['seed']+100000+2*u+j
-   with torch.autocast('cuda',dtype=torch.bfloat16):loss,terms,_,_=e.rollout(task,ns,arm)
+   with torch.autocast('cuda',dtype=torch.bfloat16):loss,terms,_,details=e.rollout(task,ns,arm,retain=(u+1 in [1,100,250,500]))
    (loss/2).backward()
+   if u+1 in [1,100,250,500]:action_gradients.append([float(x.grad.norm()) if x.grad is not None else 0. for x in details['mus']])
+   for k,v in details['goal_parts'].items():components[k]+=float(v.detach())/2
    for k,v in terms.items():parts[k]+=float(v.detach())/2
   if any(p.grad is not None for p in e.prior.model.parameters()):raise RuntimeError('J1 gradient leak')
-  gn=torch.nn.utils.clip_grad_norm_([p for p in e.actor.parameters() if p.requires_grad],1.,error_if_nonfinite=True);opt.step();sched.step();torch.cuda.synchronize();row=dict(update=u+1,loss=sum(CONFIG['weights'][k]*v for k,v in parts.items()),terms=dict(parts),gradient_norm=float(gn),identities=ids,seconds=time.monotonic()-start);log.write(json.dumps(row)+'\n')
+  gn=torch.nn.utils.clip_grad_norm_([p for p in e.actor.parameters() if p.requires_grad],1.,error_if_nonfinite=True);opt.step();sched.step();torch.cuda.synchronize();row=dict(update=u+1,loss=sum(CONFIG['weights'][k]*v for k,v in parts.items()),terms=dict(parts),terminal_components=dict(components),action_distribution_gradient_norms=action_gradients,gradient_norm=float(gn),identities=ids,seconds=time.monotonic()-start);log.write(json.dumps(row)+'\n')
   if (u+1)%25==0:
    save(f'results/{arm}_STATUS.json',dict(status='RUNNING',completed_updates=u+1,last_seconds=row['seconds']));print('TRAIN',arm,u+1,row['loss'],row['seconds'],flush=True)
   if u+1 in [100,250,500]:
