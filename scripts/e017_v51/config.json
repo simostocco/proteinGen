@@ -1,0 +1,50 @@
+{
+  "schema": "E017_V51_v1",
+  "seed": 6517,
+  "updates": 500,
+  "batch": 4,
+  "milestones": [
+    0,
+    100,
+    250,
+    500
+  ],
+  "periodic_checkpoint": 50,
+  "lr": 1e-05,
+  "lr_floor": 1e-06,
+  "warmup": 25,
+  "weight_decay": 0.01,
+  "clip": 5.0,
+  "arms": [
+    "A",
+    "B",
+    "C",
+    "D"
+  ],
+  "feedback": "D+250 feedback-detached neural inputs; direct FK gradients retained in all arms",
+  "native_preference": 0.75,
+  "eval_seeds": [
+    7101,
+    7102
+  ],
+  "weights": {
+    "goal": 1.0,
+    "local": 0.1,
+    "BC": 0.1,
+    "KL": 0.01
+  },
+  "collision_margin_A": 3.0,
+  "collision_weight": 1.6644497725948837,
+  "KL_limit": 1.0,
+  "dual_target": 0.8,
+  "dual_eta": 0.05,
+  "dual_initial": 0.01,
+  "hard_validity_allowance": 0.05,
+  "H2_success_allowance": 0.05,
+  "position_tolerance_A": 8.0,
+  "orientation_tolerance_deg": 35.0,
+  "selection": "eligible max DEV H4 valid success; tie minimum position/3.8+orientation/180; then earliest. H2 success>=initial-5pp, native H4 validity>=initial-5pp and mean KL<=1; final audit never selects.",
+  "primary_comparison": "matched+100 H4 updates; stopped models retained but scientifically invalid not promoted",
+  "primary_endpoint": "paired protected-identity valid H4 success increase: CI95 lower>0 and point>=5pp vs A; alternatively joint valid-and-position/orientation-better endpoint defined in PROTOCOL, no posthoc replacement",
+  "no_RL": true
+}
