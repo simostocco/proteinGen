@@ -1,0 +1,62 @@
+{
+  "schema": "e017_v5_v1",
+  "seed": 5217,
+  "horizons": [
+    2,
+    4,
+    8
+  ],
+  "TRAIN_identities": 1024,
+  "DEV_identities": 64,
+  "CONFIRM_identities": 64,
+  "prefixes": [
+    20,
+    28
+  ],
+  "arms": [
+    "B",
+    "C",
+    "D",
+    "E"
+  ],
+  "batch": 4,
+  "stage_updates": {
+    "2": 250,
+    "4": 500,
+    "8": 1250
+  },
+  "lr": 3e-05,
+  "lr_floor": 3e-06,
+  "warmup": 25,
+  "weight_decay": 0.01,
+  "clip": 5.0,
+  "weights": {
+    "goal": 1.0,
+    "local": 0.1,
+    "BC": 0.1,
+    "KL": 0.01,
+    "IK": 0.1
+  },
+  "position_scale_A": 3.8,
+  "orientation_weight": 5.0,
+  "teacher_per_horizon": 128,
+  "IK_iterations": 64,
+  "IK_starts": 2,
+  "IK_orientation_weight": 0.5,
+  "train_native_frequency": 0.75,
+  "eval_seeds": [
+    7101,
+    7102
+  ],
+  "position_tolerance_A": 8.0,
+  "orientation_tolerance_deg": 35.0,
+  "progression": {
+    "min_position_gain": 0.1,
+    "min_success_gain": 0.05,
+    "validity_allowance": 0.05,
+    "direction_rate": 0.6,
+    "position_CI_upper_below": 0.0
+  },
+  "scientific_stop": "No horizon escalation unless own DEV success+direction+paired position/validity gate passes; matched C/D escalation requires both; no auto-extension",
+  "no_RL": true
+}
