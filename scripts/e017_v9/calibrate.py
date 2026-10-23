@@ -46,8 +46,25 @@ def prepare():
  paths=[R/'source/scripts/e017_v9/core.py',R/'source/scripts/e017_v9/calibrate.py',c['J1'],c['PARENT'],R.parent/'pdb_supervised_split_50id80cov_20261016_v1/PROPOSAL_MANIFEST.json']+list((R/'manifests').glob('*.json'));assert sha(c['J1'])==c['J1SHA'] and sha(c['PARENT'])==c['PSHA'];save('REFERENCE_CENSUS.json',dict(TRAIN=512,VALIDATION=128,TRAIN_fit=256,TRAIN_hold=256,window_length=64,one_window_per_identity=True,masked_exclusions=len(rejected),seconds=time.time()-start,coordinate_source_SHA256={r['source']['coordinate_path']:data.proposal.external[r['source']['coordinate_path']] for r in allrows},TEST_evaluated=False));save('INITIAL_INPUT_AUDIT.json',dict(input_SHA256={str(p):sha(p) for p in paths},J1_SHA=c['J1SHA'],selected_low_actor_SHA=c['PSHA'],scientific_selection='V3selected10000sequence/geometry actor, no property qualification; V5D250 is a specialized H2control',D_free_bytes=__import__('shutil').disk_usage(R).free))
 def reference_atoms(rec):
  row=rec['source']
- if row['coordinate_kind']=='legacy_cache':raise ValueError('legacy atom mapping unavailable inselectedtable; CAreference retained')
- parent=json.load(gzip.open(row['coordinate_path'],'rt'));obs=parent['observations'][int(row['coordinate_row'])];raw=Path(parent['source_path']);assert raw.stat().st_size<32*2**20 and parent['uncompressed_bytes']<128*2**20;assert sha(raw)==parent['source_sha256']==row['source_sha'];offset=rec['offset'];mapping=obs['residue_mapping'][offset:offset+64];labels={str(r['label_seq_id']):i for i,r in enumerate(mapping)};block=gemmi.cif.read(str(raw)).sole_block();table=block.find('_atom_site.',['label_asym_id','pdbx_PDB_model_num','label_seq_id','label_atom_id','type_symbol','Cartn_x','Cartn_y','Cartn_z','occupancy','label_alt_id']);by=collections.defaultdict(dict);ambiguous=set()
+ if row['coordinate_kind']=='legacy_cache':
+  import pyarrow.parquet as pq
+  pf=pq.ParquetFile(row['coordinate_path']);index=int(row['coordinate_row']);base=0;meta=None
+  for group in range(pf.num_row_groups):
+   size=pf.metadata.row_group(group).num_rows
+   if index<base+size:
+    cols=['label_asym_id','model_id','chain_mapping_status','selected_calpha_coordinates','residue_names','atom_label_sequence_ids']
+    meta=pf.read_row_group(group,columns=cols,use_threads=False).slice(index-base,1).to_pylist()[0];break
+   base+=size
+  assert meta is not None and meta['chain_mapping_status']=='unambiguous'
+  names=json.loads(meta['residue_names']);coords=json.loads(meta['selected_calpha_coordinates']);ids=json.loads(meta['atom_label_sequence_ids']);assert len(names)==len(coords)==len(ids)
+  offset=rec['offset'];mapping=[dict(label_seq_id=ids[i],native_monomer=names[i],ca=coords[i]) for i in range(offset,offset+64)]
+  assert len({str(m['label_seq_id']) for m in mapping})==64
+  raw=Path('/mnt/d/Simone/proteinGen/data/full/raw/mmcif')/(row['entry_id'].lower()+'.cif.gz');assert raw.stat().st_size<32*2**20 and sha(raw)==row['source_sha']
+  with gzip.open(raw,'rb') as f:assert len(f.read(128*2**20+1))<=128*2**20
+  obs=dict(label_asym_id=meta['label_asym_id'],model_num=meta['model_id'])
+ else:
+  parent=json.load(gzip.open(row['coordinate_path'],'rt'));obs=parent['observations'][int(row['coordinate_row'])];raw=Path(parent['source_path']);assert raw.stat().st_size<32*2**20 and parent['uncompressed_bytes']<128*2**20;assert sha(raw)==parent['source_sha256']==row['source_sha'];offset=rec['offset'];mapping=obs['residue_mapping'][offset:offset+64]
+ labels={str(r['label_seq_id']):i for i,r in enumerate(mapping)};block=gemmi.cif.read(str(raw)).sole_block();table=block.find('_atom_site.',['label_asym_id','pdbx_PDB_model_num','label_seq_id','label_atom_id','type_symbol','Cartn_x','Cartn_y','Cartn_z','occupancy','label_alt_id']);by=collections.defaultdict(dict);ambiguous=set()
  for a in table:
   if a[0]!=obs['label_asym_id'] or a[1]!=str(obs['model_num']) or a[2] not in labels:continue
   element=str(a[4]).upper()
@@ -60,7 +77,7 @@ def reference_atoms(rec):
  valid=np.array([i not in ambiguous and mapping[i]['native_monomer'] in standard and HEAVY[rec['sequence'][i]]<=set(by[i]) for i in range(64)]);assert valid.mean()>=.9
  for i,m in enumerate(mapping):assert 'CA' in by[i] and np.linalg.norm(by[i]['CA'][1]-m['ca'])<1e-5
  # Gauge atom coordinates with the same first-three CA anchors as the proxy.
- ca=np.array([by[i]['CA'][1] for i in range(64)]);u=ca[1]-ca[0];u/=np.linalg.norm(u);w=ca[2]-ca[1];w-=w.dot(u)*u;w/=np.linalg.norm(w);basis=np.stack([u,w,np.cross(u,w)]);x=[];radii=[];owner=[]
+ ca=np.array([by[i]['CA'][1] for i in range(64)]);u=ca[1]-ca[0];u/=np.linalg.norm(u);w=ca[2]-ca[1];w-=w.dot(u)*u;w/=np.linalg.norm(w);basis=np.stack([u,w,np.cross(u,w)]);assert np.max(np.abs((ca-ca[0])@basis.T-np.array(rec['coordinates'])))<1e-5;x=[];radii=[];owner=[]
  for i in range(64):
   for name,(occ,xyz,element) in by[i].items():
    if occ<=0:continue
