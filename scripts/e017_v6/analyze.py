@@ -151,7 +151,22 @@ def main():
   meaning='conditional proposal KL averaged on sampled states; not selection-policy KL, not a promotion certificate')
  taskvec=np.array([sum(r['success'] for r in pools[t['task_id']])/32 for t in ts])
  pbar=float(taskvec.mean());independent_model32=float(np.mean(1-(1-taskvec)**32))
- out=dict(schema='E017_V6_frozen_candidate_results_v1',protocol=cfg,source_generation_commit=cfg['source_commit'],
+ # Exploratory post hoc counterfactual selectors isolate filtering from goal scoring.
+ for K in cfg['K']:
+  a=[];b=[]
+  for t in ts:
+   pool=pools[t['task_id']][:K];v=[r for r in pool if r['valid']]
+   a.append(min(v,key=lambda r:(r['position_A'],r['candidate_index'])) if v else None)
+   b.append(min(pool,key=lambda r:(r['goal_score'],r['original_goal_cost'],r['candidate_index'])))
+  q=result[str(K)]
+  for name,choices in [('B_valid_position',a),('C_unfiltered_score',b)]:
+   q['selectors'][name]=selected_stats(choices,[bool(r and r['success']) for r in choices])
+  full=np.array([r['full_success_candidates']>0 for r in taskmetrics[str(K)]],dtype=float)
+  q['exploratory_filter_only_effect_under_joint_score']=estimate(full-np.array([bool(r and r['success']) for r in b],dtype=float))
+  q['exploratory_filter_only_effect_under_position_score']=estimate(np.array([bool(r and r['success']) for r in a],dtype=float)-np.array([pools[t['task_id']][:K][q['selectors']['B']['selected_candidate_indices'][i]]['success'] for i,t in enumerate(ts)],dtype=float))
+ failures['valid_goal_miss_by_criterion']=dict(collections.Counter(('position_miss' if not r['translation_hit'] else 'position_hit')+'_'+('rotation_miss' if not r['rotation_hit'] else 'rotation_hit') for r in rows if r['valid'] and not r['success']))
+ out=dict(schema='E017_V6_frozen_candidate_results_v1_1',protocol=cfg,source_generation_commit=cfg['source_commit'],
+  posthoc_analysis_note='v1.1 adds CPU-only counterfactual selectors to isolate filtering from orientation-aware scoring on unchanged pools. Not preregistered; exploratory, with original primary endpoints unchanged. First reports preserved in analysis_versions/v1.',
   source_analysis_commit=subprocess.check_output(['git','-C',str(R/'source'),'rev-parse','HEAD'],text=True).strip(),
   by_K=result,incremental_K=incremental,task_level_by_K=taskmetrics,failures=failures,proposal_KL=kl,
   difficulty=dict(distance_success_Pearson=distancecorr,CI95_identity_clustered=np.quantile(cr,[.025,.975]).tolist(),
@@ -185,10 +200,10 @@ def reports(out,legacy):
  rowdetails=table(['K','A seconds/success','B seconds/success','C seconds/success','Original-cost C seconds/success'],[[K,*[f(v['cost']['seconds_per_success_task_by_selector'][s]) for s in ['A','B','C','C_original_cost']]] for K,v in by.items()])
  # Scientific conclusions are tied to prespecified results, never to lower position loss alone.
  strength='supported on this reused diagnostic panel' if lo>0 and primary['estimate']>=.05 else 'not established by the prespecified ≥5pp/positive paired95% criterion'
- nextchoice='inference-time validity-aware candidate selection as a bounded diagnostic baseline' if C>B and N>=32 else 'improving the proposal distribution, retaining exact validity checks as diagnostics'
+ nextchoice='improving the proposal distribution, retaining joint-goal scoring plus hard validity as the inference baseline'
  source=out['source_generation_commit'];analysis=out['source_analysis_commit']
  main=[
- '# E017 V6 — frozen-parent candidate selection, v1',
+ '# E017 V6 — frozen-parent candidate selection, v1.1',
  f"**Completed without training.** The frozen parent supplies full valid H4 successes for **{N}/63 tasks at K32**. B (minimum positional error) succeeds on **{B}/63**; C (validity-first, threshold-aware geometric selection) on **{C}/63**. The paired C−B gain is **{diff(primary)}** and is {strength}. This is finite-sample geometric inference, not learned planning, folding certification or model promotion.",
  '## Frozen source, checkpoint and tasks',
  f"New isolated D: source worktree branch `e017-v6-frozen-candidates-20261023-v1`. Sampling commit `{source}`; final-analysis commit `{analysis}`. Parent: `{cfg['parent']}`, SHA256 `{cfg['parent_SHA256']}`. It is V5 D+250, selected before V5.1, not a failed V5.1 latest checkpoint. Strict actor restoration passed:17,438,114 parameters, all frozen; frozen J1 has12,351,746 parameters. J1 file SHA256 `881457ff0396975c1b20dd0a8e2caac8521e65b7e1cec76a7bb531dbc437b412`. Actor/parent hashes and J1 tensor fingerprint match before/after. Critics/reachability/high-level networks were not constructed or trained.",
@@ -204,6 +219,7 @@ def reports(out,legacy):
  increments,
  f"The16→32 extension adds{inc['new_success_tasks']} newly successful tasks. This is the measured late-pool gain, not proof of an asymptote; no K>32 experiment or post hoc allocation extension was run. Tables preserve nonmonotonic B success even though B position and D existence are monotonic in K.",
  '## Selection outcomes and the four-way failure decomposition',selection,
+ f"**Mechanism attribution, exploratory post hoc CPU analysis:** atK32 hard filtering minimum-position ranking alone remains{q['selectors']['B_valid_position']['success_count']}/63, identical to B. Joint normalized-goal scoring without filtering reaches{q['selectors']['C_unfiltered_score']['success_count']}/63; with filtering it reaches{C}/63. The filter-only paired effect under joint scoring is{diff(q['exploratory_filter_only_effect_under_joint_score'])}. Thus the primary C−B gain combines orientation-aware scoring and filtering; most of it is attributable to the scoring difference on this pool, not a filter-only efficacy claim. These additional selectors were not preregistered and are exploratory. All63tasks have valid candidates atK32; the remaining24have no geometric goal hit of any validity in32draws. B32 has zero position misses and44orientation misses.",
  'C conditional mean errors/KL use selected tasks only; abstentions remain failures in the63-task full-success denominator. A’s outcome and query-generation cost remain one candidate despite appearing in every K row; full-pool resource numbers describe the pool shared by B/C/D, not a demand that A generate unused candidates.',
  partition,
  'These four rows are mutually exclusive with priority4→2→3→1. Class1 means neither a goal hit nor any valid candidate; class3 has no goal hit but does have valid candidates. The broader “no candidate satisfies the geometric goal” marginal is1+3; class2 can also contain valid goal-missing candidates. Candidate-level overlapping counts are retained separately. Failure at32 draws does not prove geometric impossibility or zero proposal probability.',
@@ -223,7 +239,7 @@ def reports(out,legacy):
  ]
  text('FINAL_E017_V6_SCIENTIFIC_REPORT.md','\n\n'.join(main))
  validity=[
- '# Validity versus goal analysis — E017 V6 v1',
+ '# Validity versus goal analysis — E017 V6 v1.1',
  'The full geometric goal is position≤8Å AND frame orientation≤35°. Full success additionally requires all original whole-prefix+tail Cα validity tests. Native/alternative target witnesses were retained. Neither a failed finite pool nor a failed classical IK search proves geometric unreachability.',partition,
  'The partition prioritizes full success, then invalid goal hits, then valid goal misses, then neither. Class2 may contain both invalid goal hits and valid misses. Marginal no-goal-hit counts=class1+class3. All candidate metrics, causes and selected indices are retained without replacing failures.',
  f"All-candidate totals: {json.dumps(failure,indent=2)}",
@@ -240,7 +256,8 @@ def reports(out,legacy):
  ]
  text('VALIDITY_VS_GOAL_ANALYSIS.md','\n\n'.join(validity))
  text('CANDIDATE_SELECTION_COMPARISON.md','\n\n'.join([
- '# Candidate selection comparison — E017 V6 v1',overview,selection,
+ '# Candidate selection comparison — E017 V6 v1.1',overview,selection,
+ f"The primary comparison changes both scoring and filtering. Exploratory post hoc saved-pool selectors: position+validity={q['selectors']['B_valid_position']['success_count']}/63; joint-score without filter={q['selectors']['C_unfiltered_score']['success_count']}/63; joint-score with filter={C}/63. Filter-only effect under joint scoring={diff(q['exploratory_filter_only_effect_under_joint_score'])}; under position scoring={diff(q['exploratory_filter_only_effect_under_position_score'])}. No new inference was run for these additional selectors. They do not replace the frozen primary comparison or establish confirmatory filter-only causality.",
  'A retains the first candidate at every K. B ignores orientation and hard validity; decreasing position is not a monotonic guarantee of full success. C first enforces the original hard criteria, then uses max-normalized position/orientation error; no valid candidates means abstention and failure, never resampling. C_original_cost minimizes original Huber-position+5sin²(θ/2) among valid candidates and is secondary.',
  'For any valid candidate, max(position/8,orientation/35)≤1 iff both target conditions hold. Every full hit therefore precedes every valid miss under C. C equals the pool-existence upper bound D exactly at all K, verified for all63tasks. There is no learned planner or independent oracle advantage: the known goal/validity criteria are computable from generated coordinates. Continuous original goal cost need not respect the conjunction, which is why C_original_cost can differ.',
  f'PrimaryK32 paired C−B full-success gain={diff(primary)}. The predeclared ≥5pp and positive95%lower-bound claim is {strength}. All K use nested pools; six-K99.166667% endpoint-wise bands are in CANDIDATE_SUCCESS_BY_K.json. No best K was selected from the outcomes.',
@@ -248,7 +265,7 @@ def reports(out,legacy):
  'Chosen-candidate proposal KL is descriptive only: deterministic selection among sampled candidates changes the law. No selected-policy KL guarantee or promotion is claimed. Stored candidate indices, full failures, seeds and four-point tails permit deterministic re-analysis without another forward pass.'
  ]))
  text('INFERENCE_COST_ANALYSIS.md','\n\n'.join([
- '# Inference cost — E017 V6 v1',costs,rowdetails,
+ '# Inference cost — E017 V6 v1.1',costs,rowdetails,
  'Every fresh continuation makes exactly4 actor and4 J1 calls (four generated steps), with no fifth native-BC diagnostic. Total prospective-equivalent32-pool budget:8,064actor+8,064J1passes; actually new sampling:7,560each. Two parity continuations add8each, so this worker made7,568actor+7,568J1calls. Original126cached outcomes historically used630each including126BC calls; they were reused rather than regenerated. Small K are prefixes of the same pool, not new worker launches.',
  'A-alone cost is one continuation/task:252actor+252J1 calls for63queries; repeating A rows at higher K does not increase its required calls. B/C/D share complete K pools for a compute-matched selector comparison. No learned critic or high-level network is invoked. Selection arithmetic operates on scalar saved metrics and has negligible compute compared with inference, but an exact selection-only microbenchmark was not performed.',
  f"Measured worker wall time={resource['elapsed_seconds']:.6f}s; summed new per-candidate timers={by['32']['cost']['new_generation_seconds']:.6f}s; remaining overhead includes model loads/parity, saved row processing, verification, fsync and publication. Per-candidate timers include full goal/validity scoring and CUDA synchronization, exclude row fsync. Historical126-attempt panel wall time={legacy['seconds']:.6f}s (includes BC); per-seed historical time is unavailable. Estimated pooled times add the whole historical panel forK≥2, half forK1. These are amortized retrospective costs, not measured isolated cold-start latencies.",
@@ -258,7 +275,7 @@ def reports(out,legacy):
  f"Resource admission requires2GiB+64MiB D: free and CUDA allocation below6GiB; actual allocation remained far lower. Completion D: free={resource['free_bytes']:,}bytes; final publication free recorded in provenance. No model checkpoint copies, large tensor exports or dataset materialization; candidate JSONL stores only scalar diagnostics and four×3 coordinate tails. All caches/tmp/configured runtime paths on D:. No historical deletion. Necessary early-rule retrospective potential savings={failure['early_rule']['potential_actor_J1_steps_saved_each']}calls EACH, not realized savings or a new benchmark."
  ]))
  text('NEXT_RL_RESEARCH_DECISION.md','\n\n'.join([
- '# Next research decision after E017 V6 — v1',
+ '# Next research decision after E017 V6 — v1.1',
  f'**Recommend {nextchoice}.** This recommendation follows the recorded finite-pool outcomes; no next phase is implemented.',
  f'1. **Useful valid mass already present?** Full valid candidates occur in{N}/63tasks at32 draws; total candidate full successes={failure["full_success"]}/2016. This measures availability within this existing VALIDATION panel, not unseen-population certification. Zero-of32tasks can still have small nonzero success probability.',
  f'2. **Does best-of-K improve success or proximity?** Position-only B32 succeeds{B}/63; validity/threshold-aware C32 succeeds{C}/63 and exactly equals D. C−B={diff(primary)}. B’s better positional objective must be assessed with orientation/validity and budget. Neither improvement changes the frozen actor.',
@@ -267,7 +284,7 @@ def reports(out,legacy):
  f'5. **Selection competitive?** It is a directly measurable geometric-control baseline at{C}/63query successes, with about{f(q["cost"]["seconds_per_full_success_task_amortized"])}estimated amortizedseconds per successful query including failed-query cost. It needs up to32samples and known geometric goal/validity computation, and does not certify the selection law’s KL. Preserve cost/error/success tradeoffs before operational adoption.',
  '6. **Where might RL help?** These static fixed-H4 pools provide evidence about proposal quality and inference selection, not an advantage of sequential RL over supervised control. If later authorized, safer proposal distributions or amortizing demonstrated valid actions is a more grounded target than adding high-level SAC immediately. A separate controlled comparison would need to show improved success per J1/actor pass without sacrificing physical validity or KL. Existing V5.1 failures warn against stronger unconstrained goal optimization.',
  f'7. **Evidence for reachability-aware planning?** Early necessary checks flag{failure["early_rule"]["flagged"]}candidates with zero full-success flags in this pool, potentially saving{failure["early_rule"]["potential_actor_J1_steps_saved_each"]}forward steps EACH retrospectively. This supports exact early rejection as a future engineering diagnostic, not a learned positive reachability model. No intervention, long-horizon, adaptive branching or calibration study here establishes benefit for a learned critic/high-level planner.',
- 'Among the requested alternatives: use the observed inference-time validity filter as the immediate finite-budget research baseline; improve the proposal distribution later if cost or no-hit tasks remain limiting. A learned validity/reachability critic needs independent calibration and a benefit over exact checks; a high-level RL planner lacks direct evidence here. Returning to unconstrained geometric-control training or simply adding updates is contradicted by V5.1’s safeguard failures. No architecture/safety threshold or TEST change is recommended.',
+ f"**Choose improving the proposal distribution next, using joint-goal scoring plus exact hard validity as the inference baseline.** AtK32 all24unsolved tasks have valid candidates but no full geometric goal hit; all44B32goal misses fail orientation even though every B32position passes. Hard filtering position-only ranking gives no full-success gain. Joint scoring without filtering already gives37/63; filtering adds2tasks, exploratory effect{diff(q['exploratory_filter_only_effect_under_joint_score'])}. This argues for improving probability of the joint pose goal per forward pass while retaining physical/KL/H2 safeguards, not assuming collision avoidance alone is the remaining bottleneck. A learned reachability critic or high-level RL planner has no calibrated or sequential evidence here. No return to longer unconstrained geometric training or architecture/threshold/TEST change is justified.",
  'No controller promotion: selected-law KL remains unresolved. No inference-time result proves protein foldability/stability. Stop all workers, preserve the frozen parent/evidence, and wait for a separately authorized research decision.'
  ]))
  # All source/input/output hashes are sealed last; no recursive provenance self-hash.
@@ -283,7 +300,7 @@ def reports(out,legacy):
   inp[str(p)]=sha(p)
  assert sha(cfg['parent'])==cfg['parent_SHA256']
  # Worker PID must have exited before scientific publication.
- oldpid=read(R/'RECOVERY.json').get('pid');assert oldpid is not None and not Path(f'/proc/{oldpid}').exists()
+ rec=read(R/'RECOVERY.json');oldpid=rec.get('pid',rec.get('worker_pid'));assert oldpid is not None and not Path(f'/proc/{oldpid}').exists()
  gpu=subprocess.check_output(['nvidia-smi','--query-compute-apps=pid,process_name,used_memory','--format=csv,noheader'],text=True)
  assert not gpu.strip(),gpu
  save('RECOVERY.json',dict(status='COMPLETED_AND_IDLE',worker_pid=oldpid,worker_exited=True,candidates=2016,no_training=True,UTC=datetime.datetime.now(datetime.timezone.utc).isoformat()))
