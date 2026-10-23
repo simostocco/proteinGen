@@ -41,7 +41,7 @@ def outputs(e,parent,batch,mode):
 def scales():
  return {read(f)['goal']['goal_id']:max(.05,float(np.std([z['metrics']['reward'] for z in read(f)['records']]))) for f in (R/'results').glob('TRAIN_B_V3_[0-9][0-9][0-9].json')}
 def update(e,parent,opt,scheduler,mode,goal,spec,update_index,namespace='RL'):
- e.actor.eval();rows,_=p['sample'](e,goal,spec,'B_V3',8,namespace+'_'+mode+'_'+str(update_index))
+ e.actor.eval();rows,_=p['sample'](e,goal,spec,'B_V3',8,namespace+'_'+str(update_index))
  if any(r['repairs'] or r['support_failure'] or not r['metrics']['complete'] for r in rows):raise FloatingPointError('incomplete or repaired rollout; strict-density training stopped')
  rewards=np.array([r['metrics']['reward'] for r in rows]);adv=(rewards-(rewards.sum()-rewards)/7)/scales()[goal['goal_id']];adv=np.clip(adv,-5,5);coeff=torch.tensor(adv,device='cuda');worlds=[c['PropertyWorld'](goal,spec,r['seed']) for r in rows];opt.zero_grad(set_to_none=True);e.actor.train();losses=[];AAKL=[];GKL=[];probes=[];density_error=0.
  for t in range(64):
@@ -71,7 +71,7 @@ def update(e,parent,opt,scheduler,mode,goal,spec,update_index,namespace='RL'):
  return dict(update=update_index,goal_id=goal['goal_id'],identity=goal['witness_identity'],reward_mean=float(rewards.mean()),reward_SD=float(rewards.std()),full_success=sum(r['metrics']['success'] for r in rows),backbone_valid=sum(r['metrics']['backbone_valid'] for r in rows),hard_valid=sum(r['metrics']['hard_valid'] for r in rows),loss=sum(losses),gradient_norm=grad,clipped=grad>5,AA_KL=float(np.mean(AAKL)),geometry_KL=float(np.mean(GKL[1:])),step_joint_KL_max=maxstep,density_recompute_max_error=density_error,sequence_exposures=8,residue_decisions=512),rows
 
 def bundle(e,opt,scheduler,mode,update_index,counters,selected,stop_reason=None):
- return dict(schema='V9_full_actor_recovery_v1',actor=cpu(e.actor.state_dict()),optimizer=cpu(opt.state_dict()),scheduler=scheduler.state_dict(),AMP=None,RNG=rngstate(),arm=mode,update=update_index,counters=counters,selected=selected,scientific_stop=stop_reason,config=read(R/'RL_PROTOCOL_FROZEN.json'),parent_SHA256=c['PSHA'],J1_SHA256=c['J1SHA'],reward_SHA256=sha(R/'REWARD_SPECIFICATION.json'),task_SHA256={k:sha(R/f'manifests/{k}_GOALS.json') for k in ['TRAIN','DEV','CONFIRM']},deterministic_sampler=dict(order=np.random.default_rng(9917).permutation(32).tolist(),next_index=update_index%32,namespace='RL_'+mode+'_'+str(update_index+1)),pending_rollout=None)
+ return dict(schema='V9_full_actor_recovery_v1',actor=cpu(e.actor.state_dict()),optimizer=cpu(opt.state_dict()),scheduler=scheduler.state_dict(),AMP=None,RNG=rngstate(),arm=mode,update=update_index,counters=counters,selected=selected,scientific_stop=stop_reason,config=read(R/'RL_PROTOCOL_FROZEN.json'),parent_SHA256=c['PSHA'],J1_SHA256=c['J1SHA'],reward_SHA256=sha(R/'REWARD_SPECIFICATION.json'),task_SHA256={k:sha(R/f'manifests/{k}_GOALS.json') for k in ['TRAIN','DEV','CONFIRM']},deterministic_sampler=dict(order=np.random.default_rng(9917).permutation(32).tolist(),next_index=update_index%32,namespace='RL_'+str(update_index+1)),pending_rollout=None)
 def checkpoint(e,opt,scheduler,mode,u,counters,selected,reason=None):
  root=R/'checkpoints'/mode;root.mkdir(exist_ok=True);state=bundle(e,opt,scheduler,mode,u,counters,selected,reason);record=atomic_checkpoint(root/f'update_{u:04}.pt',state,c['POLICY']);save(f'checkpoints/{mode}/LATEST.json',dict(**record,update=u,selected=selected,stop_reason=reason));return record
 
