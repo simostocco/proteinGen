@@ -104,8 +104,9 @@ def run(mode,resume=False):
  for u in range(first,CFG['update_ceilings'][mode]+1):
   
   if (R/'PAUSE_REQUEST.json').exists():reason='COOPERATIVE_PAUSE';u-=1;break
-  c['POLICY'].require(R,224*2**20);goal=goals[order[(u-1)%32]]
-  try:row,_=update(e,parent,opt,scheduler,mode,goal,spec,u)
+  goal=goals[order[(u-1)%32]]
+  try:
+   c['POLICY'].require(R,224*2**20);row,_=update(e,parent,opt,scheduler,mode,goal,spec,u)
   except (ValueError,FloatingPointError,RuntimeError,OSError) as ex:reason='NUMERICAL_OR_RESOURCE_STOP: '+repr(ex);u-=1;break
   counters['trajectories']+=8;counters['residue_decisions']+=512;counters['accepted_actor_updates']=u;seen.add(goal['witness_identity']);counters['distinct_TRAIN_identities']=len(seen);history.append(row)
   with (R/f'logs/{mode}_TRAIN.jsonl').open('a') as f:f.write(json.dumps(row)+'\n');f.flush();os.fsync(f.fileno())
