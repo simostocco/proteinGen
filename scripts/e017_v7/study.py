@@ -194,6 +194,10 @@ def offline():return [json.loads(s) for s in (R/'results/TRAIN_candidates.jsonl'
 def actor_optimizer(e):
  e.actor.requires_grad_(True);e.actor.aa.requires_grad_(False)
  o=torch.optim.AdamW([p for p in e.actor.parameters() if p.requires_grad],lr=CFG['lr'],weight_decay=.01,foreach=False)
+ # Explicit fresh zero moments make the very first storage admission measure
+ # the complete eventual Adam bundle, rather than an unrealistically empty one.
+ for group in o.param_groups:
+  for p in group['params']:o.state[p]=dict(step=torch.tensor(0.),exp_avg=torch.zeros_like(p),exp_avg_sq=torch.zeros_like(p))
  sc=torch.optim.lr_scheduler.LambdaLR(o,lambda u:min(1.,(u+1)/25)*(.1+.9*(1+math.cos(math.pi*min(u,500)/500))/2))
  return o,sc
 
@@ -381,6 +385,14 @@ def train(label):
   save(f'results/{label}_STORAGE_ADMISSION.json',dict(complete_checkpoint_bytes=rec['bytes'],free_bytes=__import__('shutil').disk_usage(R).free,staging_plus_headroom=rec['bytes']+2*2**30+64*2**20,admitted=True,critic_parameters_each=[sum(p.numel() for p in q.parameters()) for q in qs],target_parameters_each=[sum(p.numel() for p in q.parameters()) for q in tq]))
   if reason:
    save(f'results/{label}_STOP.json',dict(reason=reason,actor_updates=0,critic_calibration_updates=250,checkpoint=rec));save(f'results/{label}_FINISHED.json',dict(actor_updates=0,reason=reason,seconds=time.monotonic()-start,network_calls=dict(e.calls),peak_GPU=torch.cuda.max_memory_allocated()));return
+  # Exact next fixed-AA SAC transaction from the CPU-deserialized complete
+  # calibrated checkpoint; engineering executions never count as research steps.
+  def trial():
+   report=sac_update(e,qs,tq,qo,pool,eps,0,.1);du,pr=policy_update(e,label,o,sc,.1,ids[:4],by,pool,0,qs)
+   sig=state_digest(dict(actor=e.actor.state_dict(),optimizer=o.state_dict(),scheduler=sc.state_dict(),q=[q.state_dict() for q in qs],target=[q.state_dict() for q in tq],qoptimizer=[op.state_dict() for op in qo],dual=du,rng=rng_state()))
+   return sig,report,pr
+  first=trial();restore(e,o,sc,rec,qs,tq,qo);second=trial();assert first==second;restore(e,o,sc,rec,qs,tq,qo)
+  save(f'{label}_SAC_REPLAY_TEST.json',dict(PASS=True,full_state_next_transaction_exact=True,engineering_actor_executions=2,engineering_critic_executions_each=2,checkpoint=rec,scope='CPU deserialization and RNG/full-state restore in same process, no fresh-process guarantee claimed'))
  else:rec=checkpoint(e,label,0,o,sc,dual,online,monitor)
  try:
   for update in range(500):
