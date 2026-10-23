@@ -87,9 +87,23 @@ def engineering():
  e,parent,opt,scheduler=setup('JOINT');spec=read(R/'REWARD_SPECIFICATION.json');goal=read(R/'manifests/TRAIN_GOALS.json')['goals'][0];initial=digest(e.actor.state_dict());state=bundle(e,opt,scheduler,'ENGINEERING',0,dict(trajectories=0,residue_decisions=0),None);size=serialized_size(state);admission=c['POLICY'].require(R,12*size,near_growth=128*2**20);path=R/'checkpoints/ENGINEERING_INITIAL.pt';record=atomic_checkpoint(path,state,c['POLICY']);a,rows=update(e,parent,opt,scheduler,'JOINT',goal,spec,1,'ENGINEERING');afterA=digest(dict(actor=e.actor.state_dict(),optimizer=opt.state_dict(),scheduler=scheduler.state_dict()));loaded=torch.load(path,map_location='cpu',weights_only=False);e.actor.load_state_dict(loaded['actor']);opt.load_state_dict(loaded['optimizer']);scheduler.load_state_dict(loaded['scheduler']);restore_rng(loaded['RNG']);b,again=update(e,parent,opt,scheduler,'JOINT',goal,spec,1,'ENGINEERING');afterB=digest(dict(actor=e.actor.state_dict(),optimizer=opt.state_dict(),scheduler=scheduler.state_dict()));assert afterA==afterB and [r['geometry'] for r in rows]==[r['geometry'] for r in again] and a==b;assert initial!=digest(e.actor.state_dict());e.prior.verify();assert digest(parent.state_dict())==e.fp;save('RL_ENGINEERING.json',dict(PASS=True,checkpoint=record,complete_checkpoint_bytes=size,storage_admission_12_checkpoint_slots=admission,exact_optimizer_scheduler_RNG_replay=True,exact_selfgenerated_rollout_replay=True,first_gradient=a,engineering_updates=2,production_updates=0,engineering_weights_discarded=True,J1_fingerprint=e.jfp,immutable_parent_fingerprint=e.fp,peak_GPU_bytes=torch.cuda.max_memory_allocated()))
  print('RL_ENGINEERING_PASS',flush=True)
 
-def run(mode):
- assert read(R/'RL_ENGINEERING.json')['PASS'];assert mode in ['JOINT','AA_ONLY','GEOMETRY_ONLY'];root=R/'checkpoints'/mode;assert not (root/'LATEST.json').exists(),'explicit recovery path required';e,parent,opt,scheduler=setup(mode);spec=read(R/'REWARD_SPECIFICATION.json');goals=read(R/'manifests/TRAIN_GOALS.json')['goals'];order=np.random.default_rng(9917).permutation(32);base=base_dev();frozen=read(R/'LOW_LEVEL_ADMISSION.json');history=[];evaluations=[];selected=dict(update=0,metrics=base,checkpoint='PARENT');counters=dict(trajectories=0,residue_decisions=0,accepted_actor_updates=0,distinct_TRAIN_identities=0);seen=set();checkpoint(e,opt,scheduler,mode,0,counters,selected);start=time.perf_counter();reason=None;u=0
- for u in range(1,CFG['update_ceilings'][mode]+1):
+def run(mode,resume=False):
+ assert read(R/'RL_ENGINEERING.json')['PASS'];assert mode in ['JOINT','AA_ONLY','GEOMETRY_ONLY'];root=R/'checkpoints'/mode;assert resume or not (root/'LATEST.json').exists(),'explicit recovery path required';e,parent,opt,scheduler=setup(mode);spec=read(R/'REWARD_SPECIFICATION.json');goals=read(R/'manifests/TRAIN_GOALS.json')['goals'];order=np.random.default_rng(9917).permutation(32);base=base_dev();frozen=read(R/'LOW_LEVEL_ADMISSION.json');history=[];evaluations=[];selected=dict(update=0,metrics=base,checkpoint='PARENT');counters=dict(trajectories=0,residue_decisions=0,accepted_actor_updates=0,distinct_TRAIN_identities=0);seen=set();
+ if resume:
+  assert not (R/(mode+'_COMPLETED.json')).exists(),'completed/stopped arm cannot automatically resume'
+  meta=read(root/'LATEST.json');assert sha(meta['path'])==meta['sha256'];state=torch.load(meta['path'],map_location='cpu',weights_only=False);assert digest(state)==meta['state_digest'] and state['scientific_stop'] is None;assert state['parent_SHA256']==c['PSHA'] and state['reward_SHA256']==sha(R/'REWARD_SPECIFICATION.json')
+  e.actor.load_state_dict(state['actor']);opt.load_state_dict(state['optimizer']);scheduler.load_state_dict(state['scheduler']);restore_rng(state['RNG']);counters=state['counters'];selected=state['selected'];first=state['update']+1
+  trace=R/f'logs/{mode}_TRAIN.jsonl';history=[json.loads(line) for line in trace.read_text().splitlines() if json.loads(line)['update']<first] if trace.exists() else []
+  if trace.exists():
+   trace.rename(trace.with_name(trace.name+'.before_recovery_'+str(time.time_ns())));trace.write_text(''.join(json.dumps(v)+'\n' for v in history))
+  seen={v['identity'] for v in history};milestone=R/(mode+'_MILESTONES.json');evaluations=[v for v in read(milestone)['evaluations'] if v['update']<first] if milestone.exists() else []
+  save(mode+'_RECOVERY_EVENT.json',dict(checkpoint=meta,exact_next_update=first,archived_uncommitted_trace=True))
+ else:
+  checkpoint(e,opt,scheduler,mode,0,counters,selected);first=1
+ start=time.perf_counter();reason=None;u=first-1
+ for u in range(first,CFG['update_ceilings'][mode]+1):
+  
+  if (R/'PAUSE_REQUEST.json').exists():reason='COOPERATIVE_PAUSE';u-=1;break
   c['POLICY'].require(R,224*2**20);goal=goals[order[(u-1)%32]]
   try:row,_=update(e,parent,opt,scheduler,mode,goal,spec,u)
   except (ValueError,FloatingPointError,RuntimeError,OSError) as ex:reason='NUMERICAL_OR_RESOURCE_STOP: '+repr(ex);u-=1;break
@@ -114,4 +128,5 @@ def run(mode):
  save(mode+'_LIVE_STATUS.json',dict(status='STOPPED',update=u,counters=counters,stop_reason=reason or 'BOUNDED_CEILING_REACHED',automatic_restart=False));print('COMPLETE',mode,u,reason,flush=True)
 if __name__=='__main__':
  if sys.argv[1]=='engineering':engineering()
+ elif sys.argv[1].startswith('resume_'):run(sys.argv[1][7:],resume=True)
  else:run(sys.argv[1])
