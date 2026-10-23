@@ -165,7 +165,7 @@ def predict():
  for panel in ['FIT','DEV','CONFIRM','GENERATED']:
   rr=records(panel);pred=dict(MLP=simple_models(rr).tolist());pred['E']=simple_models(rr,recal).tolist() if recal else None;values={};tasks={read(p)['task']['task_id']:read(p) for p in (R/'results').glob(panel+'_[0-9][0-9][0-9].json')}
   for rows in group_states(rr):
-   budget();item=tasks[rows[0]['task_id']];t=item['task'];x=state(t,item['anchor_geometry'],rows[0]['stage']);batch=e.batch(t,x[None].expand(8,-1,-1));a=torch.full((8,),AA.index(t['sequence'][len(x)]),device='cuda');g=torch.tensor([r['geometry'] for r in rows],device='cuda',dtype=torch.float64);mask=torch.ones(8,3,dtype=torch.bool,device='cuda')
+   budget();item=tasks[rows[0]['task_id']];t=item['task'];x=state(t,dict(geometry=item['anchor_geometry']),rows[0]['stage']);batch=e.batch(t,x[None].expand(8,-1,-1));a=torch.full((8,),AA.index(t['sequence'][len(x)]),device='cuda');g=torch.tensor([r['geometry'] for r in rows],device='cuda',dtype=torch.float64);mask=torch.ones(8,3,dtype=torch.bool,device='cuda')
    with torch.no_grad():qvalues=torch.stack([q(batch,a,g,mask) for q in qs],-1).float().cpu().tolist()
    for r,z in zip(rows,qvalues):values[(r['task_id'],r['stage'],r['action'])]=z
   for j in range(2):pred['critic'+str(j+1)]=[values[(r['task_id'],r['stage'],r['action'])][j] for r in rr]
