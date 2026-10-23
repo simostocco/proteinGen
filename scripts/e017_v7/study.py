@@ -359,7 +359,7 @@ def engineering():
  r=torch.tensor([.5,.5]);v=torch.tensor([100.,2.]);term=torch.tensor([True,False]);target=semimarkov(r,.995,torch.ones(2,dtype=torch.long),term,v);assert torch.allclose(target,torch.tensor([.5,2.49]))
  errors=[]
  for ep in eps[::max(1,len(eps)//32)][:32]:
-  x=reconstruct(pool[ep['task_id']],ep,4);errors.append(float((x[-4:].cpu()-torch.tensor(ep['tail'])).abs().max()));assert errors[-1]<1e-8
+  x=reconstruct(pool[ep['task_id']],ep,4);errors.append(float((x[-4:].cpu()-torch.tensor(ep['tail'],dtype=torch.float64)).abs().max()));assert errors[-1]<1e-8
  # One complete real-actor update, full recovery, exact next-update replay.
  ids=list(pool);dual,row=policy_update(e,'B',o,sc,.1,ids[:4],bt,pool,0);rec=checkpoint(e,'ENGINEERING',1,o,sc,dual,[],dict(eligible=False))
  dual2,row2=policy_update(e,'B',o,sc,dual,ids[4:8],bt,pool,1);signature=state_digest(dict(actor=e.actor.state_dict(),optimizer=o.state_dict(),scheduler=sc.state_dict(),dual=dual2,rng=rng_state()))
