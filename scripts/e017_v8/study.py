@@ -76,10 +76,10 @@ def check():
  for f,h in p['input_SHA256'].items():assert sha(f)==h,f
 def epsilon(seed,n):return torch.randn(n,3,dtype=torch.float64,generator=torch.Generator().manual_seed(seed)).cuda()
 class Engine(b['BatchEngine']):
- def __init__(self):super().__init__();self.count=collections.Counter();self.actor_seconds=0.
+ def __init__(self):super().__init__();self.count=collections.Counter();self.actor_seconds=0.;self.GPU_seconds=0.
  @torch.no_grad()
  def dist(self,t,x):
-  torch.cuda.synchronize();beg=time.perf_counter();z=super().dist(t,x);torch.cuda.synchronize();self.actor_seconds+=time.perf_counter()-beg;self.count['actor_examples']+=len(x);self.count['actor_batches']+=1;return z
+  torch.cuda.synchronize();beg=time.perf_counter();first=torch.cuda.Event(enable_timing=True);last=torch.cuda.Event(enable_timing=True);first.record();z=super().dist(t,x);last.record();last.synchronize();self.GPU_seconds+=first.elapsed_time(last)/1000;self.actor_seconds+=time.perf_counter()-beg;self.count['actor_examples']+=len(x);self.count['actor_batches']+=1;return z
 def fk(t,actions,device='cpu'):
  x=torch.tensor(t['native_prefix'],dtype=torch.float64,device=device)
  for g in actions:x=torch.cat([x,s.next_ca(x,g.to(device))[None]])
@@ -103,8 +103,8 @@ def evaluate(t,g,index,coordinates=None):
  return dict(index=index,geometry=a.tolist(),latent=s.inverse_latent(a).tolist(),valid=m['valid'],success=m['success'],translation_hit=m['translation_hit'],rotation_hit=m['rotation_hit'],position_A=m['position_A'],orientation_deg=m['orientation_deg'],goal_score=max(m['position_A']/8,m['orientation_deg']/35),original_goal_cost=cost,clashes_per100=m['clashes_per100'],Rg_normalized=m['Rg_normalized'],validity_failures=fail)
 def select(rows):
  valid=[r for r in rows if r['valid']];best=min(valid,key=lambda r:(r['goal_score'],r['original_goal_cost'],r['index'])) if valid else None;assert bool(best and best['success'])==any(r['success'] for r in rows);return best
-def stamp(e,start,c0,transitions,terminals,**extra):return dict(wall_seconds=time.perf_counter()-start,actor_examples=e.count['actor_examples']-c0[0],actor_batches=e.count['actor_batches']-c0[1],neural_GPU_seconds=e.actor_seconds-c0[2],simulated_transitions=transitions,terminal_evaluations=terminals,**extra)
-def counters(e):return e.count['actor_examples'],e.count['actor_batches'],e.actor_seconds
+def stamp(e,start,c0,transitions,terminals,**extra):return dict(wall_seconds=time.perf_counter()-start,cpu_process_seconds=time.process_time()-c0[4],actor_examples=e.count['actor_examples']-c0[0],actor_batches=e.count['actor_batches']-c0[1],neural_GPU_seconds=e.GPU_seconds-c0[3],synchronized_neural_call_wall_seconds=e.actor_seconds-c0[2],simulated_transitions=transitions,terminal_evaluations=terminals,**extra)
+def counters(e):return e.count['actor_examples'],e.count['actor_batches'],e.actor_seconds,e.GPU_seconds,time.process_time()
 @torch.no_grad()
 def complete(e,t,prefix,gs,seed):
  x=prefix.clone();gg=copy.deepcopy(gs);noise=epsilon(seed,4)
@@ -162,10 +162,12 @@ def cem(e,t,A):
   for z in draws:
    g=s.physical(torch.tensor(z,dtype=torch.float64));r=evaluate(t,g.tolist(),len(rows));r.update(generation=gen,search_logq_latent=float((-.5*((z-mu)/sd)**2-np.log(sd)-.5*math.log(2*math.pi)).sum()),search_mean=mu.tolist(),search_sd=sd.tolist());rows.append(r);trans+=4
   if len(rows) in CFG['K']:
-   cost=stamp(e,start,c0,trans,len(rows));cost['wall_seconds']+=A['snapshots']['8']['cost']['wall_seconds'];cost['neural_GPU_seconds']+=A['snapshots']['8']['cost']['neural_GPU_seconds'];cost['actor_examples']+=A['snapshots']['8']['cost']['actor_examples'];cost['actor_batches']+=A['snapshots']['8']['cost']['actor_batches'];snap[str(len(rows))]=dict(selected=select(rows)['index'] if select(rows) else None,cost=cost)
+   cost=stamp(e,start,c0,trans,len(rows))
+   for field in ['wall_seconds','cpu_process_seconds','neural_GPU_seconds','synchronized_neural_call_wall_seconds','actor_examples','actor_batches']:cost[field]+=A['snapshots']['8']['cost'][field]
+   snap[str(len(rows))]=dict(selected=select(rows)['index'] if select(rows) else None,cost=cost)
  return dict(candidates=rows,snapshots=snap,initial8_reused_from_A=True)
 def ik(t,K):
- start=time.perf_counter();rows=[];losses=[];grad=0;trans=0
+ start=time.perf_counter();cpu_start=time.process_time();rows=[];losses=[];grad=0;trans=0
  for starti in range(2):
   z=torch.zeros(4,3,dtype=torch.float64,requires_grad=True)
   with torch.no_grad():z[:,1]=.4;z[:,2]=.5 if starti==0 else -.5
@@ -175,7 +177,7 @@ def ik(t,K):
    # Exact validity and gradient objective share the already computed FK.
    r=evaluate(t,g.detach().tolist(),len(rows),coordinates=x);r.update(start=starti,iterate=j);rows.append(r);losses.append(float(loss.detach()))
    if j+1<K//2:loss.backward();torch.nn.utils.clip_grad_norm_([z],10,error_if_nonfinite=True);opt.step();grad+=1
- selected=select(rows);return dict(candidates=rows,selected=selected['index'] if selected else None,cost=dict(wall_seconds=time.perf_counter()-start,actor_examples=0,actor_batches=0,neural_GPU_seconds=0.,simulated_transitions=trans,terminal_evaluations=len(rows),gradient_objectives=K,latent_gradient_steps=grad,extra_differentiable_FK_transitions=0),loss_trace=losses)
+ selected=select(rows);return dict(candidates=rows,selected=selected['index'] if selected else None,cost=dict(wall_seconds=time.perf_counter()-start,cpu_process_seconds=time.process_time()-cpu_start,actor_examples=0,actor_batches=0,neural_GPU_seconds=0.,synchronized_neural_call_wall_seconds=0.,simulated_transitions=trans,terminal_evaluations=len(rows),gradient_objectives=K,latent_gradient_steps=grad,extra_differentiable_FK_transitions=0),loss_trace=losses)
 @torch.no_grad()
 def audit_paths(e,t,rows):
  start=time.perf_counter();c0=counters(e)
@@ -233,7 +235,7 @@ def preflight():
    if prune(t,xx):assert not r['success'];tested+=1
  e.verify();save('PREFLIGHT.json',dict(PASS=True,serial_batched_FP32_errors=errors,V6_mathematical_law_sampling_and_selector=True,historical_BF16_numerics_not_claimed_byte_identical=True,legacy_IK_equation_and_endpoint_parity=True,IK_legacy_iterations=3,prune_crosschecks=tested,hidden_native_geometry_absent=True,actor_fingerprint=e.fp,J1_tensor_SHA=e.e.prior.identity,seconds=time.perf_counter()-start,peak_GPU=torch.cuda.max_memory_allocated()))
 def run_panel(panel):
- check();assert read(R/'PREFLIGHT.json')['PASS'];e=Engine();torch.set_num_threads(1);tasks=read(R/'manifests/'+('TRAIN' if panel=='TRAIN' else 'VALIDATION')+'.json')['tasks'];start=time.perf_counter();done=0
+ check();assert read(R/'PREFLIGHT.json')['PASS'];e=Engine();torch.set_num_threads(1);tasks=read(R/('manifests/'+('TRAIN' if panel=='TRAIN' else 'VALIDATION')+'.json'))['tasks'];start=time.perf_counter();cpu_start=time.process_time();done=0
  if panel=='TRAIN':tasks=tasks[:4]
  prefix_cache={}
  for i,raw in enumerate(tasks):
@@ -250,7 +252,7 @@ def run_panel(panel):
    else:t=copy.deepcopy(raw)
    prefix_cost=stamp(e,prefix_cost_start,prefix_c0,4 if e.count['actor_examples']>prefix_c0[0] else 0,0)
    t['condition']=condition;result=solve(e,t);save(str(path.relative_to(R)),dict(task=t,prefix_generation_cost=prefix_cost,algorithms=result,root_irreparable_or_unreachable=prune(t,s.xprefix(t)),source=source(),protocol_SHA256=sha(R/'PROTOCOL.json')));save(str(path.with_suffix('.sha.json').relative_to(R)),dict(sha256=sha(path),complete=True));done+=1;save('LIVE_STATUS.json',dict(stage=panel,completed_condition_tasks=done,total_condition_tasks=len(tasks)*(1 if panel=='TRAIN' else 2),pid=os.getpid(),D_free_bytes=shutil.disk_usage(R).free));print('PLANNED',panel,done,len(tasks)*(1 if panel=='TRAIN' else 2),flush=True)
- e.verify();save(panel+'_COMPLETED.json',dict(complete=True,condition_tasks=done,elapsed_seconds=time.perf_counter()-start,actor_examples=e.count['actor_examples'],actor_batches=e.count['actor_batches'],neural_GPU_seconds=e.actor_seconds,peak_GPU=torch.cuda.max_memory_allocated(),peak_RSS_KiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,actor_fingerprint=e.fp,J1_tensor_SHA=e.e.prior.identity,no_neural_updates=True))
+ e.verify();save(panel+'_COMPLETED.json',dict(complete=True,condition_tasks=done,elapsed_seconds=time.perf_counter()-start,cpu_process_seconds=time.process_time()-cpu_start,actor_examples=e.count['actor_examples'],actor_batches=e.count['actor_batches'],neural_GPU_seconds=e.GPU_seconds,synchronized_neural_call_wall_seconds=e.actor_seconds,peak_GPU=torch.cuda.max_memory_allocated(),peak_RSS_KiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,actor_fingerprint=e.fp,J1_tensor_SHA=e.e.prior.identity,no_neural_updates=True))
 def campaign():
  lock=(R/'runtime/campaign.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
  for stage,marker in [('preflight','PREFLIGHT.json'),('run_TRAIN','TRAIN_COMPLETED.json'),('run_VALIDATION','VALIDATION_COMPLETED.json'),('analyze','PROVENANCE_SHA256.json')]:
