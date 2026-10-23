@@ -37,7 +37,7 @@ def summarize(ds,method,K):
  out['end_to_end_warm_seconds']=out['wall_seconds']+out['audit_wall_seconds'];out['seconds_per_success']=out['wall_seconds']/out['full_success_count'] if out['full_success_count'] else None
  return out
 def main():
- torch.set_num_threads(1);st['check']();assert read(R/'VALIDATION_COMPLETED.json')['complete'];files=sorted((R/'results').glob('VALIDATION_[0-9][0-9][0-9]_*.json'));assert len(files)==128;allrows=[read(p) for p in files];conditions={c:sorted([d for d in allrows if d['task']['condition']==c],key=lambda d:d['task']['task_id']) for c in CFG['conditions']};metrics={};paired={};matched={};methods=['A','BEAM','CEM','IK']
+ torch.set_num_threads(1);st['check']();assert read(R/'VALIDATION_COMPLETED.json')['complete'];files=sorted(p for p in (R/'results').glob('VALIDATION_[0-9][0-9][0-9]_*.json') if not p.name.endswith('.sha.json'));assert len(files)==128;allrows=[read(p) for p in files];conditions={c:sorted([d for d in allrows if d['task']['condition']==c],key=lambda d:d['task']['task_id']) for c in CFG['conditions']};metrics={};paired={};matched={};methods=['A','BEAM','CEM','IK']
  for condition,ds in conditions.items():
   assert len(ds)==64 and len({d['task']['protected_group_id'] for d in ds})==32;metrics[condition]={};paired[condition]={};matched[condition]={}
   for K in KLIST:
