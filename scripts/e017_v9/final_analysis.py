@@ -42,7 +42,7 @@ def final():
  save('CHECKPOINT_AND_RECOVERY_MANIFEST.json',ckpt)
  baselinecomponents={p:criteria(groups('TRAIN',p)) for p in ['A_J1','B_V3']};confirmation=read(R/'CONFIRMATION_COMPARISON.json') if (R/'CONFIRMATION_COMPARISON.json').exists() else dict(status='NOT_EXECUTED',reason='No selected checkpoint qualified for prospective confirmation after scientific safety/continuation gates. Panel remains unexposed by V9 policy evaluation.')
  save('K1_AND_BEST_OF_K_COMPARISONS.json',dict(baselines=baselines,milestones=milestones,matched_identity_clustered_comparisons=comparisons,TRAIN_component_hits=baselinecomponents,confirmation=confirmation,seeds='E017V9|9917 hash-derived goal/candidate streams; BASELINE shared across policies/checkpoints; RL_update shared across arms; independent candidates',nested_K=[1,2,4,8],confirmation_primary='independent held-out property goals; no TEST',failed_attempts_retained=True))
- safety=any('VALIDITY' in z['stop_reason'] or 'KL' in z['stop_reason'] or 'NUMERICAL' in z['stop_reason'] or 'RESOURCE' in z['stop_reason'] for z in arms.values());decision='NO-GO' if confirmation.get('promotion_PASS') is not True else 'GO_FOR_SEPARATELY_BOUNDED_NEXT_REVIEW';events='; '.join(f"{m}: {z['updates']} updates, {z['stop_reason']}" for m,z in arms.items());total_sequences=sum(z['counters']['trajectories'] for z in arms.values());total_tokens=sum(z['counters']['residue_decisions'] for z in arms.values());trainidentities=set()
+ safety=any('VALIDITY' in z['stop_reason'] or 'KL' in z['stop_reason'] or 'NUMERICAL' in z['stop_reason'] or 'RESOURCE' in z['stop_reason'] for z in arms.values());decision='NO-GO' if confirmation.get('promotion_PASS') is not True else 'GO_FOR_SEPARATELY_BOUNDED_NEXT_REVIEW';integrity=read(R/'SCIENTIFIC_INTEGRITY_STOP.json') if (R/'SCIENTIFIC_INTEGRITY_STOP.json').exists() else None;events='; '.join(f"{m}: {z['updates']} updates, {z['stop_reason']}" for m,z in arms.items());events+=('; scientific integrity stop: ordered motif representation loses early order information' if integrity else '');total_sequences=sum(z['counters']['trajectories'] for z in arms.values());total_tokens=sum(z['counters']['residue_decisions'] for z in arms.values());trainidentities=set()
  traces={}
  for mode in arms:
   traces[mode]=[json.loads(line) for line in (R/f'logs/{mode}_TRAIN.jsonl').read_text().splitlines()];trainidentities.update(v['identity'] for v in traces[mode])
@@ -97,7 +97,7 @@ RLOO groups8, independently sampled complete de novo trajectories, leave-one-out
 
 Total production exposure: {total_sequences} generated protein trajectories, {total_tokens} residue decisions across{len(trainidentities)} distinct TRAIN identities, separately from optimizer updates. Two engineering updates/16 trajectories were discarded and not counted as production. Exact optimizer/scheduler/RNG/trajectory replay was verified; density recomputation error and trust-region probes are recorded. A safe checkpoint is written before scientific-stop worker exit.
 
-Factor-ablation status: {', '.join(m+': executed' if m in arms else m+': blocked by earlier safety/prerequisite gate' for m in ['AA_ONLY','GEOMETRY_ONLY'])}. A stopped safety gate remains a failure even if its small-panel paired interval includes0. No checkpoint is promoted by soft reward or mean geometry improvement alone.
+Factor-ablation status: {', '.join(m+': executed' if m in arms else m+': blocked by earlier safety/prerequisite gate' for m in ['AA_ONLY','GEOMETRY_ONLY'])}. The145 stop was an integrity audit, not a failed original KL/validity threshold. Initial tests missed loss of early motif-order information; see ORDERED_MOTIF_OBSERVABILITY_AUDIT.json. All checkpoints are quarantined. A stopped safety gate remains a failure even if its small-panel paired interval includes0. No checkpoint is promoted by soft reward or mean geometry improvement alone.
 ''')
  write('HIGH_LEVEL_MDP_AND_CORRECTION_ENVIRONMENT.md',f'''# Property MDP and true suffix correction interface
 Implemented in core.py using the existing typed BuildState/BuildAction/CA builder and nine-option high-level architecture. Public neural inputs use only generated AA/CA prefix, known property goal/motif, horizon, progress and intervention history. Audit witness identity/group metadata are not neural features. No native endpoint/AA trace is an inference target.
@@ -120,15 +120,17 @@ State/RNG snapshots enable kinematic counterfactual suffix execution and matched
  write('NEXT_HIERARCHICAL_RL_DECISION.md',f'''# V9 decision: {decision}
 {events}
 
+An ordered-goal encoding defect was confirmed after145 updates; the initial tests missed it. Both motif tokens shared a RoPE position, making AB/BA indistinguishable before current-prefix motif feedback. This is an implementation confound, not proof that policy gradients or the complete task are unlearnable. All V9 actors are quarantined. First correct lossless ordered-goal input and require forward/gradient observability tests before a separately authorized rerun; no correction or retraining occurred here.
+
 The benchmark has measurable computational constraints, native feasible witnesses and an independently assessed exposure proxy. Frozen de novo generation produces a substantial valid population, so the task passed proposal admission. Full conjunction success is rare: frozen TRAIN J1 and actor each had0/256 full successes. Actor component hits show why simultaneous motif, regional structure and hard validity matter; no single low-position-error surrogate can qualify it.
 
 1. Meaningful property task? Yes as a bounded sequence/CA computational benchmark; no biochemical function claim.
 2. Plausible initial candidates without native targets? Some satisfy the declared backbone/sequence/packing rules (actor119/256); this is not experimental foldability.
-3. Low-level RL improvement? See matched DEV/confirmation results; a soft-reward rise alone is not accepted. No promotion without the frozen primary K1/validity/KL/generalization criteria.
+3. Low-level RL improvement? See matched DEV/confirmation results; a soft-reward rise alone is not accepted. No promotion without the frozen primary K1/validity/KL/generalization criteria; the confirmed implementation defect independently blocks qualification.
 4. Joint sequence–geometry value? Only executed, matched factor arms can answer; blocked arms leave this unresolved.
 5. Corrections beyond sampling? Not established; only true suffix mechanics were verified.
 6. Long-horizon dependencies? Exposure and nonlocal clashes depend on later residues, but useful learnable intervention credit was not demonstrated.
-7. High-level RL justified? No on this evidence. A future separately bounded, matched correction/search feasibility study is the simplest next diagnostic before training a hierarchy. If validity failed, investigate the safety trade-off first; do not relax the hard rules or simply add updates.
+7. High-level RL justified? No on this evidence. Correct ordered-goal observability first; a separately bounded, matched correction/search feasibility study can then test the need for a hierarchy. If validity failed, investigate the safety trade-off first; do not relax the hard rules or simply add updates.
 8. Robotics transfer? Requires a separate dynamics/observation/action benchmark with delayed intervention consequences, non-RL controls, held-out transfer and physical validation. No current result demonstrates transfer.
 
 {limitations}
@@ -143,6 +145,11 @@ Decision: {decision}. {events}.
 Recovered frozen J1 and original joint V3 selected actor; isolated versioned D: branch/worktree.512 TRAIN/128 VALIDATION reference identities;48 all-atom proxy references;32TRAIN/8DEV/16CONFIRM coordinate-free property specifications;329 reward/recovery checks; exact empty-prefix inference replay; frozen TRAIN and DEV de novo baselines; admitted bounded on-policy delayed-reward learning. Total production{sum(z['updates'] for z in arms.values())} accepted actor updates,{total_sequences} sampled trajectories,{total_tokens} residue decisions,{len(trainidentities)} distinct TRAIN identities. Engineering2 discarded updates counted separately. All critics, pretrained J1 and original parent remain frozen.
 
 The original exposure-reference attempt failed legacy mapping coverage and was archived. Verified raw-source mapping fixed this before generation, without changing scientific gates. The selected smooth10 C-alpha exposure proxy independently achieved heldTRAIN meanSpearman{spec['proxy_gates']['HOLD']['correlation']['estimate']:.6f} and VALIDATION{spec['proxy_gates']['VALIDATION']['correlation']['estimate']:.6f},16 identities each, identity intervals in the calibration report.329 reward/recovery tests passed. Frozen actor admission had119/256 hard-valid samples,31/32 goals represented and reward SD0.13453; full success was0/256, retained honestly as a sparse-conjunction limitation.
+
+## Integrity failure and interpretation
+The goal adapter I added assigns both motif tokens the same RoPE position. Shared-token attention is permutation-equivariant, so EF and FE produce effectively identical conditional action laws before region feedback (maximum observed output difference5.96e-8). After two region residues, the motif-utility feedback can reveal order: the complete task is not proven unlearnable. The initial engineering tests missed this unintended loss of early ordered-goal information. This implementation defect confounds the intended policy-learning comparison. No causal claim that the defect explains every failure is justified. The adapter was not fixed or retrained after outcomes. All V9 checkpoints are quarantined from promotion.
+
+Training stopped cooperatively at145; its original checkpoint reason remains COOPERATIVE_PAUSE. SCIENTIFIC_INTEGRITY_STOP.json records the subsequently confirmed reason separately, without rewriting the original result as a KL/validity gate failure. No new evaluation was run on update145; the last scored milestone is100. AA/geometry ablations and independent confirmation remain blocked.
 
 ## Learning, uncertainty and blocked stages
 All K1/2/4/8 are nested candidate pools with common random streams across checkpoints. Development identities were fixed; per-protein paired intervals are in K1_AND_BEST_OF_K_COMPARISONS.json. Small-panel uncertainty does not overturn a prespecified safety stop. TRAIN reward, diversity or positional/proxy changes alone are not promotion. Confirmation status:{confirmation['status']}. No generalization gain is claimed without an independent confirmation result.
@@ -159,7 +166,7 @@ Measured complete recovery size{engineering['complete_checkpoint_bytes']} bytes;
 
 ## Limits and next decision
 {limitations}
-Recommend a separately reviewed correction/search feasibility and safety diagnostic before hierarchical RL. Preserve the frozen property task and safeguards; do not infer success from higher proxy reward, continue training unconditionally or initiate V10.
+First correct ordered motif representation and verify early forward/gradient goal sensitivity in a separately authorized study, keeping the task, architecture and safeguards unchanged. Then reassess bounded proposal learning and correction/search before hierarchical RL. Preserve the frozen property task and safeguards; do not infer success from higher proxy reward, continue training unconditionally or initiate V10.
 '''
  write('FINAL_E017_V9_SCIENTIFIC_REPORT.md',final)
  import matplotlib;matplotlib.use('Agg');import matplotlib.pyplot as plt
