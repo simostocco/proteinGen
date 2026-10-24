@@ -94,7 +94,7 @@ def backward_check(e,task,rows):
   for i in active:
    # An aborted state contributes all rejected scores, with no accepted action.
    if t<len(rows[i]['geometry']):ws[i].state=append(ws[i].state,task['fixed_sequence'][t],rows[i]['geometry'][t])
- grads={name:float(v.grad.norm()) for name,v in e.actor.named_parameters() if v.grad is not None};assert grads and all(math.isfinite(v) for v in grads.values());assert any(v>0 for k,v in grads.items() if 'geometry' in k);assert not any(v>0 for k,v in grads.items() if k.startswith('aa.'));assert maxerr<5e-5;norm=math.sqrt(sum(z*z for z in grads.values()));e.actor.zero_grad(set_to_none=True);e.actor.requires_grad_(False);assert c['state_digest'](e.actor.state_dict())==before;verify_engine(e)
+ save('PROTEIN_REPLAY_NUMERIC_AUDIT.json',dict(group_size=len(rows),replayed_proposals=replayed,max_logprob_error=maxerr,behavior_batch_must_match_replay_batch=True));grads={name:float(v.grad.norm()) for name,v in e.actor.named_parameters() if v.grad is not None};assert grads and all(math.isfinite(v) for v in grads.values());assert any(v>0 for k,v in grads.items() if 'geometry' in k);assert not any(v>0 for k,v in grads.items() if k.startswith('aa.'));assert maxerr<5e-5;norm=math.sqrt(sum(z*z for z in grads.values()));e.actor.zero_grad(set_to_none=True);e.actor.requires_grad_(False);assert c['state_digest'](e.actor.state_dict())==before;verify_engine(e)
  # Measure a complete future Adam recovery without writing duplicated weights.
  from protein_joint_sac.crisp_v3.recovery import serialized_size
  actor_cpu={k:v.detach().cpu().clone() for k,v in e.actor.state_dict().items()};params=list(e.actor.named_parameters());ostate={i:dict(step=torch.tensor(1.),exp_avg=torch.zeros_like(v,device='cpu'),exp_avg_sq=torch.zeros_like(v,device='cpu')) for i,(name,v) in enumerate(params)};state=dict(actor=actor_cpu,optimizer=dict(state=ostate,param_groups=[dict(params=list(range(len(params))),lr=1e-6,betas=(.9,.999),eps=1e-8,weight_decay=0.,amsgrad=False,maximize=False,foreach=None,capturable=False,differentiable=False,fused=None)]),scheduler=dict(update=1,total=5000),RNG=dict(torch=torch.get_rng_state(),numpy=np.random.default_rng(9317).bit_generator.state),next_identity=task['goal']['goal_id'],update=1,group_size=16,manifest_SHA256=sha(R/'manifests/TRAIN_TASKS.json'),reference_SHA256=c['PSHA'],sampler='stateless candidate/step/rejection-index seeds',replay='full proposal trace file references and committed journal hashes',configuration=read(R/'FROZEN_PROTOCOL.json'));size=serialized_size(state)
@@ -105,7 +105,7 @@ def main():
  if stage=='train':
   for i,task in enumerate(train):
    for pol in ['A','B','C']:group(e,'TRAIN',i,task,pol,16 if pol=='C' and i<4 else 8)
-  backward_check(e,train[0],read(R/'results/TRAIN_C_000.json')['records'][:8]);search(e,train);alternate(e,train);delayed(e,train)
+  backward_check(e,train[0],read(R/'results/TRAIN_C_000.json')['records']);search(e,train);alternate(e,train);delayed(e,train)
  elif stage=='validation':
   assert read(R/'TRAIN_READINESS.json')['baseline_evaluation_admitted'];tasks=read(R/'manifests/PROSPECTIVE_FIXED.json')['tasks']
   for i,task in enumerate(tasks):
