@@ -1,5 +1,6 @@
 """Deterministic CPU observability, reward, gradient and leak tests."""
 import ast,copy,inspect,itertools,json,runpy,sys,time
+from dataclasses import replace
 from pathlib import Path
 import numpy as np
 import torch
@@ -31,7 +32,7 @@ def checktests():
   checks.append(dict(name=name,PASS=bool(value),detail=detail))
   if not value:failures.append(name)
  def features(state,gg):
-  w=c['PropertyWorld'](gg,spec,1);w.state=copy.deepcopy(state);w.state.N=gg['N'];prefix=p['collate']([w.state],'cpu');ref=dict(h=torch.zeros(1,352),logits=torch.zeros(1,20),mu=torch.zeros(1,20,3),ls=torch.zeros(1,20,3));return g['public_batch']([w],prefix,ref)
+  w=c['PropertyWorld'](gg,spec,1);w.state=replace(copy.deepcopy(state),N=gg['N']);prefix=p['collate']([w.state],'cpu');ref=dict(h=torch.zeros(1,352),logits=torch.zeros(1,20),mu=torch.zeros(1,20,3),ls=torch.zeros(1,20,3));return g['public_batch']([w],prefix,ref)
  def fingerprint(batch):
   tokens=sorted(batch['goals'][0,batch['goal_valid'][0]].tolist());return json.dumps(dict(tokens=tokens,context=batch['context'].tolist()),sort_keys=True)
  representation_checks=0
@@ -89,7 +90,7 @@ def checktests():
  zero=copy.deepcopy(actor).eval()
  with torch.no_grad():zero.aa.weight.zero_();zero.aa.bias.zero_();zero.geometry[-1].weight.zero_();zero.geometry[-1].bias.zero_();z=[zero(b) for b in batches]
  check('zero_head_identical_behavior_is_not_representation_failure',all(torch.equal(x,y) for x,y in zip(*z)) and fingerprint(batches[0])!=fingerprint(batches[1]));actor.zero_grad(set_to_none=True);prior.verify();check('parent_actor_unchanged_by_tests',c['state_digest'](actor.state_dict())==initial);check('J1_no_parameter_gradients',all(q.grad is None for q in prior.model.parameters()))
- save('GOAL_OBSERVABILITY_TESTS.json',dict(PASS=not failures,checks=checks,failures=failures,representation_pair_checks=representation_checks,stages=65,neural_prelearning_sensitivity=neural,production_reward_checks=reward_checks,reward_AST_and_hash_unchanged=True,actor_parameters=sum(v.numel() for v in actor.parameters()),parent_fingerprint=initial,J1_fingerprint=prior.identity,J1_file_SHA256=c['J1SHA'],parent_file_SHA256=c['PSHA'],no_optimizer_updates=True,GPU_used=False,seconds=time.perf_counter()-start,partial_progress_note='Canonical partial progress may expose one known correct motif residue sooner than the legacy utility; it is observation only. Completed sequence utility and production reward remain exactly unchanged.'))
+ save('GOAL_OBSERVABILITY_TESTS.json',dict(PASS=not failures,checks=checks,failures=failures,representation_pair_checks=representation_checks,stages=65,neural_prelearning_sensitivity=neural,production_reward_checks=reward_checks,reward_AST_and_hash_unchanged=True,actor_parameters=sum(v.numel() for v in actor.parameters()),parent_fingerprint=initial,J1_fingerprint=prior.identity,J1_file_SHA256=c['J1SHA'],parent_file_SHA256=c['PSHA'],source_SHA256={name:c['sha'](R/'source/scripts/e017_v91'/name) for name in ['goals.py','core.py','policy.py','tests.py']},no_optimizer_updates=True,GPU_used=False,seconds=time.perf_counter()-start,partial_progress_note='Canonical partial progress may expose one known correct motif residue sooner than the legacy utility; it is observation only. Completed sequence utility and production reward remain exactly unchanged.'))
  save('OBSERVABILITY_ADMISSION.json',dict(PASS=not failures,failures=failures,controllability_pending=True,RL_authorized=False));print(json.dumps(dict(PASS=not failures,checks=len(checks),failures=failures,neural=neural)))
 def mathfinitepositive(x):return np.isfinite(x) and x>1e-12
 if __name__=='__main__':checktests()
