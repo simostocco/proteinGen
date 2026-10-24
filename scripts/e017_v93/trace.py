@@ -27,5 +27,7 @@ def categorical_score(logits,aa,learned=True,allowed=None):
  # Known/fixed amino acids are interventions, not actor categorical decisions.
  if not learned:return logits.sum(-1)*0
  masked=logits.double()
- if allowed is not None:masked=masked.masked_fill(~allowed,float('-inf'))
+ if allowed is not None:
+  if not allowed.any(-1).all():raise ValueError('empty AA mask: deterministic abort, no categorical draw')
+  masked=masked.masked_fill(~allowed,float('-inf'))
  return masked.log_softmax(-1).gather(-1,aa[...,None]).squeeze(-1)
