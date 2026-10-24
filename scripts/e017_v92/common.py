@@ -1,11 +1,14 @@
 """Read-only V9.1 components and exact irreversible-prefix predicates."""
-import collections,copy,hashlib,json,math,runpy,time
+import collections,copy,hashlib,json,math,runpy,time,os
 from pathlib import Path
 import numpy as np
 import torch
 R=Path('/mnt/d/Simone/proteinGen_data/e017_v92_prefix_feasibility_20261024_v1');OLD=R.parent/'e017_v91_ordered_goal_recovery_20261023_v1';V9=R.parent/'e017_v9_property_steering_20261023_v1';p=runpy.run_path(str(OLD/'source/scripts/e017_v91/policy.py'));c=p['c'];g=p['g'];read=c['read'];sha=c['sha'];AA=c['AA'];SPEC=read(OLD/'REWARD_SPECIFICATION.json');LIMITS=SPEC['hard_backbone_limits'];assert c['LIMITS']==LIMITS
 
-def save(name,obj):c['atomic_json'](R/name,obj)
+def save(name,obj):
+ path=R/name;tmp=path.with_name(path.name+'.part');assert not tmp.is_symlink()
+ with tmp.open('w') as f:json.dump(obj,f,separators=(',',':'),allow_nan=False);f.flush();os.fsync(f.fileno())
+ os.replace(tmp,path);fd=os.open(path.parent,os.O_RDONLY);os.fsync(fd);os.close(fd)
 def ns(*items):return int(hashlib.sha256(('E017V92|9241|'+'|'.join(map(str,items))).encode()).hexdigest()[:15],16)
 def append(state,aa,geom):return c['append_state'](state,c['BuildAction'](aa,torch.tensor(geom,dtype=torch.float64),c['mask_for_step'](state.t)))
 def prefix_status(state):
