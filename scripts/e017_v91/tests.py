@@ -8,7 +8,7 @@ from protein_joint_sac.crisp_v3.density import log_prob
 
 def checktests():
  torch.set_num_threads(1);torch.use_deterministic_algorithms(True);start=time.perf_counter();spec=read(R/'REWARD_SPECIFICATION.json');goal=read(R/'manifests/TRAIN_GOALS.json')['goals'][0];base=g['canonical'](goal);cases={};m=base['motif'];a,z=m['allowed_region']
- for name in ['order','identity','position','position_shift','spacing','exposure','burial','region','length']:
+ for name in ['order','identity','position','position_shift','spacing','exposure','burial','region','length','motif_length']:
   v=copy.deepcopy(base)
   if name=='order':v['motif']['tokens']=v['motif']['tokens'][::-1]
   if name=='identity':v['motif']['tokens'][0]=next(x for x in AA if x not in m['tokens'])
@@ -19,6 +19,7 @@ def checktests():
   if name=='burial':v['regions']['buried']['threshold_units']+=500 if v['regions']['buried']['threshold_units']<9500 else -500
   if name=='region':v['regions']['buried']['interval']=[max(0,v['regions']['buried']['interval'][0]-1),v['regions']['buried']['interval'][1]]
   if name=='length':v['N']=65
+  if name=='motif_length':v['motif']['tokens'].append(next(x for x in AA if x not in m['tokens']));v['motif']['gaps'].append([0,0])
   cases[name]=g['canonical'](v)
  def reversekeys(x):
   if isinstance(x,dict):return {k:reversekeys(v) for k,v in reversed(list(x.items()))}
@@ -30,7 +31,7 @@ def checktests():
   checks.append(dict(name=name,PASS=bool(value),detail=detail))
   if not value:failures.append(name)
  def features(state,gg):
-  w=c['PropertyWorld'](gg,spec,1);w.state=copy.deepcopy(state);prefix=p['collate']([w.state],'cpu');ref=dict(h=torch.zeros(1,352),logits=torch.zeros(1,20),mu=torch.zeros(1,20,3),ls=torch.zeros(1,20,3));return g['public_batch']([w],prefix,ref)
+  w=c['PropertyWorld'](gg,spec,1);w.state=copy.deepcopy(state);w.state.N=gg['N'];prefix=p['collate']([w.state],'cpu');ref=dict(h=torch.zeros(1,352),logits=torch.zeros(1,20),mu=torch.zeros(1,20,3),ls=torch.zeros(1,20,3));return g['public_batch']([w],prefix,ref)
  def fingerprint(batch):
   tokens=sorted(batch['goals'][0,batch['goal_valid'][0]].tolist());return json.dumps(dict(tokens=tokens,context=batch['context'].tolist()),sort_keys=True)
  representation_checks=0
@@ -44,6 +45,8 @@ def checktests():
  v=copy.deepcopy(base);v['motif']['absolute_positions']=[a+1,a];invalid.append(v)
  v=copy.deepcopy(goal);v['native_future_coordinates']=[[0,0,0]];invalid.append(v)
  v=copy.deepcopy(goal);v['exposure_min']+=1e-6;invalid.append(v)
+ v=copy.deepcopy(base);v['motif']['tokens']=['AC','D'];invalid.append(v)
+ v=copy.deepcopy(base);v['motif']['tokens']=['','D'];invalid.append(v)
  for i,v in enumerate(invalid):
   rejected=False
   try:g['canonical'](v)

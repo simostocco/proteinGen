@@ -35,7 +35,7 @@ def canonical(raw):
   regions=dict(exposed=dict(interval=list(raw['exposed']),threshold_units=threshold(raw['exposure_min'])),buried=dict(interval=list(raw['buried']),threshold_units=threshold(raw['burial_max'])));contrast=threshold(raw['contrast_min'])
  if not 4<=N<=500:raise ValueError('unsupported length')
  tokens=m['tokens']
- if not isinstance(tokens,list) or not 1<=len(tokens)<=MAX_MOTIF or any(a not in AA for a in tokens):raise ValueError('canonical AA motif of length1..8 required')
+ if not isinstance(tokens,list) or not 1<=len(tokens)<=MAX_MOTIF or any(not isinstance(a,str) or len(a)!=1 or a not in AA for a in tokens):raise ValueError('canonical AA motif of length1..8 required')
  m['tokens']=list(tokens)
  def interval(v):
   if len(v)!=2:raise ValueError('interval length')
@@ -85,12 +85,14 @@ def public_batch(worlds,prefix,reference):
  device=prefix['ids'].device;B=len(worlds);canonical_goals=[canonical(w.goal) for w in worlds];G=max(len(g['motif']['tokens']) for g in canonical_goals);features=torch.zeros(B,G,36,device=device);valid=torch.zeros(B,G,dtype=torch.bool,device=device);context=torch.zeros(B,64,device=device)
  for i,(w,g) in enumerate(zip(worlds,canonical_goals)):
   # Only current generated state; audit IDs and witness coordinates never enter.
+  assert w.state.N==g['N'],'state/goal horizon mismatch'
   raw=production_raw(g) if g['motif']['absolute_positions'] is None and all(v==[0,0] for v in g['motif']['gaps']) and g['motif']['allowed_region']==g['regions']['exposed']['interval'] else dict(N=g['N'],exposed=g['regions']['exposed']['interval'],buried=g['regions']['buried']['interval'],motif=''.join(g['motif']['tokens']))
   o=c['observe'](''.join(w.state.residues),w.state.ca.numpy(),raw,w.spec,w.interventions,w.mode);N=g['N'];a,z=g['regions']['exposed']['interval'];b,d=g['regions']['buried']['interval'];progress=sequence_progress(o['sequence'],g);m=g['motif'];L=len(m['tokens']);s=c['sequence_stats'](o['sequence'])
   context[i,:11]=torch.tensor([1,g['regions']['exposed']['threshold_units']/GRID,g['regions']['buried']['threshold_units']/GRID,g['contrast_units']/GRID,a/N,z/N,b/N,d/N,w.mode/3,w.state.t/N,1-w.state.t/N],device=device)
   for j,name in enumerate(['exposed','buried']):
    q=o['regions'][name];context[i,11+2*j]=q['current_known_mean'] if q['current_known_mean'] is not None else 0;context[i,12+2*j]=q['generated']/q['total'];context[i,26+j]=q['final_exposure_upper_bound']
   context[i,15]=progress['utility'];context[i,16:20]=torch.tensor([s['entropy_bits']/math.log2(20),s['max_fraction'],s['max_run']/N,s['unique']/20],device=device);context[i,20]=o['clash_count']/max(1,N*.02);context[i,21]=o['irreversible_clash_violation'];context[i,22]=len(w.interventions)/4;context[i,23]=L/MAX_MOTIF;context[i,24]=N/500;context[i,25]=progress['complete'];context[i,28+w.mode]=1
+  ex=o['regions']['exposed'];bu=o['regions']['buried'];ex_known=ex['current_known_mean'] is not None;bu_known=bu['current_known_mean'] is not None;context[i,32:40]=torch.tensor([ex_known,bu_known,max(0,g['regions']['exposed']['threshold_units']/GRID-ex['current_known_mean']) if ex_known else 0,max(0,bu['current_known_mean']-g['regions']['buried']['threshold_units']/GRID) if bu_known else 0,ex_known and bu_known,max(0,g['contrast_units']/GRID-(ex['current_known_mean']-bu['current_known_mean'])) if ex_known and bu_known else 0,1-progress['utility'],progress['complete']],device=device)
   for j,aa in enumerate(m['tokens']):
    aa_pos=None if m['absolute_positions'] is None else m['absolute_positions'][j];lo,hi=m['gaps'][j-1] if j else (0,0);u,v=m['allowed_region'];f=features[i,j];f[:12]=torch.tensor([j/MAX_MOTIF,L/MAX_MOTIF,(aa_pos or 0)/N,lo/N,hi/N,u/N,v/N,1,0,progress['role_matches'][j],progress['role_observed'][j],max(0,v-w.state.t)/(v-u)],device=device);f[12+AA.index(aa)]=1
    # Virtual role anchor is explicit encoding, not an imposed motif location.
