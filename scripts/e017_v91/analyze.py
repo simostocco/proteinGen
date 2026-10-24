@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from scipy.stats import beta
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v91_ordered_goal_recovery_20261023_v1');t=runpy.run_path(str(R/'source/scripts/e017_v91/train.py'));p=t['p'];c=t['c'];read=c['read'];save=c['save'];sha=c['sha'];AA=c['AA']
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v91_ordered_goal_recovery_20261023_v1');t=runpy.run_path(str(R/'source/scripts/e017_v91/train.py'));p=t['p'];c=t['c'];g=p['g'];read=c['read'];save=c['save'];sha=c['sha'];AA=c['AA']
 def textfile(name,text):
  target=R/name;tmp=target.with_name(target.name+'.part')
  with tmp.open('w') as f:f.write(text);f.flush();os.fsync(f.fileno())
