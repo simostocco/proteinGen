@@ -15,7 +15,7 @@ def make(row,panel,level='witness',reverse=False):
  goal=dict(goal_id=f'V93_{panel}_{row["identity"][:16]}_{level}'+('_reverse' if reverse else ''),witness_identity=row['identity'],protected_group=row['group'],N=64,exposed=[a,a+8],buried=[b,b+8],exposure_min=max(0.,round(math.floor(E[a:a+8].mean()*20)/20-slack,8)),burial_max=min(1.,round(math.ceil(E[b:b+8].mean()*20)/20+slack,8)),contrast_min=.1,motif=motif,motif_scope='anywhere within exposedregion',native_coordinates_provided=False,difficulty=level,sequence_synthetic_motif_reversal=synthetic)
  metric=c['score'](seq,np.asarray(row['coordinates']),goal,SPEC)
  if not metric['success']:return None
- return dict(goal=goal,fixed_sequence=seq,source_reference_identity=row['identity'],source_reference=str(V9/f'manifests/{"TRAIN" if panel=="TRAIN" else "VALIDATION"}_REFERENCE.json'),native_witness_success=True,synthetic_sequence_control=synthetic)
+ return dict(goal=goal,fixed_sequence=seq,source_reference_identity=row['identity'],source_reference=str(V9/f'manifests/{row["split"]}_REFERENCE.json'),native_witness_success=True,synthetic_sequence_control=synthetic)
 def main():
  guard();assert not (R/'manifests/PROSPECTIVE_JOINT.json').exists();used=set();usedgroups=set()
  for root,panels in [(V9,['TRAIN','DEV','CONFIRM']),(V91,['CONFIRM'])]:
