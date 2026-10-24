@@ -23,7 +23,7 @@ def summarize(panel,pol):
    a=a-a.mean(0);b=b-b.mean(0);u,_,v=np.linalg.svd(a.T@b);rot=u@np.diag([1,1,np.linalg.det(u@v)])@v;rms.append(float(np.sqrt(np.square(a@rot-b).sum()/64)))
   if rms:div.append(float(np.mean(rms)))
  points={key:ci([np.mean([z[key] for z in rows]) for rows in identity.values()]) for key in ['hard','full','regional','exposed','buried','backbone','K1','K8']}
- return dict(goals=len(groups),identities=len(identity),candidates=len(groups)*8,marginals=dict(m),K1=sum(rows[0]['metrics']['success'] for o in groups for rows in [o['records']]),K8=sum(any(r['metrics']['success'] for r in o['records'][:8]) for o in groups),clustered=points,by_difficulty={k:dict(v) for k,v in by_level.items()},cost=dict(cost),mean_structural_pair_RMSD=float(np.mean(div)),complete_shape_n=len(shape),shape_means={k:float(np.mean([s[k] for s in shape])) for k in shape[0]} if shape else {},reward_mean=float(np.mean(reward)),reward_SD=float(np.std(reward)),proposal_geometry_KL_per_active=float(np.mean(gkl)),full_trace_KL_MC_mean=float(np.mean(trace)),full_trace_KL_MC_SE=float(np.std(trace,ddof=1)/math.sqrt(len(trace))),_identities=identity)
+ return dict(goals=len(groups),identities=len(identity),candidates=len(groups)*8,marginals=dict(m),K1=sum(rows[0]['metrics']['success'] for o in groups for rows in [o['records']]),K8=sum(any(r['metrics']['success'] for r in o['records'][:8]) for o in groups),K1_identity_any_event_CI=binCI(sum(any(z['K1'] for z in values) for values in identity.values()),len(identity)),K1_zero_event_note='A zero-event cluster bootstrap collapses and is not a population zero-probability bound; use identity-any-event exact interval as a conservative bound',clustered=points,by_difficulty={k:dict(v) for k,v in by_level.items()},cost=dict(cost),mean_structural_pair_RMSD=float(np.mean(div)),complete_shape_n=len(shape),shape_means={k:float(np.mean([s[k] for s in shape])) for k in shape[0]} if shape else {},reward_mean=float(np.mean(reward)),reward_SD=float(np.std(reward)),proposal_geometry_KL_per_active=float(np.mean(gkl)),full_trace_KL_MC_mean=float(np.mean(trace)),full_trace_KL_MC_SE=float(np.std(trace,ddof=1)/math.sqrt(len(trace))),_identities=identity)
 def compare(a,b):
  assert set(a['_identities'])==set(b['_identities']);out={}
  for key in ['K1','K8','hard','full','regional','backbone']:
@@ -81,7 +81,7 @@ D: exact terminal selection from the same C pool. Its K8 success is the pool-exi
 
 {table}
 
-Paired prospective differences: `{diff['PROSPECTIVE']}`. Bootstrap resamples16 protein identities with both difficulty levels retained (10,000 resamples,seed19917). Neither32 goal variants nor256 candidates are256 independent proteins. Raw identity contributions and difficulty strata are retained in numerical JSON.
+Paired prospective differences: `{diff['PROSPECTIVE']}`. Bootstrap resamples16 protein identities with both difficulty levels retained (10,000 resamples,seed19917). Neither32 goal variants nor256 candidates are256 independent proteins. Raw identity contributions and difficulty strata are retained in numerical JSON. Zero-event K1 bootstrap intervals collapse; an exact conservative identity-any-success interval is supplied separately and must not be read as evidence that success probability is zero.
 
 E: bounded TRAIN-only rewind32 suffix search,16 terminal evaluations, compared with whole-chain Bestof8/16: `{searchrows}`. All initial-candidate and discarded-suffix costs are counted;15 suffixes are not15 whole chains. Four identities are contextual evidence, not a matched prospective superiority claim.
 
@@ -117,6 +117,8 @@ For J=E[R]-beta*KL_trace, let L=sum log p_theta-log p_ref and S=sum grad log p_t
 
 Baseline action densities, effective accepted-action densities and complete-trace likelihoods are distinct. Accepted-only q(z|s)=p(z|s)I_valid/Z(s) involves an unknown continuous integral; finite attempts add abort mass(1-Z)^8. No effective-filtered KL is asserted equal to original proposal KL.''')
  write('POLICY_GRADIENT_CORRECTNESS_TESTS.md',f'''# Policy-gradient correctness
+
+Exact actual fixed-sequence sampler replay is saved in SAMPLING_REPLAY_VERIFICATION.json:16 existing candidates regenerated bit-exactly, including latent draws, rejects, branches, geometry, reward and log-densities. These are repeated engineering executions, not additional independent scientific samples.
 
 CPU finite-trace normalization: {test['exact_traces']} traces, total probability {test['probability_sum']}. Exact expected-return gradient, score gradient and finite differences agree (max finite-difference error {test['finite_difference_max_error']}). Accepted-only gradient demonstrably differs. Independent Monte Carlo gradients and standard errors are saved, including150,000 continuous-normal finite-rejection traces.
 
