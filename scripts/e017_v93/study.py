@@ -88,7 +88,7 @@ def backward_check(e,task,rows):
    a=AA.index(task['fixed_sequence'][t]);local=[]
    for q in rows[i]['proposals']:
     if q[0]!=t:continue
-    lp=T['base_logprob'](mu[j,a],ls[j,a],torch.tensor(q[2],device='cuda'),c['mask_for_step'](t));maxerr=max(maxerr,abs(float(lp.detach())-q[4]));local.append(lp);replayed+=1
+    lp=T['base_logprob'](mu[j,a],ls[j,a],torch.tensor(q[2],device='cuda',dtype=torch.float64),c['mask_for_step'](t));maxerr=max(maxerr,abs(float(lp.detach())-q[4]));local.append(lp);replayed+=1
    terms.append((-.0-adv[i]+.01)*torch.stack(local).sum()/len(rows))
   loss=torch.stack(terms).sum();loss.backward()
   for i in active:

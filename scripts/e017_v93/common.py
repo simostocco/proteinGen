@@ -13,6 +13,10 @@ def guard():
  assert not (R/'control/STOP').exists(),'cooperative STOP'
  if torch.cuda.is_initialized():assert torch.cuda.max_memory_allocated()<6*2**30,'VRAM guard'
 def world(goal,state=None):
- w=c['PropertyWorld'](goal,SPEC,0)
+ public=copy.deepcopy(goal)
+ # These two fields are stratification/witness metadata, never task semantics.
+ for key in ['difficulty','sequence_synthetic_motif_reversal']:public.pop(key,None)
+ g['canonical'](public)
+ w=c['PropertyWorld'](public,SPEC,0)
  if state is not None:w.state=copy.deepcopy(state);w.snapshots={}
  return w
