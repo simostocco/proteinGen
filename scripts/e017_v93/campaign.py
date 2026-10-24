@@ -76,7 +76,7 @@ def run(spec,authorization,root,resume=None):
   if u%50==0:checkpoint('ROLLING')
   if u in spec['development_updates']:
    report=evaluator(e,root,u)
-   if report['hard_valid']<baseline['hard_valid']-.05 or report['backbone_valid']<baseline['backbone_valid']-.05 or report['geometry_KL_per_active']>1:checkpoint('TRAINING_STABILITY_MONITOR_STOP');return
+   if report['hard_valid']<baseline['hard_valid']-.05 or report['backbone_valid']<baseline['backbone_valid']-.05 or report['geometry_KL_per_active']>1 or report['structural_pair_RMSD']<.8*baseline['structural_pair_RMSD']:checkpoint('TRAINING_STABILITY_MONITOR_STOP');return
    if best is None or report['K1']>best['K1']:
     best=dict(update=u,**report);record=checkpoint('DEVELOPMENT_BEST');target=root/'best.pt';tmp=root/'best.pt.part'
     try:os.link(root/'latest.pt',tmp)
