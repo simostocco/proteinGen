@@ -27,6 +27,8 @@ def main():
   assert definition(old,name)==definition(new,name),name
   same[name]=True
  audited=P['verify_inputs']();assert audited['TRAIN_identities']==434
+ source_bytes=sum(p.stat().st_blocks*512 for p in (R/'source').rglob('*') if p.is_file() and not p.is_symlink())
+ save(R/'STATIC_SOURCE_ALLOCATION.json',dict(allocated_bytes=source_bytes,frozen_source_commit=P['bindings']()['V94_source_commit']))
  p=C['projection']();assert p['admitted'],p
  assert cfg['seed']==19327 and cfg['previous_seed_not_resumed']==19317
  assert cfg['updates']==5000 and cfg['group_size']==16

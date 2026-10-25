@@ -7,7 +7,7 @@ def call(args):
  try:return subprocess.check_output(args,text=True,stderr=subprocess.STDOUT,timeout=15).strip()
  except Exception as e:return repr(e)
 def main():
- last=0;tracked={};sizes=[];tot=collections.Counter();secs=[];identities=set();next_resource=0
+ last=0;tracked={};sizes=[];tot=collections.Counter();secs=[];identities=set();next_resource=0;commit_bytes=0
  log=R/'AUGMENTED_TRAINING_METRICS.jsonl';resource=R/'RESOURCE_TELEMETRY.jsonl'
  # Rebuild an interrupted sidecar deterministically without optimizer work.
  if log.exists():
@@ -15,16 +15,18 @@ def main():
    x=__import__('json').loads(line);last=x['update'];secs.append(x['seconds']);identities.add(x['identity'])
    for k in ['N','completed','aborts','hard_valid','full_success','proposals','rejected','completed_overpacking']:tot[k]+=x[k]
   for f in (P/'rollouts').glob('u*.json'):tracked[f.name]=f.stat().st_blocks*512;sizes.append(f.stat().st_size)
+  commit_bytes=sum(f.stat().st_blocks*512 for f in (P/'commits').glob('u*.json'))
  while True:
   while (P/f'commits/u{last+1:06}.json').exists():
    cp=P/f'commits/u{last+1:06}.json';commit=read(cp);rp=P/f'rollouts/u{last+1:06}.json'
    assert C['sha'](rp)==commit['logical']['rollout_SHA256'];packet=read(rp);x=C['extra_metrics'](packet,commit)
    with log.open('a') as f:f.write(__import__('json').dumps(x,separators=(',',':'))+'\n');f.flush();os.fsync(f.fileno())
+   commit_bytes+=cp.stat().st_blocks*512
    last=x['update'];secs.append(x['seconds']);identities.add(x['identity']);sizes.append(rp.stat().st_size);tracked[rp.name]=rp.stat().st_blocks*512
    for k in ['N','completed','aborts','hard_valid','full_success','proposals','rejected','completed_overpacking']:tot[k]+=x[k]
   pending=P/f'rollouts/u{last+1:06}.json'
   if pending.exists():tracked[pending.name]=pending.stat().st_blocks*512
-  projected=C['projection'](sum(tracked.values()),last,sizes[-50:])
+  projected=C['projection'](sum(tracked.values()),last,sizes[-50:],commit_bytes)
   atomic(R/'LATEST_STORAGE_PROJECTION.json',projected)
   if not projected['admitted'] and not (R/'WORKER_EXIT.json').exists() and not (P/'TRAINING_COMPLETED.json').exists():
    # Storage-only cooperative pause, under the frozen remaining-work budget.

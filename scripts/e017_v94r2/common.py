@@ -14,7 +14,23 @@ def atomic(path,obj):
  with tmp.open('w') as f:json.dump(obj,f,separators=(',',':'),allow_nan=False);f.flush();os.fsync(f.fileno())
  os.replace(tmp,path);fd=os.open(path.parent,os.O_DIRECTORY);os.fsync(fd);os.close(fd)
 def utc():return datetime.datetime.now(datetime.timezone.utc).isoformat()
-def projection(trace_bytes=0,committed=0,recent_sizes=()):
+_misc_cache=[0.,0]
+def misc_usage(commit_bytes=None):
+ if time.monotonic()-_misc_cache[0]>60:
+  total=0
+  for directory,dirs,names in os.walk(ROOT,followlinks=False):
+   here=Path(directory)
+   if here==ROOT:dirs[:]=[d for d in dirs if d!='source']
+   if here==ROOT/'production':dirs[:]=[d for d in dirs if d not in ['rollouts','checkpoints','commits']]
+   for name in names:
+    file=here/name
+    if not file.is_symlink():total+=file.stat().st_blocks*512
+  static=ROOT/'STATIC_SOURCE_ALLOCATION.json'
+  if static.exists():total+=read(static)['allocated_bytes']
+  _misc_cache[:]=[time.monotonic(),total]
+ if commit_bytes is None:commit_bytes=sum(p.stat().st_blocks*512 for p in (ROOT/'production/commits').glob('*.json'))
+ return _misc_cache[1]+commit_bytes
+def projection(trace_bytes=0,committed=0,recent_sizes=(),commit_bytes=None):
  cfg=read(ROOT/'TRAINING_CONFIGURATION_AND_SEEDS.json');seen=set();allocated=0
  for p in (ROOT/'production/checkpoints').glob('*'):
   if not (p.name.endswith('.pt') and p.name.startswith(('recovery_','milestone_','development_best_','incoming_')) or p.name.startswith('incoming_') and p.name.endswith('.pt.part')):continue
@@ -23,11 +39,12 @@ def projection(trace_bytes=0,committed=0,recent_sizes=()):
  cp_remaining=max(0,10*cfg['checkpoint_hint_bytes']-allocated)
  observed=math.ceil(statistics.mean(recent_sizes)*max(0,5000-committed)*1.15) if recent_sizes else 0
  traces_remaining=max(0,cfg['proposal_trace_storage_bytes']-trace_bytes,observed)
- required=cp_remaining+traces_remaining+2*2**30+512*2**20;free=shutil.disk_usage(ROOT).free
- return dict(UTC=utc(),admitted=free>=required,D_free_bytes=free,required_remaining_bytes=required,
+ misc=misc_usage(commit_bytes);misc_remaining=max(0,512*2**20-misc)
+ required=cp_remaining+traces_remaining+2*2**30+misc_remaining;free=shutil.disk_usage(ROOT).free
+ return dict(UTC=utc(),admitted=free>=required and misc<=512*2**20,D_free_bytes=free,required_remaining_bytes=required,
   verified_current_checkpoint_allocation=allocated,future_checkpoint_bound=cp_remaining,
   future_trace_bound=traces_remaining,trace_allocated_bytes=trace_bytes,operational_reserve_bytes=2*2**30,
-  misc_future_bound=512*2**20,margin_bytes=free-required,observed_trace_forecast_15percent_margin=observed)
+  misc_allocated_bytes=misc,misc_future_bound=misc_remaining,misc_budget_bytes=512*2**20,margin_bytes=free-required,observed_trace_forecast_15percent_margin=observed)
 def extra_metrics(packet,commit):
  rows=packet['records'];goal=packet['task']['goal'];m=[r['metrics'] for r in rows];n=len(rows)
  rewards=[x['reward'] for x in m];llr=[r['trace_logprob']-r['reference_trace_logprob'] for r in rows]
