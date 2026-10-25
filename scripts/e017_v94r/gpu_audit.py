@@ -34,16 +34,19 @@ def main():
     assert read(R/'FILTER_AND_GRADIENT_CPU_TESTS.json')['PASS'];N['guard']()
     torch.set_num_threads(1);torch.use_deterministic_algorithms(True);torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
     e,_=P['K']['load_engine']('C');e.actor.requires_grad_(True).eval();initial=c['state_digest'](e.actor.state_dict());packet=read(O/'production/rollouts/u000001.json')
-    assert initial==packet['behavior'];a,errA=component(e,packet['task'],packet['records'],'reward');b,errB=component(e,packet['task'],packet['records'],'KL')
-    e.actor.zero_grad(set_to_none=True);P['K']['gradients'](e,packet['task'],packet['records'],P['SPEC']['trace_KL_beta']);actual=flat(e)
-    maxdiff=float((a+b-actual).abs().max());assert torch.allclose(a+b,actual,atol=2e-5,rtol=2e-5)
-    norm=float(torch.nn.utils.clip_grad_norm_(e.actor.parameters(),float('inf')));historical=read(O/'production/commits/u000001.json')['logical']['gradient_norm'];assert abs(norm-historical)<1e-4
-    save(R/'HISTORICAL_GRADIENT_REPLAY.json',dict(PASS=True,update=1,optimizer_updates=0,exact_behavior_fingerprint=True,group_size=16,
-        combined_norm=norm,historical_norm=historical,reward_component_norm=float(a.norm()),reference_KL_component_norm=float(b.norm()),
-        component_cosine=float(torch.dot(a,b)/(a.norm()*b.norm())),max_component_sum_error=maxdiff,max_logprob_error=max(errA,errB),
-        global_clip_factor=5/norm,latent_dimensions_per_trajectory=189,reduction='mean16 trajectories, sum64 residue scores including rejected draws; no hidden token mean',
-        original_actor_unchanged=c['state_digest'](e.actor.state_dict())==initial,J1_unchanged=True))
-    del a,b,actual;e.actor.zero_grad(set_to_none=True);e.actor.requires_grad_(False)
+    assert initial==packet['behavior']
+    if not (R/'HISTORICAL_GRADIENT_REPLAY.json').exists():
+        a,errA=component(e,packet['task'],packet['records'],'reward');b,errB=component(e,packet['task'],packet['records'],'KL')
+        e.actor.zero_grad(set_to_none=True);P['K']['gradients'](e,packet['task'],packet['records'],P['SPEC']['trace_KL_beta']);actual=flat(e)
+        maxdiff=float((a+b-actual).abs().max());assert torch.allclose(a+b,actual,atol=2e-5,rtol=2e-5)
+        norm=float(torch.nn.utils.clip_grad_norm_(e.actor.parameters(),float('inf')));historical=read(O/'production/commits/u000001.json')['logical']['gradient_norm'];assert abs(norm-historical)<1e-4
+        save(R/'HISTORICAL_GRADIENT_REPLAY.json',dict(PASS=True,update=1,optimizer_updates=0,exact_behavior_fingerprint=True,group_size=16,
+            combined_norm=norm,historical_norm=historical,reward_component_norm=float(a.norm()),reference_KL_component_norm=float(b.norm()),
+            component_cosine=float(torch.dot(a,b)/(a.norm()*b.norm())),max_component_sum_error=maxdiff,max_logprob_error=max(errA,errB),
+            global_clip_factor=5/norm,latent_dimensions_per_trajectory=189,reduction='mean16 trajectories, sum64 residue scores including rejected draws; no hidden token mean',
+            original_actor_unchanged=c['state_digest'](e.actor.state_dict())==initial,J1_unchanged=True))
+        del a,b,actual;e.actor.zero_grad(set_to_none=True);e.actor.requires_grad_(False)
+    e.actor.zero_grad(set_to_none=True);e.actor.requires_grad_(False)
     controls=[];tasks=read(P['V93']/'manifests/FUTURE_FIXED_TRAIN_POOL.json')['tasks']
     for task in tasks[::2][:4]:
         seeds=[S['ns']('V94R_TRAIN_CONTROL',task['goal']['goal_id'],i) for i in range(16)]

@@ -21,6 +21,7 @@ def enum(theta):
 
 def main():
     global checks
+    sampler=runpy.run_path(str(R/'source/scripts/e017_v94r/sampling.py'));assert callable(sampler['corrected_action']);checks+=1
     torch.set_num_threads(1);torch.manual_seed(94317);rng=np.random.default_rng(94317)
     class State:
         N=64
