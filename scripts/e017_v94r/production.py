@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r_packing_safety_20261025_v1')
+ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v1')
 V93=ROOT.parent/'e017_v93_regional_controllability_20261024_v1'
 K=runpy.run_path(str(V93/'source/scripts/e017_v93/campaign.py'))
 S=K['S']; c=K['c']; p=K['p']; AA=K['AA']; sha=K['sha']; read=K['read']
@@ -35,7 +35,7 @@ def guard():
 
 def source_binding():
     return {str(q.relative_to(ROOT/'source')):sha(q) for q in sorted(
-        (ROOT/'source/scripts/e017_v94r').glob('*.py'))}
+        [q for folder in ['e017_v94r','e017_v94r2'] for q in (ROOT/'source/scripts'/folder).glob('*.py')])}
 
 def bindings():
     return dict(source=source_binding(),V93_source_commit=subprocess.check_output(
@@ -268,10 +268,25 @@ def production(args):
     release=read(ROOT/'qualification/RELEASE.json')
     assert release['PASS'] and release['binding']==bindings(),'unqualified production'
     rt=Runtime(ROOT/'production'); rt.replay()
+    # Parameterized relocation/seed changes preserve the reviewed Runtime.
+    # Qualify the actual fresh schema/optimizer/RNG instance before sampling.
+    receipt=ROOT/'ACTUAL_INITIAL_RECOVERY_ROUNDTRIP.json'
+    if not receipt.exists():
+        assert rt.update==0 and not rt.counters
+        initial=state_digest(rt.state())
+        def draws():return dict(torch=torch.rand(8).tolist(),cuda=torch.rand(8,device='cuda').cpu().tolist(),numpy=np.random.random(8).tolist(),python=[random.random() for _ in range(8)])
+        first=draws();rt.restore();assert state_digest(rt.state())==initial;second=draws();assert first==second;rt.restore()
+        assert c['state_digest'](rt.e.actor.state_dict())=='884b1e016135f4bf4b3594b6aefc81c1594a525186e09091ad5bd5c023781f80'
+        assert all(float(x['step'])==0 and not x['exp_avg'].count_nonzero() and not x['exp_avg_sq'].count_nonzero() for x in rt.opt.state.values())
+        rt.e.prior.verify()
+        compact(receipt,dict(PASS=True,optimizer_steps=0,full_actual_state_roundtrip=True,next_CPU_CUDA_numpy_python_draws_equal=True,actor_initializer_fingerprint=c['state_digest'](rt.e.actor.state_dict()),J1_frozen=True,checkpoint=read(rt.root/'RECOVERY_INDEX.json')['latest'],qualification_transfer_SHA256=sha(ROOT/'qualification/RELEASE.json')))
     evaluator=runpy.run_path(str(ROOT/'source/scripts/e017_v94r/evaluation.py'))
     if rt.baseline is None:
         rt.baseline=evaluator['development'](rt,0)
         rt.best=dict(update=0,**rt.baseline['filtered']);rt.publish('DEVELOPMENT_BEST')
+        initial=rt.baseline['filtered']
+        assert initial['hard_valid']>=.91875 and initial['backbone_valid']>=.95 and initial['geometry_KL_per_active']<=1 and initial['structural_pair_RMSD']>=12.449118749897715,'INITIAL_ABSOLUTE_VALIDITY_KL_DIVERSITY_ADMISSION'
+        compact(ROOT/'FROZEN_INITIALIZATION_BASELINE.json',dict(update=0,summary=rt.baseline,original_V94=dict(hard_valid=.96875,backbone_valid=1.,structural_pair_RMSD=15.561398437372143),baseline_will_not_be_reset=True,abort_gate='no new separate abort rule; all aborts count against unchanged hard-validity gate'))
     try:
         # Reconcile a crash after commit before the checkpoint/evaluation callback.
         milestones=set(SPEC['development_updates'])

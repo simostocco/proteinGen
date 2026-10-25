@@ -2,7 +2,7 @@
 import csv, itertools, json, math, os, runpy, time
 from pathlib import Path
 import numpy as np
-ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r_packing_safety_20261025_v1')
+ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v1')
 P=runpy.run_path(str(ROOT/'source/scripts/e017_v94r/production.py'))
 S=P['S']; V93=P['V93']; read=P['read']; compact=P['compact']
 
@@ -52,6 +52,7 @@ def development(rt,update):
             groups.append(obj)
         result[label]=summarize(groups)
         if policy=='B':result[label]['invalid_proposal_checks']=result[label]['rejections'];result[label]['rejections']=0
+    result['TRAIN_goal_sensitivity']=goal_sensitivity(rt,update)
     compact(path,dict(summary=result,actor_fingerprint=fp,seconds=time.perf_counter()-start,TRAIN_development_only=True,
         manifest_SHA256=P['sha'](V93/'manifests/TRAIN_TASKS.json')))
     return result
@@ -67,3 +68,20 @@ def curves(root):
                 **{k:item[k] for k in ['seconds','D_free_bytes','peak_GPU_bytes']}); w.writerow({k:row[k] for k in fields})
         f.flush(); os.fsync(f.fileno())
     os.replace(tmp,path)
+
+def goal_sensitivity(rt,update):
+    tasks=read(V93/'manifests/FUTURE_FIXED_TRAIN_POOL.json')['tasks']
+    identities=sorted({t['source_reference_identity'] for t in tasks})[:4]
+    selected=[t for identity in identities for t in tasks if t['source_reference_identity']==identity]
+    out=[];fp=P['c']['state_digest'](rt.e.actor.state_dict())
+    for policy,label in [('C','filtered'),('B','underlying_unfiltered')]:
+        for i,task in enumerate(selected):
+            path=rt.root/f'diagnostics/SENSITIVITY_{update:05}_{label}_{i:02}.json'
+            if path.exists():obj=read(path);assert obj['actor_fingerprint']==fp
+            else:
+                seeds=[S['ns']('R2_TRAIN_SENSITIVITY',task['source_reference_identity'],j) for j in range(4)]
+                rows=P['sample'](rt.e,task,policy,4,seeds)
+                obj=dict(task=task,records=rows,actor_fingerprint=fp);compact(path,obj)
+            stats=summarize([obj]);stats['K4']=stats.pop('K8')
+            out.append(dict(identity=task['source_reference_identity'],difficulty=task['goal']['difficulty'],policy=label,summary=stats))
+    return dict(fitting_TRAIN_only_not_selection=True,identities=4,candidates_per_goal=4,matched_streams_across_existing_witnessed_relaxed_goals=True,results=out)
