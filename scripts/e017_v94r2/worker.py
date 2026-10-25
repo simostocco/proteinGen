@@ -1,7 +1,7 @@
 """Single bounded trainer followed by frozen final assessment; no retries."""
 import fcntl,os,runpy,subprocess,sys,time
 from pathlib import Path
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v1');C=runpy.run_path(str(R/'source/scripts/e017_v94r2/common.py'))
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2');C=runpy.run_path(str(R/'source/scripts/e017_v94r2/common.py'))
 read=C['read'];atomic=C['atomic']
 def main():
  lock=(R/'WORKER_LOCK').open('a+');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)

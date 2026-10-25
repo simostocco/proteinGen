@@ -1,7 +1,7 @@
 """Evidence-derived active/terminal publication; no neural work or restarts."""
 import csv,json,os,runpy,statistics,subprocess
 from pathlib import Path
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v1');C=runpy.run_path(str(R/'source/scripts/e017_v94r2/common.py'));read=C['read'];atomic=C['atomic'];sha=C['sha']
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2');C=runpy.run_path(str(R/'source/scripts/e017_v94r2/common.py'));read=C['read'];atomic=C['atomic'];sha=C['sha']
 def md(name,s):(R/name).write_text(s.strip()+'\n')
 def publish():
  live=C['live']();cfg=read(R/'TRAINING_CONFIGURATION_AND_SEEDS.json');q=read(R/'qualification/RELEASE.json');source=q['binding']['V94_source_commit'];status=live['V94R2_LIVE_STATUS'];p=R/'production'
@@ -23,7 +23,7 @@ def publish():
 
 Verified counters: {live['COMMITTED_UPDATES']}/5000 optimizer commitments;{live['GENERATION_ATTEMPTS']}/80000 generation attempts;{live['COMPLETED_TRAJECTORIES']} completions;{live['ABORTED_ATTEMPTS']} aborts. Generation attempts are not all complete proteins. No short pilot replaces the approved budget. Launch receipt supplies actual PID/command; authority is the current explicit user V9.4-R2 authorization. No automatic restart or later experiment.
 
-New root `{R}`; source `{source}`. Strict original preV94 parent SHA256 `{cfg['parent_SHA256']}`; permanently frozen J1 SHA256 `{cfg['J1_SHA256']}`; actual initializer fingerprint884b1e016135f4bf4b3594b6aefc81c1594a525186e09091ad5bd5c023781f80. Fresh AdamW/scheduler/journal/cursor/RNG, master training seed19327. Never initialize from breached update500 or engineering weights. Both historical V94 and V94R remain sealed and unchanged.
+New root `{R}`; source `{source}`. Strict original preV94 parent SHA256 `{cfg['parent_SHA256']}`; permanently frozen J1 SHA256 `{cfg['J1_SHA256']}`; actual serialized plain-dict initializer fingerprint884b1e016135f4bf4b3594b6aefc81c1594a525186e09091ad5bd5c023781f80. Fresh AdamW/scheduler/journal/cursor/RNG, master training seed19327. Never initialize from breached update500 or engineering weights. Both historical V94 and V94R remain sealed and unchanged.
 
 Exact reviewed mathematical kernel verified by normalized AST equivalence: packing, finite sampler, full rejected+accepted likelihood, gradients, all Runtime optimizer/checkpoint/journal methods. Original V94R full interruption tests remain the qualification basis. This run additionally requires a real fresh full-state checkpoint/optimizer/scheduler/RNG round-trip and next-draw equality before any optimizer step. No duplicate qualification models were materialized. Extra changes are run location/seed/provenance, pretraining restore/admission checks and diagnostic logging. No scientific reward, supports, model capacity or trained-network change.
 

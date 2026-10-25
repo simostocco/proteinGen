@@ -1,7 +1,7 @@
 """D-only telemetry/publication helpers; no neural imports."""
 import collections,csv,datetime,hashlib,json,math,os,shutil,statistics,time
 from pathlib import Path
-ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v1')
+ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2')
 V93=ROOT.parent/'e017_v93_regional_controllability_20261024_v1'
 read=lambda p:json.loads(Path(p).read_text())
 def sha(p):
@@ -16,8 +16,8 @@ def atomic(path,obj):
 def utc():return datetime.datetime.now(datetime.timezone.utc).isoformat()
 def projection(trace_bytes=0,committed=0,recent_sizes=()):
  cfg=read(ROOT/'TRAINING_CONFIGURATION_AND_SEEDS.json');seen=set();allocated=0
- for p in (ROOT/'production/checkpoints').glob('*.pt'):
-  if not (p.name.startswith(('recovery_','milestone_','development_best_'))):continue
+ for p in (ROOT/'production/checkpoints').glob('*'):
+  if not (p.name.endswith('.pt') and p.name.startswith(('recovery_','milestone_','development_best_','incoming_')) or p.name.startswith('incoming_') and p.name.endswith('.pt.part')):continue
   assert not p.is_symlink();s=p.stat();key=(s.st_dev,s.st_ino)
   if key not in seen:seen.add(key);allocated+=s.st_blocks*512
  cp_remaining=max(0,10*cfg['checkpoint_hint_bytes']-allocated)

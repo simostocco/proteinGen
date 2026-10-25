@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v1')
+ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2')
 V93=ROOT.parent/'e017_v93_regional_controllability_20261024_v1'
 K=runpy.run_path(str(V93/'source/scripts/e017_v93/campaign.py'))
 S=K['S']; c=K['c']; p=K['p']; AA=K['AA']; sha=K['sha']; read=K['read']
@@ -276,10 +276,10 @@ def production(args):
         initial=state_digest(rt.state())
         def draws():return dict(torch=torch.rand(8).tolist(),cuda=torch.rand(8,device='cuda').cpu().tolist(),numpy=np.random.random(8).tolist(),python=[random.random() for _ in range(8)])
         first=draws();rt.restore();assert state_digest(rt.state())==initial;second=draws();assert first==second;rt.restore()
-        assert c['state_digest'](rt.e.actor.state_dict())=='884b1e016135f4bf4b3594b6aefc81c1594a525186e09091ad5bd5c023781f80'
+        assert c['state_digest'](CPU(rt.e.actor.state_dict()))=='884b1e016135f4bf4b3594b6aefc81c1594a525186e09091ad5bd5c023781f80'
         assert all(float(x['step'])==0 and not x['exp_avg'].count_nonzero() and not x['exp_avg_sq'].count_nonzero() for x in rt.opt.state.values())
         rt.e.prior.verify()
-        compact(receipt,dict(PASS=True,optimizer_steps=0,full_actual_state_roundtrip=True,next_CPU_CUDA_numpy_python_draws_equal=True,actor_initializer_fingerprint=c['state_digest'](rt.e.actor.state_dict()),J1_frozen=True,checkpoint=read(rt.root/'RECOVERY_INDEX.json')['latest'],qualification_transfer_SHA256=sha(ROOT/'qualification/RELEASE.json')))
+        compact(receipt,dict(PASS=True,optimizer_steps=0,full_actual_state_roundtrip=True,next_CPU_CUDA_numpy_python_draws_equal=True,actor_initializer_fingerprint=c['state_digest'](CPU(rt.e.actor.state_dict())),behavior_OrderedDict_fingerprint=c['state_digest'](rt.e.actor.state_dict()),fingerprint_container='plain dict matching certified serialized state',J1_frozen=True,checkpoint=read(rt.root/'RECOVERY_INDEX.json')['latest'],qualification_transfer_SHA256=sha(ROOT/'qualification/RELEASE.json')))
     evaluator=runpy.run_path(str(ROOT/'source/scripts/e017_v94r/evaluation.py'))
     if rt.baseline is None:
         rt.baseline=evaluator['development'](rt,0)

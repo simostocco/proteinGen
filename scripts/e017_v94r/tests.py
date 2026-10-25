@@ -3,7 +3,7 @@ import itertools,json,math,runpy
 from pathlib import Path
 import numpy as np
 import torch
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v1');O=R.parent/'e017_v94_fixed_sequence_geometry_rl_20261024_v1'
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2');O=R.parent/'e017_v94_fixed_sequence_geometry_rl_20261024_v1'
 F=runpy.run_path(str(R/'source/scripts/e017_v94r/packing.py'));P=runpy.run_path(str(O/'source/scripts/e017_v94/production.py'));S=P['S'];T=P['K']['S']['T'];save=P['compact'];checks=0
 
 def enum(theta):

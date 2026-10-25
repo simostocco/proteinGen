@@ -3,7 +3,7 @@ import collections,json,runpy,time
 from pathlib import Path
 import numpy as np
 import torch
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v1')
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2')
 P=runpy.run_path(str(R/'source/scripts/e017_v94r/production.py'));E=runpy.run_path(str(R/'source/scripts/e017_v94r/evaluation.py'))
 S=P['S'];read=P['read'];sha=P['sha'];save=P['compact'];V=P['V93'];OUT=R/'production/confirmation'
 def paired(a,b,K):
@@ -38,7 +38,7 @@ def main():
  torch.set_num_threads(1);torch.use_deterministic_algorithms(True);torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
  OUT.mkdir(exist_ok=True);tasks=read(V/'manifests/PROSPECTIVE_FIXED.json')['tasks'];assert len(tasks)==32 and len({t['source_reference_identity'] for t in tasks})==16
  e,_=P['K']['load_engine']('C');e.actor.eval().requires_grad_(False)
- initfp=P['c']['state_digest'](e.actor.state_dict());assert initfp=='884b1e016135f4bf4b3594b6aefc81c1594a525186e09091ad5bd5c023781f80'
+ initfp=P['c']['state_digest'](e.actor.state_dict());assert P['c']['state_digest'](P['CPU'](e.actor.state_dict()))=='884b1e016135f4bf4b3594b6aefc81c1594a525186e09091ad5bd5c023781f80'
  panels={};metadata={};sens={};costs={}
  for policy,label in [('A','J1'),('B','parent_unfiltered'),('C','parent_corrected_filtered')]:
   panels[label]=[group(e,t,policy,label,i) for i,t in enumerate(tasks)]
