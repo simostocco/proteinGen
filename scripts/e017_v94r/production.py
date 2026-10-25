@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2')
+ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1')
 V93=ROOT.parent/'e017_v93_regional_controllability_20261024_v1'
 K=runpy.run_path(str(V93/'source/scripts/e017_v93/campaign.py'))
 S=K['S']; c=K['c']; p=K['p']; AA=K['AA']; sha=K['sha']; read=K['read']
@@ -35,7 +35,7 @@ def guard():
 
 def source_binding():
     return {str(q.relative_to(ROOT/'source')):sha(q) for q in sorted(
-        [q for folder in ['e017_v94r','e017_v94r2'] for q in (ROOT/'source/scripts'/folder).glob('*.py')])}
+        [q for folder in ['e017_v94r','e017_v94r2','e017_v94r3'] for q in (ROOT/'source/scripts'/folder).glob('*.py')])}
 
 def bindings():
     return dict(source=source_binding(),V93_source_commit=subprocess.check_output(

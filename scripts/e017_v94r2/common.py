@@ -1,7 +1,7 @@
 """D-only telemetry/publication helpers; no neural imports."""
 import collections,csv,datetime,hashlib,json,math,os,shutil,statistics,time
 from pathlib import Path
-ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2')
+ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1')
 V93=ROOT.parent/'e017_v93_regional_controllability_20261024_v1'
 read=lambda p:json.loads(Path(p).read_text())
 def sha(p):

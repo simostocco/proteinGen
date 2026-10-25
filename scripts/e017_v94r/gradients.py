@@ -2,11 +2,11 @@ import collections,copy,math,runpy,time
 from pathlib import Path
 import numpy as np
 import torch
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2')
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1')
 V=R.parent/'e017_v93_regional_controllability_20261024_v1'
 B=runpy.run_path(str(V/'source/scripts/e017_v93/study.py'))
 globals().update({k:B[k] for k in ['c','p','T','AA','SPEC','read','sha','ns','world','append','load_engine','reconstruct','prefix_status']})
-F=runpy.run_path(str(R/'source/scripts/e017_v94r/packing.py'));extend_checked=F['extend_checked']
+F=runpy.run_path(str(R/'source/scripts/e017_v94r3/shield.py'));extend_checked=F['extend_checked']
 def guard():
  assert __import__('shutil').disk_usage(R).free>2*2**30+2*224*2**20+128*2**20
  assert not (R/'control/STOP').exists()

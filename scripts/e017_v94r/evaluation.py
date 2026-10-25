@@ -2,7 +2,7 @@
 import csv, itertools, json, math, os, runpy, time
 from pathlib import Path
 import numpy as np
-ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2')
+ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1')
 P=runpy.run_path(str(ROOT/'source/scripts/e017_v94r/production.py'))
 S=P['S']; V93=P['V93']; read=P['read']; compact=P['compact']
 

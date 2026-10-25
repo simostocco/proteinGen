@@ -3,7 +3,7 @@ import collections,json,runpy,time
 from pathlib import Path
 import numpy as np
 import torch
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2')
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1')
 P=runpy.run_path(str(R/'source/scripts/e017_v94r/production.py'));E=runpy.run_path(str(R/'source/scripts/e017_v94r/evaluation.py'))
 S=P['S'];read=P['read'];sha=P['sha'];save=P['compact'];V=P['V93'];OUT=R/'production/confirmation'
 def paired(a,b,K):

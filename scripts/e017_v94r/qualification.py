@@ -1,7 +1,7 @@
 """Same production runtime; four retained images cover sequential crash cases."""
 import json,runpy,shutil,subprocess,sys,time
 from pathlib import Path
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2');Q=R/'qualification'
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1');Q=R/'qualification'
 P=runpy.run_path(str(R/'source/scripts/e017_v94r/production.py'));read=P['read'];save=P['compact'];sha=P['sha']
 
 def child(name,fault=None,label=None):
@@ -16,7 +16,7 @@ def child(name,fault=None,label=None):
 def main():
     assert read(R/'GPU_ENGINEERING_COMPLETE.json')['PASS'] and read(R/'FILTER_AND_GRADIENT_CPU_TESTS.json')['PASS']
     assert not (Q/'RELEASE.json').exists();Q.mkdir(exist_ok=True)
-    cfg=read(R/'TRAINING_CONFIGURATION_AND_SEEDS.json');assert shutil.disk_usage(R).free>=cfg['minimum_free_bytes']
+    cfg=read(R/'TRAINING_CONFIGURATION_AND_SEEDS.json');admission=read(R/'ENGINEERING_STORAGE_ADMISSION.json'); assert admission['PASS']; assert shutil.disk_usage(R).free>=admission['engineering_peak_remaining_bytes_including_2GiB_reserve']
     assert not subprocess.check_output(['nvidia-smi','--query-compute-apps=pid','--format=csv,noheader'],text=True).strip()
     save(Q/'INPUT_REVERIFICATION.json',P['verify_inputs']())
     binding=P['bindings']();save(Q/'PROTOCOL.json',dict(binding=binding,updates_per_case=2,group_size=16,

@@ -2,12 +2,12 @@ import collections,copy,math,runpy,time
 from pathlib import Path
 import numpy as np
 import torch
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r2_corrected_geometry_rl_20261025_v2')
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1')
 V=R.parent/'e017_v93_regional_controllability_20261024_v1'
 B=runpy.run_path(str(V/'source/scripts/e017_v93/study.py'))
 globals().update({k:B[k] for k in ['c','p','T','AA','SPEC','read','sha','ns','world','append','load_engine','reconstruct','prefix_status']})
 corrected_action=B['corrected_action']
-F=runpy.run_path(str(R/'source/scripts/e017_v94r/packing.py'));extend_checked=F['extend_checked']
+F=runpy.run_path(str(R/'source/scripts/e017_v94r3/shield.py'));extend_checked=F['extend_checked']
 def guard():
  assert __import__('shutil').disk_usage(R).free>2*2**30+2*224*2**20+128*2**20
  assert not (R/'control/STOP').exists()
@@ -22,7 +22,7 @@ def generate(e,task,policy='C',count=8,state=None,seeds=None):
   for j,i in enumerate(live):
    w=ws[i];rec=records[i];accepted=False
    for k in range(8 if policy=='C' else 1):
-    rng=np.random.default_rng(ns('STEP',seeds[i],t,k));eps=torch.tensor(rng.standard_normal(3),device='cuda',dtype=torch.float64);u=mu[j,a].double()+ls[j,a].double().clamp(-5,2).exp()*eps;geo,diag=corrected_action(mu[j,a],ls[j,a],mask,eps);assert diag['latent']==u.cpu().tolist();lp=float(T['base_logprob'](mu[j,a],ls[j,a],u,mask));rp=float(T['base_logprob'](ref['mu'][j,a],ref['ls'][j,a],u,mask));geo=geo.cpu().tolist();after,check=extend_checked(w.state,seq[t],geo);COUNTS['simulated_transitions']+=1;repairs=sum(diag['adjusted_components']);rec['repairs']+=repairs;rec['proposals'].append([t,k,u.cpu().tolist(),geo,lp,rp,check['accepted'],repairs,check['reasons']])
+    rng=np.random.default_rng(ns('STEP',seeds[i],t,k));eps=torch.tensor(rng.standard_normal(3),device='cuda',dtype=torch.float64);u=mu[j,a].double()+ls[j,a].double().clamp(-5,2).exp()*eps;geo,diag=corrected_action(mu[j,a],ls[j,a],mask,eps);assert diag['latent']==u.cpu().tolist();lp=float(T['base_logprob'](mu[j,a],ls[j,a],u,mask));rp=float(T['base_logprob'](ref['mu'][j,a],ref['ls'][j,a],u,mask));geo=geo.cpu().tolist();after,check=extend_checked(w.state,seq[t],geo);COUNTS['simulated_transitions']+=1;repairs=sum(diag['adjusted_components']);rec['repairs']+=repairs;rec['proposals'].append([t,k,u.cpu().tolist(),geo,lp,rp,check['accepted'],repairs,check['reasons'],check.get('one_step_feasibility',{}).get('status','NOT_CHECKED_IMMEDIATE_INVALID')])
     if policy!='C' or check['accepted']:
      w.state=after if after is not None else append(w.state,seq[t],geo);rec['geometry'].append(geo);accepted=True;packing=F['prefix_budget'](w.state);rec['packing_prefix'].append([t,packing['contacts'],packing['slack_pairs']]);break
    if not accepted:rec['termination']='ABORT_8_INVALID_PROPOSALS'
