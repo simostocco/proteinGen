@@ -43,7 +43,7 @@ def main():
         save(R/'HISTORICAL_GRADIENT_REPLAY.json',dict(PASS=True,update=1,optimizer_updates=0,exact_behavior_fingerprint=True,group_size=16,
             combined_norm=norm,historical_norm=historical,reward_component_norm=float(a.norm()),reference_KL_component_norm=float(b.norm()),
             component_cosine=float(torch.dot(a,b)/(a.norm()*b.norm())),max_component_sum_error=maxdiff,max_logprob_error=max(errA,errB),
-            global_clip_factor=5/norm,latent_dimensions_per_trajectory=189,reduction='mean16 trajectories, sum64 residue scores including rejected draws; no hidden token mean',
+            global_clip_factor=5/norm,latent_dimensions_per_trajectory=float(np.mean([sum(sum(c['mask_for_step'](q[0])) for q in row['proposals']) for row in packet['records']])),accepted_full_trajectory_active_dimensions=186,reduction='mean16 trajectories, sum64 residue scores including rejected draws; no hidden token mean',
             original_actor_unchanged=c['state_digest'](e.actor.state_dict())==initial,J1_unchanged=True))
         del a,b,actual;e.actor.zero_grad(set_to_none=True);e.actor.requires_grad_(False)
     e.actor.zero_grad(set_to_none=True);e.actor.requires_grad_(False)
