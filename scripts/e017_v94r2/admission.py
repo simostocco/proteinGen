@@ -1,7 +1,7 @@
 """Rebind the already-qualified implementation by explicit source equivalence."""
 import ast,json,runpy,subprocess
 from pathlib import Path
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1');O=R.parent/'e017_v94r_packing_safety_20261025_v1'
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_substantial_geometry_rl_20261026_v1');O=R.parent/'e017_v94r_packing_safety_20261025_v1'
 P=runpy.run_path(str(R/'source/scripts/e017_v94r/production.py'))
 C=runpy.run_path(str(R/'source/scripts/e017_v94r2/common.py'));read=P['read'];sha=P['sha'];save=P['compact']
 def normalized(text):return ast.dump(ast.parse(text.replace(str(O),str(R))),include_attributes=False)

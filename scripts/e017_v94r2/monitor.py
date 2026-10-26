@@ -1,7 +1,7 @@
 """Compact sidecar metrics/resource guard; never launches a CUDA workload."""
 import collections,os,runpy,subprocess,time
 from pathlib import Path
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1')
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_substantial_geometry_rl_20261026_v1')
 C=runpy.run_path(str(R/'source/scripts/e017_v94r2/common.py'));read=C['read'];atomic=C['atomic'];P=R/'production'
 def call(args):
  try:return subprocess.check_output(args,text=True,stderr=subprocess.STDOUT,timeout=15).strip()

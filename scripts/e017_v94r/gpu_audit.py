@@ -3,7 +3,7 @@ import copy,json,math,runpy,time
 from pathlib import Path
 import numpy as np
 import torch
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1');O=R.parent/'e017_v94_fixed_sequence_geometry_rl_20261024_v1'
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_substantial_geometry_rl_20261026_v1');O=R.parent/'e017_v94_fixed_sequence_geometry_rl_20261024_v1'
 P=runpy.run_path(str(O/'source/scripts/e017_v94/production.py'));N=runpy.run_path(str(R/'source/scripts/e017_v94r/production.py'))
 S=P['S'];c=P['c'];p=P['p'];T=P['K']['S']['T'];AA=P['AA'];save=P['compact'];read=P['read']
 

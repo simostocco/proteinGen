@@ -1,7 +1,7 @@
 """Evidence-derived active/terminal publication; no neural work or restarts."""
 import csv,json,os,runpy,statistics,subprocess
 from pathlib import Path
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1');C=runpy.run_path(str(R/'source/scripts/e017_v94r2/common.py'));read=C['read'];atomic=C['atomic'];sha=C['sha']
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_substantial_geometry_rl_20261026_v1');C=runpy.run_path(str(R/'source/scripts/e017_v94r2/common.py'));read=C['read'];atomic=C['atomic'];sha=C['sha']
 def md(name,s):(R/name).write_text(s.strip()+'\n')
 def publish():
  live=C['live']();cfg=read(R/'TRAINING_CONFIGURATION_AND_SEEDS.json');q=read(R/'qualification/RELEASE.json');source=q['binding']['V94_source_commit'];status=live['V94R2_LIVE_STATUS'];p=R/'production'

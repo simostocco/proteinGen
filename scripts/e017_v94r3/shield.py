@@ -9,7 +9,7 @@ import copy,math,runpy
 from fractions import Fraction
 from pathlib import Path
 import numpy as np
-ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1')
+ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_substantial_geometry_rl_20261026_v1')
 F=runpy.run_path(str(ROOT/'source/scripts/e017_v94r/packing.py'))
 prefix_budget=F['prefix_budget'];UPPER=F['UPPER'];OLD=F['OLD']
 DMAX=float(OLD['LIMITS']['adjacent_high_A']);GUARD_A=1e-8;COORD_BOX_A=1e5

@@ -1,7 +1,7 @@
 """Same production runtime; four retained images cover sequential crash cases."""
 import json,runpy,shutil,subprocess,sys,time
 from pathlib import Path
-R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_one_step_feasibility_20261025_v1');Q=R/'qualification'
+R=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_substantial_geometry_rl_20261026_v1');Q=R/'qualification'
 P=runpy.run_path(str(R/'source/scripts/e017_v94r/production.py'));read=P['read'];save=P['compact'];sha=P['sha']
 
 def child(name,fault=None,label=None):
