@@ -3,7 +3,32 @@ import collections,csv,datetime,hashlib,json,math,os,shutil,statistics,time
 from pathlib import Path
 ROOT=Path('/mnt/d/Simone/proteinGen_data/e017_v94r3_substantial_geometry_rl_20261026_v1')
 V93=ROOT.parent/'e017_v93_regional_controllability_20261024_v1'
-read=lambda p:json.loads(Path(p).read_text())
+def transient_publication(path):
+ return Path(path).name.endswith('.part') or Path(path).name.startswith('incoming_')
+def allocated_file(path,required=True):
+ """No-follow allocation; publication staging is never a finalized artifact.
+ Required final entries fail closed after bounded retry, never silently skipped.
+ """
+ path=Path(path)
+ if transient_publication(path):return 0
+ for attempt in range(3):
+  try:
+   s=path.lstat()
+   if __import__('stat').S_ISLNK(s.st_mode):return 0
+   return s.st_blocks*512
+  except FileNotFoundError:
+   if attempt==2:
+    if required:raise FileNotFoundError('REQUIRED_FINAL_ARTIFACT_MISSING: '+str(path))
+    return 0
+   time.sleep(.01)
+def read(path):
+ path=Path(path)
+ if transient_publication(path):raise ValueError('PENDING_PUBLICATION_NOT_FINAL: '+str(path))
+ for attempt in range(3):
+  try:return json.loads(path.read_text())
+  except FileNotFoundError:
+   if attempt==2:raise FileNotFoundError('REQUIRED_FINAL_ARTIFACT_MISSING: '+str(path))
+   time.sleep(.01)
 def sha(p):
  h=hashlib.sha256()
  with Path(p).open('rb') as f:
@@ -24,16 +49,17 @@ def misc_usage(commit_bytes=None):
    if here==ROOT/'production':dirs[:]=[d for d in dirs if d not in ['rollouts','checkpoints','commits']]
    for name in names:
     file=here/name
-    if not file.is_symlink():total+=file.stat().st_blocks*512
+    total+=allocated_file(file)
   static=ROOT/'STATIC_SOURCE_ALLOCATION.json'
   if static.exists():total+=read(static)['allocated_bytes']
   _misc_cache[:]=[time.monotonic(),total]
- if commit_bytes is None:commit_bytes=sum(p.stat().st_blocks*512 for p in (ROOT/'production/commits').glob('*.json'))
+ if commit_bytes is None:commit_bytes=sum(allocated_file(p) for p in (ROOT/'production/commits').glob('*.json'))
  return _misc_cache[1]+commit_bytes
 def projection(trace_bytes=0,committed=0,recent_sizes=(),commit_bytes=None):
  cfg=read(ROOT/'TRAINING_CONFIGURATION_AND_SEEDS.json');seen=set();allocated=0
  for p in (ROOT/'production/checkpoints').glob('*'):
   if not (p.name.endswith('.pt') and p.name.startswith(('recovery_','milestone_','development_best_','incoming_')) or p.name.startswith('incoming_') and p.name.endswith('.pt.part')):continue
+  if transient_publication(p):continue
   assert not p.is_symlink();s=p.stat();key=(s.st_dev,s.st_ino)
   if key not in seen:seen.add(key);allocated+=s.st_blocks*512
  cp_remaining=max(0,10*cfg['checkpoint_hint_bytes']-allocated)
