@@ -1,0 +1,59 @@
+{
+  "version": "matched_epoch1_v1",
+  "source_hashes": {
+    "e007_epoch1_mission.py": "75ea559b2d27109e70b6d9240b09d4bcdee2f90ebf309dc603fc12bc0e3d6139",
+    "supervise_e007_epoch1_hold.py": "0ef81cd0db3276b217d7f3e1fa20000e5148aa354019bdda038bcf74c53fd533",
+    "e007_comparison_metrics.py": "80ee26dbdb603a1697cf5fb8af429a6483957f680cf452a86af16574ec4f2151",
+    "e007_epoch1_evaluation.py": "b2a7754de7eea7ebff4adf9ec6ae40cee9c7bfc7cf4dbd88d5cd870dc9d19c38",
+    "e007_epoch1_analysis.py": "8b43ac7a43eed1b26570867922b904ce47b348d8b979607502ae85af946e6b96",
+    "e007_external_designability.py": "709d0a56402aa18273422571c5d5e0824a908ced49d127f43e186a2adb598c5c",
+    "e007_e015_comparison_report.py": "063ea502023c807fe59cdf4565a0d0c02e7ea24e6f5743dfd871832fbda85497",
+    "e015_matched_epoch1_generation.py": "d812436e5f46f6eda6f706d5c7716027b0a0ab253c51b79aef1e66573c0c75fc",
+    "e015_external_designability.py": "8d55709b94598fb2821fad41798c738c2bc5f5a52a750e1a194ecb86567c1b0d",
+    "e015_external_reporting.py": "a64a21456f3f5915997dcf4db79b540b47f5c43392a94b5cdaad30f7f75bd1e8"
+  },
+  "primary_exposures": 230132,
+  "comparison_context_exposures": 314256,
+  "reconstruction": {
+    "panel": "Existing frozen100TRAIN+100heldout",
+    "timesteps": [
+      5,
+      50,
+      250,
+      400,
+      490
+    ],
+    "noise_family": "e015-absolute-matched-noise-v1",
+    "bootstrap_draws": 5000
+  },
+  "generation": {
+    "lengths": [
+      48,
+      96,
+      192,
+      320,
+      448
+    ],
+    "seeds": [
+      15015000,
+      15015001,
+      15015002,
+      15015003
+    ],
+    "samples": 20,
+    "native_steps": 500,
+    "initial_state": "Original50%X499 tensors, normalized Gaussian recovered and bitwise checked"
+  },
+  "external": {
+    "protocol_reference": "/mnt/d/Simone/proteinGen/e015_artifacts/e015_integrated_multiscale_parity_selfconditioned_v1/external_designability_loop_v1/assessment_protocol.json",
+    "positive_controls": "Same five predeclared real controls; reuse hash-compatible results",
+    "best_of_four": "Five independent per-length numeric winners; cross-model winning seeds may differ",
+    "matched_external": "Additional exact-epoch1E015 candidates only if original positive-control gate passes and resource admission succeeds"
+  },
+  "automatic_epoch2": false,
+  "automatic_E015_training": false,
+  "recovery_commands": {
+    "training": "/home/simostocco/miniforge3/envs/proteingen/bin/python -B /mnt/d/Simone/proteinGen/.e015_worktree/docs/e007_epoch1_mission.py resume",
+    "continuation": "/home/simostocco/miniforge3/envs/proteingen/bin/python -B /mnt/d/Simone/proteinGen/.e015_worktree/docs/e007_epoch1_mission.py queue-after-epoch"
+  }
+}

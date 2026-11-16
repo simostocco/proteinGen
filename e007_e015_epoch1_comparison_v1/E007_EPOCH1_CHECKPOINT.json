@@ -1,0 +1,35 @@
+{
+  "checkpoint": "/mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1/checkpoints/epoch_1_fraction_1.00.pt",
+  "sha256": "9c36e1dda397c59549b52db42d854543b1136adaa53762ef96209d0b316b2007",
+  "resume_checkpoint": "/mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1/checkpoints/recovery_0.pt",
+  "resume_sha256": "b83f4ece72f62db3b084e2f74866d6184b6ddc0459d1e363e552401805a6d437",
+  "epoch": 1,
+  "exposures": 230132,
+  "update": 180817,
+  "cursor": 180817,
+  "zero_uncommitted": true,
+  "diagnostics_completed": true,
+  "pending_boundary": null,
+  "strict_model_optimizer_rng": true,
+  "parameters": 7586505,
+  "cuda_event_training_hours": 4.450134257916362,
+  "accumulated_training_wall_counter_hours": 5.487753599600005,
+  "efficiency_scope": "Frozen CUDA training-event sum; excludes diagnostics and discarded pre-crash work; not total device busy time",
+  "precision": "FP32; noAMP/TF32/EMA",
+  "source_contract_unchanged": true,
+  "exposure_vector_exact": true,
+  "next_operation": {
+    "epoch": 2,
+    "update": 180818,
+    "exposures": 230133,
+    "batch": [
+      {
+        "identity": "6hku_A",
+        "length": 272,
+        "noise_seed": 6168266534259718348,
+        "noise_seed_exact_decimal": "6168266534259718348"
+      }
+    ]
+  },
+  "automatic_epoch2": false
+}

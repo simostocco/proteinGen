@@ -1,0 +1,45 @@
+{
+  "command": [
+    "ionice",
+    "-c",
+    "2",
+    "-n",
+    "7",
+    "/home/simostocco/miniforge3/envs/proteingen/bin/python",
+    "-B",
+    "/mnt/d/Simone/proteinGen/.e015_worktree/docs/supervise_e007_epoch1_hold.py",
+    "--launch",
+    "--resume"
+  ],
+  "result": "{\"supervisor_pid\": 1424444, \"root\": \"/mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1\"}\n",
+  "baseline": {
+    "timestamp_unix": 1791833464.137349,
+    "ram_available_bytes": 13799956480,
+    "swap_used_bytes": 0,
+    "load_average": [
+      0.4306640625,
+      0.49267578125,
+      1.0537109375
+    ],
+    "d_free_bytes": 38315229184,
+    "gpu_csv": "1159, 6738, 7, 44",
+    "cuda_compute_apps": "",
+    "targeted_processes": [],
+    "windows_ram_available_bytes": 14535241728,
+    "native_windows_targeted_processes": ""
+  },
+  "expected_next_operation": {
+    "update": 90414,
+    "exposures": 115068,
+    "cursor": 90414,
+    "batch": [
+      {
+        "identity": "7n2o_F",
+        "length": 241,
+        "noise_seed": 7492264717301116066,
+        "noise_seed_exact_decimal": "7492264717301116066"
+      }
+    ]
+  },
+  "started": 1791833467.4692936
+}

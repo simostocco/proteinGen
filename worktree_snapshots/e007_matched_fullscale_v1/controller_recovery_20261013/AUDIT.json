@@ -1,0 +1,62 @@
+{
+  "timestamp_utc": "2026-10-13T06:41:30.281104+00:00",
+  "e015": {
+    "completed": 82,
+    "remaining": 0,
+    "statuses": {
+      "COMPLETE": 82
+    },
+    "categories": {
+      "latest_best": 40,
+      "real_heldout": 20,
+      "historical_same_seed": 20,
+      "latest_median": 1,
+      "latest_failure": 1
+    },
+    "ledger": "/mnt/d/Simone/proteinGen/e015_artifacts/e015_integrated_multiscale_parity_selfconditioned_v1/external_designability_loop_v1/colabfold/jobs.json",
+    "progress": "/mnt/d/Simone/proteinGen/e015_artifacts/e015_integrated_multiscale_parity_selfconditioned_v1/external_designability_loop_v1/progress.json",
+    "logs": "/mnt/d/Simone/proteinGen/e015_artifacts/e015_integrated_multiscale_parity_selfconditioned_v1/external_designability_loop_v1/logs",
+    "prediction_hashes_verified": true
+  },
+  "e007": {
+    "completed": 62,
+    "remaining": 0,
+    "statuses": {
+      "COMPLETE": 62
+    },
+    "categories": {
+      "real_heldout": 20,
+      "latest_best": 40,
+      "latest_median": 1,
+      "latest_failure": 1
+    },
+    "ledger": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/e007_inverse_folding/colabfold/jobs.json",
+    "progress": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/e007_inverse_folding/progress.json",
+    "logs": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/e007_inverse_folding/logs",
+    "prediction_hashes_verified": true
+  },
+  "status": "COMPLETE_VERIFIED_NO_RESTART",
+  "comparison_progress": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/progress.json",
+  "previous_controller_pid": 1582740,
+  "previous_controller_exited": true,
+  "current_worker_pid": null,
+  "gpu_compute_owners": [],
+  "ownership_locks": {
+    "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/PIPELINE_OWNER.lock": "unheld",
+    "/mnt/d/Simone/proteinGen/e015_artifacts/e015_integrated_multiscale_parity_selfconditioned_v1/GPU_WORKER.lock": "unheld",
+    "/mnt/d/Simone/proteinGen/e015_artifacts/e015_integrated_multiscale_parity_selfconditioned_v1/SUPERVISOR.lock": "unheld",
+    "/mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1/OWNER.lock": "unheld",
+    "/mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1/SUPERVISOR_OWNER.lock": "unheld"
+  },
+  "new_controller_needed": false,
+  "stale_running_entries": 0,
+  "e007_training_paused": true,
+  "e015_training_paused": true,
+  "remaining_screening_seconds": 0,
+  "prediction_files_preserved": true,
+  "recovery_action": "None: all refolds and comparison complete. Do not queue-after-epoch or resume training.",
+  "stale_e015_progress_remaining": 57,
+  "completion_source": "Verified colabfold/jobs.json and final comparison manifest; phase progress merges retain stale fields.",
+  "verified_unique_files": 1449,
+  "elapsed_seconds": 6.847317449981347
+}

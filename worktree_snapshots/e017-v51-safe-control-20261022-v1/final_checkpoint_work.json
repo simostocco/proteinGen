@@ -1,0 +1,1023 @@
+{
+  "schema": "e017_v51_final_scientific_analysis_v1",
+  "verification": "fresh SHA256 + CPU deserialize + complete semantic digest; no model construction, GPU load, or optimizer step",
+  "arms": {
+    "A": {
+      "stop": {
+        "reason": "mean conditional geometry KL > 1.0 nat/component",
+        "exact_update": 250,
+        "complete_verified_recovery": {
+          "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/A/checkpoint_00250_1a7eb24b.pt",
+          "sha256": "1a88c45adb004d12b684da9553e50d1c90d7563d89c48686bd3a7c71fb315e45",
+          "bytes": 209325023,
+          "state_digest": "ce9373aa133ef95515cef44ed7ae427c36c3a42b80c933a36494e7e302d035fb",
+          "update": 250,
+          "stop_reason": "mean conditional geometry KL > 1.0 nat/component",
+          "scientifically_eligible": false
+        },
+        "no_invalid_promotion": true
+      },
+      "finished": {
+        "update": 250,
+        "stop_reason": "mean conditional geometry KL > 1.0 nat/component",
+        "J1_frozen": true,
+        "seconds": 754.8205307449971,
+        "peak_allocated": 440404480,
+        "peak_reserved": 467664896,
+        "trainable": 17429134
+      },
+      "states": {
+        "latest": {
+          "record": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/A/checkpoint_00250_1a7eb24b.pt",
+            "sha256": "1a88c45adb004d12b684da9553e50d1c90d7563d89c48686bd3a7c71fb315e45",
+            "bytes": 209325023,
+            "state_digest": "ce9373aa133ef95515cef44ed7ae427c36c3a42b80c933a36494e7e302d035fb",
+            "update": 250,
+            "stop_reason": "mean conditional geometry KL > 1.0 nat/component",
+            "scientifically_eligible": false
+          },
+          "SHA256_verified": true,
+          "CPU_deserialized": true,
+          "complete_semantic_digest_verified": true,
+          "required_fields": [
+            "actor",
+            "optimizer",
+            "scheduler",
+            "sampler",
+            "rng",
+            "dual",
+            "arm",
+            "update",
+            "best",
+            "monitor",
+            "stop_reason",
+            "config",
+            "config_hash",
+            "source",
+            "input_hashes",
+            "parent",
+            "parent_SHA",
+            "J1_tensor_SHA",
+            "immutable_nonactor_system_parent",
+            "replay",
+            "stage"
+          ],
+          "optimizer_parameter_states": 99,
+          "optimizer_step_values": [
+            250
+          ],
+          "scheduler": {
+            "base_lrs": [
+              1e-05
+            ],
+            "last_epoch": 250,
+            "_step_count": 251,
+            "_is_initial": false,
+            "_get_lr_called_within_step": false,
+            "_last_lr": [
+              5.500000000000001e-06
+            ],
+            "lr_lambdas": [
+              null
+            ]
+          },
+          "rng_keys": [
+            "python",
+            "numpy",
+            "torch",
+            "cuda"
+          ],
+          "rng_state_descriptors": {
+            "python": {
+              "type": "tuple",
+              "length": 3
+            },
+            "numpy": {
+              "type": "tuple",
+              "length": 5
+            },
+            "torch": {
+              "type": "Tensor",
+              "length": 5056
+            },
+            "cuda": {
+              "type": "list",
+              "length": 1
+            }
+          },
+          "AMP_scaler": "not applicable: BF16 autocast, no GradScaler in training source",
+          "sampler_cursor": 1000,
+          "sampler_order_length": 1014,
+          "next_identity": "20ac0e935d95b290c9fbedcfdb9f3ca5c85689c9901ba435fb998c00208df6ed",
+          "next_task_id": "20ac0e935d95b290c9fbedcfdb9f3ca5c85689c9901ba435fb998c00208df6ed_28_4_native",
+          "dual": 0.01,
+          "config_hash": "ceb9ee37b2b080af1abbc5257baaab7cfa89d1a960c6dc9b764e76090d0162d3",
+          "source": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+          "J1_tensor_SHA": "57e3cb301e240fdce05fcc012b186faba1b9c410c930ca37dc6bafc2a2511f4f",
+          "parent_SHA": "0b2f0b68783e4234f44c3b1041a5c1f59f04191af79b13232553b511168de265",
+          "immutable_nonactor_system_parent": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_throughput_20261021_v1/training_runs/run_d3e78a804534473884df42f0f34b7c41/checkpoints/checkpoint_00010000_7d8c5d05.pt",
+            "sha256": "ccd11e9788a30a4f3c398b57ee655d24f3e4b636fec875469f080b711ee3e8e9"
+          },
+          "publication_mtime_ns": {
+            "checkpoint": 1792683160332946700,
+            "index": 1792683166068833300,
+            "stop": 1792683166911152500,
+            "finished": 1792683167063890200
+          },
+          "scientifically_resumable": false,
+          "recovery_semantics": "full actor state plus immutable unchanged-system parent; exact numerical recovery does not authorize stopped study continuation"
+        },
+        "best": {
+          "record": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/A/checkpoint_00100_25dc4f5d.pt",
+            "sha256": "e30e860efb59a733a2af449f8383b1d44a714cb886bfbbe3e729e73cfcc5e73d",
+            "bytes": 209324959,
+            "state_digest": "b445565f75f02bf9ffe76e2ab847c4a3e16a1c5052847699a11918bf5806b31d",
+            "update": 100,
+            "stop_reason": null,
+            "scientifically_eligible": true
+          },
+          "SHA256_verified": true,
+          "CPU_deserialized": true,
+          "complete_semantic_digest_verified": true,
+          "required_fields": [
+            "actor",
+            "optimizer",
+            "scheduler",
+            "sampler",
+            "rng",
+            "dual",
+            "arm",
+            "update",
+            "best",
+            "monitor",
+            "stop_reason",
+            "config",
+            "config_hash",
+            "source",
+            "input_hashes",
+            "parent",
+            "parent_SHA",
+            "J1_tensor_SHA",
+            "immutable_nonactor_system_parent",
+            "replay",
+            "stage"
+          ],
+          "optimizer_parameter_states": 99,
+          "optimizer_step_values": [
+            100
+          ],
+          "scheduler": {
+            "base_lrs": [
+              1e-05
+            ],
+            "last_epoch": 100,
+            "_step_count": 101,
+            "_is_initial": false,
+            "_get_lr_called_within_step": false,
+            "_last_lr": [
+              9.140576474687263e-06
+            ],
+            "lr_lambdas": [
+              null
+            ]
+          },
+          "rng_keys": [
+            "python",
+            "numpy",
+            "torch",
+            "cuda"
+          ],
+          "rng_state_descriptors": {
+            "python": {
+              "type": "tuple",
+              "length": 3
+            },
+            "numpy": {
+              "type": "tuple",
+              "length": 5
+            },
+            "torch": {
+              "type": "Tensor",
+              "length": 5056
+            },
+            "cuda": {
+              "type": "list",
+              "length": 1
+            }
+          },
+          "AMP_scaler": "not applicable: BF16 autocast, no GradScaler in training source",
+          "sampler_cursor": 400,
+          "sampler_order_length": 1014,
+          "next_identity": "9ed504aef0d1373e672b19674e12376ab6c8ea65a1d69e6793a0f5939e0a5fe3",
+          "next_task_id": "9ed504aef0d1373e672b19674e12376ab6c8ea65a1d69e6793a0f5939e0a5fe3_28_4_native",
+          "dual": 0.01,
+          "config_hash": "ceb9ee37b2b080af1abbc5257baaab7cfa89d1a960c6dc9b764e76090d0162d3",
+          "source": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+          "J1_tensor_SHA": "57e3cb301e240fdce05fcc012b186faba1b9c410c930ca37dc6bafc2a2511f4f",
+          "parent_SHA": "0b2f0b68783e4234f44c3b1041a5c1f59f04191af79b13232553b511168de265",
+          "immutable_nonactor_system_parent": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_throughput_20261021_v1/training_runs/run_d3e78a804534473884df42f0f34b7c41/checkpoints/checkpoint_00010000_7d8c5d05.pt",
+            "sha256": "ccd11e9788a30a4f3c398b57ee655d24f3e4b636fec875469f080b711ee3e8e9"
+          },
+          "publication_mtime_ns": {
+            "checkpoint": 1792682705329801500,
+            "index": 1792683166068833300,
+            "stop": 1792683166911152500,
+            "finished": 1792683167063890200
+          },
+          "scientifically_resumable": false,
+          "recovery_semantics": "full actor state plus immutable unchanged-system parent; exact numerical recovery does not authorize stopped study continuation"
+        }
+      }
+    },
+    "B": {
+      "stop": {
+        "reason": "H4 backbone validity drop > 5 percentage points",
+        "exact_update": 250,
+        "complete_verified_recovery": {
+          "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/B/checkpoint_00250_f25ced88.pt",
+          "sha256": "e15d68a964abbf618e7afb6e4c1bf1c740d5b8e10bcf1d832be0b79600b02cf9",
+          "bytes": 209325023,
+          "state_digest": "42f8afd4dcc5d4e6f4cc4a68c6d52296da84318e573be68305d98c3747dffa46",
+          "update": 250,
+          "stop_reason": "H4 backbone validity drop > 5 percentage points",
+          "scientifically_eligible": false
+        },
+        "no_invalid_promotion": true
+      },
+      "finished": {
+        "update": 250,
+        "stop_reason": "H4 backbone validity drop > 5 percentage points",
+        "J1_frozen": true,
+        "seconds": 717.5714433389949,
+        "peak_allocated": 440404480,
+        "peak_reserved": 467664896,
+        "trainable": 17429134
+      },
+      "states": {
+        "latest": {
+          "record": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/B/checkpoint_00250_f25ced88.pt",
+            "sha256": "e15d68a964abbf618e7afb6e4c1bf1c740d5b8e10bcf1d832be0b79600b02cf9",
+            "bytes": 209325023,
+            "state_digest": "42f8afd4dcc5d4e6f4cc4a68c6d52296da84318e573be68305d98c3747dffa46",
+            "update": 250,
+            "stop_reason": "H4 backbone validity drop > 5 percentage points",
+            "scientifically_eligible": false
+          },
+          "SHA256_verified": true,
+          "CPU_deserialized": true,
+          "complete_semantic_digest_verified": true,
+          "required_fields": [
+            "actor",
+            "optimizer",
+            "scheduler",
+            "sampler",
+            "rng",
+            "dual",
+            "arm",
+            "update",
+            "best",
+            "monitor",
+            "stop_reason",
+            "config",
+            "config_hash",
+            "source",
+            "input_hashes",
+            "parent",
+            "parent_SHA",
+            "J1_tensor_SHA",
+            "immutable_nonactor_system_parent",
+            "replay",
+            "stage"
+          ],
+          "optimizer_parameter_states": 99,
+          "optimizer_step_values": [
+            250
+          ],
+          "scheduler": {
+            "base_lrs": [
+              1e-05
+            ],
+            "last_epoch": 250,
+            "_step_count": 251,
+            "_is_initial": false,
+            "_get_lr_called_within_step": false,
+            "_last_lr": [
+              5.500000000000001e-06
+            ],
+            "lr_lambdas": [
+              null
+            ]
+          },
+          "rng_keys": [
+            "python",
+            "numpy",
+            "torch",
+            "cuda"
+          ],
+          "rng_state_descriptors": {
+            "python": {
+              "type": "tuple",
+              "length": 3
+            },
+            "numpy": {
+              "type": "tuple",
+              "length": 5
+            },
+            "torch": {
+              "type": "Tensor",
+              "length": 5056
+            },
+            "cuda": {
+              "type": "list",
+              "length": 1
+            }
+          },
+          "AMP_scaler": "not applicable: BF16 autocast, no GradScaler in training source",
+          "sampler_cursor": 1000,
+          "sampler_order_length": 1014,
+          "next_identity": "20ac0e935d95b290c9fbedcfdb9f3ca5c85689c9901ba435fb998c00208df6ed",
+          "next_task_id": "20ac0e935d95b290c9fbedcfdb9f3ca5c85689c9901ba435fb998c00208df6ed_28_4_native",
+          "dual": 0.20730266842991107,
+          "config_hash": "ceb9ee37b2b080af1abbc5257baaab7cfa89d1a960c6dc9b764e76090d0162d3",
+          "source": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+          "J1_tensor_SHA": "57e3cb301e240fdce05fcc012b186faba1b9c410c930ca37dc6bafc2a2511f4f",
+          "parent_SHA": "0b2f0b68783e4234f44c3b1041a5c1f59f04191af79b13232553b511168de265",
+          "immutable_nonactor_system_parent": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_throughput_20261021_v1/training_runs/run_d3e78a804534473884df42f0f34b7c41/checkpoints/checkpoint_00010000_7d8c5d05.pt",
+            "sha256": "ccd11e9788a30a4f3c398b57ee655d24f3e4b636fec875469f080b711ee3e8e9"
+          },
+          "publication_mtime_ns": {
+            "checkpoint": 1792683895896478100,
+            "index": 1792683901638397000,
+            "stop": 1792683902466520200,
+            "finished": 1792683902613768900
+          },
+          "scientifically_resumable": false,
+          "recovery_semantics": "full actor state plus immutable unchanged-system parent; exact numerical recovery does not authorize stopped study continuation"
+        },
+        "best": {
+          "record": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/B/checkpoint_00100_82f0d529.pt",
+            "sha256": "ce2e009ff9cb819425c8ed10b698d3c5fe23d5d6a7f77c4e989996deeebbb0ed",
+            "bytes": 209324959,
+            "state_digest": "6c6be041b13d45866e003361fa10ef544180c65c071db1e52fcb15c580b9c72b",
+            "update": 100,
+            "stop_reason": null,
+            "scientifically_eligible": true
+          },
+          "SHA256_verified": true,
+          "CPU_deserialized": true,
+          "complete_semantic_digest_verified": true,
+          "required_fields": [
+            "actor",
+            "optimizer",
+            "scheduler",
+            "sampler",
+            "rng",
+            "dual",
+            "arm",
+            "update",
+            "best",
+            "monitor",
+            "stop_reason",
+            "config",
+            "config_hash",
+            "source",
+            "input_hashes",
+            "parent",
+            "parent_SHA",
+            "J1_tensor_SHA",
+            "immutable_nonactor_system_parent",
+            "replay",
+            "stage"
+          ],
+          "optimizer_parameter_states": 99,
+          "optimizer_step_values": [
+            100
+          ],
+          "scheduler": {
+            "base_lrs": [
+              1e-05
+            ],
+            "last_epoch": 100,
+            "_step_count": 101,
+            "_is_initial": false,
+            "_get_lr_called_within_step": false,
+            "_last_lr": [
+              9.140576474687263e-06
+            ],
+            "lr_lambdas": [
+              null
+            ]
+          },
+          "rng_keys": [
+            "python",
+            "numpy",
+            "torch",
+            "cuda"
+          ],
+          "rng_state_descriptors": {
+            "python": {
+              "type": "tuple",
+              "length": 3
+            },
+            "numpy": {
+              "type": "tuple",
+              "length": 5
+            },
+            "torch": {
+              "type": "Tensor",
+              "length": 5056
+            },
+            "cuda": {
+              "type": "list",
+              "length": 1
+            }
+          },
+          "AMP_scaler": "not applicable: BF16 autocast, no GradScaler in training source",
+          "sampler_cursor": 400,
+          "sampler_order_length": 1014,
+          "next_identity": "9ed504aef0d1373e672b19674e12376ab6c8ea65a1d69e6793a0f5939e0a5fe3",
+          "next_task_id": "9ed504aef0d1373e672b19674e12376ab6c8ea65a1d69e6793a0f5939e0a5fe3_28_4_native",
+          "dual": 0.0,
+          "config_hash": "ceb9ee37b2b080af1abbc5257baaab7cfa89d1a960c6dc9b764e76090d0162d3",
+          "source": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+          "J1_tensor_SHA": "57e3cb301e240fdce05fcc012b186faba1b9c410c930ca37dc6bafc2a2511f4f",
+          "parent_SHA": "0b2f0b68783e4234f44c3b1041a5c1f59f04191af79b13232553b511168de265",
+          "immutable_nonactor_system_parent": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_throughput_20261021_v1/training_runs/run_d3e78a804534473884df42f0f34b7c41/checkpoints/checkpoint_00010000_7d8c5d05.pt",
+            "sha256": "ccd11e9788a30a4f3c398b57ee655d24f3e4b636fec875469f080b711ee3e8e9"
+          },
+          "publication_mtime_ns": {
+            "checkpoint": 1792683465002148200,
+            "index": 1792683901638397000,
+            "stop": 1792683902466520200,
+            "finished": 1792683902613768900
+          },
+          "scientifically_resumable": false,
+          "recovery_semantics": "full actor state plus immutable unchanged-system parent; exact numerical recovery does not authorize stopped study continuation"
+        }
+      }
+    },
+    "C": {
+      "stop": {
+        "reason": "mean conditional geometry KL > 1.0 nat/component",
+        "exact_update": 250,
+        "complete_verified_recovery": {
+          "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/C/checkpoint_00250_db2678d3.pt",
+          "sha256": "6b2895e1bd8fe996498d37368325d14bf7ac58fd36c154b8907369ae61401633",
+          "bytes": 209325023,
+          "state_digest": "bb6ce8e0bd6568927f4e113af52f9f652c2c6f3c1917451cda4714f093d306e5",
+          "update": 250,
+          "stop_reason": "mean conditional geometry KL > 1.0 nat/component",
+          "scientifically_eligible": false
+        },
+        "no_invalid_promotion": true
+      },
+      "finished": {
+        "update": 250,
+        "stop_reason": "mean conditional geometry KL > 1.0 nat/component",
+        "J1_frozen": true,
+        "seconds": 711.5059756230039,
+        "peak_allocated": 440393216,
+        "peak_reserved": 467664896,
+        "trainable": 17429134
+      },
+      "states": {
+        "latest": {
+          "record": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/C/checkpoint_00250_db2678d3.pt",
+            "sha256": "6b2895e1bd8fe996498d37368325d14bf7ac58fd36c154b8907369ae61401633",
+            "bytes": 209325023,
+            "state_digest": "bb6ce8e0bd6568927f4e113af52f9f652c2c6f3c1917451cda4714f093d306e5",
+            "update": 250,
+            "stop_reason": "mean conditional geometry KL > 1.0 nat/component",
+            "scientifically_eligible": false
+          },
+          "SHA256_verified": true,
+          "CPU_deserialized": true,
+          "complete_semantic_digest_verified": true,
+          "required_fields": [
+            "actor",
+            "optimizer",
+            "scheduler",
+            "sampler",
+            "rng",
+            "dual",
+            "arm",
+            "update",
+            "best",
+            "monitor",
+            "stop_reason",
+            "config",
+            "config_hash",
+            "source",
+            "input_hashes",
+            "parent",
+            "parent_SHA",
+            "J1_tensor_SHA",
+            "immutable_nonactor_system_parent",
+            "replay",
+            "stage"
+          ],
+          "optimizer_parameter_states": 99,
+          "optimizer_step_values": [
+            250
+          ],
+          "scheduler": {
+            "base_lrs": [
+              1e-05
+            ],
+            "last_epoch": 250,
+            "_step_count": 251,
+            "_is_initial": false,
+            "_get_lr_called_within_step": false,
+            "_last_lr": [
+              5.500000000000001e-06
+            ],
+            "lr_lambdas": [
+              null
+            ]
+          },
+          "rng_keys": [
+            "python",
+            "numpy",
+            "torch",
+            "cuda"
+          ],
+          "rng_state_descriptors": {
+            "python": {
+              "type": "tuple",
+              "length": 3
+            },
+            "numpy": {
+              "type": "tuple",
+              "length": 5
+            },
+            "torch": {
+              "type": "Tensor",
+              "length": 5056
+            },
+            "cuda": {
+              "type": "list",
+              "length": 1
+            }
+          },
+          "AMP_scaler": "not applicable: BF16 autocast, no GradScaler in training source",
+          "sampler_cursor": 1000,
+          "sampler_order_length": 1014,
+          "next_identity": "20ac0e935d95b290c9fbedcfdb9f3ca5c85689c9901ba435fb998c00208df6ed",
+          "next_task_id": "20ac0e935d95b290c9fbedcfdb9f3ca5c85689c9901ba435fb998c00208df6ed_28_4_native",
+          "dual": 0.01,
+          "config_hash": "ceb9ee37b2b080af1abbc5257baaab7cfa89d1a960c6dc9b764e76090d0162d3",
+          "source": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+          "J1_tensor_SHA": "57e3cb301e240fdce05fcc012b186faba1b9c410c930ca37dc6bafc2a2511f4f",
+          "parent_SHA": "0b2f0b68783e4234f44c3b1041a5c1f59f04191af79b13232553b511168de265",
+          "immutable_nonactor_system_parent": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_throughput_20261021_v1/training_runs/run_d3e78a804534473884df42f0f34b7c41/checkpoints/checkpoint_00010000_7d8c5d05.pt",
+            "sha256": "ccd11e9788a30a4f3c398b57ee655d24f3e4b636fec875469f080b711ee3e8e9"
+          },
+          "publication_mtime_ns": {
+            "checkpoint": 1792684625449091600,
+            "index": 1792684631300457000,
+            "stop": 1792684632147643300,
+            "finished": 1792684632311134200
+          },
+          "scientifically_resumable": false,
+          "recovery_semantics": "full actor state plus immutable unchanged-system parent; exact numerical recovery does not authorize stopped study continuation"
+        },
+        "best": {
+          "record": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/C/checkpoint_00100_9009d5a4.pt",
+            "sha256": "0b0e003ed8dbb42880cd8a5c4ab0fb58503fdc1cfadd4d21cf5f10713c13d57d",
+            "bytes": 209324959,
+            "state_digest": "14c65f421a01b357174f33522ec118f0e4bdaf30e33eb278d29bb7bbb777dbd7",
+            "update": 100,
+            "stop_reason": null,
+            "scientifically_eligible": true
+          },
+          "SHA256_verified": true,
+          "CPU_deserialized": true,
+          "complete_semantic_digest_verified": true,
+          "required_fields": [
+            "actor",
+            "optimizer",
+            "scheduler",
+            "sampler",
+            "rng",
+            "dual",
+            "arm",
+            "update",
+            "best",
+            "monitor",
+            "stop_reason",
+            "config",
+            "config_hash",
+            "source",
+            "input_hashes",
+            "parent",
+            "parent_SHA",
+            "J1_tensor_SHA",
+            "immutable_nonactor_system_parent",
+            "replay",
+            "stage"
+          ],
+          "optimizer_parameter_states": 99,
+          "optimizer_step_values": [
+            100
+          ],
+          "scheduler": {
+            "base_lrs": [
+              1e-05
+            ],
+            "last_epoch": 100,
+            "_step_count": 101,
+            "_is_initial": false,
+            "_get_lr_called_within_step": false,
+            "_last_lr": [
+              9.140576474687263e-06
+            ],
+            "lr_lambdas": [
+              null
+            ]
+          },
+          "rng_keys": [
+            "python",
+            "numpy",
+            "torch",
+            "cuda"
+          ],
+          "rng_state_descriptors": {
+            "python": {
+              "type": "tuple",
+              "length": 3
+            },
+            "numpy": {
+              "type": "tuple",
+              "length": 5
+            },
+            "torch": {
+              "type": "Tensor",
+              "length": 5056
+            },
+            "cuda": {
+              "type": "list",
+              "length": 1
+            }
+          },
+          "AMP_scaler": "not applicable: BF16 autocast, no GradScaler in training source",
+          "sampler_cursor": 400,
+          "sampler_order_length": 1014,
+          "next_identity": "9ed504aef0d1373e672b19674e12376ab6c8ea65a1d69e6793a0f5939e0a5fe3",
+          "next_task_id": "9ed504aef0d1373e672b19674e12376ab6c8ea65a1d69e6793a0f5939e0a5fe3_28_4_native",
+          "dual": 0.01,
+          "config_hash": "ceb9ee37b2b080af1abbc5257baaab7cfa89d1a960c6dc9b764e76090d0162d3",
+          "source": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+          "J1_tensor_SHA": "57e3cb301e240fdce05fcc012b186faba1b9c410c930ca37dc6bafc2a2511f4f",
+          "parent_SHA": "0b2f0b68783e4234f44c3b1041a5c1f59f04191af79b13232553b511168de265",
+          "immutable_nonactor_system_parent": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_throughput_20261021_v1/training_runs/run_d3e78a804534473884df42f0f34b7c41/checkpoints/checkpoint_00010000_7d8c5d05.pt",
+            "sha256": "ccd11e9788a30a4f3c398b57ee655d24f3e4b636fec875469f080b711ee3e8e9"
+          },
+          "publication_mtime_ns": {
+            "checkpoint": 1792684195475768600,
+            "index": 1792684631300457000,
+            "stop": 1792684632147643300,
+            "finished": 1792684632311134200
+          },
+          "scientifically_resumable": false,
+          "recovery_semantics": "full actor state plus immutable unchanged-system parent; exact numerical recovery does not authorize stopped study continuation"
+        }
+      }
+    },
+    "D": {
+      "stop": {
+        "reason": "H4 backbone validity drop > 5 percentage points",
+        "exact_update": 250,
+        "complete_verified_recovery": {
+          "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/D/checkpoint_00250_a5703fc0.pt",
+          "sha256": "c737d393783a2eb823bb6fa501770cf2d3c2a7357a3516ee5329fd9d96690350",
+          "bytes": 209325023,
+          "state_digest": "d80ad494147e4c4cbed4dbae8ac1630b881b55186752be556abffeeac66e29ce",
+          "update": 250,
+          "stop_reason": "H4 backbone validity drop > 5 percentage points",
+          "scientifically_eligible": false
+        },
+        "no_invalid_promotion": true
+      },
+      "finished": {
+        "update": 250,
+        "stop_reason": "H4 backbone validity drop > 5 percentage points",
+        "J1_frozen": true,
+        "seconds": 723.0955784300022,
+        "peak_allocated": 440393216,
+        "peak_reserved": 467664896,
+        "trainable": 17429134
+      },
+      "states": {
+        "latest": {
+          "record": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/D/checkpoint_00250_a5703fc0.pt",
+            "sha256": "c737d393783a2eb823bb6fa501770cf2d3c2a7357a3516ee5329fd9d96690350",
+            "bytes": 209325023,
+            "state_digest": "d80ad494147e4c4cbed4dbae8ac1630b881b55186752be556abffeeac66e29ce",
+            "update": 250,
+            "stop_reason": "H4 backbone validity drop > 5 percentage points",
+            "scientifically_eligible": false
+          },
+          "SHA256_verified": true,
+          "CPU_deserialized": true,
+          "complete_semantic_digest_verified": true,
+          "required_fields": [
+            "actor",
+            "optimizer",
+            "scheduler",
+            "sampler",
+            "rng",
+            "dual",
+            "arm",
+            "update",
+            "best",
+            "monitor",
+            "stop_reason",
+            "config",
+            "config_hash",
+            "source",
+            "input_hashes",
+            "parent",
+            "parent_SHA",
+            "J1_tensor_SHA",
+            "immutable_nonactor_system_parent",
+            "replay",
+            "stage"
+          ],
+          "optimizer_parameter_states": 99,
+          "optimizer_step_values": [
+            250
+          ],
+          "scheduler": {
+            "base_lrs": [
+              1e-05
+            ],
+            "last_epoch": 250,
+            "_step_count": 251,
+            "_is_initial": false,
+            "_get_lr_called_within_step": false,
+            "_last_lr": [
+              5.500000000000001e-06
+            ],
+            "lr_lambdas": [
+              null
+            ]
+          },
+          "rng_keys": [
+            "python",
+            "numpy",
+            "torch",
+            "cuda"
+          ],
+          "rng_state_descriptors": {
+            "python": {
+              "type": "tuple",
+              "length": 3
+            },
+            "numpy": {
+              "type": "tuple",
+              "length": 5
+            },
+            "torch": {
+              "type": "Tensor",
+              "length": 5056
+            },
+            "cuda": {
+              "type": "list",
+              "length": 1
+            }
+          },
+          "AMP_scaler": "not applicable: BF16 autocast, no GradScaler in training source",
+          "sampler_cursor": 1000,
+          "sampler_order_length": 1014,
+          "next_identity": "20ac0e935d95b290c9fbedcfdb9f3ca5c85689c9901ba435fb998c00208df6ed",
+          "next_task_id": "20ac0e935d95b290c9fbedcfdb9f3ca5c85689c9901ba435fb998c00208df6ed_28_4_native",
+          "dual": 0.3374492952413859,
+          "config_hash": "ceb9ee37b2b080af1abbc5257baaab7cfa89d1a960c6dc9b764e76090d0162d3",
+          "source": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+          "J1_tensor_SHA": "57e3cb301e240fdce05fcc012b186faba1b9c410c930ca37dc6bafc2a2511f4f",
+          "parent_SHA": "0b2f0b68783e4234f44c3b1041a5c1f59f04191af79b13232553b511168de265",
+          "immutable_nonactor_system_parent": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_throughput_20261021_v1/training_runs/run_d3e78a804534473884df42f0f34b7c41/checkpoints/checkpoint_00010000_7d8c5d05.pt",
+            "sha256": "ccd11e9788a30a4f3c398b57ee655d24f3e4b636fec875469f080b711ee3e8e9"
+          },
+          "publication_mtime_ns": {
+            "checkpoint": 1792685366515392900,
+            "index": 1792685372447394900,
+            "stop": 1792685373306813700,
+            "finished": 1792685373503258700
+          },
+          "scientifically_resumable": false,
+          "recovery_semantics": "full actor state plus immutable unchanged-system parent; exact numerical recovery does not authorize stopped study continuation"
+        },
+        "best": {
+          "record": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/D/checkpoint_00100_07eb81c3.pt",
+            "sha256": "2e0c5eb03bf60d92067df47ede679eeccef4bd82513273431d59ef8b9245667b",
+            "bytes": 209324959,
+            "state_digest": "e1bcf4ff7d7758fe6fe14e43cd32c0c4f734d7acaf91cc2e4677136cc6ac0308",
+            "update": 100,
+            "stop_reason": null,
+            "scientifically_eligible": true
+          },
+          "SHA256_verified": true,
+          "CPU_deserialized": true,
+          "complete_semantic_digest_verified": true,
+          "required_fields": [
+            "actor",
+            "optimizer",
+            "scheduler",
+            "sampler",
+            "rng",
+            "dual",
+            "arm",
+            "update",
+            "best",
+            "monitor",
+            "stop_reason",
+            "config",
+            "config_hash",
+            "source",
+            "input_hashes",
+            "parent",
+            "parent_SHA",
+            "J1_tensor_SHA",
+            "immutable_nonactor_system_parent",
+            "replay",
+            "stage"
+          ],
+          "optimizer_parameter_states": 99,
+          "optimizer_step_values": [
+            100
+          ],
+          "scheduler": {
+            "base_lrs": [
+              1e-05
+            ],
+            "last_epoch": 100,
+            "_step_count": 101,
+            "_is_initial": false,
+            "_get_lr_called_within_step": false,
+            "_last_lr": [
+              9.140576474687263e-06
+            ],
+            "lr_lambdas": [
+              null
+            ]
+          },
+          "rng_keys": [
+            "python",
+            "numpy",
+            "torch",
+            "cuda"
+          ],
+          "rng_state_descriptors": {
+            "python": {
+              "type": "tuple",
+              "length": 3
+            },
+            "numpy": {
+              "type": "tuple",
+              "length": 5
+            },
+            "torch": {
+              "type": "Tensor",
+              "length": 5056
+            },
+            "cuda": {
+              "type": "list",
+              "length": 1
+            }
+          },
+          "AMP_scaler": "not applicable: BF16 autocast, no GradScaler in training source",
+          "sampler_cursor": 400,
+          "sampler_order_length": 1014,
+          "next_identity": "9ed504aef0d1373e672b19674e12376ab6c8ea65a1d69e6793a0f5939e0a5fe3",
+          "next_task_id": "9ed504aef0d1373e672b19674e12376ab6c8ea65a1d69e6793a0f5939e0a5fe3_28_4_native",
+          "dual": 0.0,
+          "config_hash": "ceb9ee37b2b080af1abbc5257baaab7cfa89d1a960c6dc9b764e76090d0162d3",
+          "source": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+          "J1_tensor_SHA": "57e3cb301e240fdce05fcc012b186faba1b9c410c930ca37dc6bafc2a2511f4f",
+          "parent_SHA": "0b2f0b68783e4234f44c3b1041a5c1f59f04191af79b13232553b511168de265",
+          "immutable_nonactor_system_parent": {
+            "path": "/mnt/d/Simone/proteinGen_data/e017_crisp_v3_throughput_20261021_v1/training_runs/run_d3e78a804534473884df42f0f34b7c41/checkpoints/checkpoint_00010000_7d8c5d05.pt",
+            "sha256": "ccd11e9788a30a4f3c398b57ee655d24f3e4b636fec875469f080b711ee3e8e9"
+          },
+          "publication_mtime_ns": {
+            "checkpoint": 1792684929021478300,
+            "index": 1792685372447394900,
+            "stop": 1792685373306813700,
+            "finished": 1792685373503258700
+          },
+          "scientifically_resumable": false,
+          "recovery_semantics": "full actor state plus immutable unchanged-system parent; exact numerical recovery does not authorize stopped study continuation"
+        }
+      }
+    }
+  },
+  "engineering_tests": {
+    "PASS": true,
+    "fresh_GPU_process_exact_next_update": true,
+    "model_optimizer_scheduler_sampler_RNG_dual_exact": true,
+    "scientific_stop_checkpoint_before_exit": true,
+    "numerical_stop_before_optimizer_verified": true,
+    "invalid_checkpoint_not_promoted": true,
+    "record": {
+      "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/checkpoints/ENGINEERING/checkpoint_00002_600fc728.pt",
+      "sha256": "82c2f7edd8727fd59a1ea293200906b334c4df61e0329e0cbdd800ad86bf8afe",
+      "bytes": 209324895,
+      "state_digest": "dc34692d06235bd511d565419a08c2ee39f7d992130c7460451872a55f7d8cea",
+      "update": 2,
+      "stop_reason": "simulated numerical gradient stop; optimizer not stepped",
+      "scientifically_eligible": false
+    },
+    "engineering_update_executions": 3,
+    "J1_frozen": true,
+    "atomic_kill_before_rename_preserves_previous_full_checkpoint": true,
+    "own_unpublished_transient": {
+      "bytes": 209324831,
+      "sha256": "0a9989f91faa6f3b151c9cb547d3c4310d8d4b8620959084bda4b01dd565b73e"
+    }
+  },
+  "fault_injection": {
+    "PASS": true,
+    "scope": "Actual production train/publish/catch routines; CPU toy actor solely for injected faults, not a J1 or protein experiment",
+    "records": [
+      {
+        "case": "scientific",
+        "verified": true,
+        "update": 1,
+        "reason": "mean conditional geometry KL > 1.0 nat/component",
+        "checkpoint": {
+          "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/engineering_fixtures/scientific/checkpoints/D/checkpoint_00001_2adced2c.pt",
+          "sha256": "6effb2924205c860810412d79bce21ffa13aabcde0ab8bbfc8dc9abe98b2c1ee",
+          "bytes": 19909,
+          "state_digest": "04d5442249b2ce5ff2ce8e4028b8043b1ed4e43c3e65c249934913332535f200",
+          "update": 1,
+          "stop_reason": "mean conditional geometry KL > 1.0 nat/component",
+          "scientifically_eligible": false
+        }
+      },
+      {
+        "case": "numeric_forward",
+        "verified": true,
+        "update": 0,
+        "reason": "FloatingPointError('injected nonfinite forward BEFORE optimizer')",
+        "checkpoint": {
+          "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/engineering_fixtures/numeric_forward/checkpoints/D/checkpoint_00000_3dbc9947.pt",
+          "sha256": "13a0b2cda11019341ee1f808d9cbd1a80b493beb6c69ab7ffcf9f6a20b0a8958",
+          "bytes": 18333,
+          "state_digest": "dc6a2f47196f2d3786596febbe059d9ae62ba42154c0acc294246b1b38389d69",
+          "update": 0,
+          "stop_reason": "FloatingPointError('injected nonfinite forward BEFORE optimizer')",
+          "scientifically_eligible": false
+        }
+      },
+      {
+        "case": "partial_optimizer",
+        "verified": true,
+        "update": 0,
+        "reason": "RuntimeError('injected failure inside unacknowledged optimizer transaction'); rolled back to last verified safe transaction",
+        "checkpoint": {
+          "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/engineering_fixtures/partial_optimizer/checkpoints/D/checkpoint_00000_c771b3db.pt",
+          "sha256": "8c9f5ac4400c9dcb9f3172d95506bb96494d285b59b4d575fa39aec7bba956b4",
+          "bytes": 18397,
+          "state_digest": "96be5224a41c766ef0b5dabca717bd91666bed9428b91bae3be38131ff2d7ee2",
+          "update": 0,
+          "stop_reason": "RuntimeError('injected failure inside unacknowledged optimizer transaction'); rolled back to last verified safe transaction",
+          "scientifically_eligible": false
+        }
+      },
+      {
+        "case": "graceful",
+        "verified": true,
+        "update": 1,
+        "reason": "graceful operational stop: SIGTERM",
+        "checkpoint": {
+          "path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/engineering_fixtures/graceful/checkpoints/D/checkpoint_00001_5b1e0942.pt",
+          "sha256": "89621b0199361d6e77b99b738ac9617a9cca40bc93ec752ecf5daf7b5ee4560a",
+          "bytes": 19781,
+          "state_digest": "9de2f10c47476438519df364229075a7a4fe79f500e289081ff656bb47266f25",
+          "update": 1,
+          "stop_reason": "graceful operational stop: SIGTERM",
+          "scientifically_eligible": false
+        }
+      }
+    ]
+  },
+  "partial_checkpoint_files": [],
+  "no_uncommitted_update_evidence": "250 contiguous logged updates, Adam and scheduler step250, sampler1000, STOP and FINISHED250; mandatory publish precedes STOP and FINISHED; all digests valid",
+  "timestamp_unix": 1792728613.2537751
+}

@@ -1,0 +1,2575 @@
+{
+  "snapshot_date": "2026-11-16",
+  "scope": "Uncommitted source files, modified tracked reports, and compact comparison summaries from registered worktrees. Experiment branches are published separately.",
+  "excluded": [
+    "Datasets, checkpoints, raw model outputs, virtual environments, caches and runtime artifact trees.",
+    "Untracked raw artifact folders e013_artifacts, e014_artifacts and e015_artifacts.",
+    "Storage census/process dumps; only storage audit source and SUMMARY.md are included."
+  ],
+  "syntax_check": "Python AST parse only; scripts were not executed.",
+  "existing_syntax_errors": [],
+  "files": [
+    {
+      "path": "e007_e015_epoch1_comparison_v1/AFTER_EPOCH_CONTROLLER.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/AFTER_EPOCH_CONTROLLER.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "79f9a7abe7cbfbcf35205954aab1e8f382ee4d1f93bef2862551a9a96e603fdb",
+      "bytes": 262
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/AUDIT_RECORD_PRESERVATION.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/AUDIT_RECORD_PRESERVATION.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "7e5c8ab3e1694447be26cdb5df4899577c76ade16b38dc094418f0ddb7fd92c4",
+      "bytes": 291
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/COMPUTATION_STATUS.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/COMPUTATION_STATUS.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "4370ca463ecabc9249a731199b66ea549eff7183db2fcf09e75c0c58379ebd6c",
+      "bytes": 84
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/E007_EPOCH1_CHECKPOINT.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/E007_EPOCH1_CHECKPOINT.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "7b03edf971280d7d28b7e2169082169a73eaf3f03fbdf86af3c0850093014991",
+      "bytes": 1306
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/E007_EXTERNAL_DESIGNABILITY.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/E007_EXTERNAL_DESIGNABILITY.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "a8ea594780b7fe689b1a49d0ab8dcab5bb35b964f3e86fc5584341e44e6746c5",
+      "bytes": 11482
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/E007_GENERATION.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/E007_GENERATION.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "2f64bd5ed9af7bf2780ad30d9060c782a0c6a81ac1a012cb922a33bac862f9c9",
+      "bytes": 12674
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/E007_RECONSTRUCTION.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/E007_RECONSTRUCTION.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "e6fc0bfd19e9b19430e16b245404776aca496fa60ac4910888e7c68816b8a272",
+      "bytes": 14356
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/E007_RESOURCE_OBSERVATION.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/E007_RESOURCE_OBSERVATION.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "c20cdaec3c0cb1ba4f5fe5544829f7222851efe31c5de004df3aa391b6271a31",
+      "bytes": 4908
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/E015_EXTERNAL_COMPLETION.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/E015_EXTERNAL_COMPLETION.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "ac49b70f4405e70353305743bfdacd7328c3496b76d9da89438ab0baefc6a097",
+      "bytes": 3316
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/FINAL_VERDICT.md",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/FINAL_VERDICT.md",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "1ccebfd877f16ac51dc7cfcd334047571f05e4f5b3673e220c85d71698cdf9b1",
+      "bytes": 1455
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/FIRST_RESUMED_OPERATION.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/FIRST_RESUMED_OPERATION.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "ed4fbd83f06728afd4bc86e74ba20e11340c160a8893e478030bff8acee0bf00",
+      "bytes": 804
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/INFERENCE_GUIDE.md",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/INFERENCE_GUIDE.md",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "1cdfb9b1d39ea61c7250e02de5017c8aec4f33a07363bb96edd70a4d54fbd5c2",
+      "bytes": 1077
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/LATER_E015_CONTEXT_COMPARISON.md",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/LATER_E015_CONTEXT_COMPARISON.md",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "a3b9d46145bdffe7eef9dbfef3551e7c49efe9768292e6ae3ef871436415652a",
+      "bytes": 4477
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/LAUNCH.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/LAUNCH.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "198e1ba9b0865decbed72656c439ca8b92de0db5e048aeffcff2990926d6ca56",
+      "bytes": 1151
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/MANIFEST.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/MANIFEST.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "60c241e75ed5f2d40d63ed241c76f069438f187b782b84051f0ce6b63ce5776a",
+      "bytes": 5654
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/MATCHED_EPOCH1_COMPARISON.md",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/MATCHED_EPOCH1_COMPARISON.md",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "f8641f91afb08341d3c3272636708a37c0725d2af7c6075d9f704539b2d1cc00",
+      "bytes": 4496
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/METHODS.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/METHODS.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "9bc8b55d2bd6666b08bdc83c0829e6b507b6101a2aa2dfe4e79d3db6615a4630",
+      "bytes": 2686
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/POST_RECOVERY_ROLLING_CHECKPOINT.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/POST_RECOVERY_ROLLING_CHECKPOINT.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "864937c6557e65aad38fdae83b1bcb7c73617f70d400504b564aad0935abd5b3",
+      "bytes": 2803
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/PRE_HOLD_STATE.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/PRE_HOLD_STATE.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "b3eb9853b3156c83054620b2d107969128b9f6f303f36f267a2df404de27f134",
+      "bytes": 758
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/RECOVERY_AUDIT.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/RECOVERY_AUDIT.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "0e2a0bc2fb2c47328dbb858364d3614fed412b9c0b066b64d0dd835eb15a231e",
+      "bytes": 2281
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/RECOVERY_REPORT.md",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/RECOVERY_REPORT.md",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "0bcaf5f53c18f3663b6202b503cd0948ada425ee076195aded75d69afa7b0194",
+      "bytes": 1702
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/designability_uncertainty.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/designability_uncertainty.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "6b61a610c232e104a3dae2deabe3ed3f3c3586fc88a1eb6dbf83fd806eae0227",
+      "bytes": 13876
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/diversity_novelty_metrics.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/diversity_novelty_metrics.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "d8ad306ea4825a80a11fdfcc771839126aecd4f3f67b445226528479a0e7fcd4",
+      "bytes": 15119
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/generation_distribution_metrics.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/generation_distribution_metrics.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "ce5e1e3c017a3483ab462c5f78b5c312480fc28a4fe071d94a3f604ec70b18a2",
+      "bytes": 12538
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/matched_designability_comparison.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/matched_designability_comparison.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "e436e1ad0c356dda8a4841a34fe42af124bbf18de0c15469c6a3b347318cbbd8",
+      "bytes": 108
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/matched_reconstruction_comparison.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/matched_reconstruction_comparison.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "e8da42cb658322f44b9df95ba29857c9f507f6b863592360e0df8cf51f958c48",
+      "bytes": 29232
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/paired_generation_comparison.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/paired_generation_comparison.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "a2bb4890695485f386ecd7075f73cb94ca25008b1c90b531fd6943f56fb5afc9",
+      "bytes": 20919
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/progress.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/progress.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "d9fccf3526ca0353a0475acbc35a15d5258115e45f8e2a6975f1e96104e46fab",
+      "bytes": 120
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/quality_ranking.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/quality_ranking.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "eb1c856e0d015a2dc34e62efb15fc4c53b099575932baeff57a0a1529fd22007",
+      "bytes": 55868
+    },
+    {
+      "path": "e007_e015_epoch1_comparison_v1/verdict.json",
+      "source_path": "/mnt/d/Simone/proteinGen/e007_e015_epoch1_comparison_v1/verdict.json",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "b03301914f3c2bbb768485f1e7601ba77e89987dd484adf1f2e3997a850e6761",
+      "bytes": 576
+    },
+    {
+      "path": "e017_v95_host_evidence_20261029.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v95_host_evidence_20261029.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "11071d6bf6974c66a20a7041613f987a963196eb310aebd44b1a6aa2f62fa8b7",
+      "bytes": 1546
+    },
+    {
+      "path": "e017_v95_recovery_20261029.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v95_recovery_20261029.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "563c180cb09ac8aaff02547f84c55d68f36be6d8e67b5a6d4ffeff9c350c00a9",
+      "bytes": 21424
+    },
+    {
+      "path": "e017_v96/algorithm.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96/algorithm.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "52ddc2560661325add2795af7a57e085909f43f927bc9a977c68626c74077b68",
+      "bytes": 1707
+    },
+    {
+      "path": "e017_v96/campaign.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96/campaign.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "1771b55ac31d96dd7b8624c67f5e03a7e20eaf43d10d17d76de9422e865d6aa4",
+      "bytes": 5934
+    },
+    {
+      "path": "e017_v96/common96.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96/common96.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "9a0dcb1a63f4a5c886f12780ace77bf27570d6bc403be66b1f74f95321dd872c",
+      "bytes": 5330
+    },
+    {
+      "path": "e017_v96/prepare.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96/prepare.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "e8e3c5605f7eb016b05a023b275784dcd1e9d20d274bf9ee10e98aad8888cd6d",
+      "bytes": 10975
+    },
+    {
+      "path": "e017_v96/publish.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96/publish.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "b8a1feb306e7cf342be1ff32b3aea5b5a9a077a765d3805152a564f7e7dd5410",
+      "bytes": 25267
+    },
+    {
+      "path": "e017_v96/qualify.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96/qualify.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "d01f3455ca2fa34ca52dbc0d853b5bd1cd6ba09e6822b4145240300654d3f75d",
+      "bytes": 9723
+    },
+    {
+      "path": "e017_v96/study.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96/study.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "d7d27f28f454f5b935298ac69b58ff9c520f0e38a3196df8287d549ecd5bd7bd",
+      "bytes": 8825
+    },
+    {
+      "path": "e017_v96_finalize_metadata.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_finalize_metadata.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "651cb71bdebd4fbc32b0ce0d552ef416542948d9b75d8471fdd913199a522694",
+      "bytes": 5071
+    },
+    {
+      "path": "e017_v96_paired/analyze.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_paired/analyze.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "1cff723ab0283b6c903bd5071761d0269931716f3d6e69f11520210fb8159e5d",
+      "bytes": 17579
+    },
+    {
+      "path": "e017_v96_paired/evaluate.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_paired/evaluate.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "3b28e2d4cb39f74844346e71069affed31127f0cd374073991f704914f4c3311",
+      "bytes": 5766
+    },
+    {
+      "path": "e017_v96_paired/paired.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_paired/paired.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "c7d840d1fb6a2ce42f9b6f604f1f8b4676285f467c226ba1bd8e0907ec9c4374",
+      "bytes": 26112
+    },
+    {
+      "path": "e017_v96_paired/prepare.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_paired/prepare.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "9afa3a1f3feb382d3a040456eecad06ab43e40e2f2bdcb17214a1bca456058ec",
+      "bytes": 13357
+    },
+    {
+      "path": "e017_v96_paired/tests.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_paired/tests.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "8db9400d73e4351019675fda1cac81c63833c5037bdd814f56b52a6ad1e362c9",
+      "bytes": 1753
+    },
+    {
+      "path": "e017_v96_review/common_review.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_review/common_review.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "ea0c4323965707a7639679d0e7d2f7343a9e53084e4d3dfbaf594cc3596a85ca",
+      "bytes": 1029
+    },
+    {
+      "path": "e017_v96_review/probe.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_review/probe.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "7b425c7e9a26099c14bd5efba89f657e9a21e1f0f2bce55d698ebb837dbce3ec",
+      "bytes": 12055
+    },
+    {
+      "path": "e017_v96_review/publish.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_review/publish.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "201af8f106700a949f93ce796eeafed714a78ff8ee0cd526e48485090c598e09",
+      "bytes": 31599
+    },
+    {
+      "path": "e017_v96_review/records.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_review/records.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "da2b1f071996de8ba9f34684330e87f05278ca389e9acb496756323acc78ec3b",
+      "bytes": 8020
+    },
+    {
+      "path": "e017_v96_review/setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v96_review/setup.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "245c0df17cd1b0aa124eaa4cdfbfd135f86ba4bb5311025aa59c578e888a723a",
+      "bytes": 908
+    },
+    {
+      "path": "e017_v97/core97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97/core97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "c6c69d471e45239f680e61354ac4e016826771858e05f8e42f4e0d26d5df1b7b",
+      "bytes": 2524
+    },
+    {
+      "path": "e017_v97/cpu97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97/cpu97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "4a2039c0dc32d9a795db3d49dae97805252bbfb905ce8d9950daa5d27dc37f1e",
+      "bytes": 7248
+    },
+    {
+      "path": "e017_v97/gate97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97/gate97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "b8c62531d335d2b529f33f430a3044837e9a8407655798c1e421c8c4de9241e1",
+      "bytes": 910
+    },
+    {
+      "path": "e017_v97/gpu97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97/gpu97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "0cf5c45b7c1fdecb753b6b2c62c30a70977f45eeb7dba699eb05e0ed5270b79a",
+      "bytes": 13318
+    },
+    {
+      "path": "e017_v97/precision97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97/precision97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "1c957194a3a7d48829c4127e8b33f333d3dfb5181b1c82d1304a441dfa5ae0e7",
+      "bytes": 1994
+    },
+    {
+      "path": "e017_v97/prepare97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97/prepare97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "c229e73d09bfcc1d903500b07bc5b277df02c14be27a2d9e606547e300d5dbf5",
+      "bytes": 6141
+    },
+    {
+      "path": "e017_v97/publish97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97/publish97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "fcd821b0100aca472c9b85cd6c808708e8eac29687c0a348e688eb4d56aa8ce9",
+      "bytes": 24682
+    },
+    {
+      "path": "e017_v97/safety97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97/safety97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "36c0ba29274178f95d62e2778633831523a5f433eaa485ab5914e8fb82793a3a",
+      "bytes": 5591
+    },
+    {
+      "path": "e017_v97_admission/admission.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97_admission/admission.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "5a7330a3bbc36fa98d128a37f3914c76c431268a0ce3f5c183f0bd7123967962",
+      "bytes": 19899
+    },
+    {
+      "path": "e017_v97_admission/watch.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97_admission/watch.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "138ee078da37a5977272f6b6b3d35ab4af83e77cc7b6b0673d85ab41f8ecde15",
+      "bytes": 604
+    },
+    {
+      "path": "e017_v97_production/launch97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97_production/launch97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "2d62694ebdfec977c7ab6071f3f60216813386374f0330a3569e79e001846f56",
+      "bytes": 960
+    },
+    {
+      "path": "e017_v97_production/paired.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97_production/paired.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "bad0484a02ccd6dbdc3f7f0c20c3dd647294f5f08dc7b486b8990954c6c53e5d",
+      "bytes": 108
+    },
+    {
+      "path": "e017_v97_production/production97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97_production/production97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "8167f2f2b2fff977b7df749674d173b19322b2555e1a5a804a1789a697c22b87",
+      "bytes": 30647
+    },
+    {
+      "path": "e017_v97_production/report97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97_production/report97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "114380358fec1742740bd3b6609e3ac0910218e9b5a3162777f6bc357285cee2",
+      "bytes": 4650
+    },
+    {
+      "path": "e017_v97_production/tests97.py",
+      "source_path": "/mnt/d/Simone/proteinGen/e017_v97_production/tests97.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "4121e7910a4f4fa641b457478b86825dc67b88e6e2c2970cdfaf71a1d516a1ae",
+      "bytes": 3103
+    },
+    {
+      "path": "storage_audit_20261011/SUMMARY.md",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/SUMMARY.md",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "903dea5bee3116f811047bef823ea1edaaec73611a639d44a15b2740747e30a9",
+      "bytes": 14670
+    },
+    {
+      "path": "storage_audit_20261011/census.py",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/census.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "03d1700ce27ecd191194799c63504900c75880918792ce0d9807b2cd0f4090e2",
+      "bytes": 2551
+    },
+    {
+      "path": "storage_audit_20261011/checkpoints.py",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/checkpoints.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "b7cd95550140d11ac8f25508ef0881d5f54c0f7b7ecf249a4b0554a9a04d9d72",
+      "bytes": 2618
+    },
+    {
+      "path": "storage_audit_20261011/duplicates.py",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/duplicates.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "ae36e8fa3a9385b0818322392fcdddb85d023ebdc4aa066e7051b9af143d15f3",
+      "bytes": 2056
+    },
+    {
+      "path": "storage_audit_20261011/install_fix.py",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/install_fix.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "b1576871529c52b285c8bf47044a386a6de410604dce5e81ad64bdf4bb4fda1f",
+      "bytes": 2072
+    },
+    {
+      "path": "storage_audit_20261011/native_census.ps1",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/native_census.ps1",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "fe158104cc9c201c689c469cd4665ce66c06ec44409a624bc2567328e816d78b",
+      "bytes": 2756
+    },
+    {
+      "path": "storage_audit_20261011/probe_mmseqs.py",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/probe_mmseqs.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "3fd636d4bbd88cfe76e542ddc8a1752572585ec70b0f6c9ca3ddc26b38cb58f6",
+      "bytes": 1923
+    },
+    {
+      "path": "storage_audit_20261011/processes.py",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/processes.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "e3803b571afa79adb12968214fd6adfbc80ce2558068a06107c8e3181b5bbbe6",
+      "bytes": 2383
+    },
+    {
+      "path": "storage_audit_20261011/report.py",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/report.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "3e3e3c1909950fa9807b610012a03780e31a67e3706d65b8162593787436ed71",
+      "bytes": 29086
+    },
+    {
+      "path": "storage_audit_20261011/targeted.py",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/targeted.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "1f79f83ebfedbf54126fde10752580d0f7ecb4c59bb4872b6968ca04c331369f",
+      "bytes": 1582
+    },
+    {
+      "path": "storage_audit_20261011/verify.py",
+      "source_path": "/mnt/d/Simone/proteinGen/storage_audit_20261011/verify.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "191d0ef7b4576026e540542ee4cfa5f1f4939dca2b34e55e207975db62115ebc",
+      "bytes": 2180
+    },
+    {
+      "path": "thesis_audit_v1/audit.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v1/audit.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "79ca33195736ab1ba2a43452fe756a600f5a3dd08532226befb7bacc573101d9",
+      "bytes": 23053
+    },
+    {
+      "path": "thesis_audit_v1/contracts.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v1/contracts.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "5c3d0c124754fa873d7dc2e1302b23e42607a810b2da03e8b35890a62e005c90",
+      "bytes": 1493
+    },
+    {
+      "path": "thesis_audit_v1/report.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v1/report.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "8d4e4a12dc7d0b9508786c9320f6b69aa068eeb5daa09f25f1f6bc714d653266",
+      "bytes": 35994
+    },
+    {
+      "path": "thesis_audit_v1/review.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v1/review.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "f51a99cf6c918fed7bc0fe8640e1e3a224ce4da2182d7e86df50733231631b6a",
+      "bytes": 9142
+    },
+    {
+      "path": "thesis_audit_v1/test_audit.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v1/test_audit.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "58fe671de8b81711e4965755528da62af9938544d0979c9536179231ba5e3344",
+      "bytes": 7846
+    },
+    {
+      "path": "thesis_audit_v1/test_results.txt",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v1/test_results.txt",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "4bb227ee2380c0eb28749077ef1c4c8137cf09a376a2ea1c2ebd630a910f08c6",
+      "bytes": 1796
+    },
+    {
+      "path": "thesis_audit_v2/core.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v2/core.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "0d95b967c15dfd582d2c9438675f121f397d31f8b5a30a6e692b8c492b1c4b22",
+      "bytes": 6499
+    },
+    {
+      "path": "thesis_audit_v2/documents.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v2/documents.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "d0cff0e2052a0cdea2749dedd7f0d1ab58377dafa9e79c22315836fc250eaaba",
+      "bytes": 26381
+    },
+    {
+      "path": "thesis_audit_v2/finish.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v2/finish.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "8a6f207b3a7dba5c1c01d4e6fc962367756f748626bad062711c699db4957344",
+      "bytes": 12491
+    },
+    {
+      "path": "thesis_audit_v2/report.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v2/report.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "2e28958d4d6edff0bb6b1bc4b376a797072d6d04a690198fa8c937784feaf1ff",
+      "bytes": 29101
+    },
+    {
+      "path": "thesis_audit_v2/run.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v2/run.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "c4f2825eee7473deee8f7598e15429dd933080f061c72a8ba4e43247d2bb0d1d",
+      "bytes": 26834
+    },
+    {
+      "path": "thesis_audit_v2/test_v2.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v2/test_v2.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "a91a6059c06f181d86766fe13ac445fda5544d9218b9b85171c138fb2793bd26",
+      "bytes": 7190
+    },
+    {
+      "path": "thesis_audit_v2_validation/validate.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_audit_v2_validation/validate.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "618089dbe69afbad58b2ece9963c568449bd82a6d83551fc1b3bcc0030a2dfb8",
+      "bytes": 7584
+    },
+    {
+      "path": "thesis_storage_inventory_native.ps1",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_storage_inventory_native.ps1",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "94bf097eff7f9ba85225b0fe36b695b860fed02d1d5b65ad669f21055f13dd9b",
+      "bytes": 2910
+    },
+    {
+      "path": "thesis_storage_inventory_report.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_storage_inventory_report.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "762fbde1b1001b3315163ec12214f7248345e1485dc2eb95914db533ef92f0d3",
+      "bytes": 20077
+    },
+    {
+      "path": "thesis_storage_inventory_tool.py",
+      "source_path": "/mnt/d/Simone/proteinGen/thesis_storage_inventory_tool.py",
+      "branch": "e010-phase4c-local-auxiliary",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "5e0b9b55eaefb817150ce09f6ab597c524d8ea237273751e93d2b94d9d2d4f15",
+      "bytes": 4029
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/reports/experiments/E012_causal_rope_sequence/data_v2b_uniref50_lowdisk/cleanup.jsonl",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/reports/experiments/E012_causal_rope_sequence/data_v2b_uniref50_lowdisk/cleanup.jsonl",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "69b713673d6e8f34c0e025ff086c71ffdaa906ef48303f967fea43044754171e",
+      "bytes": 1160
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/reports/experiments/E012_causal_rope_sequence/data_v2b_uniref50_lowdisk/environment.json",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/reports/experiments/E012_causal_rope_sequence/data_v2b_uniref50_lowdisk/environment.json",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "f0b2dc9d845bab74f8d6fd1b8d2254b18aa8b2c1158c67922b4b19f546c1de90",
+      "bytes": 486
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/reports/experiments/E012_causal_rope_sequence/data_v2b_uniref50_lowdisk/resource_telemetry.jsonl",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/reports/experiments/E012_causal_rope_sequence/data_v2b_uniref50_lowdisk/resource_telemetry.jsonl",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "07b4a7b2598e2e57e6afde6cc160b8ac18705b0dcc203748f0d67c659e54595b",
+      "bytes": 9632
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/reports/experiments/E012_causal_rope_sequence/data_v2b_uniref50_lowdisk/tests.json",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/reports/experiments/E012_causal_rope_sequence/data_v2b_uniref50_lowdisk/tests.json",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "e04f06ed560d902e33df1616b259a2c677f9a94e1514decbfd64c4c95ae71d79",
+      "bytes": 1490
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/scripts/certify_e012_v2c_gate.py",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/scripts/certify_e012_v2c_gate.py",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "1a4731264af528d669c610e2bb0e8679902b40d8fb251b2806d8f287c338a179",
+      "bytes": 7214
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/scripts/monitor_e012_v2c_recovery.py",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/scripts/monitor_e012_v2c_recovery.py",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "12fc6815baac4ad4a2947ac80965291392a136b6b956e521740ab60a58c0118a",
+      "bytes": 4105
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/scripts/recover_committed_e012_v2c_benchmark.py",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/scripts/recover_committed_e012_v2c_benchmark.py",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "30382b0b4ee1d1065161f1b0ff404b6f4af3c75031143dc2f62cc245481d8f78",
+      "bytes": 10328
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/scripts/recover_e012_v2c.py",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/scripts/recover_e012_v2c.py",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "8690819b502c4dd26faa27659a665a497ea8cfe08f7f6ee91fc22aeb1dc7a148",
+      "bytes": 13799
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/scripts/report_benchmarks_e012_v2c.py",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/scripts/report_benchmarks_e012_v2c.py",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "99b7fc0cd7070611f14999d8153cf54248fdc35e12a1ba4430e9b52df8b07227",
+      "bytes": 5246
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/scripts/report_e012_large_corpus_launch.py",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/scripts/report_e012_large_corpus_launch.py",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "8866925548c3cfb62ebd6fe64c688fb83b99653c26e1420de8dc14f75bd39408",
+      "bytes": 8448
+    },
+    {
+      "path": "worktree_snapshots/e012-causal-rope-sequence/scripts/run_e012_large_corpus.py",
+      "source_path": "/home/simostocco/proteinGen-causal-rope/scripts/run_e012_large_corpus.py",
+      "branch": "e012-causal-rope-sequence",
+      "base_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "sha256": "29b2eeb9e16d06f0c67c1f60e6c6f72f2332664b50e38fd1b6997359e543e67f",
+      "bytes": 55212
+    },
+    {
+      "path": "worktree_snapshots/e010-phase4d-hybrid-local-global/scripts/finish_e010_sequential_teacher_v16d.py",
+      "source_path": "/home/simostocco/proteinGen-hybrid-local-global/scripts/finish_e010_sequential_teacher_v16d.py",
+      "branch": "e010-phase4d-hybrid-local-global",
+      "base_commit": "bfc840a9bd7e421c7e508cf41b3d66fdb31a6aa2",
+      "sha256": "7a65b4e2778ce5a73b0f4b2fdcf21ccd8c981a0bbd980c7104a4643df4433e20",
+      "bytes": 2198
+    },
+    {
+      "path": "worktree_snapshots/e010-phase4d-hybrid-local-global/scripts/publish_e010_sequential_teacher_v16d.py",
+      "source_path": "/home/simostocco/proteinGen-hybrid-local-global/scripts/publish_e010_sequential_teacher_v16d.py",
+      "branch": "e010-phase4d-hybrid-local-global",
+      "base_commit": "bfc840a9bd7e421c7e508cf41b3d66fdb31a6aa2",
+      "sha256": "aabd02b9590e4403b6d503540be3dbfa56eadc4664b7c218e4e5133f1ce44706",
+      "bytes": 3857
+    },
+    {
+      "path": "worktree_snapshots/e010-phase4d-hybrid-local-global/scripts/reproduce_e010_sequential_teacher_v16d_preflight.py",
+      "source_path": "/home/simostocco/proteinGen-hybrid-local-global/scripts/reproduce_e010_sequential_teacher_v16d_preflight.py",
+      "branch": "e010-phase4d-hybrid-local-global",
+      "base_commit": "bfc840a9bd7e421c7e508cf41b3d66fdb31a6aa2",
+      "sha256": "c2ed3d767957e0f81d927a77993c8cfae40ef4356f103d41a3a629cbe11359a1",
+      "bytes": 1857
+    },
+    {
+      "path": "worktree_snapshots/e007_matched_fullscale_v1/controller_recovery_20261013/AUDIT.json",
+      "source_path": "/mnt/d/Simone/proteinGen/.e014_worktree/controller_recovery_20261013/AUDIT.json",
+      "branch": "e007_matched_fullscale_v1",
+      "base_commit": "f717a98dfba48aa9fe574bdc9952c6442a52dd1e",
+      "sha256": "af4b8b1491c0a4ed6777044c5a43a5867d949e8dc59525effe24c875ef4188d5",
+      "bytes": 2823
+    },
+    {
+      "path": "worktree_snapshots/e007_matched_fullscale_v1/scripts/audit_e007_e015_completed_controller.py",
+      "source_path": "/mnt/d/Simone/proteinGen/.e014_worktree/scripts/audit_e007_e015_completed_controller.py",
+      "branch": "e007_matched_fullscale_v1",
+      "base_commit": "f717a98dfba48aa9fe574bdc9952c6442a52dd1e",
+      "sha256": "ee301d934c0866dffda6e39b583c92dce5c4106628d7d02cd642e118fa829e16",
+      "bytes": 7029
+    },
+    {
+      "path": "worktree_snapshots/e015_integrated_multiscale_parity_selfconditioned_v1/docs/calibrate_long_native_controls.py",
+      "source_path": "/mnt/d/Simone/proteinGen/.e015_worktree/docs/calibrate_long_native_controls.py",
+      "branch": "e015_integrated_multiscale_parity_selfconditioned_v1",
+      "base_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+      "sha256": "8d2b1965298843ada77410921a9f96e7b8e475b6cc0ae847919b602061bfa0c0",
+      "bytes": 32457
+    },
+    {
+      "path": "worktree_snapshots/e015_integrated_multiscale_parity_selfconditioned_v1/docs/e015_absolute_evaluation.py",
+      "source_path": "/mnt/d/Simone/proteinGen/.e015_worktree/docs/e015_absolute_evaluation.py",
+      "branch": "e015_integrated_multiscale_parity_selfconditioned_v1",
+      "base_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+      "sha256": "3f78f1025e6271d0f32d4becf4470b97f6aa9d69ad904e5b2696a9c622f05367",
+      "bytes": 73797
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/final_analysis_work.json",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/final_analysis_work.json",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "109c953575b0e868d45fd82a894dd0ff95803ac5f099fa644ff192206f55114d",
+      "bytes": 1044810
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/final_checkpoint_verify.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/final_checkpoint_verify.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "9bb19bfc80c12242f03dfecb3aebd8521df8dd447a2ea9add6423fb0048de5c6",
+      "bytes": 4487
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/final_checkpoint_work.json",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/final_checkpoint_work.json",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "9e6487327e0695e5e21271eb90fa3df44c55134c9f091921d114f9157692288e",
+      "bytes": 39039
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/final_scientific_analysis.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/final_scientific_analysis.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "73180dbf5aa6b348a3cf580332fb56d5493179d8d373e2b910599440f23ece5c",
+      "bytes": 15002
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/publish_final_science.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/publish_final_science.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "1f13228a3f82374aa290f4115bface058beb8b394b9023a100cb02b681d27419",
+      "bytes": 48693
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/recovery_storage_cleanup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/recovery_storage_cleanup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "3f58d6f9123b17dae1b80d5c5f708f4fdee26f062eae3ab0d2051ffc131cb492",
+      "bytes": 9398
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/recovery_storage_inventory.ps1",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/recovery_storage_inventory.ps1",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "bbdae20ec5c308465641fe9d020cf56bbdf1cb0b4695082d17af8bb19fa3d030",
+      "bytes": 7241
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/recovery_storage_inventory_fast.ps1",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/recovery_storage_inventory_fast.ps1",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "bcdce9ad95b4b8e1a539d00494c2de570fb947e415a3ef4e1b8bcf02b8a498dc",
+      "bytes": 7663
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/recovery_storage_report.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/recovery_storage_report.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "682b83f57dca31fe296d0cb17b0c8c3c86ce0038183bea3cd132486097617dcc",
+      "bytes": 21746
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v6_analysis_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v6_analysis_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "78cf779033a9d591b3feb8e8b0c75eae977941e1325c9a11db7e3ac48c1dcb13",
+      "bytes": 47678
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v6_finalize_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v6_finalize_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "1f8d8fe573e74d8794e04a6d1c4ed391e6f818c26bacedfe4a75f762a2ad9d53",
+      "bytes": 1207
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v6_resource_guard.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v6_resource_guard.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "b676520328426c60d48bc2031e33072eba64728ad77b49abc8ef196654486bd5",
+      "bytes": 1507
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v6_setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v6_setup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "df3255b75161f9f8cdfbaea25ead51d312b925fb1ff79d39d9d9a2fdd451e168",
+      "bytes": 1254
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v6_study_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v6_study_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a0d2b7a9e52d4d4e22dae34884c9e126216416dee9287f1ed9fda36909d8de5b",
+      "bytes": 12435
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_analyze.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_analyze.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "40f5d2358b18046f2e74fcb3336272d7cffb766c3b2818e4700d4905ac3797f5",
+      "bytes": 51008
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_aux_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_aux_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "fcb392da8914d06061fbfda2b0a31bdc07ffdeb880b8fe2d3f2a741120f67f6b",
+      "bytes": 855
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_finish.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_finish.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "713dfba3c336ce25e37e97358e9735096bc9653fa1c5974da75342897830a215",
+      "bytes": 2367
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_finish_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_finish_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "924ddb21619859747327b0ef0a40b36326e60f9c3a2f38e86d4367d20bd0b4c3",
+      "bytes": 731
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_goal_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_goal_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "afe391bde5fe03f9118b9e54ed3d77b3abc29cedf39392043c873b45b9d32ac4",
+      "bytes": 694
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "9008fc2b1d9fca68d020238d5c1f3e42529878db49be194b7180fcb52dcd0466",
+      "bytes": 739
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "5542329a2d02a6133db7edbbc7ecfd629e78376d8ee384de52a44a0382e3eb6d",
+      "bytes": 800
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_realized_eval.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_realized_eval.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "3a137ea2cbb6d8b582c905d80e12fc58d3a1b2c55381e26c3db656e08059530d",
+      "bytes": 2169
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_rwr_goal_eval.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_rwr_goal_eval.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "729d0da18612228de01ed85b891ad45cd00f1d1b936a321c9142808b8ef59cd0",
+      "bytes": 1695
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_setup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "c9bc894c667a81806ef9dab2c79c54d792229efd685e6cce2360faf94b52c9d3",
+      "bytes": 696
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_study_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_study_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "b4eb82f0b2639a5343e4de0bc5c4b45264b404584bc2da57371e7edabc600ea5",
+      "bytes": 30549
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_verify_final.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_verify_final.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "5d25a47de7ae10552fdbfa480095bb827444db9ac5c942b775a909f001b481bd",
+      "bytes": 3325
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_watch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_watch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "709d6a46b73e370c60fa792eb08fb8ce0834cfe81c59b69f4147b0e76edb3688",
+      "bytes": 1147
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v71_watch_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v71_watch_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "182b23f7a6535d684d684787b10a7955d3637a05cc720fa91bd12b79cdb33e1e",
+      "bytes": 356
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_analyze_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_analyze_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "af6b47754fbcf599549a0bfb6029a26e742b12dc4b2167772bf5c7673a197b5e",
+      "bytes": 30371
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_final_audit.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_final_audit.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "eba3034ce89e0d0cb051cd41b8f58af77daa115bbeeea16eeddb5074d1926ff1",
+      "bytes": 13851
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_finish.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_finish.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a77d28aee815cf1c478b70253879f4f2e3f106bfb3d45b223cb946e62fe7142d",
+      "bytes": 1310
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_finish_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_finish_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "6ebd8c51fada1cea693a3df16b11cd8ea36357aadaf7b98d1e0f3c25b92b3dd0",
+      "bytes": 715
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_handoff_clarify.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_handoff_clarify.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "829a28d00e074a3174eb2a9077e8358f6719404fa2561cd5ff02cd29b502be1f",
+      "bytes": 2614
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "3fab859634a08e6ff0447913c631141e7b68730ff758cc892aa81a77785eea39",
+      "bytes": 773
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "ba553579bca1a511ce1755c3eec808ee550f86977471544a2267a02b6939d573",
+      "bytes": 1132
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_repair_resume.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_repair_resume.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "2815793c7815657007e28c9bb9807e6421baa90b9ed9c6c17dcc2d01c2ab566e",
+      "bytes": 2972
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_setup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "877faa6f9eb7b7c7cd73c7b4d69117235f746922d64c172bac2f09bfb19025b4",
+      "bytes": 636
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_study_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_study_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "f4faa82a0e70c37781dd150bfdd7876cb52fef9484469222800d7557e35a261e",
+      "bytes": 23562
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v72_watch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v72_watch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a3333a0b66a10b370fb012ae15401ffca2bff6a07062185a75bb39fa8e1bb5b1",
+      "bytes": 1073
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_causal_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_causal_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "0f9c6af32953efe75d0a624fb419fe8b7a74191885c869eac607777bcbc9b6b6",
+      "bytes": 1245
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_causal_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_causal_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "fac20d233af2279586e42aa228353249316788868a6671239bc7a7cd915b4194",
+      "bytes": 3015
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_finalize.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_finalize.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "15372537d3a055a9743357191d9676356c6ba2d0cc762e6722ce3c5a5c457e33",
+      "bytes": 59716
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_finish_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_finish_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "05455ba79d13a794a2fc3302c8142574a66680eeea8ebca8e938802ed1f2a724",
+      "bytes": 413
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_finish_pipeline.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_finish_pipeline.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "7193c762188bd64e0ceaea9416df64bc0662784ed6b75c9d795d2bdd8b82ae80",
+      "bytes": 2444
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_fix_replay_test.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_fix_replay_test.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "ea83c3cd39ccc640ee14cdc63de98c7e866eb79110115c9287263b222203f67b",
+      "bytes": 1333
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "55b0858e153c7872b989563f993870b380bc1b9e58644b8c7735b25762b286d0",
+      "bytes": 1198
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_numeric_audit.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_numeric_audit.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "babd9257f62c96661ae75c44066adc4a9d33bd1fa15ae9dd9d3014c3430fa891",
+      "bytes": 2703
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_recovery_supervisor.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_recovery_supervisor.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "43c444a2856030025d34742fe422ee12b6e958ca7bfb3f2704fd18b62a15a269",
+      "bytes": 3425
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_replay_precision_audit.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_replay_precision_audit.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "3f3750082b9710954ce4833a259fc75a118d1c8ffe49ab91c616c3ee83412a40",
+      "bytes": 1595
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_resume_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_resume_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "9ac8883ee7d3c821d812966f089d7952c5102e8835c97eaec967570f78a0c1d0",
+      "bytes": 971
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_setup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "194c49d25e5a7828c2d0355906f62a8dccee3f1d4565cbdb31e02069a837704b",
+      "bytes": 758
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_study_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_study_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "cab059c0154f9930caa44c438b17a6022eed998a434b8050377eaa61f18f2918",
+      "bytes": 42094
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_watch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_watch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "f237f3bfae5345c24962b47144078593cba5e6264989032ea22d28b60b80221c",
+      "bytes": 1489
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v7_watch_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v7_watch_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a381532784cbb98d1650429e3ab4444ed8fd2a6e72fd76a3f751c4f183b010a5",
+      "bytes": 354
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_analyze_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_analyze_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "fea9e99b30f17099aaa4f1472f2822cf44cc93bec2d0d40410ed0d3cd46579e9",
+      "bytes": 29354
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_final_audit.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_final_audit.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "7a5f7f38e9c9407974f893f9c0d273944de5d108b9bc7bf8486236a11d3a2b09",
+      "bytes": 17026
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_finish.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_finish.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "655f7a358edf4579a18f5e6dc1e3ee171411a3231582d13cb37f83ad5262b7ac",
+      "bytes": 1287
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_finish_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_finish_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "dae3366931a1a202d07c4376c275121a62eaeda36917079afa16296da3ecc6ba",
+      "bytes": 697
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_handoff_refine.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_handoff_refine.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "325909cabd423b9ce64a7c9dc675680f9fe8519da2f25cdfb529277755c76698",
+      "bytes": 6966
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "8be0909fcd30f4bba906e9987c68c6ad094ca9ab2fa289506a9cd7ba1203dbed",
+      "bytes": 820
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "79119f843af0c1afd899b8ad79fb20daf6d194c2f6dc4870886c6ba786b37a5e",
+      "bytes": 856
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_repair_analysis.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_repair_analysis.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "1d4c6ab0367eeea82e58340e73f99b46367bd5a98f3093426fa723d8cd8836c4",
+      "bytes": 2365
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_repair_resume.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_repair_resume.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "56f8da0e798f7edcc53574808f7aabe18be42235cfd8851e7a2c290dcd29a163",
+      "bytes": 2721
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_setup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "57b55c71cc4de3689670a899049bffca061093c5da54b1d06cdeb8876ac36cd7",
+      "bytes": 615
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_study_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_study_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "0d297c4a9ccb50c86218ac771d51947de2cfac0248ac6944409c8d6ea7e07b62",
+      "bytes": 30475
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v8_watch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v8_watch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "24a6d8b72cdeaa01f2e549df144c648ca8a7f31eeb6671f676d25abab524a6d3",
+      "bytes": 1167
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_analyze_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_analyze_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "5b546928aa235f22600fa2291fc8c0d56a43cd07edc25467fcd33a9039db4fd6",
+      "bytes": 36283
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_baseline_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_baseline_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "d9e22c9c9aebf15d4d77576deabd373927202885cf741e85414a053a4072de33",
+      "bytes": 1950
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_control_audit_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_control_audit_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "4c2316c7da88d9017ebcfeeedfb5769df02f0edb14eed4f2cf09f54ca99918bd",
+      "bytes": 3462
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_control_feasible_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_control_feasible_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "16cdad00099a5d9fe57d4219c4cd33d6e5f6d3953ca225e72ee24faef3716ecd",
+      "bytes": 5473
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_controllability_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_controllability_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "48e63fc6ba467f309fe5f1ed1818ad0ce49b73e8b19da107dfd91fa99fd3b768",
+      "bytes": 5374
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_feasible_fixtures_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_feasible_fixtures_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "6e04f54f9ddf1464b99f3ae05431b6582bc8cce22745592712d93be9a33223e2",
+      "bytes": 3825
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_final_evaluate_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_final_evaluate_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "5a8923018538481c48225f3c5e8474cd93dd994c877ce2300da602ffe11f6545",
+      "bytes": 4935
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_finalize_handoff.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_finalize_handoff.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "ccbf36705906fbcf42d0eb0713b98f110634ec166546774addfe2da8ee9efeb9",
+      "bytes": 14172
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_goals_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_goals_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "40da83a722cec6e4770dd10b55b85aee53fdd33bab75a04387d61ab4b886931d",
+      "bytes": 9536
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_harden.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_harden.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "821ed79542ffead8f2a3e25c7012f44c51a77ffa6a1cc5db7dc1b057ece1b452",
+      "bytes": 3304
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "4d6abad273887cca52e62d36df2ad65cc6a5b9a0104df963463cb32acf8ea5db",
+      "bytes": 588
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_policy_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_policy_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "976b4bce65823488ba92ce6d8bec7c294a95ec265061d38c4a520cf7a231b625",
+      "bytes": 3669
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_prepare_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_prepare_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "4e5c387afa9b30bf21a0a4fd25fa010a9628abea69137b4639468bfc56fe92ee",
+      "bytes": 6231
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_resource_sample.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_resource_sample.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "67ce68e82bd4a3029d4c89ea762f59a46423688f350a325bb2ec165a7a58e492",
+      "bytes": 1228
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_setup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "02d18b7874959fadfb78bf62ee2ac68fcff5dcd2e7ad1caf92b07c7017f80adf",
+      "bytes": 2470
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_tests_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_tests_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "e530dd150797f7372d7bb3582aecf1e612879fe9a416fd2747f108941f4bd647",
+      "bytes": 10226
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_train_header.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_train_header.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "cf22ccfadd68d296ebb555778941e47562047332da8187ccd35c21e2f8ce8768",
+      "bytes": 3202
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v91_train_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v91_train_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "9418b5f455f1a8fd9c1cc13c84f4de4c64efc90710ad25c19e571db144330470",
+      "bytes": 20266
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_analyze_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_analyze_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "7c4ffc688ff120100c671e042932259b676d3062329c632b567c3484bf9cd294",
+      "bytes": 35122
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_common_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_common_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "f6f4d63f5f6df2eca9be005ad8567ca739f29339c82a60b2f321681878f4afdf",
+      "bytes": 7736
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_confirm_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_confirm_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "3eabb0bb731fe4edf9f621655d42ff8c4d42968bd5828a68e328a5ac7ec280e9",
+      "bytes": 1930
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_cpu_audit_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_cpu_audit_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "5f0aca4cb7ec543d731de9df8bb357c1ac4af01839808e264102e46c818d2e8e",
+      "bytes": 7875
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_failure_points_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_failure_points_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "68bef61bd4fdc3a658e6a624997d903e95d38889f36d890b8533df69d371f31b",
+      "bytes": 1917
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_final_verify.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_final_verify.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "ce805a358f57456c5092f602d92634c74fb6836588c47da53a428bf1dc2be19a",
+      "bytes": 7921
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_finish_reports.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_finish_reports.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "f293fcb4e4f684665a6de4325044ed134fd5a941be44737c474fdde57c5db28a",
+      "bytes": 6532
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_monitor.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_monitor.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "e8708723217591faf6ba1c20ac45f72b7ba0a2ca4d34351065cccba09a316497",
+      "bytes": 1044
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_refine_analysis.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_refine_analysis.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "b66407a63a13341998a17134c1799608501933fd1803ee1039792a443c50c5b9",
+      "bytes": 5679
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_setup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "13b42de21e097e1d23fe5f4f3a7ef1f4c8d43bc610f731d6e447d4fac06d05d0",
+      "bytes": 1267
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v92_study_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v92_study_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "38af0d8f475aaceb764dbc53083bfcbcb358db94d5b5e3fae4d21c0ffe8f9fda",
+      "bytes": 12457
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_analysis_refine.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_analysis_refine.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "adfba71c792610e68b7e8a8a178ea6b6add760631537ac203d8428b677f9231f",
+      "bytes": 3914
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_aux_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_aux_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a33d2e08ced891fb5403c6bdfc483c476b298effd2624469999e742bc95b4f9a",
+      "bytes": 3272
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_campaign_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_campaign_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "e4bccd64752dbb3c5168851409ab8e95f3e255efe5e49a4594adc681506b1ca0",
+      "bytes": 10509
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_common_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_common_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "8997a245fc57eab127e482054f7a2598512aa28a1c994db09d9f77128d8309bd",
+      "bytes": 1503
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_complete_size_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_complete_size_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "d0a9570b0d527ad31468e37acc0e23bd373bed5614d6148f7df499aafab31c91",
+      "bytes": 3811
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_contract_finish.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_contract_finish.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "ce6d0c467a3f86cefbfd59a11a9dda064b5be637f39c8ee4fc7da6161ddc38e2",
+      "bytes": 1413
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_evaluator_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_evaluator_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "ff69eae85c3e082a2422c0bddd8b6026f986a7fdd21a1bac8a07e0f3ef190677",
+      "bytes": 1989
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_final_verify.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_final_verify.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "79253114c5b393c690a04ee85e635ed3a7e8c05faeccfe87a8aca23baba0b51d",
+      "bytes": 9113
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_monitor.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_monitor.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "1ced735a9a3746937ecddec88ddba33a063fa769044e086c76b18e7f95101360",
+      "bytes": 1050
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_plan_prepare.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_plan_prepare.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "90fef0cc140a8f133d2ba043fc59207e838a566f671e4f81ca296a76e1b3658d",
+      "bytes": 4117
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_prepare_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_prepare_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "65c2bc1e73a141af92947ceb8ce78234eec137468808f73cb70e6e72e9f28246",
+      "bytes": 7501
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_publish_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_publish_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "1f70695feb47dc35bf979e481d73c54763adde1d9d5eacbba999dd43aca09f52",
+      "bytes": 37260
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_review_handoff.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_review_handoff.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "b35ee9446b770598690e5c5879b66c0599d8f3dfff07d86af9efe35e6be64434",
+      "bytes": 5042
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_sampling_replay_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_sampling_replay_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "2fc576170f00e2d665fe9731e9142249bd973bbba6e29c9431ccfb4d2fe1c517",
+      "bytes": 1172
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_setup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a791c9f1ae434f6ce3293cc77a74ed632bb3960fc0cf2ae92ad75f2c591119b1",
+      "bytes": 1017
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_study_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_study_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "d4d86f50b419352cb28cdb1b21c94f2a356e05f43a4970095f3ef0dbb9ae1d26",
+      "bytes": 13003
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_tests_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_tests_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "698cdb9286990b3a3ee0072b38af829d7cd05716d89a2dd166a1ef1dff36a1a9",
+      "bytes": 7759
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_trace_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_trace_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "bc73cf0dde71c26f53f398942cf8962273de89711dfcf38540bd34627c1c43a9",
+      "bytes": 1494
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v93_validation_launch.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v93_validation_launch.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "e30a1af2e88fa6a4fb369e3d51c51ef23a88171b4f077aa8378d02897a8c9cf7",
+      "bytes": 2141
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_admission.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_admission.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "5bb20091078caa9778e5409f7cd16a3d6edc8a536da8b805a12f2173d868e2ba",
+      "bytes": 25395
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_cleanup_continue.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_cleanup_continue.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "0541911a833437084c017246a6154a5cbd56b8f0d83bf2b31824741911189394",
+      "bytes": 6171
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_cleanup_preflight.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_cleanup_preflight.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "9300e7301e8cdaa5175eb2769f01f31066be8b6ab68affa07e80829de58a756a",
+      "bytes": 4777
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_cleanup_prepare.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_cleanup_prepare.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "9f8314acf025119f0d57959a971db5088fe177c8ab3ca54a2101e94e074c2801",
+      "bytes": 5077
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_delete_exact.ps1",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_delete_exact.ps1",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "e86b5428a2aeffcbc1e5045e37b6f1a9a87b849a94a4f91c7942648cda51166f",
+      "bytes": 9284
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_evaluation_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_evaluation_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "6935f78bc52f40ab2ecd9ac7d140a8afce968f06cc6992edbe2dc3ee2ed31373",
+      "bytes": 4557
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_final_evaluate.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_final_evaluate.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "fba8921f846f3d3e638a3246af59ef6e504769d02c42a7466ce70bbb9dcd3852",
+      "bytes": 7136
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_finalize_metadata.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_finalize_metadata.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "2d0748abcc9d7b130efad8cd29570286f087967575bc6a27b2c8baf4eb996752",
+      "bytes": 2710
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_launch_and_finish.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_launch_and_finish.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "ff4fbc0755573e03705be3cb1cfb23d43ad59393752b2c69f289ea3b14bd59a1",
+      "bytes": 4139
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_production_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_production_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "ded1abb6663ce728fdececbd00286f7506d63abffdfb3a79048e2067ead054ac",
+      "bytes": 19210
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_qualify_publication.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_qualify_publication.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "f430f4b1e7b034aff765d896a0f666de50906949288df907a9ea417196245fc8",
+      "bytes": 5373
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_qualify_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_qualify_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "de0a4b1a5e744c234a1e301453b9528a3ea76737981fab6f71f6125a86f60982",
+      "bytes": 3765
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_reconcile_boundary.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_reconcile_boundary.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "b257f35ab4cd0304109b2a9cda22d24607744ddb613ebd25ef96eda736f94ca1",
+      "bytes": 3775
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_recovery_supplement.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_recovery_supplement.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "ab5608dc94f01e32767127dccd15a9629281330b9290cf1015bdd0438e1ca7e1",
+      "bytes": 3989
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_root_handle_check.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_root_handle_check.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "800fa0d089cc7aa6693b14349376a29f5902ae0606836d84f2ea961a37df66d7",
+      "bytes": 1053
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_telemetry.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_telemetry.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "6f2048028a2c63e7b4677c3c306338e6bcd493c25eb1c225556801cc62acdfb3",
+      "bytes": 1414
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94_update_handoff.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94_update_handoff.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "95fdce9664fb475afbc4a12462a919b0955fa002b0a63562a85ce136c8fb0df5",
+      "bytes": 16855
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r2_admission_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r2_admission_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "56c7d6fe99689cf85179c627188f316f5299dbea7573b948f35e75aea446946f",
+      "bytes": 4223
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r2_common_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r2_common_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "220bd9438d8d56b32353f1510fcb80e9357996e49098b96a06fae5d75c792dc5",
+      "bytes": 7421
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r2_final_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r2_final_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a9129194966b5197456b09125be285cb09979dacf3e7bdd28fe137cc070eac14",
+      "bytes": 9795
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r2_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r2_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "de83e401fe797d5accdd793beacadd336becbbd0dc41bab708d2f5bb339ef8d3",
+      "bytes": 7087
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r2_monitor_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r2_monitor_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "b2a4e51e72660ff87bb4e92b8147ad5008d0c06a32c185f0797e7e6688b4aa9c",
+      "bytes": 4900
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r2_publish_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r2_publish_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "840cc619c2c647475ce4e3bed86697db06f71744d0cffa16341ebf7574f25ced",
+      "bytes": 13751
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r2_worker_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r2_worker_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "c91410299fca13fa4e6f0a9bb1168a5d19483ac31c2062651ab55e071793b6a3",
+      "bytes": 3798
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r_cpu_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r_cpu_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "39d2a987c06b1ee4bb0fb2ff85ec67186d0c8660d01a695f40ead0328442d80d",
+      "bytes": 9628
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r_gpu_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r_gpu_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "488ca7f7bd016b0b852f6da95eadd612fee97c29898059fe38f79f7d43e4130a",
+      "bytes": 7922
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r_install.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r_install.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "1f41b1861f4ff216c0f44d42c875a58246cd33996caa193758900b346f75b50c",
+      "bytes": 9720
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r_packing_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r_packing_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "4995ac527c7d0900d398fdc619b1145968d7843725f17e3524751dd8566007f7",
+      "bytes": 2339
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r_publish.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r_publish.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "f41b466c4e882d6260564c3723250f80594d7a1807aa4c27555032c6e817a3b2",
+      "bytes": 33934
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r_qualification_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r_qualification_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "425afcf8aa8ae80f9672605177b67a0a9dff5a9ce0b6500958d4ec080c4df902",
+      "bytes": 4547
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v94r_tests_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v94r_tests_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a994d396e2a744a32736908b8d6aff539bcb143a992436ce8425a9145b002e1b",
+      "bytes": 5414
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_add_recovery.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_add_recovery.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "6f4b145c0fef2f229cb2b42e57223acbb1bceaa8f4ed12d1f4fb8308717840ed",
+      "bytes": 2660
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_analysis_common_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_analysis_common_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "4e816e951f4991b1b3810e00cddfab46ff241f38b06a3d8cac099608b2ca5811",
+      "bytes": 4240
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_calibrate_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_calibrate_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "eb8dddc89d681b64409f00c2b8ce56c9d48deb4679ae1fa7e904a4dcb95eb619",
+      "bytes": 16411
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_calibration_run.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_calibration_run.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a7ae2b075dc954cfca369ae27431ca513a24248fcd5373d95543108c5aaa50ba",
+      "bytes": 1499
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_confirmation_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_confirmation_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "1f43ae8e9155b2fbac1cbc0e090c0ca18d1dd38db73976b1da0161f56c96c9af",
+      "bytes": 3230
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_core_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_core_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "2b49d11ea6487f14f0f4e4a80a4342e55ffbfa97937df214e26764ae7cce82d5",
+      "bytes": 13744
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_final_analysis_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_final_analysis_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "487c9d539a02bc2d539677669e36a33a4d631e90e895b5d4cdba67c2d3ff6ed3",
+      "bytes": 35565
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_finalize_handoff.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_finalize_handoff.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "c4cc83e88a316f6974f0980ee70fa6b7ebc85592294d173d37550f06d40ee100",
+      "bytes": 12172
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_install_analysis.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_install_analysis.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "f4131a1f83466eb988007e737a92b26f991682db95f80d3bb0e47b6d70cf10fc",
+      "bytes": 1508
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_install_calibration.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_install_calibration.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "22681b4cb80a373f36e4bd1cc336b934c65457249204ca9d8280659d0f3bfa9e",
+      "bytes": 1524
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_motif_audit_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_motif_audit_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "a2cb9f4871b54eeb96a6b1f06550d0b742345e87e76cc57feb8fdae905d4b761",
+      "bytes": 3879
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_policy_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_policy_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "3d8861844eca834613783e3d3508e1a5858d280c993376894cfff0a74d980818",
+      "bytes": 10813
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_probe.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_probe.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "95c4438d6dad1c44c1b0f82eadf2258d0c4eb79c87e4be6b49fa4548a47bdc60",
+      "bytes": 1625
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_publish_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_publish_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "0585c268124ead45e9bbb1c6b31df36fcc91fa34def2b65f04f91dd041ad8506",
+      "bytes": 27906
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_resource_sample.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_resource_sample.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "8d32edb8ecf70a1d5460b0baa88152fafa47ee5bcdfc92d9f206591b5f2ad048",
+      "bytes": 1247
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_reward_tests_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_reward_tests_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "fa04c466fe54246837ce77ee3170c496cb771415331ea20d819b7ba9dc164e0f",
+      "bytes": 5280
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_setup.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_setup.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "d0f5d3582e10a0d0ee68907a85febceb268b359714b2303600979b7ce41b0e88",
+      "bytes": 630
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_short_control_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_short_control_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "2d4fb0ff9d67f9faf092ba9d01c61688656de148ca2ec0dd38e15c680d0f6cc1",
+      "bytes": 2531
+    },
+    {
+      "path": "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_train_staged.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v51_safe_control_20261022_v1/source/v9_train_staged.py",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "base_commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "sha256": "895219c5ee4b882f67d1471e486b94f91cf85ffe68441934e90694e0b0efcb18",
+      "bytes": 16986
+    },
+    {
+      "path": "worktree_snapshots/detached-e017-v97-engineering/e017_v97/core97.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v97_engineering_worktree_20261031_v1/e017_v97/core97.py",
+      "branch": "detached-e017-v97-engineering",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "c6c69d471e45239f680e61354ac4e016826771858e05f8e42f4e0d26d5df1b7b",
+      "bytes": 2524
+    },
+    {
+      "path": "worktree_snapshots/detached-e017-v97-engineering/e017_v97/cpu97.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v97_engineering_worktree_20261031_v1/e017_v97/cpu97.py",
+      "branch": "detached-e017-v97-engineering",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "4a2039c0dc32d9a795db3d49dae97805252bbfb905ce8d9950daa5d27dc37f1e",
+      "bytes": 7248
+    },
+    {
+      "path": "worktree_snapshots/detached-e017-v97-engineering/e017_v97/gate97.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v97_engineering_worktree_20261031_v1/e017_v97/gate97.py",
+      "branch": "detached-e017-v97-engineering",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "b8c62531d335d2b529f33f430a3044837e9a8407655798c1e421c8c4de9241e1",
+      "bytes": 910
+    },
+    {
+      "path": "worktree_snapshots/detached-e017-v97-engineering/e017_v97/gpu97.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v97_engineering_worktree_20261031_v1/e017_v97/gpu97.py",
+      "branch": "detached-e017-v97-engineering",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "0cf5c45b7c1fdecb753b6b2c62c30a70977f45eeb7dba699eb05e0ed5270b79a",
+      "bytes": 13318
+    },
+    {
+      "path": "worktree_snapshots/detached-e017-v97-engineering/e017_v97/precision97.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v97_engineering_worktree_20261031_v1/e017_v97/precision97.py",
+      "branch": "detached-e017-v97-engineering",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "1c957194a3a7d48829c4127e8b33f333d3dfb5181b1c82d1304a441dfa5ae0e7",
+      "bytes": 1994
+    },
+    {
+      "path": "worktree_snapshots/detached-e017-v97-engineering/e017_v97/prepare97.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v97_engineering_worktree_20261031_v1/e017_v97/prepare97.py",
+      "branch": "detached-e017-v97-engineering",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "c229e73d09bfcc1d903500b07bc5b277df02c14be27a2d9e606547e300d5dbf5",
+      "bytes": 6141
+    },
+    {
+      "path": "worktree_snapshots/detached-e017-v97-engineering/e017_v97/publish97.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v97_engineering_worktree_20261031_v1/e017_v97/publish97.py",
+      "branch": "detached-e017-v97-engineering",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "fcd821b0100aca472c9b85cd6c808708e8eac29687c0a348e688eb4d56aa8ce9",
+      "bytes": 24682
+    },
+    {
+      "path": "worktree_snapshots/detached-e017-v97-engineering/e017_v97/safety97.py",
+      "source_path": "/mnt/d/Simone/proteinGen_data/e017_v97_engineering_worktree_20261031_v1/e017_v97/safety97.py",
+      "branch": "detached-e017-v97-engineering",
+      "base_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "sha256": "36c0ba29274178f95d62e2778633831523a5f433eaa485ab5914e8fb82793a3a",
+      "bytes": 5591
+    }
+  ],
+  "existing_whitespace_warnings": [
+    "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_analysis_common_staged.py:37",
+    "worktree_snapshots/e017-v51-safe-control-20261022-v1/v9_train_staged.py:105"
+  ],
+  "published_experiment_branches": [
+    {
+      "branch": "audit-baseline-20261002",
+      "commit": "058ac3e747d9dc28d1a3e9d0f449627de24cf2be",
+      "committed_at": "2026-10-05T08:28:31+02:00"
+    },
+    {
+      "branch": "e007_matched_fullscale_v1",
+      "commit": "f717a98dfba48aa9fe574bdc9952c6442a52dd1e",
+      "committed_at": "2026-10-10T16:46:05+02:00"
+    },
+    {
+      "branch": "e007_vs_e014_readonly_comparison_v1",
+      "commit": "7e0ab0804deb06b8344d51659a7acb079dee3123",
+      "committed_at": "2026-10-10T16:11:58+02:00"
+    },
+    {
+      "branch": "e010-condition-weight-counterfactual",
+      "commit": "058ac3e747d9dc28d1a3e9d0f449627de24cf2be",
+      "committed_at": "2026-10-05T08:28:31+02:00"
+    },
+    {
+      "branch": "e010-phase4c-local-auxiliary",
+      "commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "committed_at": "2026-10-08T21:41:05+02:00"
+    },
+    {
+      "branch": "e010-phase4d-hybrid-local-global",
+      "commit": "bfc840a9bd7e421c7e508cf41b3d66fdb31a6aa2",
+      "committed_at": "2026-10-07T09:55:53+02:00"
+    },
+    {
+      "branch": "e011-sequence-context-only",
+      "commit": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "committed_at": "2026-10-05T23:10:15+02:00"
+    },
+    {
+      "branch": "e012-causal-rope-sequence",
+      "commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "committed_at": "2026-10-11T11:12:15+02:00"
+    },
+    {
+      "branch": "e013_unconditional_se3_coordinate_generator_v1",
+      "commit": "dd421bde2a6b3a9b5eb549f72b874ae2ca875bac",
+      "committed_at": "2026-10-09T00:14:14+02:00"
+    },
+    {
+      "branch": "e014_unconditional_coordinate_v_scaleup_v1",
+      "commit": "053ec32dd256349a6ff8504a0f796167f5c1c727",
+      "committed_at": "2026-10-10T14:04:18+02:00"
+    },
+    {
+      "branch": "e015_integrated_multiscale_parity_selfconditioned_v1",
+      "commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+      "committed_at": "2026-10-12T23:51:07+02:00"
+    },
+    {
+      "branch": "e016-dataset-governance-20261015-v1",
+      "commit": "9005f9de61399814765acffe88d06a73fd0100fb",
+      "committed_at": "2026-10-15T22:55:01+02:00"
+    },
+    {
+      "branch": "e016-integrated-engineering-20261015-v1",
+      "commit": "9ff2fc573715bebf8598ff9b8e11ccbf194d61bc",
+      "committed_at": "2026-10-16T09:00:01+02:00"
+    },
+    {
+      "branch": "e016-j1-aa-head-only-20261019-v1",
+      "commit": "de4bb261f4908ff682072d2f6db63d394cdf44b7",
+      "committed_at": "2026-10-19T10:38:59+02:00"
+    },
+    {
+      "branch": "e016-j1-bidirectional-multitask-20261019-v1",
+      "commit": "7eb0e9d25e64a122ed4a75404cf31ad198adb7c6",
+      "committed_at": "2026-10-19T15:30:10+02:00"
+    },
+    {
+      "branch": "e016-j1-clip-precision-pilot-20261018-v1",
+      "commit": "3e6cbe09d026b17e8e7695c8eed157726391a57d",
+      "committed_at": "2026-10-18T17:34:24+02:00"
+    },
+    {
+      "branch": "e016-j1-full-sequence-20261018-v1",
+      "commit": "28d818d50184a7735b6822210d7021847e1372bd",
+      "committed_at": "2026-10-19T09:34:42+02:00"
+    },
+    {
+      "branch": "e016-j1-global-pretraining-20261017-v1",
+      "commit": "f0a0e2d2f5a43a45d91c36612244b84a561be509",
+      "committed_at": "2026-10-18T09:07:09+02:00"
+    },
+    {
+      "branch": "e016-j1-sequence-first-20261018-v1",
+      "commit": "51a18311660bb0c6a4e565a3d4e3c64bdfcb61d1",
+      "committed_at": "2026-10-18T15:24:54+02:00"
+    },
+    {
+      "branch": "e016-j1-torsion-diagnostics-storage-20261018-v1",
+      "commit": "bbbc941be9635ac3acb647f8ec46a43e0ca56c6a",
+      "committed_at": "2026-10-18T18:58:17+02:00"
+    },
+    {
+      "branch": "e016-j1-torsion-stabilization-20261018-v1",
+      "commit": "4cd6bd9f20803e44c1cb4afc4e3b3d02d182f5e1",
+      "committed_at": "2026-10-18T21:52:00+02:00"
+    },
+    {
+      "branch": "e016-partial-supervision-20261016-v1",
+      "commit": "51b628ee2bc544125b41441285356db1fde02526",
+      "committed_at": "2026-10-17T19:51:50+02:00"
+    },
+    {
+      "branch": "e016-r1b-afdb-msa-critic-20261019-v1",
+      "commit": "89e56c075d18d50370e058220acc84b908a1a48c",
+      "committed_at": "2026-10-19T22:36:23+02:00"
+    },
+    {
+      "branch": "e016-r1c-reward-reliability-20261019-v1",
+      "commit": "5ba906ba67b6b59f90ed83c5dfaff1cff4742da9",
+      "committed_at": "2026-10-20T07:26:35+02:00"
+    },
+    {
+      "branch": "e016-r1d-experimental-stability-20261020-v1",
+      "commit": "5bf80ec1636afb7f3639ca561a018d154c73fa8e",
+      "committed_at": "2026-10-20T09:02:48+02:00"
+    },
+    {
+      "branch": "e016-r1e-generation-evaluation-20261020-v1",
+      "commit": "b3af952083099520e3fbebdda97130ad05f1b098",
+      "committed_at": "2026-10-20T10:25:40+02:00"
+    },
+    {
+      "branch": "e016-real-pdb-pilots-20261016-v1",
+      "commit": "90ca5ad5fcb6f8501d6ce6ae19b0db51d742e219",
+      "committed_at": "2026-10-16T14:01:58+02:00"
+    },
+    {
+      "branch": "e016-scaled10m-training-20261016-v1",
+      "commit": "b43807b76069893fda87fc630fd7f1f230ac18b1",
+      "committed_at": "2026-10-16T20:26:53+02:00"
+    },
+    {
+      "branch": "e016-sequence-first-rl-readiness-20261019-v1",
+      "commit": "def9a0c7641a11b6da9675b1ebc39b3277a18610",
+      "committed_at": "2026-10-19T18:20:11+02:00"
+    },
+    {
+      "branch": "e016-unused-train-census-20261018-v1",
+      "commit": "832a028340c90406cd6526a6324de6d7e8315737",
+      "committed_at": "2026-10-18T22:43:27+02:00"
+    },
+    {
+      "branch": "e016-v3-cuda-n64-pdb-20261014-v1",
+      "commit": "5b26b8859c7cf9ec5999bcb1a06b2de29cc34100",
+      "committed_at": "2026-10-14T20:48:15+02:00"
+    },
+    {
+      "branch": "e016-v3-foundations-20261014-v1",
+      "commit": "7acd3646c73c142b1ec4ea6b5fd40941e34872d2",
+      "committed_at": "2026-10-14T17:35:42+02:00"
+    },
+    {
+      "branch": "e016-v3-gpu-unified-pdb-20261015-v1",
+      "commit": "5c09c4baf3ea506a7f202c24a9f9568dfe174e3e",
+      "committed_at": "2026-10-15T18:30:39+02:00"
+    },
+    {
+      "branch": "e016-v3-readiness-20261014-v1",
+      "commit": "2081a569201dfd9bd2f45d60d8b4ac1d21c4a11c",
+      "committed_at": "2026-10-14T19:03:05+02:00"
+    },
+    {
+      "branch": "e017-crisp-v2-20261021-v1",
+      "commit": "5ad0afccd93db379dcf469f910cc61f54ad4a8a1",
+      "committed_at": "2026-10-21T11:20:44+02:00"
+    },
+    {
+      "branch": "e017-crisp-v3-20261021-v1",
+      "commit": "cc0915ef24b57e8c368e1b8bd43681ab8bbb98c4",
+      "committed_at": "2026-10-21T13:26:20+02:00"
+    },
+    {
+      "branch": "e017-crisp-v3-dynamic-storage-20261021-v1",
+      "commit": "4374c4a766a088da4daf0b475a26357408876a8c",
+      "committed_at": "2026-10-21T14:35:57+02:00"
+    },
+    {
+      "branch": "e017-crisp-v3-microbatch-20261021-v1",
+      "commit": "9c244462f3980ae8008e27fd957200e1354c62c3",
+      "committed_at": "2026-10-21T17:22:13+02:00"
+    },
+    {
+      "branch": "e017-crisp-v3-throughput-20261021-v1",
+      "commit": "774371b3ea8724425c9fcc43702ad2233e70641e",
+      "committed_at": "2026-10-21T18:37:38+02:00"
+    },
+    {
+      "branch": "e017-crisp-v3-training-admission-20261021-v1",
+      "commit": "b62978364dc054850f6b37e888baaa9d1638d4f6",
+      "committed_at": "2026-10-21T15:21:45+02:00"
+    },
+    {
+      "branch": "e017-v4-multistep-20261022-v1",
+      "commit": "d8177be05f900960e89979d1e2867ba9945080a0",
+      "committed_at": "2026-10-22T10:47:50+02:00"
+    },
+    {
+      "branch": "e017-v5-goal-observability-20261022-v1",
+      "commit": "f1bf4a58ebd3d32741887fb7a57e3745c7236678",
+      "committed_at": "2026-10-22T13:02:12+02:00"
+    },
+    {
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "commit": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "committed_at": "2026-10-22T17:17:54+02:00"
+    },
+    {
+      "branch": "e017-v6-frozen-candidates-20261023-v1",
+      "commit": "04ea6394381203f88dfc180972ccf512ee18f3e5",
+      "committed_at": "2026-10-23T10:43:03+02:00"
+    },
+    {
+      "branch": "e017-v7-amortized-lowlevel-20261023-v1",
+      "commit": "e6ad343c10b5836415df18c4bf098ab5c38dfead",
+      "committed_at": "2026-10-23T12:46:29+02:00"
+    },
+    {
+      "branch": "e017-v71-expected-return-20261023-v1",
+      "commit": "1f9a91b226460f163e13c501b9d2e1c524d84a42",
+      "committed_at": "2026-10-23T14:50:10+02:00"
+    },
+    {
+      "branch": "e017-v72-counterfactual-ranking-20261023-v1",
+      "commit": "5e9c0f54e539c992220a8e2cdc292bf7aa5bce32",
+      "committed_at": "2026-10-23T17:03:42+02:00"
+    },
+    {
+      "branch": "e017-v8-constrained-planning-20261023-v1",
+      "commit": "d3eb8b7d0ef361f7224c495abc1b71860b1f1bac",
+      "committed_at": "2026-10-23T18:16:44+02:00"
+    },
+    {
+      "branch": "e017-v9-property-steering-20261023-v1",
+      "commit": "2ba4ccfc31b194323f7d1227da5a724bc260c72a",
+      "committed_at": "2026-10-23T22:49:47+02:00"
+    },
+    {
+      "branch": "e017-v91-ordered-goal-recovery-20261023-v1",
+      "commit": "82d23e47d1d33a0a6b2d2ff542aef3e8d86d0bfe",
+      "committed_at": "2026-10-24T11:35:13+02:00"
+    },
+    {
+      "branch": "e017-v92-prefix-feasibility-20261024-v1",
+      "commit": "95b27b0834fb36b0373bc89e7fdaec6773a85fb3",
+      "committed_at": "2026-10-24T18:12:41+02:00"
+    },
+    {
+      "branch": "e017-v93-regional-controllability-20261024-v1",
+      "commit": "ea75b1d55f1883bf1635edd1f403f6334b15b895",
+      "committed_at": "2026-10-24T20:32:30+02:00"
+    },
+    {
+      "branch": "e017-v94-production-recovery-20261025-v1",
+      "commit": "cec94486cb7ab53cd739a218b84e416e7ac9a7df",
+      "committed_at": "2026-10-25T09:52:52+01:00"
+    },
+    {
+      "branch": "e017-v94r-packing-safety-20261025-v1",
+      "commit": "e390b87357c31a6cad8958ecd9292c942e01e57d",
+      "committed_at": "2026-10-25T14:54:25+01:00"
+    },
+    {
+      "branch": "e017-v94r2-corrected-production-20261025-v1",
+      "commit": "afb72d824a8ab2bd9e438a47a4f1ae23cc615add",
+      "committed_at": "2026-10-25T16:52:01+01:00"
+    },
+    {
+      "branch": "e017-v94r2-corrected-production-20261025-v2",
+      "commit": "44f1b69be638d492ee53e541f359d617a4320586",
+      "committed_at": "2026-10-25T17:11:53+01:00"
+    },
+    {
+      "branch": "e017-v94r3-one-step-feasibility",
+      "commit": "5f13a45a205c6a328a37b5b2af6ec2df705f26b2",
+      "committed_at": "2026-10-25T23:15:03+01:00"
+    },
+    {
+      "branch": "e017-v94r3-production-20261026",
+      "commit": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+      "committed_at": "2026-10-28T07:48:01+01:00"
+    },
+    {
+      "branch": "main",
+      "commit": "3b200ffb0389be87cc928c391117ce96bd8b5eb2",
+      "committed_at": "2026-10-05T10:40:27+02:00"
+    },
+    {
+      "branch": "pdb-supervised-split-20261016-v1",
+      "commit": "dbc43ebde00e2fb0a31ed1100d6ecb88ef6532c0",
+      "committed_at": "2026-10-16T12:03:02+02:00"
+    }
+  ]
+}

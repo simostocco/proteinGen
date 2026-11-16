@@ -1,0 +1,44 @@
+{
+  "suite": "tests/test_e012_data_v2b.py",
+  "tests_run": 21,
+  "passed": 21,
+  "runtime_results": {
+    "Linux_proteingen": {
+      "passed": 21,
+      "seconds": 15.703
+    },
+    "native_Windows": {
+      "passed": 21,
+      "seconds": 42.954
+    }
+  },
+  "processing_commit": "270834204d5230408ccd3cde4f4dbfaec069eb36",
+  "script_sha256": "98bd9c2a4e94637e441763ac0f7155e280ff1b6d987030c647e3e3738a5e456b",
+  "training_launched": false,
+  "includes": [
+    "raw checksum corruption",
+    "FASTA normalization and malformed records",
+    "canonical alphabet and lengths",
+    "forced sequence-hash collisions",
+    "reservoir priority selection",
+    "historical unique union",
+    "filter transaction recovery",
+    "post-union recovery",
+    "protected exact overlap",
+    "real MMseqs bidirectional coverage",
+    "independent search",
+    "persistent-index parity",
+    "attached hash-index migration",
+    "append-row layout migration",
+    "independent priority-prefix selection with sequential batches",
+    "sorted shard boundary and interruption recovery",
+    "shard append recovery",
+    "FASTA/manifest/shard/count/index parity",
+    "tokenizer and causal BOS shift",
+    "frozen-priority trimming ties and ascending physical deletion order",
+    "WAL reopening preserves committed frames and existing readers",
+    "atomic external checkpoint count without full-index resume scan",
+    "high-resolution audit timer with frozen coarse clock",
+    "cleanup protection"
+  ]
+}

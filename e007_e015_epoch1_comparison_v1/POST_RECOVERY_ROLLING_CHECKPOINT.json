@@ -1,0 +1,88 @@
+{
+  "timestamp_unix": 1791834538.1297295,
+  "checkpoint": "/mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1/checkpoints/recovery_1.pt",
+  "sha256": "289e150e61cfb52359e155f1aa664de77c8c4592ff97f99710e756296077c500",
+  "bytes": 92321795,
+  "epoch": 1,
+  "update": 98981,
+  "cursor": 98981,
+  "exposures": 126004,
+  "completed_epochs": 0,
+  "zero_uncommitted": false,
+  "model_strict_cpu_load": true,
+  "optimizer_strict_cpu_load": true,
+  "optimizer_steps": 98981,
+  "cpu_rng_restored": true,
+  "cuda_rng_blobs_valid_preserved_on_cpu": true,
+  "exposure_vector_exact": true,
+  "no_skipped_or_duplicate_durable_exposure": true,
+  "population_hash": "d3f2ee345d0e4e9a27d0136aad1eca9dfe87821a3a82d90aa4c3194bd928a3f9",
+  "config_hash": "c385eeaeaacf939ab38ca2fe97d14e955b15f0335d6cd6884687e88ff45f3b3a",
+  "frozen_source_hashes_unchanged": true,
+  "maximum_epochs": 2,
+  "target_exposures": 460264,
+  "exact_next_operation": {
+    "update": 98982,
+    "exposures": 126006,
+    "cursor": 98982,
+    "batch": [
+      {
+        "identity": "22cr_C",
+        "length": 70,
+        "noise_seed": 6165936038436528324,
+        "noise_seed_exact_decimal": "6165936038436528324"
+      },
+      {
+        "identity": "9iho_d",
+        "length": 75,
+        "noise_seed": 8263765032204145168,
+        "noise_seed_exact_decimal": "8263765032204145168"
+      }
+    ]
+  },
+  "sequence_guard": {
+    "snapshot": {
+      "phase": "frozen_corpus_ready",
+      "timestamp": 1791710215.2756362,
+      "training_launched": false,
+      "records": [],
+      "driver_sha256": "cd4850bb83176843b9fa5d63ef9924c8ef532222c075b2d0ec6c4af421fee10a"
+    },
+    "after_records": [],
+    "pause_reason": null,
+    "enough_batches": false
+  },
+  "E012_handoff_complete": true,
+  "E012_frozen_sequences": 20000000,
+  "resource": {
+    "timestamp_unix": 1791834532.3645751,
+    "ram_available_bytes": 10445049856,
+    "swap_used_bytes": 0,
+    "load_average": [
+      1.5283203125,
+      1.3876953125,
+      1.24755859375
+    ],
+    "d_free_bytes": 38320046080,
+    "gpu_csv": "7204, 693, 76, 61",
+    "cuda_compute_apps": "1424499, [Not Found], [N/A]",
+    "targeted_processes": [
+      {
+        "pid": 1424444,
+        "command": "/home/simostocco/miniforge3/envs/proteingen/bin/python -B /mnt/d/Simone/proteinGen/.e015_worktree/docs/supervise_e007_epoch1_hold.py --resume "
+      },
+      {
+        "pid": 1424499,
+        "command": "/home/simostocco/miniforge3/envs/proteingen/bin/python -B scripts/run_e007_fullscale.py --resume "
+      }
+    ],
+    "windows_ram_available_bytes": 11264679936
+  },
+  "exact_launch_command": [
+    "/home/simostocco/miniforge3/envs/proteingen/bin/python",
+    "-B",
+    "/mnt/d/Simone/proteinGen/.e014_worktree/scripts/supervise_e007_fullscale.py",
+    "--launch",
+    "--resume"
+  ]
+}

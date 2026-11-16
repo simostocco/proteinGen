@@ -1,0 +1,74 @@
+{
+  "timestamp_unix": 1791833456.8163233,
+  "checkpoint": "/mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1/checkpoints/recovery_0.pt",
+  "sha256": "77512116a499935c8f424ad85de5ea9381874ecee4ac3d490ded02c2c20a1ce3",
+  "bytes": 92321731,
+  "epoch": 1,
+  "update": 90413,
+  "cursor": 90413,
+  "exposures": 115067,
+  "completed_epochs": 0,
+  "zero_uncommitted": false,
+  "model_strict_cpu_load": true,
+  "optimizer_strict_cpu_load": true,
+  "optimizer_steps": 90413,
+  "cpu_rng_restored": true,
+  "cuda_rng_blobs_valid_preserved_on_cpu": true,
+  "exposure_vector_exact": true,
+  "no_skipped_or_duplicate_durable_exposure": true,
+  "population_hash": "d3f2ee345d0e4e9a27d0136aad1eca9dfe87821a3a82d90aa4c3194bd928a3f9",
+  "config_hash": "c385eeaeaacf939ab38ca2fe97d14e955b15f0335d6cd6884687e88ff45f3b3a",
+  "frozen_source_hashes_unchanged": true,
+  "maximum_epochs": 2,
+  "target_exposures": 460264,
+  "exact_next_operation": {
+    "update": 90414,
+    "exposures": 115068,
+    "cursor": 90414,
+    "batch": [
+      {
+        "identity": "7n2o_F",
+        "length": 241,
+        "noise_seed": 7492264717301116066,
+        "noise_seed_exact_decimal": "7492264717301116066"
+      }
+    ]
+  },
+  "sequence_guard": {
+    "snapshot": {
+      "phase": "frozen_corpus_ready",
+      "timestamp": 1791710215.2756362,
+      "training_launched": false,
+      "records": [],
+      "driver_sha256": "cd4850bb83176843b9fa5d63ef9924c8ef532222c075b2d0ec6c4af421fee10a"
+    },
+    "after_records": [],
+    "pause_reason": null,
+    "enough_batches": false
+  },
+  "E012_handoff_complete": true,
+  "E012_frozen_sequences": 20000000,
+  "resource": {
+    "timestamp_unix": 1791833451.3657515,
+    "ram_available_bytes": 13521440768,
+    "swap_used_bytes": 0,
+    "load_average": [
+      0.421875,
+      0.49267578125,
+      1.06005859375
+    ],
+    "d_free_bytes": 38315233280,
+    "gpu_csv": "1160, 6737, 7, 44",
+    "cuda_compute_apps": "",
+    "targeted_processes": [],
+    "windows_ram_available_bytes": 14902517760
+  },
+  "exact_launch_command": [
+    "/home/simostocco/miniforge3/envs/proteingen/bin/python",
+    "-B",
+    "/mnt/d/Simone/proteinGen/.e014_worktree/scripts/supervise_e007_fullscale.py",
+    "--launch",
+    "--resume"
+  ],
+  "uncommitted_exposures_to_recompute": 5320
+}

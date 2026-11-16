@@ -1,0 +1,31 @@
+{
+  "expected": {
+    "update": 90414,
+    "exposures": 115068,
+    "cursor": 90414,
+    "batch": [
+      {
+        "identity": "7n2o_F",
+        "length": 241,
+        "noise_seed": 7492264717301116066,
+        "noise_seed_exact_decimal": "7492264717301116066"
+      }
+    ]
+  },
+  "observed": {
+    "epoch": 1,
+    "update": 90414,
+    "position": 90414,
+    "identity_count": 1,
+    "sample_ids": [
+      "7n2o_F"
+    ],
+    "loss": 0.5143104791641235,
+    "gradient_norm": 3.192429780960083,
+    "clipped": true,
+    "commit_status": "provisional_until_checkpoint"
+  },
+  "exposure_count_basis": "Verified durable exposure vector plus logged identity count",
+  "noise_basis": "Frozen runner uses exact identity/epoch deterministic seed; not a logged seed field",
+  "no_durable_skip_duplicate": true
+}

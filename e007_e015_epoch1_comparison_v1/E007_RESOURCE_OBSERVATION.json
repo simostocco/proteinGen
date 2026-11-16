@@ -1,0 +1,130 @@
+{
+  "first": {
+    "timestamp": 1791839979.343652,
+    "state": {
+      "pid": 1424499,
+      "phase": "training",
+      "epoch": 1,
+      "schedule_cursor": 155480,
+      "update": 155480,
+      "total_exposures": 197752,
+      "identities_seen_this_epoch": 197752,
+      "population_hash": "d3f2ee345d0e4e9a27d0136aad1eca9dfe87821a3a82d90aa4c3194bd928a3f9",
+      "config_hash": "c385eeaeaacf939ab38ca2fe97d14e955b15f0335d6cd6884687e88ff45f3b3a",
+      "minimum_exposure": 0,
+      "maximum_exposure": 1,
+      "loss": 0.20481283962726593,
+      "elapsed_seconds": 17151.91082129201,
+      "gpu_seconds": 13901.358416275105,
+      "proteins_per_second": 11.529444238665722,
+      "gpu_allocated_bytes": 188700160,
+      "gpu_reserved_bytes": 6165626880,
+      "timestamp_unix": 1791839977.4186106,
+      "probe_passed": true,
+      "git_sha": "f717a98dfba48aa9fe574bdc9952c6442a52dd1e"
+    },
+    "committed": {
+      "label": "recovery_0",
+      "path": "/mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1/checkpoints/recovery_0.pt",
+      "sha256": "947b45ca214c3b24aa8b42cf4ebc197563de48ce2f624fdb9ef5fc2837c15312",
+      "epoch": 1,
+      "schedule_cursor": 154529,
+      "updates": 154529,
+      "exposures": 196511,
+      "model_hash": "c01742ce7ebe44eef7186a0d194471ef3f072b82a7d2d069ad0ac0976c88710e",
+      "model": "E007",
+      "parameters": 7586505,
+      "population_hash": "d3f2ee345d0e4e9a27d0136aad1eca9dfe87821a3a82d90aa4c3194bd928a3f9",
+      "config_hash": "c385eeaeaacf939ab38ca2fe97d14e955b15f0335d6cd6884687e88ff45f3b3a",
+      "hash_valid_loadable": true
+    },
+    "resource": {
+      "timestamp_unix": 1791839978.9559195,
+      "ram_available_bytes": 10674479104,
+      "swap_used_bytes": 0,
+      "load_average": [
+        1.47314453125,
+        1.4560546875,
+        1.3779296875
+      ],
+      "d_free_bytes": 38205681664,
+      "gpu_csv": "7208, 689, 69, 63",
+      "cuda_compute_apps": "1424499, [Not Found], [N/A]",
+      "targeted_processes": [
+        {
+          "pid": 1424444,
+          "command": "/home/simostocco/miniforge3/envs/proteingen/bin/python -B /mnt/d/Simone/proteinGen/.e015_worktree/docs/supervise_e007_epoch1_hold.py --resume "
+        },
+        {
+          "pid": 1424499,
+          "command": "/home/simostocco/miniforge3/envs/proteingen/bin/python -B scripts/run_e007_fullscale.py --resume "
+        }
+      ],
+      "windows_ram_available_bytes": 11330506752,
+      "swap_pages_per_second": 0.0
+    },
+    "disk_io_counters": "rchar: 2288760822\nwchar: 764155152\nsyscr: 26862\nsyscw: 77262\nread_bytes: 526188544\nwrite_bytes: 0\ncancelled_write_bytes: 0\n",
+    "runnable_count": "2/783"
+  },
+  "last": {
+    "timestamp": 1791844530.5034318,
+    "state": {
+      "pid": 1424499,
+      "phase": "paused_epoch1_comparative_evaluation",
+      "epoch": 1,
+      "schedule_cursor": 180817,
+      "update": 180817,
+      "total_exposures": 230132,
+      "identities_seen_this_epoch": 230132,
+      "population_hash": "d3f2ee345d0e4e9a27d0136aad1eca9dfe87821a3a82d90aa4c3194bd928a3f9",
+      "config_hash": "c385eeaeaacf939ab38ca2fe97d14e955b15f0335d6cd6884687e88ff45f3b3a",
+      "minimum_exposure": 1,
+      "maximum_exposure": 1,
+      "loss": null,
+      "elapsed_seconds": 19759.11315246501,
+      "gpu_seconds": 16020.483328498904,
+      "proteins_per_second": 11.646878967063596,
+      "gpu_allocated_bytes": 158290432,
+      "gpu_reserved_bytes": 6165626880,
+      "timestamp_unix": 1791844492.3643734,
+      "probe_passed": true,
+      "git_sha": "f717a98dfba48aa9fe574bdc9952c6442a52dd1e"
+    },
+    "committed": {
+      "label": "recovery_0",
+      "path": "/mnt/d/Simone/proteinGen/.e014_worktree/e007_matched_fullscale_v1/checkpoints/recovery_0.pt",
+      "sha256": "b83f4ece72f62db3b084e2f74866d6184b6ddc0459d1e363e552401805a6d437",
+      "epoch": 1,
+      "schedule_cursor": 180817,
+      "updates": 180817,
+      "exposures": 230132,
+      "model_hash": "82360ac1081b6ed8987c33bf1f0f88e99612ce467370381b6fc7b7b34c23f02f",
+      "model": "E007",
+      "parameters": 7586505,
+      "population_hash": "d3f2ee345d0e4e9a27d0136aad1eca9dfe87821a3a82d90aa4c3194bd928a3f9",
+      "config_hash": "c385eeaeaacf939ab38ca2fe97d14e955b15f0335d6cd6884687e88ff45f3b3a",
+      "hash_valid_loadable": true
+    },
+    "resource": {
+      "timestamp_unix": 1791844530.1213374,
+      "ram_available_bytes": 13758017536,
+      "swap_used_bytes": 0,
+      "load_average": [
+        1.04443359375,
+        1.20166015625,
+        1.22607421875
+      ],
+      "d_free_bytes": 38054211584,
+      "gpu_csv": "1188, 6709, 3, 41",
+      "cuda_compute_apps": "",
+      "targeted_processes": [],
+      "windows_ram_available_bytes": 14532108288,
+      "swap_pages_per_second": 0.0
+    },
+    "disk_io_counters": null,
+    "runnable_count": "1/780"
+  },
+  "seconds": 4551.161164522171,
+  "proteins_s": 7.114667846178019,
+  "updates_s": 5.567150686183214
+}
