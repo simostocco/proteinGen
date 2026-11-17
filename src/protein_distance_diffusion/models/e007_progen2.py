@@ -1,3 +1,4 @@
+# Third-party attribution and license: licenses/ProGen-BSD-3-Clause.txt; see THIRD_PARTY_NOTICES.md.
 """Minimal reviewed ProGen2 inference architecture for E007 Phase 4B.1.
 
 The implementation is limited to the deterministic causal-language-model

@@ -1,0 +1,504 @@
+"""O(3)-typed multiscale core and approved SO(3)-only chiral output.
+
+Only current coordinates, generated context, chain order, lengths/masks and time
+enter inference. Cartesian components never enter scalar MLPs.
+"""
+
+import math
+from dataclasses import dataclass
+from functools import wraps
+
+import torch
+from torch import nn
+from torch.utils.checkpoint import checkpoint
+
+from protein_distance_diffusion.models.e013_unconditional_equivariant_denoiser import (
+    local_geometry as historical_local_geometry,
+)
+from protein_distance_diffusion.models.e013_unconditional_equivariant_denoiser import (
+    radial_basis,
+)
+from protein_distance_diffusion.training.coordinate_diffusion import CoordinateVPDiffusion, center_coordinates
+
+
+@dataclass(frozen=True)
+class State:
+    h: torch.Tensor
+    v: torch.Tensor
+    p: torch.Tensor
+    a: torch.Tensor
+
+
+def fp32_geometry(function):
+    @wraps(function)
+    def guarded(x, *args, **kwargs):
+        with torch.autocast(x.device.type, enabled=False):
+            return function(x.float(), *args, **kwargs)
+
+    return guarded
+
+
+@fp32_geometry
+def local_geometry(x):
+    return historical_local_geometry(x)
+
+
+def stable_knn(x, k):
+    """FP64 direct distances; boundary ties use residue-index order.
+
+    A numerical tie is within 32 FP32 ulps of the boundary squared distance.
+    Only that boundary cluster is tied; ordinary distance order is unchanged.
+    Coordinates entering this function are FP32, never autocast-quantized.
+    """
+    with torch.autocast(x.device.type, enabled=False), torch.no_grad():
+        delta = x.double()[:, None] - x.double()[None]
+        squared = delta.square().sum(-1)
+        squared.fill_diagonal_(float("inf"))
+        k = min(k, len(x) - 1)
+        if k <= 0:
+            return torch.empty((len(x), 0), device=x.device, dtype=torch.long)
+        boundary = squared.sort(stable=True).values[:, k - 1]
+        tolerance = 32 * torch.finfo(torch.float32).eps * boundary.clamp_min(1)
+        tied = (squared - boundary[:, None]).abs() <= tolerance[:, None]
+        keys = torch.where(tied, boundary[:, None], squared)
+        return torch.argsort(keys, stable=True)[:, :k]
+
+
+def vector_linear(layer, vector):
+    return layer(vector.transpose(-1, -2)).transpose(-1, -2)
+
+
+def pool_mean(value, stride=4):
+    value = value.float()
+    n = len(value)
+    padding = (-n) % stride
+    padded = torch.cat([value, value.new_zeros((padding, *value.shape[1:]))])
+    summed = padded.reshape(-1, stride, *value.shape[1:]).sum(1)
+    counts = torch.arange(0, n, stride, device=value.device).sub(n).neg().clamp_max(stride)
+    return summed / counts.reshape((-1,) + (1,) * (value.ndim - 1))
+
+
+def pool_state(state):
+    return State(*(pool_mean(value) for value in (state.h, state.v, state.p, state.a)))
+
+
+@fp32_geometry
+def graph(x, previous, k, k_self, dense=False):
+    n = len(x)
+    ids = torch.arange(n, device=x.device)
+    separation = ids[None, :] - ids[:, None]
+    polymer = (separation.abs() >= 1) & (separation.abs() <= 3)
+    current = torch.zeros_like(polymer)
+    sc = torch.zeros_like(polymer)
+    with torch.no_grad():
+        if dense:
+            current = separation != 0
+        elif k:
+            current.scatter_(1, stable_knn(x, k), True)
+        if previous is not None and k_self:
+            previous = previous.float()
+            sc.scatter_(1, stable_knn(previous, k_self), True)
+    i, j = (polymer | current | sc).nonzero(as_tuple=True)
+    relative = x[j] - x[i]
+    distance = relative.norm(dim=-1)
+    unit = relative / distance[:, None].clamp_min(1e-6)
+    prev_distance = distance.new_zeros(len(i)) if previous is None else (previous[j] - previous[i]).norm(dim=-1)
+    sep = separation[i, j]
+    features = torch.cat(
+        [
+            radial_basis(distance),
+            radial_basis(prev_distance),
+            (sep.float() / max(n - 1, 1))[:, None],
+            torch.stack([sep.abs() == z for z in (1, 2, 3)], -1).float(),
+            current[i, j, None].float(),
+            sc[i, j, None].float(),
+            torch.full((len(i), 1), previous is not None, device=x.device).float(),
+        ],
+        -1,
+    )
+    sc_unit = (
+        torch.zeros_like(unit)
+        if previous is None
+        else (previous[j] - previous[i]) / prev_distance[:, None].clamp_min(1e-6)
+    )
+    return i, j, features, torch.stack([unit, sc_unit], 1)
+
+
+def rope(values, positions=None):
+    n, width = values.shape
+    angle = (torch.arange(n, device=values.device) if positions is None else positions).float()[:, None] / (
+        10000 ** (torch.arange(0, width, 2, device=values.device).float() / width)
+    )
+    pairs = values.float().reshape(n, -1, 2)
+    return torch.stack(
+        [
+            pairs[..., 0] * angle.cos() - pairs[..., 1] * angle.sin(),
+            pairs[..., 0] * angle.sin() + pairs[..., 1] * angle.cos(),
+        ],
+        -1,
+    ).reshape(n, width)
+
+
+class TypedBlock(nn.Module):
+    def __init__(self, cs, cv, cp, ca, ratio=2, attention=False):
+        super().__init__()
+        self.widths = cs, cv, cp, ca
+        self.norm = nn.LayerNorm(cs)
+        self.message = nn.Sequential(
+            nn.Linear(2 * cs + 39 + 64 + cv + ca + cp, ratio * cs),
+            nn.SiLU(),
+            nn.Linear(ratio * cs, cs + 2 * cv + cp + 2 * ca),
+        )
+        self.feed = nn.Sequential(nn.LayerNorm(cs), nn.Linear(cs, 2 * cs), nn.SiLU(), nn.Linear(2 * cs, cs))
+        self.vmix = nn.Linear(cv, cv, bias=False)
+        self.amix = nn.Linear(ca, ca, bias=False)
+        self.pmix = nn.Linear(cp, cp, bias=False)
+        self.a_to_v = nn.Linear(ca, cv, bias=False)
+        self.p_to_v = nn.Linear(cp, cv, bias=False)
+        self.v_to_a = nn.Linear(cv, ca, bias=False)
+        self.p_to_a = nn.Linear(cp, ca, bias=False)
+        self.v_to_p = nn.Linear(cv, cp, bias=False)
+        self.a_to_p = nn.Linear(ca, cp, bias=False)
+        self.attention = attention
+        if attention:
+            self.query = nn.Linear(cs, 64, bias=False)
+            self.key = nn.Linear(cs, 64, bias=False)
+            self.attention_bias = nn.Linear(39, 1)
+
+    def forward(self, h, v, p, a, i, j, features, unit, time, gate, positions=None):
+        cs, cv, cp, ca = self.widths
+        # Normalizations are even, scalar-valued and computed in FP32.
+        vn = v.float().square().sum(-1).add(1e-8).sqrt()
+        an = a.float().square().sum(-1).add(1e-8).sqrt()
+        hv = self.norm(h)
+        inputs = torch.cat(
+            [
+                hv[i],
+                hv[j],
+                features,
+                (time.expand(len(i), -1) if time.ndim == 1 else time[j]),
+                vn[j],
+                an[j],
+                p[j].float().square(),
+            ],
+            -1,
+        )
+        weights = self.message(inputs)
+        hs, vs, vr, ps, av, ar = weights.split((cs, cv, cv, cp, ca, ca), -1)
+        # Learned GEMMs stay autocast; geometric algebra/reductions use FP32.
+        hs, vs, vr, ps, av, ar = (z.float() for z in (hs, vs, vr, ps, av, ar))
+        vv = vector_linear(self.vmix, v).float()
+        aa = vector_linear(self.amix, a).float()
+        pp = self.pmix(p).float()
+        va = vector_linear(self.a_to_v, a).float()
+        pa = self.p_to_v(p).float()
+        pv = self.p_to_a(p).float()
+        vi = vector_linear(self.v_to_a, v).float()
+        parity_gate = gate[i, None]
+        vm = (
+            vs[..., None].tanh() * vv[j]
+            + vr[..., None].tanh() * unit[:, :1]
+            + 0.5 * vs[..., None].tanh() * unit[:, 1:2]
+        )
+        vm = vm + parity_gate[..., None] * pa[j, :, None] * va[j]
+        am = av[..., None].tanh() * aa[j] + ar[..., None].tanh() * torch.linalg.cross(vi[i], vi[j])
+        am = am + parity_gate[..., None] * pv[j, :, None] * unit[:, :1]
+        pseudoscalar = (vector_linear(self.v_to_p, v).float()[i] * vector_linear(self.a_to_p, a).float()[j]).sum(-1)
+        pm = ps.tanh() * pp[j] + parity_gate * pseudoscalar
+        if self.attention:
+            query, key = rope(self.query(hv), positions), rope(self.key(hv), positions)
+            logits = (query[i] * key[j]).sum(-1) / 8 + self.attention_bias(features)[:, 0].float()
+            maxes = logits.new_full((len(h),), -torch.inf).scatter_reduce(
+                0, i, logits, reduce="amax", include_self=True
+            )
+            exp = (logits - maxes[i]).exp()
+            totals = logits.new_zeros(len(h)).index_add(0, i, exp)
+            edge_weight = exp / totals[i].clamp_min(1e-8)
+        else:
+            degree = torch.bincount(i, minlength=len(h)).clamp_min(1)
+            edge_weight = degree[i].float().reciprocal()
+
+        def aggregate(value):
+            value = value.float() * edge_weight.reshape((-1,) + (1,) * (value.ndim - 1))
+            return value.new_zeros((len(h), *value.shape[1:])).index_add(0, i, value)
+
+        h = h + 0.1 * aggregate(hs)
+        h = h + 0.1 * self.feed(h)
+        v = v + 0.1 * aggregate(vm)
+        a = a + 0.1 * aggregate(am) * gate[:, None, None]
+        p = p + 0.1 * aggregate(pm) * gate[:, None]
+        # Smooth invariant bounded normalizations; odd tanh preserves P parity.
+        v = v / (1 + v.float().square().sum(-1, keepdim=True)).sqrt()
+        a = a / (1 + a.float().square().sum(-1, keepdim=True)).sqrt()
+        p = p.tanh()
+        return h, v, p, a
+
+
+class Broadcast(nn.Module):
+    def __init__(self, cs, cv, cp, ca):
+        super().__init__()
+        self.h = nn.Linear(cs, cs)
+        self.v = nn.Linear(cv, cv, bias=False)
+        self.p = nn.Linear(cp, cp, bias=False)
+        self.a = nn.Linear(ca, ca, bias=False)
+        self.gate = nn.Linear(2 * cs, 4)
+
+    def forward(self, child, parent):
+        mapping = torch.arange(len(child.h), device=child.h.device) // 4
+        gates = self.gate(torch.cat([child.h, parent.h[mapping]], -1)).sigmoid()
+        return State(
+            child.h + gates[:, :1] * self.h(parent.h)[mapping],
+            child.v + gates[:, 1, None, None] * vector_linear(self.v, parent.v)[mapping],
+            child.p + gates[:, 2, None] * self.p(parent.p)[mapping],
+            child.a + gates[:, 3, None, None] * vector_linear(self.a, parent.a)[mapping],
+        )
+
+
+class E015MultiscaleParityDenoiser(nn.Module):
+    def __init__(
+        self,
+        scalar_channels=384,
+        vector_channels=96,
+        pseudoscalar_channels=48,
+        axial_channels=48,
+        fine_blocks=8,
+        medium_blocks=4,
+        coarse_blocks=4,
+        mlp_ratio=2,
+        k_current=24,
+        k_self=16,
+        activation_checkpointing=True,
+        chiral_head=True,
+        parity=True,
+        multiscale=True,
+        self_conditioning=True,
+        parity_midpoint=0.0,
+        gate_width=1.0,
+    ):
+        super().__init__()
+        cs, cv, cp, ca = scalar_channels, vector_channels, pseudoscalar_channels, axial_channels
+        self.widths = cs, cv, cp, ca
+        self.k_current, self.k_self = k_current, k_self
+        self.activation_checkpointing, self.chiral_enabled = activation_checkpointing, chiral_head
+        self.parity_enabled, self.multiscale_enabled, self.self_conditioning_enabled = (
+            parity,
+            multiscale,
+            self_conditioning,
+        )
+        self.register_buffer("parity_midpoint", torch.tensor(float(parity_midpoint)))
+        self.gate_width = gate_width
+        self.register_buffer(
+            "logsnr",
+            (CoordinateVPDiffusion().alphas_cumprod.log() - torch.log1p(-CoordinateVPDiffusion().alphas_cumprod)),
+        )
+        self.time = nn.Sequential(nn.Linear(33, 128), nn.SiLU(), nn.Linear(128, 64))
+        self.input = nn.Sequential(nn.Linear(76, cs), nn.SiLU(), nn.Linear(cs, cs))
+        self.vinit = nn.Linear(3, cv, bias=False)
+        self.ainit = nn.Linear(1, ca, bias=False)
+        self.pinit = nn.Linear(2, cp, bias=False)
+        self.fine = nn.ModuleList([TypedBlock(cs, cv, cp, ca, mlp_ratio) for _ in range(fine_blocks)])
+        self.medium = nn.ModuleList(
+            [TypedBlock(cs, cv, cp, ca, mlp_ratio, attention=True) for _ in range(medium_blocks)]
+        )
+        self.coarse = nn.ModuleList(
+            [TypedBlock(cs, cv, cp, ca, mlp_ratio, attention=True) for _ in range(coarse_blocks)]
+        )
+        self.up_medium = Broadcast(cs, cv, cp, ca)
+        self.up_fine = Broadcast(cs, cv, cp, ca)
+        self.polar_v = nn.Linear(cs, cv)
+        self.polar_p = nn.Linear(cp, ca, bias=False)
+        self.chiral_a = nn.Linear(cs, ca)
+        self.chiral_p = nn.Linear(cp, cv, bias=False)
+        self.local = nn.Sequential(nn.Linear(cs, cs), nn.SiLU(), nn.Linear(cs, 3))
+        # Nonzero small weights preserve gradient flow from the first update.
+        for layer in (self.chiral_a, self.chiral_p, self.local[-1]):
+            nn.init.normal_(layer.weight, std=1e-5)
+            if layer.bias is not None:
+                nn.init.zeros_(layer.bias)
+
+    def time_features(self, t):
+        frequencies = torch.exp(torch.arange(16, device=t.device).float() * (-math.log(10000) / 16))
+        phase = t.float() * frequencies
+        return self.time(torch.cat([phase.sin(), phase.cos(), self.logsnr[t].reshape(1).clamp(-20, 20) / 20]))
+
+    def gate(self, t, reliability):
+        return (
+            (self.logsnr[t] - self.parity_midpoint) / self.gate_width + 2 * (reliability - 1)
+        ).sigmoid() * reliability
+
+    def run_blocks(self, state, blocks, x, prev, time, gate, dense=False):
+        i, j, features, unit = graph(
+            x, prev, self.k_current if not dense else 0, self.k_self if prev is not None else 0, dense
+        )
+        if not len(i):
+            return state
+        for block in blocks:
+            args = (state.h, state.v, state.p, state.a, i, j, features, unit, time, gate)
+            if self.training and self.activation_checkpointing and torch.is_grad_enabled():
+                outputs = checkpoint(block, *args, use_reentrant=False)
+            else:
+                outputs = block(*args)
+            state = State(*outputs)
+        return state
+
+    def prepare_single(self, x, t, previous=None):
+        x = x.float() - x.float().mean(0)
+        if previous is not None:
+            previous = previous.float() - previous.float().mean(0)
+        features, frame, reliability = local_geometry(x)
+        time = self.time_features(t)
+        sc = x.new_zeros(x.shape) if previous is None else previous - x
+        geometry = torch.cat(
+            [
+                features[:, :6],
+                features[:, 24:25],
+                features[:, 26:27],
+                features[:, 27:28].square(),
+                sc.norm(dim=-1, keepdim=True),
+                torch.full((len(x), 1), previous is not None, device=x.device),
+                torch.full((len(x), 1), len(x) / 500, device=x.device),
+            ],
+            -1,
+        )
+        h = self.input(torch.cat([geometry, time.expand(len(x), -1)], -1))
+        seeds = torch.stack([frame[:, :, 0], frame[:, :, 1], sc], 1)
+        v = vector_linear(self.vinit, seeds)
+        a = vector_linear(self.ainit, frame[:, :, 2][:, None])
+        p = self.pinit(features[:, [25, 27]])
+        gate = self.gate(t, reliability) if self.parity_enabled else torch.zeros_like(reliability)
+        a, p = a * gate[:, None, None], p * gate[:, None]
+        return State(h, v, p, a), frame, reliability, gate, time
+
+    def trunk_single(self, x, t, previous=None):
+        x = x.float() - x.float().mean(0)
+        previous = None if previous is None else previous.float() - previous.float().mean(0)
+        state, frame, reliability, gate, time = self.prepare_single(x, t, previous)
+        state = self.run_blocks(state, self.fine, x, previous, time, gate)
+        shapes = [len(x)]
+        if self.multiscale_enabled:
+            mx, mp = pool_mean(x), None if previous is None else pool_mean(previous)
+            medium = pool_state(state)
+            mgate = pool_mean(gate)
+            medium = self.run_blocks(medium, self.medium, mx, mp, time, mgate)
+            cx, cprev = pool_mean(mx), None if mp is None else pool_mean(mp)
+            coarse = self.run_blocks(pool_state(medium), self.coarse, cx, cprev, time, pool_mean(mgate), dense=True)
+            medium = self.up_medium(medium, coarse)
+            state = self.up_fine(state, medium)
+            shapes += [len(mx), len(cx)]
+        return state, frame, reliability, gate, shapes
+
+    def single(self, x, t, previous=None):
+        state, frame, reliability, gate, shapes = self.trunk_single(x, t, previous)
+        return self.output_head(state, frame, reliability, gate, shapes)
+
+    def output_head(self, state, frame, reliability, gate, shapes):
+        h, v, p, a = state.h, state.v.float(), state.p, state.a.float()
+        polar = (self.polar_v(h).float()[..., None] * v).sum(1) / math.sqrt(self.widths[1])
+        polar = polar + (self.polar_p(p).float()[..., None] * a).sum(1) / math.sqrt(self.widths[3])
+        chiral = (self.chiral_a(h).float()[..., None] * a).sum(1) / math.sqrt(self.widths[3])
+        chiral = chiral + (self.chiral_p(p).float()[..., None] * v).sum(1) / math.sqrt(self.widths[1])
+        local_coefficients = self.local(h).float()
+        with torch.autocast(frame.device.type, enabled=False):
+            local = torch.einsum("nac,nc->na", frame.float(), local_coefficients)
+        if not self.chiral_enabled:
+            chiral, local = torch.zeros_like(chiral), torch.zeros_like(local)
+        effective_chiral, effective_local = gate[:, None] * chiral, gate[:, None] * local
+
+        def center(z):
+            with torch.autocast(z.device.type, enabled=False):
+                return z.float() - z.float().mean(0)
+
+        polar, effective_chiral, effective_local = map(center, (polar, effective_chiral, effective_local))
+        return polar + effective_chiral + effective_local, dict(
+            global_v=polar,
+            chiral_effective=effective_chiral,
+            local_effective=effective_local,
+            gate=gate,
+            reliability=reliability,
+            assessable=features_assess(frame),
+            shapes=shapes,
+        )
+
+    def forward(self, noisy_coordinates, timesteps, lengths, residue_mask, x0_prev=None, sc_available=None):
+        return self.with_components(noisy_coordinates, timesteps, lengths, residue_mask, x0_prev, sc_available)[0]
+
+    def packed_blocks(self, states, blocks, coords, previous, times, gates, dense=False):
+        counts = [len(state.h) for state in states]
+        packed = State(*(torch.cat([getattr(state, name) for state in states]) for name in ("h", "v", "p", "a")))
+        graphs = []
+        offset = 0
+        for x, prev in zip(coords, previous, strict=True):
+            i, j, features, unit = graph(
+                x, prev, self.k_current if not dense else 0, self.k_self if prev is not None else 0, dense
+            )
+            graphs.append((i + offset, j + offset, features, unit))
+            offset += len(x)
+        i, j, features, unit = (torch.cat([g[z] for g in graphs]) for z in range(4))
+        time = torch.cat([t.expand(n, -1) for t, n in zip(times, counts, strict=True)])
+        gate = torch.cat(gates)
+        positions = torch.cat([torch.arange(n, device=i.device) for n in counts])
+        for block in blocks:
+            args = (packed.h, packed.v, packed.p, packed.a, i, j, features, unit, time, gate, positions)
+            outputs = (
+                checkpoint(block, *args, use_reentrant=False)
+                if self.training and self.activation_checkpointing and torch.is_grad_enabled()
+                else block(*args)
+            )
+            packed = State(*outputs)
+        parts = [value.split(counts) for value in (packed.h, packed.v, packed.p, packed.a)]
+        return [State(*(part[b] for part in parts)) for b in range(len(states))]
+
+    def with_components(self, noisy_coordinates, timesteps, lengths, residue_mask, x0_prev=None, sc_available=None):
+        if noisy_coordinates.shape[-1] != 3 or not torch.equal(lengths, residue_mask.sum(1)):
+            raise ValueError("Invalid coordinate mask/length contract")
+        coords, previous, states, frames, reliabilities, gates, times = [], [], [], [], [], [], []
+        for b, n in enumerate(lengths.tolist()):
+            if not torch.all(residue_mask[b, :n]) or torch.any(residue_mask[b, n:]):
+                raise ValueError("E015 requires contiguous prefix masks")
+            x = noisy_coordinates[b, :n].float()
+            x = x - x.mean(0)
+            prev = None
+            if (
+                self.self_conditioning_enabled
+                and x0_prev is not None
+                and sc_available is not None
+                and bool(sc_available[b])
+            ):
+                prev = x0_prev[b, :n].detach().float()
+                prev = prev - prev.mean(0)
+            state, frame, reliability, gate, time = self.prepare_single(x, timesteps[b], prev)
+            coords.append(x)
+            previous.append(prev)
+            states.append(state)
+            frames.append(frame)
+            reliabilities.append(reliability)
+            gates.append(gate)
+            times.append(time)
+        states = self.packed_blocks(states, self.fine, coords, previous, times, gates)
+        if self.multiscale_enabled:
+            medium_coords = [pool_mean(x) for x in coords]
+            medium_prev = [None if x is None else pool_mean(x) for x in previous]
+            medium_gate = [pool_mean(g) for g in gates]
+            medium = self.packed_blocks(
+                [pool_state(s) for s in states], self.medium, medium_coords, medium_prev, times, medium_gate
+            )
+            coarse_coords = [pool_mean(x) for x in medium_coords]
+            coarse_prev = [None if x is None else pool_mean(x) for x in medium_prev]
+            coarse_gate = [pool_mean(g) for g in medium_gate]
+            coarse = self.packed_blocks(
+                [pool_state(s) for s in medium], self.coarse, coarse_coords, coarse_prev, times, coarse_gate, True
+            )
+            medium = [self.up_medium(m, c) for m, c in zip(medium, coarse, strict=True)]
+            states = [self.up_fine(f, m) for f, m in zip(states, medium, strict=True)]
+        output = torch.zeros_like(noisy_coordinates, dtype=torch.float32)
+        components = []
+        for b, n in enumerate(lengths.tolist()):
+            shapes = [n, math.ceil(n / 4), math.ceil(n / 16)] if self.multiscale_enabled else [n]
+            value, component = self.output_head(states[b], frames[b], reliabilities[b], gates[b], shapes)
+            output[b, :n] = value
+            components.append(component)
+        return center_coordinates(output, residue_mask), components
+
+
+def features_assess(frame):
+    return frame.square().sum((1, 2)) > 0
