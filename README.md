@@ -1,720 +1,81 @@
-# Protein structure generation research
+# ProteinGen
 
-This repository investigates protein structure generation through C-alpha distance
-matrix diffusion, coordinate diffusion, and geometric refinement. It also contains
-an independent sequence baseline and experimental sequence/geometry co-design
-branches. It is a research history, not a validated final structure generator.
+**A research study of the gap between learning protein geometry and generating valid structures.**
 
-## Research progression / selected experiments
+ProteinGen investigates how representation, symmetry, objectives and evaluation affect protein sequence and Cα structure generation. The progression runs from distance-matrix diffusion to equivariant coordinate denoising, sequence context controls, joint sequence/geometry models and constrained reinforcement-learning post-training.
 
-Early experiments generated length-conditioned distance matrices and tested
-Euclidean embeddability, rank, triangle consistency and local chain geometry.
-Sequence/geometry experiments then investigated whether structural information
-improved residue prediction. Later work moved to coordinate generation and
-diagnostics of denoising versus sampling, followed by E008's internal-coordinate
-decoder, E009's Bayesian geometry refiner and E010's global equivariant coordinate
-refiner. Numerical completion and improved reconstruction metrics do not by
-themselves establish physically meaningful generated structures.
+The strongest contribution is the experimental diagnosis: lower reconstruction error, finite samples and higher proxy reward repeatedly fail to establish protein-like generation. This is a research codebase with positive and negative results, **not a validated protein design system**. No wet-lab validation, thermodynamic stability, biological function or state-of-the-art performance is claimed.
 
-| Experiment | Question | Result | Decision |
-|---|---|---|---|
-| E000 | Does baseline distance diffusion generate protein-like geometry? | Finite, diverse matrices; 0/375 pass calibrated real-like geometry. | Investigate global geometric consistency. |
-| E001 | Does symmetric axial attention improve matrix geometry? | Several global metrics improve; strict validity still 0/375; training histories differ. | Useful selected-model evidence, not a clean causal ablation. |
-| E002 | Does spectral EDM regularization improve realizability? | Global geometry improves, adjacent-distance error worsens; strict validity remains zero. | Retain as the historical matrix baseline; investigate local tradeoffs. |
-| E003 | Can an adjacent-distance objective repair local geometry? | Modest adjacent improvement, global spectral/triangle regression. | Do not promote E003. |
-| E004 | Does triangle multiplication improve relational geometry? | Better global consistency/repairability, but reconstructed traces remain imperfect. | Treat as a proposal model, not a valid backbone generator. |
-| E005 | Does sequence/geometry feedback improve residue prediction? | Scaffold and training execute; measured conditioning benefit is small and structural utility ambiguous. | Do not infer useful inverse folding from execution success. |
-| E006 | Can richer backbone features and a scratch sequence prior support co-design? | Rich-data provenance work succeeds; scratch prior lacks validated contextual utility; definitive joint Stage B is not established. | Keep data infrastructure; close the scratch-prior route. |
-| E007 | Can coordinate diffusion avoid invalid distance matrices? | Coordinate denoising is learned; sampling and local-geometry limitations persist. | Diagnose denoiser/sampler behavior and local repair separately. |
-| E008 | Can a fixed-bond internal-coordinate decoder repair structures? | Corrected tiny-overfit RMSE 3.591 Å exceeds the 0.5 Å gate. | Decoder pilot remains blocked. |
-| E009 | Can a Bayesian geometry-prior refiner resolve the error? | Bounded overfit/objective diagnostics do not establish a useful generalizing refiner. | Test global coordinate expressivity in E010. |
-| E010 | Can global coordinate refinement transfer to real denoiser outputs? | Phase 4B optimizes successfully but gains only ~1.25% aligned RMSD while local geometry regresses; weight-only diagnostics fail the final decision gates. | No validated final generator; stop weight-only tuning. |
+## Research question and architecture
 
-### Completed / established findings
-
-- Phase 4B genuinely optimized all 129 E010 refiner parameter tensors through
-  1,092 Adam updates; successful optimization is not successful scientific learning.
-- Malformed historical archives, including `7ar7_M.npz`, were excluded from the
-  actual Phase 4B training/evaluation populations.
-- The Phase 4B objective is masked Cartesian component MSE plus `1e-5` residual
-  component MSE, without alignment or an explicit local-distance term.
-- Gradient and finite-displacement diagnostics confirmed that the historical
-  mixed Adam direction reduces Cartesian error while degrading local i+1/i+2/i+3
-  geometry on the fixed diagnostic panels.
-- E010 is reflection-inclusive O(3)/E(3)-equivariant and has no intrinsic
-  handedness preference. Ordinary pairwise distances cannot distinguish mirrors.
-- Both condition-weight counterfactuals are complete. CF1 partially improves the
-  tradeoff; CF2 reverses aggregate training local harm but retains only 66.26% of
-  Cartesian descent, below the pre-registered 70% gate, and leaves development
-  local harm. **Weight-only tuning is closed; CF2 should not be trained.**
-
-### Ongoing research
-
-The next question is an explicit local structural auxiliary objective:
-
-```text
-L_total = L_cart + lambda * mean(L_local_i+1, L_local_i+2, L_local_i+3)
-```
-
-The frozen coefficient diagnostic is complete: **L1 on the prescribed panels**,
-with training-selected `lambda=0.06719407652184162` and equal condition weights.
-A small finite displacement improved Cartesian and local metrics on both panels.
-The next step is a short matched control-versus-auxiliary continuation on the full
-fixed evaluation population. No further condition-weight search is planned.
-Chirality-aware representation is a separate future architectural track.
-
-See [the reviewed auxiliary diagnostic](docs/e010_local_geometry_auxiliary.md)
-for selection, numerical results and small-panel limitations.
-
-Deeper records:
-
-- [Experiment timeline](docs/experiment_timeline.md)
-- [E010 Phase 4B forensic closeout](docs/e010_phase4b_forensic_closeout.md)
-- [Completed condition-weight counterfactuals](docs/e010_condition_weight_counterfactual.md)
-- [Audited baseline consolidation](docs/recovery/baseline_consolidation_20261004.md)
-
-Source/configs and textual research records are public. Large datasets,
-checkpoints and raw diagnostic outputs are intentionally excluded; a source-only
-clone is suitable for inspection, not a complete reproduction bundle. Some
-research tests require separately retained local artifacts.
-
-## Original distance-diffusion baseline
-
-Stage 1 implements unconditional generation of continuous protein residue-distance matrices conditioned on residue count:
-
-`D ~ p_theta(D | N)`, where `D[i, j]` is the Euclidean distance in angstrom between the C-alpha atoms of residues `i` and `j`.
-
-The model learns a distribution, not a deterministic function `D = f(N)`. Different noise seeds at the same length `N` should produce different plausible distance maps. This stage does not generate amino-acid sequences, reconstruct coordinates, predict coordinates, or train with triangle, EDM, bond-length, or steric losses.
-
-## Repository Structure
-
-- `src/protein_distance_diffusion/`: package source.
-- `scripts/`: command-line entry points for download, preprocessing, splitting, statistics, training, sampling, summaries, and visualization.
-- `configs/`: documented YAML defaults.
-- `tests/`: unit and smoke tests with tiny synthetic fixtures.
-- `requirements.txt` and `requirements-dev.txt`: convenience installation files; `pyproject.toml` remains the canonical dependency source.
-
-## Distance Maps And Contact Maps
-
-For the original distance-diffusion branch, the training target is the continuous matrix `D in R^(N x N)` in angstrom. Binary contact maps are derived only for diagnostics and visualization:
-
-`C_ij^(tau) = 1[D_ij < tau]`
-
-The documented visualization default is `tau = 8.0 A`. The diagonal is excluded from contact statistics, and near-diagonal sequence contacts can be excluded explicitly with `--exclude-near-diagonal`.
-
-## Structure-Unconditioned Sequence Generation
-
-The repository also contains an independent baseline for protein-chain sequence
-generation:
-
-`p(S | N) = product_i p(a_i | a_<i, N)`.
-
-Here `S = (a_1, ..., a_N)` is a sequence of the 20 canonical amino acids and `N`
-is the requested length. This model is deliberately separate from the distance
-diffusion model. It does not consume distance matrices, coordinates, contact
-maps, secondary structure, PDB metadata, or generated outputs from the U-Net
-diffusion component. Future work may condition a sequence model on a valid
-structure or distance matrix, but that is outside this baseline.
-
-Tokenization uses one token per residue with the canonical alphabet:
-
-```text
-A C D E F G H I K L M N P Q R S T V W Y
-```
-
-The vocabulary also contains `<PAD>`, `<BOS>`, `<EOS>`, and `<UNK>`. By default,
-training data must contain only canonical residues; unresolved or noncanonical
-symbols are rejected and counted in the dataset audit. `<UNK>` can be enabled
-explicitly for recovery experiments, but generated biological sequences never
-include special tokens.
-
-Training examples use teacher forcing. For a length-`N` sequence:
-
-```text
-input_ids  = [BOS, a_1, ..., a_(N-1)]
-target_ids = [a_1, a_2, ..., a_N]
-```
-
-The baseline predicts next-amino-acid logits over the full 24-token vocabulary,
-with padding masked out of the loss. Exact-length sampling masks `<PAD>`,
-`<BOS>`, `<EOS>`, and `<UNK>` before sampling and stops only after exactly `N`
-canonical residues have been generated.
-
-Architecture:
-
-```text
-amino-acid tokens
-  -> learned token embeddings
-  -> RoPE causal self-attention + continuous length conditioning
-  -> pre-normalization Transformer blocks
-  -> final normalization
-  -> next-amino-acid logits
-```
-
-The requested length is embedded continuously as `log(N) / log(max_length)` and
-passed through `Linear(1, d_model) -> SiLU -> Linear(d_model, d_model)`. Each
-Transformer block injects this length vector through a learned projection, so
-the conditioning is not a discrete length bin or length-specific model.
-
-Sequence data are expected to come from leakage-safe split manifests:
-
-```text
-data/full/splits/train.parquet
-data/full/splits/validation.parquet
-data/full/splits/test.parquet
-```
-
-Only `sequence` and `length` are required by the model, but metadata such as
-`sample_id`, `pdb_id`, `chain_id`, `cluster_id`, `sequence_hash`, and
-`experimental_method` is retained for auditing when present. The sequence
-baseline also accepts FASTA files for small smoke tests and recovery situations.
-It never loads `.npz` distance matrices. If only an unsplit manifest exists, the
-preparation script refuses to random split it; provide homology-safe split files
-or add an explicit MMseqs2 grouping step first.
-
-Prepare or audit sequence splits:
-
-```bash
-python scripts/prepare_sequence_dataset.py \
-  --config configs/sequence/data.yaml
-
-python scripts/inspect_sequence_dataset.py \
-  --manifest data/sequence/splits/train.parquet \
-  --output-dir reports/sequence_dataset
-```
-
-Smoke train without starting a full run:
-
-```bash
-python scripts/train_sequence_transformer.py \
-  --config configs/sequence/train.yaml \
-  --max-optimizer-steps 10
-```
-
-Full sequence-baseline training command:
-
-```bash
-python scripts/train_sequence_transformer.py \
-  --config configs/sequence/train.yaml
-```
-
-Resume from an optimizer-step checkpoint:
-
-```bash
-python scripts/train_sequence_transformer.py \
-  --config configs/sequence/train.yaml \
-  --resume-from outputs/sequence_baseline/checkpoints/last.pt
-```
-
-Sample exact-length canonical sequences:
-
-```bash
-python scripts/sample_sequences.py \
-  --checkpoint outputs/sequence_baseline/checkpoints/best_validation.pt \
-  --length 128 \
-  --num-sequences 10 \
-  --temperature 1.0 \
-  --top-p 0.95 \
-  --seed 42 \
-  --output-dir outputs/sequence_baseline/samples/N128
-```
-
-Evaluate held-out language-model metrics:
-
-```bash
-python scripts/evaluate_sequence_model.py \
-  --checkpoint outputs/sequence_baseline/checkpoints/best_validation.pt \
-  --manifest data/sequence/splits/validation.parquet \
-  --output-dir reports/sequence_baseline/validation
-```
-
-Validation reports token-weighted NLL, perplexity, sequence-weighted loss,
-token accuracy, accuracy by residue type, NLL by position, and NLL as a
-diagnostic function of `N`. Generated-sequence evaluation reports exact length
-compliance, canonical validity, uniqueness, exact novelty against training
-sequences, amino-acid composition, Jensen-Shannon divergence, Shannon entropy,
-low-complexity fraction, homopolymer runs, and repeated-substring statistics.
-
-Sequence plausibility does not prove foldability. PDB-derived sequence data are
-structurally selected and biased, and homology-safe splitting is mandatory.
-Proper biological validation remains future work and should include tools such
-as structure prediction, predicted confidence, globularity/disorder checks,
-structural diversity analysis, and aggregation or solubility screening.
-
-## Environment Setup
-
-Linux with Python 3.11 is the primary target:
-
-```bash
-cd /home/simostocco/proteinGen
-
-python3.11 -m venv .venv
-source .venv/bin/activate
-
-python -m pip install --upgrade pip setuptools wheel
-```
-
-Install the appropriate PyTorch build first. CPU example:
-
-```bash
-python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-```
-
-For CUDA, use the exact command from the official PyTorch installation selector for your driver/CUDA combination. Do not blindly install a CUDA-specific wheel on CPU-only machines.
-
-Then install the project dependencies and editable package:
-
-```bash
-python -m pip install -r requirements.txt
-python -m pip install -r requirements-dev.txt
-python -m pip install -e .
-```
-
-Verify:
-
-```bash
-python -c "import torch; print('PyTorch:', torch.__version__)"
-python -c "import MDAnalysis as mda; print('MDAnalysis:', mda.__version__)"
-python -c "import gemmi; print('Gemmi:', gemmi.__version__)"
-python -c "import protein_distance_diffusion; print('Package import successful')"
-
-pytest -q
-ruff check .
-```
-
-Use `source .venv/bin/activate` to reactivate the environment and `deactivate` to leave it.
-
-Troubleshooting:
-
-- If `python3.11` is missing, install it with your system package manager or use another Python `>=3.11` supported by the dependencies.
-- If PyTorch reports NumPy ABI errors, reinstall compatible PyTorch/NumPy wheels inside the clean virtual environment.
-- If `gemmi` is missing, install runtime requirements again; Gemmi is required for mmCIF.
-- If CUDA is not detected, reinstall the PyTorch build matching your driver and CUDA runtime.
-- MMseqs2 is an external executable, not a Python package. Install it separately and ensure `mmseqs` is on `PATH`.
-
-## Parser Backends
-
-Both Gemmi and MDAnalysis are runtime dependencies by design:
-
-- `.cif`, `.mmcif`, `.cif.gz`, `.mmcif.gz`: Gemmi backend.
-- `.pdb`, `.ent`, `.pdb.gz`, `.ent.gz`: MDAnalysis backend.
-- future topology-plus-trajectory inputs: MDAnalysis backend.
-
-All backends are converted into the same internal `ProteinSample` representation: PDB ID, model/frame ID, chain ID, sequence, residue identifiers, C-alpha coordinates `[N, 3]`, metadata, and later the stored distance matrix `[N, N]`.
-
-## Pipeline
+Can structural representations and learning objectives preserve local chain geometry while learning global organization—and can post-training improve useful control without exploiting proxy metrics?
 
 ```mermaid
-flowchart LR
-  A[PDB mmCIF or PDB] --> B[backend selection]
-  B --> C[chain filtering]
-  C --> D[C-alpha extraction]
-  D --> E[D calculation]
-  E --> F[exact deduplication]
-  F --> G[MMseqs2 clustering]
-  G --> H[cluster-level splits]
-  H --> I[training-only normalization]
-  I --> J[variable-size DataLoader]
-  J --> K[conditional U-Net diffusion]
-  K --> L[generated distance matrices]
-  L --> M[evaluation and visualization]
+flowchart TD
+    D[Experimental structures and amino-acid sequences] --> S[Audited identities, masks and split manifests]
+    S --> M[E000–E004: distance-matrix diffusion]
+    S --> Q[E005–E006: sequence and geometry co-design]
+    S --> C[E007–E010: coordinate diffusion and refinement]
+    S --> L[E011–E012: masked context and causal RoPE controls]
+    C --> P[E013–E015: multiscale equivariant coordinate denoising]
+    Q --> J[E016: joint autoregressive AA and internal geometry]
+    J --> R[E017: frozen reference, geometry policy and constrained post-training]
+    M --> E[Independent geometry, likelihood and generation evaluation]
+    L --> E
+    P --> E
+    R --> E
 ```
 
-Distance matrices are never resized or interpolated. Batches are padded to a side length divisible by the U-Net downsampling factor; padded values are masked out. The sequence-separation channel is created during collation as `abs(i-j) / max(N-1, 1)`.
+Arrows describe research lineage, not one end-to-end executable model. E010 is reflection-inclusive E(3)/O(3)-equivariant; distances alone cannot encode handedness. E015 uses scalar, polar-vector, pseudoscalar and axial-vector states with an O(3)-typed trunk and an SO(3)-only chiral output. Its local/global multiscale graph and self-conditioning address different limitations from the sequence models. E016/E017 use discrete amino acids and continuous distance/angle/signed-torsion actions; proxy-reward improvement is separate from biological validity.
 
-## First Real-Data Experiment
+## Selected evidence
 
-Query a reproducible pilot ID file with the RCSB Search API v2. This queries
-experimental protein polymer entities from X-ray diffraction or electron
-microscopy entries with protein entity length `<= 500`, retrieves more
-candidates than requested, then uses a seeded deterministic sample to avoid
-bias toward the first PDB IDs:
+| Study | What the records support | Boundary of the claim |
+|---|---|---|
+| E000–E004 distance diffusion | Geometric regularizers improve selected matrix consistency metrics; E000/E001 strict geometry acceptance was 0/375. | Compared histories differ; matrix consistency does not establish a valid backbone. |
+| E007–E010 coordinate/refinement | Learned denoising; diagnostics expose Cartesian/local-geometry gradient conflict. | E010 Phase 4B's ~1.25% aligned-RMSD gain accompanied local regression. Frozen-panel improvements are not population training benefit. |
+| E011–E012 sequence controls | Implemented context shuffles, prefix windows, causal masking and likelihood controls. | A trained contextual model is not evidence of foldability; the later generalization audit is retrospective. |
+| E015 multiscale/parity | Recorded same-start adjacent-valid fraction increased 63.260% → 83.783%; local descriptors improved across five lengths. | Twenty primary raw samples; weak evidence of consistent global fold formation. N=192 descriptor energy 4.459 remains above the real-real floor 0.662. |
+| E016 J1 continuation | 30,000 additional real-PDB updates; native-prefix-conditioned validation PPL 15.865763 → 15.733081. | Generation safeguard failed; candidate not promoted. This PPL is not an unconditional sequence-only metric. |
+| E017 constrained geometry RL | V9.5 expanded validation found filtered K1/K8 yield gains. | Raw K1 and meaningful goal specificity were not established; original promotion failed. Validation was previously exposed. V9.6 arms stopped at 500/250 updates; no equal-budget causal advantage. |
+
+Sources, denominators, checkpoint identities and qualifications: [experiment map](docs/research_progression.md), [E015 report](docs/e015_latest_evaluation_20261012.md), [E016 report](docs/results/e016_global_pretraining.md), [E017 validation](docs/results/e017_v95_validation.md). V9.7 [engineering qualification](docs/results/e017_v97_engineering.md) and subsequent [initialization admission](docs/results/e017_v97_admission.md) are distinct stages; neither report establishes production efficacy. Later launch scripts remain in the source snapshot; this presentation does not infer a completed campaign from their existence.
+
+## What is on this branch
+
+- [Distance diffusion](src/protein_distance_diffusion/diffusion/) and [models](src/protein_distance_diffusion/models/): historical baselines, coordinate refinement, and selected E013/E015 denoiser components.
+- [Sequence models](src/protein_sequence_generation/): independent causal Transformer plus E011 masked-context and E012 diagnostic utilities.
+- [Joint geometry foundations](src/protein_joint_sac/): typed build contracts, signed Cα construction, transformed action densities and soft-target equations. This subset is **not the full SAC trainer**.
+- [Tests](tests/), [configurations](configs/), original reports and an [integration provenance ledger](docs/publication/integration_sources.json).
+
+Implemented, trained, evaluated and proposed are separate statuses in the [experiment map](docs/research_progression.md). Coupled E014/E015 runtime controllers, E016 training/oracle systems and E017 production campaigns remain on their [original branches](docs/publication/branches.md). No snapshot or experiment was merged wholesale.
+
+## Reproduce the software checks
+
+Python 3.11+; use an isolated environment and the PyTorch build appropriate to your platform:
 
 ```bash
-python scripts/query_rcsb.py \
-  --output data/pilot/pdb_ids.txt \
-  --num-entries 100 \
-  --candidate-limit 1000 \
-  --seed 42
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 python -m pytest -q \
+  tests/sequence tests/test_e011_sequence_context.py \
+  tests/test_e013_unconditional_equivariant_denoiser.py \
+  tests/test_e015_multiscale.py tests/test_e015_parity_equivariance.py \
+  tests/test_e015_losses.py tests/test_e015_pcgrad.py \
+  tests/test_e015_self_conditioning.py tests/test_public_joint_geometry.py
 ```
 
-The query script writes one PDB ID per line and saves the exact query JSON plus
-retrieval metadata at `data/pilot/pdb_ids.txt.metadata.json`. It does not
-download structures.
+These CPU tests use synthetic fixtures and require no checkpoint, data download or training campaign. Install dependencies before running them. [Validation results](docs/publication/validation.md) distinguish this tested subset from historical tests that depend on unavailable artifacts or machine-specific paths. Dependencies are not fully pinned; the retained [environment records](environment/) document historical runs rather than a portable lockfile.
 
-Download the bounded pilot dataset in mmCIF format:
+A clean source clone does **not** reproduce numerical research results: those require the exact external datasets, splits, normalization, checkpoints, seeds and evaluation manifests. Weights and data are not bundled. Historical launch scripts may enforce source seals and local paths; do not treat them as portable commands. See [reproducibility](docs/reproducibility.md) and [baseline usage](docs/baseline_usage.md) for the distinction.
 
-```bash
-python scripts/download_pdb.py \
-  --ids-file data/pilot/pdb_ids.txt \
-  --output-dir data/pilot/raw/mmcif \
-  --manifest data/pilot/raw/download_manifest.csv \
-  --max-entries 100 \
-  --delay-seconds 0.2
-```
+## Methodology and limitations
 
-Preprocess:
+Evaluation separates teacher-forced/native-prefix likelihood, noisy-input reconstruction, free generation, and filtered-controller outcomes. Split/identity provenance, train-only calibration, immutable checkpoints, paired comparisons and explicit failure gates are part of the research. Bootstrap intervals are conditional on the sampled identities and fitted model; they do not establish independence across protein families or training seeds. Later E017 records explicitly mark historical TEST access as unknown; this repository does not certify an untouched final test set.
 
-```bash
-python scripts/preprocess_pdb.py --config configs/preprocess_pilot.yaml
-```
+Most later comparisons are bounded, sometimes use one training seed, and depend on private local artifacts. Development reuse limits independent confirmation. Cα geometry omits side chains and chemistry. Finite samples, novelty, language-model likelihood and fold-prediction confidence cannot substitute for experimental validation. Proposed future work is identified as proposed, never counted as an executed result.
 
-## Full Filtered PDB Dataset
+## License and provenance
 
-The full workflow uses the same reproducible RCSB filters as the pilot:
-experimental structures, protein polymer entities, X-ray diffraction or electron
-microscopy, and `entity_poly.rcsb_sample_sequence_length <= 500`. Use an
-inclusive release-date cutoff to make later reruns independent of newly released
-PDB entries.
-
-Directory layout:
-
-```text
-data/full/
-  pdb_ids.txt
-  raw/
-    mmcif/
-    download_manifest.csv
-  processed/
-    samples/
-    manifest.parquet
-    preprocess_summary.json
-```
-
-Count matching polymer entities without retrieving IDs:
-
-```bash
-python scripts/query_rcsb.py \
-  --output data/full/rcsb_count.txt \
-  --count-only \
-  --release-date-cutoff 2026-07-24
-```
-
-Retrieve every matching polymer entity with resumable pagination, then write
-unique PDB entry IDs:
-
-```bash
-python scripts/query_rcsb.py \
-  --output data/full/pdb_ids.txt \
-  --all-matches \
-  --page-size 10000 \
-  --release-date-cutoff 2026-07-24
-```
-
-The all-match query shows a tqdm progress bar and saves resumable state after
-each successful page at `data/full/pdb_ids.txt.query_state.json`. Resume is
-enabled by default; use `--restart` to discard the saved state and begin again.
-After Ctrl-C, rerun the same command to continue, or be explicit:
-
-```bash
-python scripts/query_rcsb.py \
-  --output data/full/pdb_ids.txt \
-  --all-matches \
-  --page-size 10000 \
-  --resume \
-  --release-date-cutoff 2026-07-24
-```
-
-Download all selected entries with resumable, checksummed mmCIF downloads:
-
-```bash
-python scripts/download_pdb.py \
-  --ids-file data/full/pdb_ids.txt \
-  --output-dir data/full/raw/mmcif \
-  --manifest data/full/raw/download_manifest.csv \
-  --workers 4 \
-  --retries 3 \
-  --backoff-seconds 1.0
-```
-
-Preprocess the full filtered dataset:
-
-```bash
-python scripts/preprocess_pdb.py \
-  --config configs/preprocess_full.yaml \
-  --workers 8 \
-  --resume \
-  --checkpoint-every 1000
-```
-
-Preprocessing is resumable through a SQLite state database at
-`data/full/processed/preprocess_state.sqlite`. The main process is the only
-SQLite writer; worker processes parse structures and atomically write sample
-`.npz` files. Partial snapshots are written periodically as
-`data/full/processed/manifest.partial.parquet` and
-`data/full/processed/preprocess_summary.partial.json`. Use `--restart` to
-discard prior processing state, and `--retry-failures` to retry technical
-failures while still skipping completed files and deterministic biological
-rejections. Ctrl-C writes an incremental summary and prints the exact resume
-command.
-
-The default preprocessing config uses `min_length: null`, meaning no lower length
-constraint, and keeps `max_length: 500`. Set `min_length` to a positive integer to
-enable a lower bound.
-`allowed_methods` is enforced as an exact list when non-null; set
-`allowed_methods: null` to disable method filtering. X-ray and cryo-EM resolution
-thresholds are applied only to `X-RAY DIFFRACTION` and `ELECTRON MICROSCOPY`,
-respectively. Non-finite, zero, or negative resolutions are treated as missing.
-
-Visualize processed samples:
-
-```bash
-python scripts/visualize_samples.py \
-  --manifest data/pilot/processed/manifest.parquet \
-  --output-dir outputs/pilot_dataset_samples \
-  --num-samples 8 \
-  --seed 42 \
-  --contact-threshold 8.0
-```
-
-Summarize:
-
-```bash
-python scripts/summarize_dataset.py \
-  --manifest data/pilot/processed/manifest.parquet \
-  --output-dir reports/pilot_dataset
-```
-
-For the full dataset, summarization separates manifest-only statistics from
-distance/contact statistics that require reading `.npz` sample files. The
-distance phase is resumable and stores compact per-sample aggregates in
-`reports/full/dataset_summary_state.sqlite`; it does not store full distance
-matrices or all pairwise distances. Partial summaries are written atomically as
-`reports/full/dataset_summary.partial.json`.
-
-```bash
-python scripts/summarize_dataset.py \
-  --manifest data/full/processed/manifest.parquet \
-  --output-dir reports/full \
-  --workers 2 \
-  --resume \
-  --checkpoint-every 10000
-```
-
-Use `--restart` to discard prior summary state. Ctrl-C preserves completed
-sample aggregates, writes a partial summary, and prints the exact resume command.
-
-Build exact-sequence deduplicated manifests, cluster retained sequences with
-MMseqs2, and write leakage-safe train/validation/test manifests:
-
-```bash
-python scripts/build_splits.py --config configs/split.yaml
-python scripts/compute_train_statistics.py \
-  --train-manifest data/full/splits/train.parquet \
-  --output data/full/processed/normalization.json \
-  --workers 1 \
-  --checkpoint-every 5000 \
-  --resume
-```
-
-Train-only normalization reads only the training manifest. It streams one sample
-`.npz` at a time, selects finite non-negative valid upper-triangular
-off-diagonal distances, and updates a fixed histogram instead of concatenating
-all pairwise distances. Statistics computation is currently serial; pass
-`--workers 1`. This is necessary for the full dataset because hundreds
-of thousands of distance matrices contain several billion valid pairs, which is
-too large to hold as one NumPy array on an 8 GB machine. The default histogram
-uses 0.05 Angstrom bins over 0-2000 Angstrom, which is about 40,000 int64
-counters. The percentile scale is therefore approximate, with error bounded
-approximately by one histogram bin width.
-
-Normalization checkpoints are written next to the output as
-`normalization.state.npz` and `normalization.state.json`. They contain the
-histogram, completed deterministic chunks, rejection diagnostics, manifest
-SHA-256, configuration hash and algorithm version. Resume is enabled by default;
-use `--restart` to discard partial state. If Ctrl-C occurs, the command writes a
-consistent checkpoint, prints the resume command, and does not write the final
-`normalization.json`.
-
-MMseqs2 cache reuse requires a matching completed metadata sidecar containing
-the retained FASTA SHA-256, input manifest SHA-256, command, version and split
-configuration. Use the split workflow's force option to recompute stale cached
-clusters. The split workflow itself is not resumable; `state_db_path` and
-`checkpoint_every` are accepted only to warn about ignored historical config
-fields.
-
-The split assignment keeps connected groups indivisible by MMseqs2 cluster,
-exact sequence hash and PDB entry. External group files are not currently
-implemented and raise `NotImplementedError`. Groups are assigned by minimizing
-deviation from the target total sample counts
-80/10/10. Length and experimental-method distributions are reported after the
-split for auditability, but they are not used as stratification variables.
-`configs/split.yaml` applies `minimum_sequence_length: 20` before exact
-deduplication and FASTA generation. Existing MMseqs2 cluster output is reused
-when valid; `--force` rebuilds it, and new runs write a cache metadata sidecar
-that records the filtered FASTA checksum and exact MMseqs2 command.
-
-### Relaxed All-Structures Mode
-
-The baseline preprocessing mode rejects any chain with a missing C-alpha. For
-large experimental datasets, a scientifically safe relaxed mode can instead trim
-only missing terminal residues while still rejecting internal missing C-alpha
-positions, duplicated canonical `label_seq_id` positions, non-finite
-coordinates, unsupported mixed polymer chains, and chains outside the final
-20-500 residue length range. This avoids imputing coordinates or compressing
-internal gaps while recovering structures with unresolved termini.
-`max_terminal_trim_fraction` can cap the accepted terminal loss fraction;
-`null` preserves uncapped trimming, while `configs/preprocess_full_relaxed.yaml`
-uses `0.25`.
-
-```bash
-python scripts/preprocess_pdb.py \
-  --config configs/preprocess_full_relaxed.yaml \
-  --workers 8 \
-  --resume \
-  --checkpoint-every 1000
-```
-
-When a strict baseline dataset already exists, recovery-only preprocessing can
-target just selected rejection reasons from that baseline summary. It verifies
-strict baseline sample IDs, reuses matching baseline NPZ paths, writes only
-newly recovered samples into `data/full/processed_recovery/samples`, and writes
-both a new-only recovery manifest plus a merged baseline-and-recovered manifest.
-It never copies or rewrites baseline NPZ files.
-
-```bash
-python scripts/preprocess_pdb.py \
-  --config configs/preprocess_full_recovery.yaml \
-  --workers 8 \
-  --resume \
-  --checkpoint-every 1000
-python scripts/build_splits.py --config configs/split_recovered_all_structures.yaml
-```
-
-For training sets that should retain multiple experimental structures for the
-same exact sequence, use the all-structures split mode. It clusters one
-representative per unique exact sequence with MMseqs2, propagates cluster IDs
-back to every retained structure, keeps exact sequence, MMseqs cluster and PDB
-entry constraints in one connected component, and writes inverse-frequency
-`sample_weight` values. Validation and test manifests are deterministic
-one-representative-per-exact-sequence evaluation sets; corresponding
-`*_all_structures.parquet` files are written for distributional analysis.
-
-```bash
-python scripts/build_splits.py --config configs/split_all_structures.yaml
-python scripts/compute_train_statistics.py \
-  --train-manifest data/full/splits_all_structures/train.parquet \
-  --output data/full/processed_relaxed/normalization.json \
-  --workers 1 \
-  --checkpoint-every 5000 \
-  --resume
-```
-
-Train and sample:
-
-```bash
-python scripts/train_diffusion.py --config configs/train.yaml
-tensorboard --logdir outputs/pilot_baseline/tensorboard
-python scripts/sample_distance_maps.py \
-  --checkpoint outputs/pilot_baseline/checkpoints/best_validation.pt \
-  --length 96 \
-  --num-samples 16 \
-  --output-dir outputs/samples/N96
-```
-
-Training writes JSONL logs plus TensorBoard scalars for loss, validation loss,
-optimizer state, throughput, GPU memory and batch length ranges. Progress bars
-are controlled by `logging.progress_bar`; TensorBoard is controlled by
-`logging.tensorboard` and `logging.tensorboard_dir`. If training is interrupted
-with Ctrl-C, an atomic checkpoint is written to
-`outputs/pilot_baseline/checkpoints/interrupted.pt` and can be resumed by setting:
-
-```yaml
-resume_from: outputs/pilot_baseline/checkpoints/interrupted.pt
-```
-
-The trainer maintains `last.pt`, `best_validation.pt`, compatibility
-`latest.pt`, and numbered `step_*.pt` checkpoints. Launch and resume commands:
-
-```bash
-python scripts/train_diffusion.py --config configs/train.yaml
-python scripts/train_diffusion.py --config configs/train.yaml
-```
-
-## Preventing Data Leakage
-
-Random PDB-ID splitting is insufficient because homologous proteins, duplicate chains, and related structures can appear under different entries. This code hashes exact sequences and keeps one deterministic representative by default. Retained sequences are clustered with MMseqs2, then connected components from cluster ID, exact sequence hash, and PDB entry are assigned whole to train, validation, or test. Explicit validation rejects cluster, exact-sequence, sample-ID, and PDB-entry overlap across splits.
-
-Normalization is computed after splitting from valid upper-triangular training distances only. Validation and test files are not read by the statistics command.
-
-Sequence clustering reduces homolog leakage, but low-sequence-identity proteins can still share folds. The split code is designed so external CATH or SCOP grouping labels can be merged into the group ID in future experiments.
-
-One variable-size diffusion model is trained jointly on all accepted lengths up
-to `model.max_length: 500`. Training uses a standard shuffled PyTorch
-`DataLoader` with the variable-size collate function, dynamic padding, and
-validity masks; it does not use length buckets, length bins, matrix-budget
-batches, or separate length-specific models. The exact length `N` remains a
-continuous conditioning input. The masked epsilon-prediction loss is normalized
-per protein by its own valid upper-triangular pair count before averaging across
-proteins, so longer chains do not dominate solely because their distance
-matrices contain O(N^2) pairs.
-
-For full-dataset GPU training, use `configs/train_full.yaml`. A short preflight
-can stop after a fixed number of optimizer steps while still using the real
-shuffled full manifest:
-
-```bash
-python scripts/train_diffusion.py --config configs/train_full.yaml --max-optimizer-steps 100
-tensorboard --logdir outputs/full_baseline/tensorboard
-python scripts/train_diffusion.py --config configs/train_full.yaml
-```
-
-Use `--resume-from outputs/full_baseline/checkpoints/last.pt` or set
-`resume_from` in the YAML to resume. Checkpoints are written only after
-optimizer steps, so exact mid-accumulation resume is not supported.
-
-## Recommended Progression
-
-Experiment A: parser and visualization check.
-
-Download 10-20 structures, preprocess them, generate all visualizations, and manually inspect residue ordering, backbone traces, and distance-map patterns.
-
-Experiment B: pilot dataset.
-
-Download 100-500 entries, use configurable length filters such as `min_length: 40` and
-`max_length: 500`, record rejection causes, deduplicate exact sequences, run MMseqs2
-clustering, produce leakage-safe splits, and generate dataset statistics.
-
-Experiment C: model overfitting test.
-
-Select 16-32 similar-length samples, train until the loss drops strongly, sample at matching lengths, and check symmetry, zero diagonal, distance distributions, and visual structure. Only then move to mixed-length pilot training.
-
-## Architecture
-
-For `N=128` with channel multipliers `[1, 2, 4, 8]`, collation produces `[B, 1, 128, 128]` distance matrices plus `[B, 1, 128, 128]` sequence-separation and pair-mask channels. The model input is `[B, 3, 128, 128]`. Downsampling gives spatial sizes `128 -> 64 -> 32 -> 16`; masked multi-head attention operates on `16*16` bottleneck tokens; upsampling restores `128`. The output is `[B, 1, 128, 128]`, then it is symmetrized, has the diagonal set to zero, and is multiplied by the pair mask.
-
-The `model.max_length` value in training configs is used to scale the logarithmic
-length-conditioning embedding. It is not the preprocessing dataset filter. The
-dataset filter is `max_length` in preprocessing configs and is currently `500`.
-Practical GPU-memory limits still exist because each target distance matrix grows
-as `O(N^2)`, and padded batches are sized by the largest sample in the batch.
-
-## Expected Outputs
-
-- `data/raw/download_manifest.csv`: download status by PDB ID.
-- `data/processed/samples/*.npz`: processed samples.
-- `data/processed/manifest.parquet`: processed manifest.
-- `data/processed/preprocess_summary.json`: accepted/rejected preprocessing counts.
-- `data/splits/*.parquet` and `data/splits/split_audit.json`: leakage-safe splits.
-- `data/processed/normalization.json`: train-only normalization.
-- `reports/dataset/`: summary JSON and plots.
-- `outputs/dataset_samples/`: sample visualization PNGs.
-- `outputs/pilot_baseline/`: logs, TensorBoard events and checkpoints.
-- `outputs/samples/`: generated distance matrices and heatmaps.
-
-## Validation
-
-```bash
-python -m py_compile $(rg --files -g '*.py')
-pytest -q
-ruff check .
-ruff format --check .
-```
-
-## Limitations
-
-The original distance-map baseline does not model sequences or coordinates; its visualization plots input C-alpha coordinates. The repository now also contains separate coordinate generators/refiners (E007–E010), sequence generation, and experimental sequence/geometry co-design. These research implementations do not establish a validated production structure-to-sequence system. Topology-plus-trajectory support remains a backend interface; a molecular-dynamics dataset pipeline is not implemented.
-
-## Scientific baseline closeout
-
-See [E010 Phase 4B forensic closeout](docs/e010_phase4b_forensic_closeout.md) for verified objective-conflict evidence and the next controlled diagnostic, and [baseline consolidation](docs/recovery/baseline_consolidation_20261004.md) for repairs and quality commands. Historical data corruption was excluded from Phase 4B; successful optimization did not yield sufficient geometric improvement.
+Original project code is MIT licensed; derived modules retain separate [third-party notices](THIRD_PARTY_NOTICES.md). ProteinMPNN/ProGen2 architecture compatibility does not grant a license to their weights or external datasets. No vendor payloads, datasets or checkpoints are added by this integration. The [publication audit](docs/publication/audit.md) records what was checked and what remains uncertain. Original experiment history and the [2026-11-16 snapshot](https://github.com/simostocco/proteinGen/tree/2030c692e6ebb90ddff05a91746f29978217ca65) are preserved.

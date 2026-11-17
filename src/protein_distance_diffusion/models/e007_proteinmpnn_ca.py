@@ -1,3 +1,4 @@
+# Third-party attribution and license: licenses/ProteinMPNN-MIT.txt; see THIRD_PARTY_NOTICES.md.
 """Reviewed CA-only ProteinMPNN inference core for E007 Phase 4B.
 
 Mapped from ``protein_mpnn_utils.py`` at ProteinMPNN commit

@@ -1,0 +1,277 @@
+[
+  {
+    "path": "src/protein_sequence_generation/context.py",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "branch": "e012-causal-rope-sequence"
+  },
+  {
+    "path": "src/protein_sequence_generation/e012.py",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "branch": "e012-causal-rope-sequence"
+  },
+  {
+    "path": "tests/test_e011_sequence_context.py",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "branch": "e012-causal-rope-sequence"
+  },
+  {
+    "path": "tests/sequence/test_e012_causal_rope.py",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "branch": "e012-causal-rope-sequence"
+  },
+  {
+    "path": "src/protein_distance_diffusion/models/e013_unconditional_equivariant_denoiser.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "src/protein_distance_diffusion/models/e015_multiscale_parity_denoiser.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "src/protein_distance_diffusion/training/e015_ema.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "src/protein_distance_diffusion/training/e015_losses.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "src/protein_distance_diffusion/training/e015_pcgrad.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "src/protein_distance_diffusion/training/e015_self_conditioning.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "tests/test_e013_unconditional_equivariant_denoiser.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "tests/test_e015_multiscale.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "tests/test_e015_parity_equivariance.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "tests/test_e015_losses.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "tests/test_e015_pcgrad.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "tests/test_e015_self_conditioning.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "src/protein_joint_sac/__init__.py",
+    "source_commit": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+    "branch": "e017-v94r3-production-20261026",
+    "adaptation": "Import ordering and exact-type identity comparisons linted where required; exact-type boundary validation preserved."
+  },
+  {
+    "path": "src/protein_joint_sac/contracts/__init__.py",
+    "source_commit": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+    "branch": "e017-v94r3-production-20261026",
+    "adaptation": "Import ordering and exact-type identity comparisons linted where required; exact-type boundary validation preserved.; import-order cleanup and/or equivalent exact-type comparison syntax; original validation preserved"
+  },
+  {
+    "path": "src/protein_joint_sac/geometry/__init__.py",
+    "source_commit": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+    "branch": "e017-v94r3-production-20261026",
+    "adaptation": "Import ordering and exact-type identity comparisons linted where required; exact-type boundary validation preserved."
+  },
+  {
+    "path": "src/protein_joint_sac/geometry/ca_builder.py",
+    "source_commit": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+    "branch": "e017-v94r3-production-20261026",
+    "adaptation": "Import ordering and exact-type identity comparisons linted where required; exact-type boundary validation preserved.; import-order cleanup and/or equivalent exact-type comparison syntax; original validation preserved"
+  },
+  {
+    "path": "src/protein_joint_sac/models/__init__.py",
+    "source_commit": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+    "branch": "e017-v94r3-production-20261026",
+    "adaptation": "Import ordering and exact-type identity comparisons linted where required; exact-type boundary validation preserved."
+  },
+  {
+    "path": "src/protein_joint_sac/models/hybrid_distributions.py",
+    "source_commit": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+    "branch": "e017-v94r3-production-20261026",
+    "adaptation": "Import ordering and exact-type identity comparisons linted where required; exact-type boundary validation preserved.; import-order cleanup and/or equivalent exact-type comparison syntax; original validation preserved"
+  },
+  {
+    "path": "src/protein_joint_sac/rl/__init__.py",
+    "source_commit": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+    "branch": "e017-v94r3-production-20261026",
+    "adaptation": "Import ordering and exact-type identity comparisons linted where required; exact-type boundary validation preserved."
+  },
+  {
+    "path": "src/protein_joint_sac/rl/soft_targets.py",
+    "source_commit": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+    "branch": "e017-v94r3-production-20261026",
+    "adaptation": "Import ordering and exact-type identity comparisons linted where required; exact-type boundary validation preserved.; import-order cleanup and/or equivalent exact-type comparison syntax; original validation preserved"
+  },
+  {
+    "path": "src/protein_distance_diffusion/training/e013_losses.py",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "scripts/prepare_e011_sequence_context.py",
+    "branch": "e012-causal-rope-sequence",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "adaptation": "E011 local personal data path replaced by data/e011_sidecars; historical repository root uses ROOT. Source seals remain binding.; import-order cleanup and/or equivalent exact-type comparison syntax; original validation preserved"
+  },
+  {
+    "path": "scripts/run_e012_causal_rope.py",
+    "branch": "e012-causal-rope-sequence",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "adaptation": "none"
+  },
+  {
+    "path": "configs/e011_sequence_context_only_v1.yaml",
+    "branch": "e012-causal-rope-sequence",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "adaptation": "none; import-order cleanup and/or equivalent exact-type comparison syntax; original validation preserved"
+  },
+  {
+    "path": "configs/e012_causal_rope_sequence_v1.yaml",
+    "branch": "e012-causal-rope-sequence",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "adaptation": "none"
+  },
+  {
+    "path": "docs/e010_student_direction_observability_v1.md",
+    "branch": "e010-phase4c-local-auxiliary",
+    "source_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e"
+  },
+  {
+    "path": "docs/e010_student_feasibility_margin_v1.md",
+    "branch": "e010-phase4c-local-auxiliary",
+    "source_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e"
+  },
+  {
+    "path": "docs/e011_sequence_context_only.md",
+    "branch": "e012-causal-rope-sequence",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180"
+  },
+  {
+    "path": "docs/e012_causal_rope_sequence.md",
+    "branch": "e012-causal-rope-sequence",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180"
+  },
+  {
+    "path": "docs/e012_generalization_audit.md",
+    "branch": "e012-causal-rope-sequence",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180"
+  },
+  {
+    "path": "docs/e013_unconditional_equivariant_denoiser.md",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf"
+  },
+  {
+    "path": "docs/e015_latest_evaluation_20261012.md",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf"
+  },
+  {
+    "path": "docs/results/e016_global_pretraining.md",
+    "source_evidence": "e016_j1_global_pretraining_20261017_v1/FINAL_J1_GLOBAL_PRETRAINING_REPORT.md",
+    "sha256": "afb31245791bdd38502c2e0f8fbecb74a0d06ea249cd3f0960866bfae32b1213",
+    "status": "Original textual report; raw artifacts external; not independently recomputed in this integration"
+  },
+  {
+    "path": "docs/results/e017_v95_validation.md",
+    "source_evidence": "e017_v95_expanded_validation_20261028_v1/FINAL_E017_V95_VALIDATION_REPORT.md",
+    "sha256": "1f78abe09625ead1bcab9b08eec6daebe5c63a19cdd17699906a36cd4ad1a62d",
+    "status": "Original textual report; raw artifacts external; not independently recomputed in this integration"
+  },
+  {
+    "path": "docs/results/e017_v96_recommendation.md",
+    "source_evidence": "e017_v96_paired_burial_control_20261029_v1/FINAL_SCIENTIFIC_RECOMMENDATION.md",
+    "sha256": "5f1f976f4593f85de75b559f3cf81adc5cb47dd838bbf64c7d6f3e247538f400",
+    "status": "Original textual report; raw artifacts external; not independently recomputed in this integration"
+  },
+  {
+    "path": "docs/results/e017_v97_engineering.md",
+    "source_evidence": "e017_v97_function_preserving_gate_20261031_v1/FINAL_E017_V97_ENGINEERING_REPORT.md",
+    "sha256": "316ee08198f8964c50b28a2a142f623d58c4c651fdce4a0bdca0efae638292e2",
+    "status": "Original textual report; raw artifacts external; not independently recomputed in this integration"
+  },
+  {
+    "path": "docs/results/e017_v97_admission.md",
+    "source_evidence": "e017_v97_function_preserving_gate_20261031_v1/initialization_admission_20261031_v1/FINAL_INITIALIZATION_ADMISSION_REPORT.md",
+    "sha256": "9ff085e3f3a0fc1426c3dca6605aeadbfd026179a09077d1ab4895ef87a8b266",
+    "status": "Original textual report; raw artifacts external; not independently recomputed in this integration"
+  },
+  {
+    "path": "docs/e010_student_direction_observability_v1.md",
+    "source_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+    "branch": "e010-phase4c-local-auxiliary"
+  },
+  {
+    "path": "docs/e010_student_feasibility_margin_v1.md",
+    "source_commit": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+    "branch": "e010-phase4c-local-auxiliary"
+  },
+  {
+    "path": "docs/e011_sequence_context_only.md",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "branch": "e012-causal-rope-sequence"
+  },
+  {
+    "path": "docs/e012_causal_rope_sequence.md",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "branch": "e012-causal-rope-sequence"
+  },
+  {
+    "path": "docs/e012_generalization_audit.md",
+    "source_commit": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+    "branch": "e012-causal-rope-sequence"
+  },
+  {
+    "path": "docs/e013_unconditional_equivariant_denoiser.md",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "docs/e015_latest_evaluation_20261012.md",
+    "source_commit": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+    "branch": "e015_integrated_multiscale_parity_selfconditioned_v1"
+  },
+  {
+    "path": "docs/results/e017_v95_validation.md",
+    "source_evidence": "e017_v95_expanded_validation_20261028_v1/FINAL_E017_V95_VALIDATION_REPORT.md",
+    "sha256": "1f78abe09625ead1bcab9b08eec6daebe5c63a19cdd17699906a36cd4ad1a62d",
+    "status": "Original textual report; not recomputed"
+  },
+  {
+    "path": "docs/results/figures/TRAIN_VALIDATION_PERPLEXITY.png",
+    "source_evidence": "e016_j1_global_pretraining_20261017_v1/figures/TRAIN_VALIDATION_PERPLEXITY.png",
+    "sha256": "c561eb4f48079f55426a4134d087cdd8cc0273455a89f564d1323eeda8857bfc",
+    "status": "Original aggregate figure, visually reviewed; not rerendered"
+  },
+  {
+    "path": "docs/results/figures/GLOBAL_GEOMETRY_COMPARISON.png",
+    "source_evidence": "e016_j1_global_pretraining_20261017_v1/figures/GLOBAL_GEOMETRY_COMPARISON.png",
+    "sha256": "9417e3d30784fd0e663ed5c1527f2d8255febf497bb65cea4398b2d47a61c92b",
+    "status": "Original aggregate figure, visually reviewed; not rerendered"
+  }
+]

@@ -1,0 +1,766 @@
+{
+  "date": "2026-11-17",
+  "branches": [
+    {
+      "branch": "audit-baseline-20261002",
+      "local_head": "058ac3e747d9dc28d1a3e9d0f449627de24cf2be",
+      "remote_head": "058ac3e747d9dc28d1a3e9d0f449627de24cf2be",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e007_matched_fullscale_v1",
+      "local_head": "f717a98dfba48aa9fe574bdc9952c6442a52dd1e",
+      "remote_head": "f717a98dfba48aa9fe574bdc9952c6442a52dd1e",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e007_vs_e014_readonly_comparison_v1",
+      "local_head": "7e0ab0804deb06b8344d51659a7acb079dee3123",
+      "remote_head": "7e0ab0804deb06b8344d51659a7acb079dee3123",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e010-condition-weight-counterfactual",
+      "local_head": "058ac3e747d9dc28d1a3e9d0f449627de24cf2be",
+      "remote_head": "058ac3e747d9dc28d1a3e9d0f449627de24cf2be",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e010-phase4c-local-auxiliary",
+      "local_head": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "remote_head": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "disposition": "selected files incorporated; full branch retained"
+    },
+    {
+      "branch": "e010-phase4d-hybrid-local-global",
+      "local_head": "bfc840a9bd7e421c7e508cf41b3d66fdb31a6aa2",
+      "remote_head": "bfc840a9bd7e421c7e508cf41b3d66fdb31a6aa2",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e011-sequence-context-only",
+      "local_head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "remote_head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e012-causal-rope-sequence",
+      "local_head": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "remote_head": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "disposition": "selected files incorporated; full branch retained"
+    },
+    {
+      "branch": "e013_unconditional_se3_coordinate_generator_v1",
+      "local_head": "dd421bde2a6b3a9b5eb549f72b874ae2ca875bac",
+      "remote_head": "dd421bde2a6b3a9b5eb549f72b874ae2ca875bac",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e014_unconditional_coordinate_v_scaleup_v1",
+      "local_head": "053ec32dd256349a6ff8504a0f796167f5c1c727",
+      "remote_head": "053ec32dd256349a6ff8504a0f796167f5c1c727",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e015_integrated_multiscale_parity_selfconditioned_v1",
+      "local_head": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+      "remote_head": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+      "disposition": "selected files incorporated; full branch retained"
+    },
+    {
+      "branch": "e016-dataset-governance-20261015-v1",
+      "local_head": "9005f9de61399814765acffe88d06a73fd0100fb",
+      "remote_head": "9005f9de61399814765acffe88d06a73fd0100fb",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-integrated-engineering-20261015-v1",
+      "local_head": "9ff2fc573715bebf8598ff9b8e11ccbf194d61bc",
+      "remote_head": "9ff2fc573715bebf8598ff9b8e11ccbf194d61bc",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-j1-aa-head-only-20261019-v1",
+      "local_head": "de4bb261f4908ff682072d2f6db63d394cdf44b7",
+      "remote_head": "de4bb261f4908ff682072d2f6db63d394cdf44b7",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-j1-bidirectional-multitask-20261019-v1",
+      "local_head": "7eb0e9d25e64a122ed4a75404cf31ad198adb7c6",
+      "remote_head": "7eb0e9d25e64a122ed4a75404cf31ad198adb7c6",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-j1-clip-precision-pilot-20261018-v1",
+      "local_head": "3e6cbe09d026b17e8e7695c8eed157726391a57d",
+      "remote_head": "3e6cbe09d026b17e8e7695c8eed157726391a57d",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-j1-full-sequence-20261018-v1",
+      "local_head": "28d818d50184a7735b6822210d7021847e1372bd",
+      "remote_head": "28d818d50184a7735b6822210d7021847e1372bd",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-j1-global-pretraining-20261017-v1",
+      "local_head": "f0a0e2d2f5a43a45d91c36612244b84a561be509",
+      "remote_head": "f0a0e2d2f5a43a45d91c36612244b84a561be509",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-j1-sequence-first-20261018-v1",
+      "local_head": "51a18311660bb0c6a4e565a3d4e3c64bdfcb61d1",
+      "remote_head": "51a18311660bb0c6a4e565a3d4e3c64bdfcb61d1",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-j1-torsion-diagnostics-storage-20261018-v1",
+      "local_head": "bbbc941be9635ac3acb647f8ec46a43e0ca56c6a",
+      "remote_head": "bbbc941be9635ac3acb647f8ec46a43e0ca56c6a",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-j1-torsion-stabilization-20261018-v1",
+      "local_head": "4cd6bd9f20803e44c1cb4afc4e3b3d02d182f5e1",
+      "remote_head": "4cd6bd9f20803e44c1cb4afc4e3b3d02d182f5e1",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-partial-supervision-20261016-v1",
+      "local_head": "51b628ee2bc544125b41441285356db1fde02526",
+      "remote_head": "51b628ee2bc544125b41441285356db1fde02526",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-r1b-afdb-msa-critic-20261019-v1",
+      "local_head": "89e56c075d18d50370e058220acc84b908a1a48c",
+      "remote_head": "89e56c075d18d50370e058220acc84b908a1a48c",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-r1c-reward-reliability-20261019-v1",
+      "local_head": "5ba906ba67b6b59f90ed83c5dfaff1cff4742da9",
+      "remote_head": "5ba906ba67b6b59f90ed83c5dfaff1cff4742da9",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-r1d-experimental-stability-20261020-v1",
+      "local_head": "5bf80ec1636afb7f3639ca561a018d154c73fa8e",
+      "remote_head": "5bf80ec1636afb7f3639ca561a018d154c73fa8e",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-r1e-generation-evaluation-20261020-v1",
+      "local_head": "b3af952083099520e3fbebdda97130ad05f1b098",
+      "remote_head": "b3af952083099520e3fbebdda97130ad05f1b098",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-real-pdb-pilots-20261016-v1",
+      "local_head": "90ca5ad5fcb6f8501d6ce6ae19b0db51d742e219",
+      "remote_head": "90ca5ad5fcb6f8501d6ce6ae19b0db51d742e219",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-scaled10m-training-20261016-v1",
+      "local_head": "b43807b76069893fda87fc630fd7f1f230ac18b1",
+      "remote_head": "b43807b76069893fda87fc630fd7f1f230ac18b1",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-sequence-first-rl-readiness-20261019-v1",
+      "local_head": "def9a0c7641a11b6da9675b1ebc39b3277a18610",
+      "remote_head": "def9a0c7641a11b6da9675b1ebc39b3277a18610",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-unused-train-census-20261018-v1",
+      "local_head": "832a028340c90406cd6526a6324de6d7e8315737",
+      "remote_head": "832a028340c90406cd6526a6324de6d7e8315737",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-v3-cuda-n64-pdb-20261014-v1",
+      "local_head": "5b26b8859c7cf9ec5999bcb1a06b2de29cc34100",
+      "remote_head": "5b26b8859c7cf9ec5999bcb1a06b2de29cc34100",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-v3-foundations-20261014-v1",
+      "local_head": "7acd3646c73c142b1ec4ea6b5fd40941e34872d2",
+      "remote_head": "7acd3646c73c142b1ec4ea6b5fd40941e34872d2",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-v3-gpu-unified-pdb-20261015-v1",
+      "local_head": "5c09c4baf3ea506a7f202c24a9f9568dfe174e3e",
+      "remote_head": "5c09c4baf3ea506a7f202c24a9f9568dfe174e3e",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e016-v3-readiness-20261014-v1",
+      "local_head": "2081a569201dfd9bd2f45d60d8b4ac1d21c4a11c",
+      "remote_head": "2081a569201dfd9bd2f45d60d8b4ac1d21c4a11c",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-crisp-v2-20261021-v1",
+      "local_head": "5ad0afccd93db379dcf469f910cc61f54ad4a8a1",
+      "remote_head": "5ad0afccd93db379dcf469f910cc61f54ad4a8a1",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-crisp-v3-20261021-v1",
+      "local_head": "cc0915ef24b57e8c368e1b8bd43681ab8bbb98c4",
+      "remote_head": "cc0915ef24b57e8c368e1b8bd43681ab8bbb98c4",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-crisp-v3-dynamic-storage-20261021-v1",
+      "local_head": "4374c4a766a088da4daf0b475a26357408876a8c",
+      "remote_head": "4374c4a766a088da4daf0b475a26357408876a8c",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-crisp-v3-microbatch-20261021-v1",
+      "local_head": "9c244462f3980ae8008e27fd957200e1354c62c3",
+      "remote_head": "9c244462f3980ae8008e27fd957200e1354c62c3",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-crisp-v3-throughput-20261021-v1",
+      "local_head": "774371b3ea8724425c9fcc43702ad2233e70641e",
+      "remote_head": "774371b3ea8724425c9fcc43702ad2233e70641e",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-crisp-v3-training-admission-20261021-v1",
+      "local_head": "b62978364dc054850f6b37e888baaa9d1638d4f6",
+      "remote_head": "b62978364dc054850f6b37e888baaa9d1638d4f6",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v4-multistep-20261022-v1",
+      "local_head": "d8177be05f900960e89979d1e2867ba9945080a0",
+      "remote_head": "d8177be05f900960e89979d1e2867ba9945080a0",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v5-goal-observability-20261022-v1",
+      "local_head": "f1bf4a58ebd3d32741887fb7a57e3745c7236678",
+      "remote_head": "f1bf4a58ebd3d32741887fb7a57e3745c7236678",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "local_head": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "remote_head": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v6-frozen-candidates-20261023-v1",
+      "local_head": "04ea6394381203f88dfc180972ccf512ee18f3e5",
+      "remote_head": "04ea6394381203f88dfc180972ccf512ee18f3e5",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v7-amortized-lowlevel-20261023-v1",
+      "local_head": "e6ad343c10b5836415df18c4bf098ab5c38dfead",
+      "remote_head": "e6ad343c10b5836415df18c4bf098ab5c38dfead",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v71-expected-return-20261023-v1",
+      "local_head": "1f9a91b226460f163e13c501b9d2e1c524d84a42",
+      "remote_head": "1f9a91b226460f163e13c501b9d2e1c524d84a42",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v72-counterfactual-ranking-20261023-v1",
+      "local_head": "5e9c0f54e539c992220a8e2cdc292bf7aa5bce32",
+      "remote_head": "5e9c0f54e539c992220a8e2cdc292bf7aa5bce32",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v8-constrained-planning-20261023-v1",
+      "local_head": "d3eb8b7d0ef361f7224c495abc1b71860b1f1bac",
+      "remote_head": "d3eb8b7d0ef361f7224c495abc1b71860b1f1bac",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v9-property-steering-20261023-v1",
+      "local_head": "2ba4ccfc31b194323f7d1227da5a724bc260c72a",
+      "remote_head": "2ba4ccfc31b194323f7d1227da5a724bc260c72a",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v91-ordered-goal-recovery-20261023-v1",
+      "local_head": "82d23e47d1d33a0a6b2d2ff542aef3e8d86d0bfe",
+      "remote_head": "82d23e47d1d33a0a6b2d2ff542aef3e8d86d0bfe",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v92-prefix-feasibility-20261024-v1",
+      "local_head": "95b27b0834fb36b0373bc89e7fdaec6773a85fb3",
+      "remote_head": "95b27b0834fb36b0373bc89e7fdaec6773a85fb3",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v93-regional-controllability-20261024-v1",
+      "local_head": "ea75b1d55f1883bf1635edd1f403f6334b15b895",
+      "remote_head": "ea75b1d55f1883bf1635edd1f403f6334b15b895",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v94-production-recovery-20261025-v1",
+      "local_head": "cec94486cb7ab53cd739a218b84e416e7ac9a7df",
+      "remote_head": "cec94486cb7ab53cd739a218b84e416e7ac9a7df",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v94r-packing-safety-20261025-v1",
+      "local_head": "e390b87357c31a6cad8958ecd9292c942e01e57d",
+      "remote_head": "e390b87357c31a6cad8958ecd9292c942e01e57d",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v94r2-corrected-production-20261025-v1",
+      "local_head": "afb72d824a8ab2bd9e438a47a4f1ae23cc615add",
+      "remote_head": "afb72d824a8ab2bd9e438a47a4f1ae23cc615add",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v94r2-corrected-production-20261025-v2",
+      "local_head": "44f1b69be638d492ee53e541f359d617a4320586",
+      "remote_head": "44f1b69be638d492ee53e541f359d617a4320586",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v94r3-one-step-feasibility",
+      "local_head": "5f13a45a205c6a328a37b5b2af6ec2df705f26b2",
+      "remote_head": "5f13a45a205c6a328a37b5b2af6ec2df705f26b2",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "e017-v94r3-production-20261026",
+      "local_head": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+      "remote_head": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+      "disposition": "selected files incorporated; full branch retained"
+    },
+    {
+      "branch": "main",
+      "local_head": "3b200ffb0389be87cc928c391117ce96bd8b5eb2",
+      "remote_head": "3b200ffb0389be87cc928c391117ce96bd8b5eb2",
+      "disposition": "PR base; unchanged until merge"
+    },
+    {
+      "branch": "pdb-supervised-split-20261016-v1",
+      "local_head": "dbc43ebde00e2fb0a31ed1100d6ecb88ef6532c0",
+      "remote_head": "dbc43ebde00e2fb0a31ed1100d6ecb88ef6532c0",
+      "disposition": "retained without integration"
+    },
+    {
+      "branch": "latest-work-snapshot-20261116",
+      "local_head": null,
+      "remote_head": "2030c692e6ebb90ddff05a91746f29978217ca65",
+      "disposition": "preservation snapshot; no wholesale integration"
+    }
+  ],
+  "worktrees": [
+    {
+      "location": "proteinGen",
+      "branch": "e010-phase4c-local-auxiliary",
+      "head": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "dirty": true,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "proteinGen-causal-rope",
+      "branch": "e012-causal-rope-sequence",
+      "head": "52fa7dcf8bc0546c3ef6a91e60bccc0c76e41180",
+      "dirty": true,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "proteinGen-hybrid-local-global",
+      "branch": "e010-phase4d-hybrid-local-global",
+      "head": "bfc840a9bd7e421c7e508cf41b3d66fdb31a6aa2",
+      "dirty": true,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "proteinGen-sequence-context",
+      "branch": "e011-sequence-context-only",
+      "head": "30b657be81cd7bd943918980812d68ecaa0778de",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": ".e013_worktree",
+      "branch": "e013_unconditional_se3_coordinate_generator_v1",
+      "head": "dd421bde2a6b3a9b5eb549f72b874ae2ca875bac",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": ".e014_worktree",
+      "branch": "e007_matched_fullscale_v1",
+      "head": "f717a98dfba48aa9fe574bdc9952c6442a52dd1e",
+      "dirty": true,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": ".e015_worktree",
+      "branch": "e015_integrated_multiscale_parity_selfconditioned_v1",
+      "head": "0c49a5e93641c8e447e6b1d492ffbbeaaf7fecbf",
+      "dirty": true,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-v3-foundations-20261014-v1",
+      "head": "7acd3646c73c142b1ec4ea6b5fd40941e34872d2",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-v3-cuda-n64-pdb-20261014-v1",
+      "head": "5b26b8859c7cf9ec5999bcb1a06b2de29cc34100",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-dataset-governance-20261015-v1",
+      "head": "9005f9de61399814765acffe88d06a73fd0100fb",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-v3-gpu-unified-pdb-20261015-v1",
+      "head": "5c09c4baf3ea506a7f202c24a9f9568dfe174e3e",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-integrated-engineering-20261015-v1",
+      "head": "9ff2fc573715bebf8598ff9b8e11ccbf194d61bc",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-j1-aa-head-only-20261019-v1",
+      "head": "de4bb261f4908ff682072d2f6db63d394cdf44b7",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-j1-bidirectional-multitask-20261019-v1",
+      "head": "7eb0e9d25e64a122ed4a75404cf31ad198adb7c6",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-j1-clip-precision-pilot-20261018-v1",
+      "head": "3e6cbe09d026b17e8e7695c8eed157726391a57d",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-j1-full-sequence-20261018-v1",
+      "head": "28d818d50184a7735b6822210d7021847e1372bd",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-j1-global-pretraining-20261017-v1",
+      "head": "f0a0e2d2f5a43a45d91c36612244b84a561be509",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-j1-sequence-first-20261018-v1",
+      "head": "51a18311660bb0c6a4e565a3d4e3c64bdfcb61d1",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-j1-torsion-diagnostics-storage-20261018-v1",
+      "head": "bbbc941be9635ac3acb647f8ec46a43e0ca56c6a",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-j1-torsion-stabilization-20261018-v1",
+      "head": "4cd6bd9f20803e44c1cb4afc4e3b3d02d182f5e1",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-partial-supervision-20261016-v1",
+      "head": "51b628ee2bc544125b41441285356db1fde02526",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-r1b-afdb-msa-critic-20261019-v1",
+      "head": "89e56c075d18d50370e058220acc84b908a1a48c",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-r1c-reward-reliability-20261019-v1",
+      "head": "5ba906ba67b6b59f90ed83c5dfaff1cff4742da9",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-r1d-experimental-stability-20261020-v1",
+      "head": "5bf80ec1636afb7f3639ca561a018d154c73fa8e",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-r1e-generation-evaluation-20261020-v1",
+      "head": "b3af952083099520e3fbebdda97130ad05f1b098",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-real-pdb-pilots-20261016-v1",
+      "head": "90ca5ad5fcb6f8501d6ce6ae19b0db51d742e219",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-scaled10m-training-20261016-v1",
+      "head": "b43807b76069893fda87fc630fd7f1f230ac18b1",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-sequence-first-rl-readiness-20261019-v1",
+      "head": "def9a0c7641a11b6da9675b1ebc39b3277a18610",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-unused-train-census-20261018-v1",
+      "head": "832a028340c90406cd6526a6324de6d7e8315737",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e016-v3-readiness-20261014-v1",
+      "head": "2081a569201dfd9bd2f45d60d8b4ac1d21c4a11c",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-crisp-v2-20261021-v1",
+      "head": "5ad0afccd93db379dcf469f910cc61f54ad4a8a1",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-crisp-v3-20261021-v1",
+      "head": "cc0915ef24b57e8c368e1b8bd43681ab8bbb98c4",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-crisp-v3-dynamic-storage-20261021-v1",
+      "head": "4374c4a766a088da4daf0b475a26357408876a8c",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-crisp-v3-microbatch-20261021-v1",
+      "head": "9c244462f3980ae8008e27fd957200e1354c62c3",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-crisp-v3-throughput-20261021-v1",
+      "head": "774371b3ea8724425c9fcc43702ad2233e70641e",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-crisp-v3-training-admission-20261021-v1",
+      "head": "b62978364dc054850f6b37e888baaa9d1638d4f6",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v4-multistep-20261022-v1",
+      "head": "d8177be05f900960e89979d1e2867ba9945080a0",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v51-safe-control-20261022-v1",
+      "head": "732134d9aa2b3b30102d3a9e009b4665127f9506",
+      "dirty": true,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v5-goal-observability-20261022-v1",
+      "head": "f1bf4a58ebd3d32741887fb7a57e3745c7236678",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v6-frozen-candidates-20261023-v1",
+      "head": "04ea6394381203f88dfc180972ccf512ee18f3e5",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v71-expected-return-20261023-v1",
+      "head": "1f9a91b226460f163e13c501b9d2e1c524d84a42",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v72-counterfactual-ranking-20261023-v1",
+      "head": "5e9c0f54e539c992220a8e2cdc292bf7aa5bce32",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v7-amortized-lowlevel-20261023-v1",
+      "head": "e6ad343c10b5836415df18c4bf098ab5c38dfead",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v8-constrained-planning-20261023-v1",
+      "head": "d3eb8b7d0ef361f7224c495abc1b71860b1f1bac",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v91-ordered-goal-recovery-20261023-v1",
+      "head": "82d23e47d1d33a0a6b2d2ff542aef3e8d86d0bfe",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v92-prefix-feasibility-20261024-v1",
+      "head": "95b27b0834fb36b0373bc89e7fdaec6773a85fb3",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v93-regional-controllability-20261024-v1",
+      "head": "ea75b1d55f1883bf1635edd1f403f6334b15b895",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v94-production-recovery-20261025-v1",
+      "head": "cec94486cb7ab53cd739a218b84e416e7ac9a7df",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v94r2-corrected-production-20261025-v1",
+      "head": "afb72d824a8ab2bd9e438a47a4f1ae23cc615add",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v94r2-corrected-production-20261025-v2",
+      "head": "44f1b69be638d492ee53e541f359d617a4320586",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v94r3-one-step-feasibility",
+      "head": "5f13a45a205c6a328a37b5b2af6ec2df705f26b2",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v94r3-production-20261026",
+      "head": "91576ff071bd42a07f4306bc315b496d22d5a3bf",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v94r-packing-safety-20261025-v1",
+      "head": "e390b87357c31a6cad8958ecd9292c942e01e57d",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "e017_v97_engineering_worktree_20261031_v1",
+      "branch": "detached",
+      "head": "bc5ae4fe83a710f8b89401fa1d2b2d586f193d6e",
+      "dirty": true,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "e017-v9-property-steering-20261023-v1",
+      "head": "2ba4ccfc31b194323f7d1227da5a724bc260c72a",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    },
+    {
+      "location": "source",
+      "branch": "pdb-supervised-split-20261016-v1",
+      "head": "dbc43ebde00e2fb0a31ed1100d6ecb88ef6532c0",
+      "dirty": false,
+      "new_useful_files_since_snapshot": 0
+    }
+  ],
+  "preservation_commit": "2030c692e6ebb90ddff05a91746f29978217ca65"
+}
